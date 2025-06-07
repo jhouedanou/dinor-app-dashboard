@@ -44,6 +44,15 @@ COPY . /var/www/html
 # Copy existing application directory permissions
 COPY --chown=www-data:www-data . /var/www/html
 
+# Create .env file from example if it doesn't exist
+RUN if [ ! -f .env ]; then cp .env.example .env; fi
+
+# Create necessary cache directories
+RUN mkdir -p /var/www/html/storage/framework/cache/data
+RUN mkdir -p /var/www/html/storage/framework/sessions
+RUN mkdir -p /var/www/html/storage/framework/views
+RUN mkdir -p /var/www/html/bootstrap/cache
+
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html
 RUN chmod -R 755 /var/www/html
@@ -53,8 +62,11 @@ RUN chmod -R 775 /var/www/html/bootstrap/cache
 # Install dependencies
 RUN composer install --optimize-autoloader --no-dev
 
-# Generate application key, run migrations and seed data
+# Generate application key first (needed for caching)
 RUN php artisan key:generate --force
+
+# Clear any existing cache and generate new cache
+RUN php artisan config:clear
 RUN php artisan config:cache
 RUN php artisan route:cache
 RUN php artisan view:cache
