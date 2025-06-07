@@ -2,6 +2,26 @@
 
 Dashboard Filament pour la gestion de contenu de l'application mobile Dinor avec API REST complète.
 
+## 🌟 Nouvelles Fonctionnalités
+
+### 🇫🇷 Interface Française
+- Application entièrement traduite en français
+- Fuseau horaire Europe/Paris configuré
+- Formats de date et heure français
+- Messages de validation en français
+
+### 🔐 Sécurité Renforcée
+- Authentification sécurisée pour l'accès au dashboard
+- Utilisateur administrateur par défaut avec mot de passe fort
+- Sessions sécurisées avec Redis
+- Protection CSRF et validation des données
+
+### 🚀 Déploiement Automatisé
+- Installation complète avec une seule commande (`./setup.sh`)
+- Configuration automatique de Docker
+- Migrations et seeding automatiques
+- Optimisation des performances intégrée
+
 ## 🚀 Fonctionnalités
 
 ### Dashboard Admin (Filament)
@@ -45,7 +65,24 @@ GET /api/v1/dashboard - Dashboard global pour l'app
 - Docker
 - Docker Compose
 
-### Démarrage rapide
+### Démarrage rapide (Nouvelle méthode automatisée)
+
+1. **Installation en une commande**
+```bash
+# Rendre le script exécutable et lancer l'installation
+chmod +x setup.sh
+./setup.sh
+```
+
+Cette commande unique va :
+- Construire et démarrer tous les conteneurs Docker
+- Installer toutes les dépendances PHP
+- Configurer l'application Laravel
+- Exécuter les migrations de base de données
+- Créer les données de démonstration
+- Créer un utilisateur administrateur par défaut
+
+### Méthode manuelle (si nécessaire)
 
 1. **Cloner et démarrer les services**
 ```bash
@@ -73,12 +110,6 @@ php artisan key:generate
 # Exécuter les migrations
 php artisan migrate
 
-# Installer Filament
-php artisan filament:install --panels
-
-# Créer un utilisateur admin
-php artisan make:filament-user
-
 # Créer le lien symbolique pour le storage
 php artisan storage:link
 
@@ -89,9 +120,13 @@ php artisan db:seed
 ### 🌐 Accès aux services
 
 - **Dashboard Admin** : http://localhost:8000/admin
+  - Email : `admin@dinor.app`
+  - Mot de passe : `Dinor2024!Admin`
 - **API** : http://localhost:8000/api/v1/
 - **PhpMyAdmin** : http://localhost:8080
 - **Application** : http://localhost:8000
+
+⚠️ **Important** : Changez le mot de passe administrateur après la première connexion !
 
 ### 📊 Base de données
 

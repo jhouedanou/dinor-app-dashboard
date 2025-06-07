@@ -2,13 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\Likeable;
+use App\Traits\Commentable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Recipe extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, Likeable, Commentable;
 
     protected $fillable = [
         'title',
@@ -86,6 +89,30 @@ class Recipe extends Model
     public function mediaFiles()
     {
         return $this->morphMany(MediaFile::class, 'model');
+    }
+
+    /**
+     * Get all likes for this recipe
+     */
+    public function likes()
+    {
+        return $this->morphMany(Like::class, 'likeable');
+    }
+
+    /**
+     * Get all comments for this recipe
+     */
+    public function comments()
+    {
+        return $this->morphMany(Comment::class, 'commentable');
+    }
+
+    /**
+     * Get approved comments only
+     */
+    public function approvedComments()
+    {
+        return $this->morphMany(Comment::class, 'commentable')->approved();
     }
 
     public function featuredImage()
@@ -212,5 +239,61 @@ class Recipe extends Model
     public function incrementFavorites()
     {
         $this->increment('favorites_count');
+    }
+
+    /**
+     * Get all likes for this recipe
+     */
+    public function likes()
+    {
+        return $this->morphMany(Like::class, 'likeable');
+    }
+
+    /**
+     * Get all comments for this recipe
+     */
+    public function comments()
+    {
+        return $this->morphMany(Comment::class, 'commentable');
+    }
+
+    /**
+     * Get approved comments only
+     */
+    public function approvedComments()
+    {
+        return $this->morphMany(Comment::class, 'commentable')->approved();
+    }
+
+    /**
+     * Get current likes count
+     */
+    public function getCurrentLikesCountAttribute(): int
+    {
+        return $this->likes()->count();
+    }
+
+    /**
+     * Get approved comments count
+     */
+    public function getApprovedCommentsCountAttribute(): int
+    {
+        return $this->approvedComments()->count();
+    }
+
+    /**
+     * Get average rating from comments
+     */
+    public function getAverageRatingAttribute(): float
+    {
+        return $this->approvedComments()->whereNotNull('rating')->avg('rating') ?: 0;
+    }
+
+    /**
+     * Check if user has liked this recipe
+     */
+    public function isLikedBy(string $userIdentifier): bool
+    {
+        return Like::hasLiked($this, $userIdentifier);
     }
 } 

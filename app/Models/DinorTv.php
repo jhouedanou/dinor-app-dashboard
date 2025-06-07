@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\Likeable;
+use App\Traits\Commentable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class DinorTv extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, Likeable, Commentable;
 
     protected $table = 'dinor_tv';
 

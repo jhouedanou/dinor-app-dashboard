@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\Likeable;
+use App\Traits\Commentable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Event extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, Likeable, Commentable;
 
     protected $fillable = [
         'title',
@@ -352,5 +354,53 @@ class Event extends Model
         ]);
         
         return implode(', ', $addressParts);
+    }
+
+    /**
+     * Get all likes for this event
+     */
+    public function likes()
+    {
+        return $this->morphMany(Like::class, 'likeable');
+    }
+
+    /**
+     * Get all comments for this event
+     */
+    public function comments()
+    {
+        return $this->morphMany(Comment::class, 'commentable');
+    }
+
+    /**
+     * Get approved comments only
+     */
+    public function approvedComments()
+    {
+        return $this->morphMany(Comment::class, 'commentable')->approved();
+    }
+
+    /**
+     * Get current likes count
+     */
+    public function getCurrentLikesCountAttribute(): int
+    {
+        return $this->likes()->count();
+    }
+
+    /**
+     * Get approved comments count
+     */
+    public function getApprovedCommentsCountAttribute(): int
+    {
+        return $this->approvedComments()->count();
+    }
+
+    /**
+     * Check if user has liked this event
+     */
+    public function isLikedBy(string $userIdentifier): bool
+    {
+        return Like::hasLiked($this, $userIdentifier);
     }
 } 

@@ -7,6 +7,8 @@ use App\Http\Controllers\Api\EventController;
 use App\Http\Controllers\Api\PageController;
 use App\Http\Controllers\Api\TipController;
 use App\Http\Controllers\Api\DinorTvController;
+use App\Http\Controllers\Api\LikeController;
+use App\Http\Controllers\Api\CommentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -53,6 +55,16 @@ Route::prefix('v1')->group(function () {
     Route::get('/pages/menu', [PageController::class, 'menu']);
     Route::get('/pages/{slug}', [PageController::class, 'show']);
     
+    // Likes - Routes publiques
+    Route::post('/likes/toggle', [LikeController::class, 'toggle']);
+    Route::get('/likes/check', [LikeController::class, 'check']);
+    Route::get('/likes', [LikeController::class, 'index']);
+    
+    // Comments - Routes publiques
+    Route::get('/comments', [CommentController::class, 'index']);
+    Route::post('/comments', [CommentController::class, 'store']);
+    Route::get('/comments/{comment}/replies', [CommentController::class, 'replies']);
+    
     // Dashboard global pour l'app
     Route::get('/dashboard', function() {
         return response()->json([
@@ -69,5 +81,7 @@ Route::prefix('v1')->group(function () {
 
 // Routes avec middleware d'authentification si nécessaire
 Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
-    // Routes protégées ici
+    // Comments - Routes protégées (modification/suppression)
+    Route::put('/comments/{comment}', [CommentController::class, 'update']);
+    Route::delete('/comments/{comment}', [CommentController::class, 'destroy']);
 }); 
