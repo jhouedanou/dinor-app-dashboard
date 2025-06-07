@@ -5,12 +5,13 @@ Dashboard Filament pour la gestion de contenu de l'application mobile Dinor avec
 ## 🚀 Fonctionnalités
 
 ### Dashboard Admin (Filament)
-- **Recettes de cuisine** : Gestion complète avec ingrédients, instructions, temps de préparation
+- **Recettes de cuisine** : Gestion complète avec ingrédients, instructions, temps de préparation, informations nutritionnelles, équipement requis, galerie d'images
 - **Astuces** : Conseils et techniques culinaires
-- **Événements Dinor** : Gestion d'événements avec géolocalisation et inscriptions
+- **Événements Dinor** : Gestion complète d'événements avec géolocalisation, inscriptions, tarification flexible, médias
 - **Dinor TV** : Gestion de contenus vidéo avec live streaming
-- **Pages web** : Système de pages personnalisables
+- **Pages web** : Système de pages personnalisables avec templates et hiérarchie
 - **Catégories** : Organisation du contenu par catégories
+- **Médiathèque** : Gestion centralisée des fichiers (images, vidéos, documents)
 
 ### API REST pour Flutter
 - Endpoints complets pour tous les types de contenu

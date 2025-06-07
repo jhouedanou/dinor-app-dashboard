@@ -45,6 +45,10 @@ docker exec dinor-app php artisan migrate --force
 echo "📁 Configuration du stockage..."
 docker exec dinor-app php artisan storage:link
 
+# Peupler la base de données avec des données de démonstration
+echo "🌱 Création des données de démonstration..."
+docker exec dinor-app php artisan db:seed
+
 # Instructions finales
 echo ""
 echo "🎉 Installation terminée avec succès!"

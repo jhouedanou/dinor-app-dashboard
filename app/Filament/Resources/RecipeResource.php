@@ -53,10 +53,32 @@ class RecipeResource extends Resource
                             ->required()
                             ->rows(3),
                             
-                        Forms\Components\FileUpload::make('image')
+                        Forms\Components\FileUpload::make('featured_image')
                             ->label('Image principale')
                             ->image()
-                            ->directory('recipes')
+                            ->directory('recipes/featured')
+                            ->maxSize(5120)
+                            ->imageEditor()
+                            ->imageEditorAspectRatios([
+                                '16:9',
+                                '4:3',
+                                '1:1',
+                            ]),
+
+                        Forms\Components\FileUpload::make('gallery')
+                            ->label('Galerie d\'images')
+                            ->image()
+                            ->multiple()
+                            ->directory('recipes/gallery')
+                            ->maxSize(3072)
+                            ->maxFiles(10)
+                            ->imageEditor()
+                            ->reorderable(),
+
+                        Forms\Components\FileUpload::make('video_thumbnail')
+                            ->label('Miniature de la vidéo')
+                            ->image()
+                            ->directory('recipes/video-thumbnails')
                             ->maxSize(2048),
                             
                         Forms\Components\TextInput::make('video_url')
@@ -94,7 +116,7 @@ class RecipeResource extends Resource
                             ->defaultItems(1),
                     ]),
 
-                Forms\Components\Section::make('Paramètres')
+                Forms\Components\Section::make('Temps et portions')
                     ->schema([
                         Forms\Components\TextInput::make('preparation_time')
                             ->label('Temps de préparation (min)')
@@ -105,12 +127,20 @@ class RecipeResource extends Resource
                             ->label('Temps de cuisson (min)')
                             ->numeric()
                             ->default(0),
+
+                        Forms\Components\TextInput::make('resting_time')
+                            ->label('Temps de repos (min)')
+                            ->numeric()
+                            ->default(0),
                             
                         Forms\Components\TextInput::make('servings')
                             ->label('Nombre de portions')
                             ->numeric()
                             ->default(1),
-                            
+                    ])->columns(4),
+
+                Forms\Components\Section::make('Caractéristiques')
+                    ->schema([
                         Forms\Components\Select::make('difficulty')
                             ->label('Difficulté')
                             ->options([
@@ -119,7 +149,105 @@ class RecipeResource extends Resource
                                 'hard' => 'Difficile',
                             ])
                             ->default('easy'),
-                            
+
+                        Forms\Components\Select::make('meal_type')
+                            ->label('Type de repas')
+                            ->options([
+                                'breakfast' => 'Petit déjeuner',
+                                'lunch' => 'Déjeuner', 
+                                'dinner' => 'Dîner',
+                                'snack' => 'Collation',
+                                'dessert' => 'Dessert',
+                                'aperitif' => 'Apéritif',
+                            ]),
+
+                        Forms\Components\Select::make('diet_type')
+                            ->label('Régime alimentaire')
+                            ->options([
+                                'none' => 'Aucun régime spécial',
+                                'vegetarian' => 'Végétarien',
+                                'vegan' => 'Végétalien',
+                                'gluten_free' => 'Sans gluten',
+                                'dairy_free' => 'Sans lactose',
+                                'keto' => 'Keto',
+                                'paleo' => 'Paléo',
+                            ])
+                            ->default('none'),
+
+                        Forms\Components\Select::make('cost_level')
+                            ->label('Niveau de coût')
+                            ->options([
+                                'low' => 'Économique',
+                                'medium' => 'Moyen',
+                                'high' => 'Élevé',
+                            ])
+                            ->default('medium'),
+
+                        Forms\Components\Select::make('season')
+                            ->label('Saison')
+                            ->options([
+                                'all' => 'Toute l\'année',
+                                'spring' => 'Printemps',
+                                'summer' => 'Été',
+                                'autumn' => 'Automne',
+                                'winter' => 'Hiver',
+                            ])
+                            ->default('all'),
+
+                        Forms\Components\TextInput::make('origin_country')
+                            ->label('Pays d\'origine'),
+                    ])->columns(3),
+
+                Forms\Components\Section::make('Informations nutritionnelles')
+                    ->schema([
+                        Forms\Components\TextInput::make('calories_per_serving')
+                            ->label('Calories par portion')
+                            ->numeric(),
+
+                        Forms\Components\TextInput::make('protein_grams')
+                            ->label('Protéines (g)')
+                            ->numeric()
+                            ->step(0.1),
+
+                        Forms\Components\TextInput::make('carbs_grams')
+                            ->label('Glucides (g)')
+                            ->numeric()
+                            ->step(0.1),
+
+                        Forms\Components\TextInput::make('fat_grams')
+                            ->label('Lipides (g)')
+                            ->numeric()
+                            ->step(0.1),
+
+                        Forms\Components\TextInput::make('fiber_grams')
+                            ->label('Fibres (g)')
+                            ->numeric()
+                            ->step(0.1),
+                    ])->columns(5),
+
+                Forms\Components\Section::make('Équipement')
+                    ->schema([
+                        Forms\Components\TagsInput::make('required_equipment')
+                            ->label('Équipement nécessaire')
+                            ->placeholder('Four, mixeur, poêle...'),
+
+                        Forms\Components\TagsInput::make('cooking_methods')
+                            ->label('Méthodes de cuisson')
+                            ->placeholder('Cuisson au four, à la poêle, à la vapeur...'),
+                    ])->columns(2),
+
+                Forms\Components\Section::make('Chef et notes')
+                    ->schema([
+                        Forms\Components\TextInput::make('chef_name')
+                            ->label('Nom du chef'),
+
+                        Forms\Components\Textarea::make('chef_notes')
+                            ->label('Notes du chef')
+                            ->rows(3),
+                    ])->columns(2),
+
+                Forms\Components\Section::make('Paramètres')
+                    ->schema([
                         Forms\Components\TagsInput::make('tags')
                             ->label('Tags')
                             ->placeholder('Ajoutez des tags...'),

@@ -13,31 +13,69 @@ class Recipe extends Model
     protected $fillable = [
         'title',
         'description',
+        'short_description',
         'ingredients',
         'instructions',
         'preparation_time',
         'cooking_time',
+        'resting_time',
         'servings',
         'difficulty',
+        'meal_type',
+        'diet_type',
         'category_id',
-        'image',
+        'featured_image',
+        'gallery',
         'video_url',
+        'video_thumbnail',
+        'calories_per_serving',
+        'protein_grams',
+        'carbs_grams',
+        'fat_grams',
+        'fiber_grams',
+        'cost_level',
+        'season',
+        'origin_country',
+        'region',
+        'required_equipment',
+        'cooking_methods',
         'tags',
         'is_featured',
         'is_published',
         'meta_description',
-        'slug'
+        'slug',
+        'chef_name',
+        'chef_notes',
+        'views_count',
+        'likes_count',
+        'favorites_count',
+        'rating_average',
+        'rating_count'
     ];
 
     protected $casts = [
         'ingredients' => 'array',
         'instructions' => 'array',
+        'gallery' => 'array',
+        'required_equipment' => 'array',
+        'cooking_methods' => 'array',
         'tags' => 'array',
         'is_featured' => 'boolean',
         'is_published' => 'boolean',
         'preparation_time' => 'integer',
         'cooking_time' => 'integer',
-        'servings' => 'integer'
+        'resting_time' => 'integer',
+        'servings' => 'integer',
+        'calories_per_serving' => 'integer',
+        'protein_grams' => 'decimal:2',
+        'carbs_grams' => 'decimal:2',
+        'fat_grams' => 'decimal:2',
+        'fiber_grams' => 'decimal:2',
+        'views_count' => 'integer',
+        'likes_count' => 'integer',
+        'favorites_count' => 'integer',
+        'rating_average' => 'decimal:2',
+        'rating_count' => 'integer'
     ];
 
     public function category()
@@ -45,14 +83,48 @@ class Recipe extends Model
         return $this->belongsTo(Category::class);
     }
 
-    public function getTotalTimeAttribute()
+    public function mediaFiles()
     {
-        return $this->preparation_time + $this->cooking_time;
+        return $this->morphMany(MediaFile::class, 'model');
     }
 
-    public function getImageUrlAttribute()
+    public function featuredImage()
     {
-        return $this->image ? asset('storage/' . $this->image) : null;
+        return $this->morphOne(MediaFile::class, 'model')->where('collection_name', 'featured_image');
+    }
+
+    public function galleryImages()
+    {
+        return $this->morphMany(MediaFile::class, 'model')->where('collection_name', 'gallery');
+    }
+
+    public function videoFiles()
+    {
+        return $this->morphMany(MediaFile::class, 'model')->where('collection_name', 'videos');
+    }
+
+    public function getTotalTimeAttribute()
+    {
+        return $this->preparation_time + $this->cooking_time + $this->resting_time;
+    }
+
+    public function getFeaturedImageUrlAttribute()
+    {
+        return $this->featured_image ? asset('storage/' . $this->featured_image) : null;
+    }
+
+    public function getGalleryUrlsAttribute()
+    {
+        if (!$this->gallery) return [];
+        
+        return array_map(function($image) {
+            return asset('storage/' . $image);
+        }, $this->gallery);
+    }
+
+    public function getVideoThumbnailUrlAttribute()
+    {
+        return $this->video_thumbnail ? asset('storage/' . $this->video_thumbnail) : null;
     }
 
     public function scopePublished($query)
@@ -63,5 +135,82 @@ class Recipe extends Model
     public function scopeFeatured($query)
     {
         return $query->where('is_featured', true);
+    }
+
+    public function scopeByMealType($query, $mealType)
+    {
+        return $query->where('meal_type', $mealType);
+    }
+
+    public function scopeByDifficulty($query, $difficulty)
+    {
+        return $query->where('difficulty', $difficulty);
+    }
+
+    public function scopeByDietType($query, $dietType)
+    {
+        return $query->where('diet_type', $dietType);
+    }
+
+    public function scopeBySeason($query, $season)
+    {
+        return $query->where('season', $season);
+    }
+
+    public function scopeQuickRecipes($query, $maxTime = 30)
+    {
+        return $query->whereRaw('(preparation_time + cooking_time) <= ?', [$maxTime]);
+    }
+
+    public function getDifficultyLabelAttribute()
+    {
+        return match($this->difficulty) {
+            'easy' => 'Facile',
+            'medium' => 'Moyen',
+            'hard' => 'Difficile',
+            default => 'Non défini'
+        };
+    }
+
+    public function getMealTypeLabelAttribute()
+    {
+        return match($this->meal_type) {
+            'breakfast' => 'Petit déjeuner',
+            'lunch' => 'Déjeuner',
+            'dinner' => 'Dîner',
+            'snack' => 'Collation',
+            'dessert' => 'Dessert',
+            'aperitif' => 'Apéritif',
+            default => 'Non défini'
+        };
+    }
+
+    public function getDietTypeLabelAttribute()
+    {
+        return match($this->diet_type) {
+            'none' => 'Aucun régime spécial',
+            'vegetarian' => 'Végétarien',
+            'vegan' => 'Végétalien',
+            'gluten_free' => 'Sans gluten',
+            'dairy_free' => 'Sans lactose',
+            'keto' => 'Keto',
+            'paleo' => 'Paléo',
+            default => 'Non défini'
+        };
+    }
+
+    public function incrementViews()
+    {
+        $this->increment('views_count');
+    }
+
+    public function incrementLikes()
+    {
+        $this->increment('likes_count');
+    }
+
+    public function incrementFavorites()
+    {
+        $this->increment('favorites_count');
     }
 } 
