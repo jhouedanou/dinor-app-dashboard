@@ -54,6 +54,9 @@ RUN if [ ! -f .env ]; then cp .env.example .env; fi
 RUN sed -i 's/CACHE_DRIVER=redis/CACHE_DRIVER=file/' .env || echo "CACHE_DRIVER=file" >> .env
 RUN sed -i 's/SESSION_DRIVER=redis/SESSION_DRIVER=file/' .env || echo "SESSION_DRIVER=file" >> .env
 
+# Add git safe directory configuration
+RUN git config --global --add safe.directory /var/www/html || true
+
 # Create necessary cache directories
 RUN mkdir -p /var/www/html/storage/framework/cache/data
 RUN mkdir -p /var/www/html/storage/framework/sessions
@@ -66,7 +69,9 @@ RUN chmod -R 755 /var/www/html
 RUN chmod -R 775 /var/www/html/storage
 RUN chmod -R 775 /var/www/html/bootstrap/cache
 
-# Install dependencies
+# Install dependencies (force environment variables for cache during build)
+ENV CACHE_DRIVER=file
+ENV SESSION_DRIVER=file
 RUN composer install --optimize-autoloader --no-dev
 
 # Generate application key first (needed for caching)
