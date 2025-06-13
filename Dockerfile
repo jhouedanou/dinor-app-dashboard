@@ -29,6 +29,9 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 # Install PHP extensions
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl
 
+# Install Redis extension
+RUN pecl install redis && docker-php-ext-enable redis
+
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
@@ -46,6 +49,10 @@ COPY --chown=www-data:www-data . /var/www/html
 
 # Create .env file from example if it doesn't exist
 RUN if [ ! -f .env ]; then cp .env.example .env; fi
+
+# Set cache driver to file for build process to avoid Redis dependency
+RUN sed -i 's/CACHE_DRIVER=redis/CACHE_DRIVER=file/' .env || echo "CACHE_DRIVER=file" >> .env
+RUN sed -i 's/SESSION_DRIVER=redis/SESSION_DRIVER=file/' .env || echo "SESSION_DRIVER=file" >> .env
 
 # Create necessary cache directories
 RUN mkdir -p /var/www/html/storage/framework/cache/data
@@ -79,6 +86,10 @@ until php artisan migrate:status 2>/dev/null; do\n\
     echo "Database not ready yet, waiting..."\n\
     sleep 2\n\
 done\n\
+\n\
+# Switch back to Redis for production\n\
+sed -i "s/CACHE_DRIVER=file/CACHE_DRIVER=redis/" /var/www/html/.env\n\
+sed -i "s/SESSION_DRIVER=file/SESSION_DRIVER=redis/" /var/www/html/.env\n\
 \n\
 # Run migrations\n\
 echo "Running migrations..."\n\
