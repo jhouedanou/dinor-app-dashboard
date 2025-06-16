@@ -20,7 +20,7 @@ class Dashboard extends BaseDashboard
         return __('dinor.welcome') . ' sur ' . __('dinor.dashboard') . ' Dinor';
     }
 
-    protected function getHeaderWidgets(): array
+    public function getWidgets(): array
     {
         return [
             \App\Filament\Widgets\StatsOverview::class,

@@ -66,11 +66,33 @@ if check_container "dinor-app"; then
     echo "🔑 Génération de la clé d'application..."
     exec_in_container "dinor-app" "php artisan key:generate"
     
+    echo "📧 Création de la table notifications..."
+    exec_in_container "dinor-app" "php artisan notifications:table"
+    
     echo "🗄️ Exécution des migrations..."
     exec_in_container "dinor-app" "php artisan migrate --force"
     
+    echo "🧹 Nettoyage des caches..."
+    exec_in_container "dinor-app" "php artisan optimize:clear"
+    
     echo "🔗 Création du lien symbolique storage..."
     exec_in_container "dinor-app" "php artisan storage:link"
+    
+    echo "🎨 Génération des assets Filament..."
+    exec_in_container "dinor-app" "php artisan filament:assets"
+    
+    echo "📦 Installation de Node.js..."
+    exec_in_container "dinor-app" "curl -fsSL https://deb.nodesource.com/setup_18.x | bash -"
+    exec_in_container "dinor-app" "apt-get install -y nodejs"
+    
+    echo "🔧 Installation des dépendances NPM..."
+    exec_in_container "dinor-app" "npm install"
+    
+    echo "🏗️ Construction des assets frontend..."
+    exec_in_container "dinor-app" "npm run build"
+    
+    echo "📁 Vérification des assets générés..."
+    exec_in_container "dinor-app" "ls -la public/build/assets/"
     
     echo "🌱 Optionnel: Peuplement de la base de données..."
     read -p "Voulez-vous ajouter des données de test ? (y/N): " -n 1 -r
@@ -91,6 +113,10 @@ if check_container "dinor-app"; then
     echo "🔐 Identifiants admin par défaut :"
     echo "   - Email: admin@dinor.app"
     echo "   - Mot de passe: Dinor2024!Admin"
+    echo ""
+    echo "💡 Commandes utiles :"
+    echo "   - Réinitialiser mot de passe: docker exec -it dinor-app php artisan admin:reset-password [email]"
+    echo "   - Créer un admin: docker exec -it dinor-app php artisan admin:reset-password [nouvel-email]"
     
 else
     echo ""

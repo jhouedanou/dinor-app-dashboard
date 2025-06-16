@@ -43,7 +43,7 @@ return [
         App\Providers\AuthServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
-        App\Providers\FilamentServiceProvider::class,
+        App\Providers\Filament\AdminPanelProvider::class,
     ],
     'aliases' => [
         'App' => Illuminate\Support\Facades\App::class,

@@ -5,7 +5,7 @@ namespace App\Filament\Pages\Auth;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Pages\Auth\Login as BaseLogin;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Contracts\Support\Htmlable;
 
 class Login extends BaseLogin
 {
@@ -28,20 +28,43 @@ class Login extends BaseLogin
             ]);
     }
 
-    public function getTitle(): string
+    public function getTitle(): string | Htmlable
     {
         return __('dinor.login_title');
     }
 
-    public function getHeading(): string
+    public function getHeading(): string | Htmlable
     {
         return __('dinor.login_title');
+    }
+
+    protected function getAuthGuard(): string
+    {
+        return 'admin';
+    }
+
+    protected function getCredentialsFromFormData(array $data): array
+    {
+        \Log::info('LOGIN ATTEMPT', [
+            'email' => $data['email'],
+            'guard' => $this->getAuthGuard(),
+            'admin_users_count' => \App\Models\AdminUser::count(),
+            'user_exists' => \App\Models\AdminUser::where('email', $data['email'])->exists(),
+        ]);
+        
+        return [
+            'email' => $data['email'],
+            'password' => $data['password'],
+        ];
     }
 
     protected function throwFailureValidationException(): never
     {
-        throw ValidationException::withMessages([
-            'data.email' => __('dinor.invalid_credentials'),
+        \Log::error('LOGIN FAILED', [
+            'guard' => $this->getAuthGuard(),
+            'attempted_email' => $this->form->getState()['email'] ?? 'unknown',
         ]);
+        
+        parent::throwFailureValidationException();
     }
 } 

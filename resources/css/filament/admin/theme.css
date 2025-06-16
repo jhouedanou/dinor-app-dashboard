@@ -1,0 +1,120 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* Configuration du mode light par défaut pour Filament */
+html {
+    color-scheme: light;
+}
+
+.dark {
+    color-scheme: light !important;
+}
+
+/* Personnalisations du thème Dinor */
+:root {
+    --primary-50: #fffbeb;
+    --primary-100: #fef3c7;
+    --primary-200: #fde68a;
+    --primary-300: #fcd34d;
+    --primary-400: #fbbf24;
+    --primary-500: #f59e0b;
+    --primary-600: #d97706;
+    --primary-700: #b45309;
+    --primary-800: #92400e;
+    --primary-900: #78350f;
+}
+
+/* Force le mode light */
+.fi-body {
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+}
+
+/* Amélioration de la mise en forme */
+.fi-sidebar {
+    background-color: #f9fafb !important;
+    border-right: 1px solid #e5e7eb !important;
+}
+
+.fi-topbar {
+    background-color: #ffffff !important;
+    border-bottom: 1px solid #e5e7eb !important;
+}
+
+/* Amélioration des cartes et conteneurs */
+.fi-section {
+    background-color: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* Amélioration des formulaires */
+.fi-fo-field {
+    margin-bottom: 1rem;
+}
+
+.fi-input {
+    background-color: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    color: #1f2937 !important;
+}
+
+.fi-input:focus {
+    border-color: #f59e0b !important;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1) !important;
+}
+
+/* Amélioration des boutons */
+.fi-btn-primary {
+    background-color: #f59e0b !important;
+    border-color: #f59e0b !important;
+    color: #ffffff !important;
+}
+
+.fi-btn-primary:hover {
+    background-color: #d97706 !important;
+    border-color: #d97706 !important;
+}
+
+/* Amélioration des tableaux */
+.fi-ta {
+    background-color: #ffffff !important;
+}
+
+.fi-ta-header {
+    background-color: #f9fafb !important;
+    border-bottom: 1px solid #e5e7eb !important;
+}
+
+.fi-ta-row {
+    border-bottom: 1px solid #f3f4f6 !important;
+}
+
+.fi-ta-row:hover {
+    background-color: #f9fafb !important;
+}
+
+/* Navigation */
+.fi-sidebar-nav-item {
+    color: #6b7280 !important;
+}
+
+.fi-sidebar-nav-item:hover {
+    background-color: #f3f4f6 !important;
+    color: #1f2937 !important;
+}
+
+.fi-sidebar-nav-item.active {
+    background-color: #fef3c7 !important;
+    color: #92400e !important;
+}
+
+/* Stats et widgets */
+.fi-wi-stats-overview-card {
+    background-color: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+} 

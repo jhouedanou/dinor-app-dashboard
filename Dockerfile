@@ -20,6 +20,7 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libzip-dev \
     libicu-dev \
+    libpq-dev \
     supervisor \
     nginx
 
@@ -27,7 +28,7 @@ RUN apt-get update && apt-get install -y \
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl
+RUN docker-php-ext-install pdo_mysql pdo_pgsql mbstring exif pcntl bcmath gd zip intl
 
 # Install Redis extension
 RUN pecl install redis && docker-php-ext-enable redis
@@ -72,46 +73,15 @@ RUN chmod -R 775 /var/www/html/bootstrap/cache
 # Install dependencies (force environment variables for cache during build)
 ENV CACHE_DRIVER=file
 ENV SESSION_DRIVER=file
-RUN composer install --optimize-autoloader --no-dev
+ENV APP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+RUN composer install --optimize-autoloader --no-dev --no-scripts
 
-# Generate application key first (needed for caching)
-RUN php artisan key:generate --force
-
-# Clear any existing cache and generate new cache
-RUN php artisan config:clear
-RUN php artisan config:cache
-RUN php artisan route:cache
-RUN php artisan view:cache
+# Skip artisan commands during build
+# They will be run in the entrypoint script when containers are started
 
 # Create entrypoint script
 RUN echo '#!/bin/bash\n\
-# Wait for database to be ready\n\
-echo "Waiting for database..."\n\
-until php artisan migrate:status 2>/dev/null; do\n\
-    echo "Database not ready yet, waiting..."\n\
-    sleep 2\n\
-done\n\
-\n\
-# Switch back to Redis for production\n\
-sed -i "s/CACHE_DRIVER=file/CACHE_DRIVER=redis/" /var/www/html/.env\n\
-sed -i "s/SESSION_DRIVER=file/SESSION_DRIVER=redis/" /var/www/html/.env\n\
-\n\
-# Run migrations\n\
-echo "Running migrations..."\n\
-php artisan migrate --force\n\
-\n\
-# Seed database if not already seeded\n\
-echo "Seeding database..."\n\
-php artisan db:seed --force\n\
-\n\
-# Create storage link\n\
-php artisan storage:link\n\
-\n\
-# Clear and cache config\n\
-php artisan config:clear\n\
-php artisan config:cache\n\
-\n\
-# Start supervisor\n\
+# Start supervisor directly\n\
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf' > /usr/local/bin/entrypoint.sh
 
 RUN chmod +x /usr/local/bin/entrypoint.sh

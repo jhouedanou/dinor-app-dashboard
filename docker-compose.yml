@@ -11,7 +11,9 @@ services:
     working_dir: /var/www/html
     volumes:
       - ./:/var/www/html
+      - /var/www/html/vendor
       - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+      - ./storage:/var/www/html/storage
     networks:
       - dinor-network
     depends_on:
@@ -20,21 +22,35 @@ services:
     ports:
       - "8000:80"
 
+  # PostgreSQL Database (compatible Supabase)
   db:
-    image: mysql:8.0
-    container_name: dinor-db
+    image: postgres:15
+    container_name: dinor-postgres
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: dinor_dashboard
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_PASSWORD: password
-      MYSQL_USER: dinor
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
     volumes:
-      - dinor-db-data:/var/lib/mysql
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
-      - "3306:3306"
+      - "5432:5432"
     networks:
       - dinor-network
+
+  # Adminer pour gérer PostgreSQL
+  adminer:
+    image: adminer:4
+    container_name: dinor-adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    networks:
+      - dinor-network
+    depends_on:
+      - db
 
   redis:
     image: redis:7-alpine
@@ -45,26 +61,10 @@ services:
     networks:
       - dinor-network
 
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    container_name: dinor-phpmyadmin
-    restart: unless-stopped
-    environment:
-      PMA_HOST: db
-      PMA_PORT: 3306
-      PMA_USER: dinor
-      PMA_PASSWORD: password
-    ports:
-      - "8080:80"
-    networks:
-      - dinor-network
-    depends_on:
-      - db
-
 networks:
   dinor-network:
     driver: bridge
 
 volumes:
-  dinor-db-data:
-    driver: local 
+  postgres_data:
+    driver: local

@@ -242,30 +242,6 @@ class Recipe extends Model
     }
 
     /**
-     * Get all likes for this recipe
-     */
-    public function likes()
-    {
-        return $this->morphMany(Like::class, 'likeable');
-    }
-
-    /**
-     * Get all comments for this recipe
-     */
-    public function comments()
-    {
-        return $this->morphMany(Comment::class, 'commentable');
-    }
-
-    /**
-     * Get approved comments only
-     */
-    public function approvedComments()
-    {
-        return $this->morphMany(Comment::class, 'commentable')->approved();
-    }
-
-    /**
      * Get current likes count
      */
     public function getCurrentLikesCountAttribute(): int
