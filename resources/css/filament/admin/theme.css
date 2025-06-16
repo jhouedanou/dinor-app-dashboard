@@ -38,30 +38,50 @@
     --carmine: #9B1515;
 }
 
-/* Configuration du mode light par défaut */
-html {
-    color-scheme: light;
+/* ===== DARK MODE SUPPORT ===== */
+
+/* Corps de l'application - Dark Mode */
+.dark .fi-body {
+    background-color: #0f172a !important;
+    color: #e2e8f0 !important;
 }
 
-.dark {
-    color-scheme: light !important;
-}
-
-/* Personnalisations du thème avec la nouvelle palette */
-
-/* Corps de l'application */
 .fi-body {
     background-color: var(--white) !important;
     color: #1f2937 !important;
 }
 
-/* Sidebar avec la couleur dark-goldenrod */
+/* ===== SIDEBAR ===== */
+
+/* Sidebar Dark Mode */
+.dark .fi-sidebar {
+    background-color: #1e293b !important;
+    border-right: 1px solid #334155 !important;
+}
+
+/* Sidebar Light Mode */
 .fi-sidebar {
-    background-color: #fefbf3 !important; /* primary-50 */
+    background-color: #fefbf3 !important;
     border-right: 1px solid var(--primary-200) !important;
 }
 
-/* Navigation active avec les couleurs principales */
+/* Navigation Items - Dark Mode */
+.dark .fi-sidebar-nav-item {
+    color: #cbd5e1 !important;
+}
+
+.dark .fi-sidebar-nav-item:hover {
+    background-color: #334155 !important;
+    color: var(--dark-goldenrod) !important;
+}
+
+.dark .fi-sidebar-nav-item.fi-active {
+    background-color: #1e40af !important;
+    color: var(--dark-goldenrod) !important;
+    border-left: 3px solid var(--dark-goldenrod) !important;
+}
+
+/* Navigation Items - Light Mode */
 .fi-sidebar-nav-item.fi-active {
     background-color: var(--primary-100) !important;
     color: var(--dark-goldenrod) !important;
@@ -73,11 +93,21 @@ html {
     color: var(--dark-goldenrod) !important;
 }
 
-/* Topbar */
+/* ===== TOPBAR ===== */
+
+/* Topbar Dark Mode */
+.dark .fi-topbar {
+    background-color: #1e293b !important;
+    border-bottom: 1px solid #334155 !important;
+}
+
+/* Topbar Light Mode */
 .fi-topbar {
     background-color: var(--white) !important;
     border-bottom: 1px solid var(--primary-200) !important;
 }
+
+/* ===== BOUTONS ===== */
 
 /* Boutons primaires avec dark-goldenrod */
 .fi-btn-primary {
@@ -115,7 +145,8 @@ html {
     border-color: var(--cornell-red) !important;
 }
 
-/* Liens et éléments interactifs */
+/* ===== LIENS ET ÉLÉMENTS INTERACTIFS ===== */
+
 .fi-link {
     color: var(--dark-goldenrod) !important;
 }
@@ -124,18 +155,40 @@ html {
     color: var(--primary-700) !important;
 }
 
-/* Badges et indicateurs */
-.fi-badge-primary {
-    background-color: var(--dark-goldenrod) !important;
-    color: var(--white) !important;
+.dark .fi-link {
+    color: var(--dark-goldenrod) !important;
 }
 
-.fi-badge-danger {
-    background-color: var(--vermilion) !important;
-    color: var(--white) !important;
+.dark .fi-link:hover {
+    color: #fbbf24 !important;
 }
 
-/* Champs de formulaire avec focus sur dark-goldenrod */
+/* ===== FORMULAIRES ===== */
+
+/* Dark Mode Forms */
+.dark .fi-input {
+    background-color: #334155 !important;
+    border: 1px solid #475569 !important;
+    color: #e2e8f0 !important;
+}
+
+.dark .fi-input:focus {
+    border-color: var(--dark-goldenrod) !important;
+    box-shadow: 0 0 0 3px rgba(159, 124, 32, 0.2) !important;
+}
+
+.dark .fi-select {
+    background-color: #334155 !important;
+    border: 1px solid #475569 !important;
+    color: #e2e8f0 !important;
+}
+
+.dark .fi-select:focus {
+    border-color: var(--dark-goldenrod) !important;
+    box-shadow: 0 0 0 3px rgba(159, 124, 32, 0.2) !important;
+}
+
+/* Light Mode Forms */
 .fi-input:focus {
     border-color: var(--dark-goldenrod) !important;
     box-shadow: 0 0 0 3px rgba(159, 124, 32, 0.1) !important;
@@ -146,7 +199,27 @@ html {
     box-shadow: 0 0 0 3px rgba(159, 124, 32, 0.1) !important;
 }
 
-/* Tableaux */
+/* ===== TABLEAUX ===== */
+
+/* Dark Mode Tables */
+.dark .fi-ta {
+    background-color: #1e293b !important;
+}
+
+.dark .fi-ta-header {
+    background-color: #334155 !important;
+    border-bottom: 1px solid #475569 !important;
+}
+
+.dark .fi-ta-row {
+    border-bottom: 1px solid #334155 !important;
+}
+
+.dark .fi-ta-row:hover {
+    background-color: #334155 !important;
+}
+
+/* Light Mode Tables */
 .fi-ta-header {
     background-color: var(--primary-50) !important;
     border-bottom: 1px solid var(--primary-200) !important;
@@ -156,16 +229,31 @@ html {
     background-color: var(--primary-25) !important;
 }
 
-/* Actions de table */
-.fi-ta-actions .fi-btn-primary {
-    background-color: var(--dark-goldenrod) !important;
+/* ===== CARTES ET SECTIONS ===== */
+
+/* Dark Mode Cards */
+.dark .fi-section {
+    background-color: #1e293b !important;
+    border: 1px solid #334155 !important;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
 }
 
-.fi-ta-actions .fi-btn-danger {
-    background-color: var(--vermilion) !important;
+.dark .fi-wi-stats-overview-card {
+    background-color: #1e293b !important;
+    border: 1px solid #334155 !important;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
 }
 
-/* Stats et widgets */
+/* Light Mode Cards */
+.fi-section {
+    background-color: var(--white) !important;
+    border: 1px solid var(--primary-100) !important;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px 0 rgba(159, 124, 32, 0.05);
+}
+
 .fi-wi-stats-overview-card {
     background-color: var(--white) !important;
     border: 1px solid var(--primary-200) !important;
@@ -173,7 +261,34 @@ html {
     box-shadow: 0 1px 3px 0 rgba(159, 124, 32, 0.1);
 }
 
-/* Notifications */
+/* ===== BADGES ET INDICATEURS ===== */
+
+.fi-badge-primary {
+    background-color: var(--dark-goldenrod) !important;
+    color: var(--white) !important;
+}
+
+.fi-badge-danger {
+    background-color: var(--vermilion) !important;
+    color: var(--white) !important;
+}
+
+/* ===== NOTIFICATIONS ===== */
+
+/* Dark Mode Notifications */
+.dark .fi-no-success {
+    background-color: #1e3a2e !important;
+    border-color: var(--dark-goldenrod) !important;
+    color: #90ee90 !important;
+}
+
+.dark .fi-no-danger {
+    background-color: #3a1e1e !important;
+    border-color: var(--vermilion) !important;
+    color: #ffb3b3 !important;
+}
+
+/* Light Mode Notifications */
 .fi-no-success {
     background-color: var(--primary-50) !important;
     border-color: var(--dark-goldenrod) !important;
@@ -186,11 +301,19 @@ html {
     color: var(--secondary-900) !important;
 }
 
-/* Tabs */
+/* ===== TABS ===== */
+
 .fi-tabs-tab.fi-active {
     border-bottom-color: var(--dark-goldenrod) !important;
     color: var(--dark-goldenrod) !important;
 }
+
+.dark .fi-tabs-tab.fi-active {
+    border-bottom-color: var(--dark-goldenrod) !important;
+    color: var(--dark-goldenrod) !important;
+}
+
+/* ===== ÉLÉMENTS DE CONTRÔLE ===== */
 
 /* Progress bars */
 .fi-progress-bar {
@@ -208,10 +331,31 @@ html {
     border-color: var(--dark-goldenrod) !important;
 }
 
-/* Amélioration de l'accessibilité */
-.fi-section {
-    background-color: var(--white) !important;
-    border: 1px solid var(--primary-100) !important;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px 0 rgba(159, 124, 32, 0.05);
+/* ===== MODAL ET OVERLAY ===== */
+
+.dark .fi-modal {
+    background-color: #1e293b !important;
+}
+
+.dark .fi-modal-content {
+    background-color: #1e293b !important;
+    border: 1px solid #334155 !important;
+}
+
+/* ===== AMÉLIORATION DE LA LISIBILITÉ ===== */
+
+.dark .fi-header-heading {
+    color: #f1f5f9 !important;
+}
+
+.dark .fi-body .text-gray-500 {
+    color: #94a3b8 !important;
+}
+
+.dark .fi-body .text-gray-700 {
+    color: #cbd5e1 !important;
+}
+
+.dark .fi-body .text-gray-900 {
+    color: #f1f5f9 !important;
 } 
