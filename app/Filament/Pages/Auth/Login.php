@@ -40,7 +40,7 @@ class Login extends BaseLogin
 
     protected function getAuthGuard(): string
     {
-        return 'admin';
+        return 'web';
     }
 
     protected function getCredentialsFromFormData(array $data): array

@@ -81,6 +81,11 @@ if check_container "dinor-app"; then
     echo "🎨 Génération des assets Filament..."
     exec_in_container "dinor-app" "php artisan filament:assets"
     
+    echo "🔧 Application des corrections CSS..."
+    exec_in_container "dinor-app" "php artisan cache:clear"
+    exec_in_container "dinor-app" "php artisan config:clear"
+    exec_in_container "dinor-app" "php artisan view:clear"
+    
     echo "📦 Installation de Node.js..."
     exec_in_container "dinor-app" "curl -fsSL https://deb.nodesource.com/setup_18.x | bash -"
     exec_in_container "dinor-app" "apt-get install -y nodejs"

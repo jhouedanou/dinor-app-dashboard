@@ -2,7 +2,43 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
-/* Configuration du mode light par défaut pour Filament */
+/* Palette de couleurs personnalisée Dinor */
+:root {
+    /* Couleurs principales basées sur votre palette */
+    --primary-50: #fefbf3;
+    --primary-100: #fdf3e1;
+    --primary-200: #fae4c2;
+    --primary-300: #f5ce98;
+    --primary-400: #efb26c;
+    --primary-500: #9F7C20;
+    --primary-600: #8d6b1c;
+    --primary-700: #7a5b18;
+    --primary-800: #664b14;
+    --primary-900: #523c10;
+    --primary-950: #2f2208;
+
+    /* Couleurs secondaires (rouge Cornell/Vermilion) */
+    --secondary-50: #fef2f2;
+    --secondary-100: #fee2e2;
+    --secondary-200: #fecaca;
+    --secondary-300: #fca5a5;
+    --secondary-400: #f87171;
+    --secondary-500: #E33734;
+    --secondary-600: #AD1311;
+    --secondary-700: #9B1515;
+    --secondary-800: #7f1d1d;
+    --secondary-900: #701a1a;
+    --secondary-950: #450a0a;
+
+    /* Variables CSS personnalisées */
+    --dark-goldenrod: #9F7C20;
+    --cornell-red: #AD1311;
+    --white: #FFFFFF;
+    --vermilion: #E33734;
+    --carmine: #9B1515;
+}
+
+/* Configuration du mode light par défaut */
 html {
     color-scheme: light;
 }
@@ -11,110 +47,171 @@ html {
     color-scheme: light !important;
 }
 
-/* Personnalisations du thème Dinor */
-:root {
-    --primary-50: #fffbeb;
-    --primary-100: #fef3c7;
-    --primary-200: #fde68a;
-    --primary-300: #fcd34d;
-    --primary-400: #fbbf24;
-    --primary-500: #f59e0b;
-    --primary-600: #d97706;
-    --primary-700: #b45309;
-    --primary-800: #92400e;
-    --primary-900: #78350f;
-}
+/* Personnalisations du thème avec la nouvelle palette */
 
-/* Force le mode light */
+/* Corps de l'application */
 .fi-body {
-    background-color: #ffffff !important;
+    background-color: var(--white) !important;
     color: #1f2937 !important;
 }
 
-/* Amélioration de la mise en forme */
+/* Sidebar avec la couleur dark-goldenrod */
 .fi-sidebar {
-    background-color: #f9fafb !important;
-    border-right: 1px solid #e5e7eb !important;
+    background-color: #fefbf3 !important; /* primary-50 */
+    border-right: 1px solid var(--primary-200) !important;
 }
 
-.fi-topbar {
-    background-color: #ffffff !important;
-    border-bottom: 1px solid #e5e7eb !important;
-}
-
-/* Amélioration des cartes et conteneurs */
-.fi-section {
-    background-color: #ffffff !important;
-    border: 1px solid #e5e7eb !important;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-}
-
-/* Amélioration des formulaires */
-.fi-fo-field {
-    margin-bottom: 1rem;
-}
-
-.fi-input {
-    background-color: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    color: #1f2937 !important;
-}
-
-.fi-input:focus {
-    border-color: #f59e0b !important;
-    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1) !important;
-}
-
-/* Amélioration des boutons */
-.fi-btn-primary {
-    background-color: #f59e0b !important;
-    border-color: #f59e0b !important;
-    color: #ffffff !important;
-}
-
-.fi-btn-primary:hover {
-    background-color: #d97706 !important;
-    border-color: #d97706 !important;
-}
-
-/* Amélioration des tableaux */
-.fi-ta {
-    background-color: #ffffff !important;
-}
-
-.fi-ta-header {
-    background-color: #f9fafb !important;
-    border-bottom: 1px solid #e5e7eb !important;
-}
-
-.fi-ta-row {
-    border-bottom: 1px solid #f3f4f6 !important;
-}
-
-.fi-ta-row:hover {
-    background-color: #f9fafb !important;
-}
-
-/* Navigation */
-.fi-sidebar-nav-item {
-    color: #6b7280 !important;
+/* Navigation active avec les couleurs principales */
+.fi-sidebar-nav-item.fi-active {
+    background-color: var(--primary-100) !important;
+    color: var(--dark-goldenrod) !important;
+    border-left: 3px solid var(--dark-goldenrod) !important;
 }
 
 .fi-sidebar-nav-item:hover {
-    background-color: #f3f4f6 !important;
-    color: #1f2937 !important;
+    background-color: var(--primary-50) !important;
+    color: var(--dark-goldenrod) !important;
 }
 
-.fi-sidebar-nav-item.active {
-    background-color: #fef3c7 !important;
-    color: #92400e !important;
+/* Topbar */
+.fi-topbar {
+    background-color: var(--white) !important;
+    border-bottom: 1px solid var(--primary-200) !important;
+}
+
+/* Boutons primaires avec dark-goldenrod */
+.fi-btn-primary {
+    background-color: var(--dark-goldenrod) !important;
+    border-color: var(--dark-goldenrod) !important;
+    color: var(--white) !important;
+}
+
+.fi-btn-primary:hover {
+    background-color: var(--primary-700) !important;
+    border-color: var(--primary-700) !important;
+}
+
+/* Boutons secondaires avec vermilion */
+.fi-btn-secondary {
+    background-color: var(--vermilion) !important;
+    border-color: var(--vermilion) !important;
+    color: var(--white) !important;
+}
+
+.fi-btn-secondary:hover {
+    background-color: var(--carmine) !important;
+    border-color: var(--carmine) !important;
+}
+
+/* Boutons de danger avec carmine */
+.fi-btn-danger {
+    background-color: var(--carmine) !important;
+    border-color: var(--carmine) !important;
+    color: var(--white) !important;
+}
+
+.fi-btn-danger:hover {
+    background-color: var(--cornell-red) !important;
+    border-color: var(--cornell-red) !important;
+}
+
+/* Liens et éléments interactifs */
+.fi-link {
+    color: var(--dark-goldenrod) !important;
+}
+
+.fi-link:hover {
+    color: var(--primary-700) !important;
+}
+
+/* Badges et indicateurs */
+.fi-badge-primary {
+    background-color: var(--dark-goldenrod) !important;
+    color: var(--white) !important;
+}
+
+.fi-badge-danger {
+    background-color: var(--vermilion) !important;
+    color: var(--white) !important;
+}
+
+/* Champs de formulaire avec focus sur dark-goldenrod */
+.fi-input:focus {
+    border-color: var(--dark-goldenrod) !important;
+    box-shadow: 0 0 0 3px rgba(159, 124, 32, 0.1) !important;
+}
+
+.fi-select:focus {
+    border-color: var(--dark-goldenrod) !important;
+    box-shadow: 0 0 0 3px rgba(159, 124, 32, 0.1) !important;
+}
+
+/* Tableaux */
+.fi-ta-header {
+    background-color: var(--primary-50) !important;
+    border-bottom: 1px solid var(--primary-200) !important;
+}
+
+.fi-ta-row:hover {
+    background-color: var(--primary-25) !important;
+}
+
+/* Actions de table */
+.fi-ta-actions .fi-btn-primary {
+    background-color: var(--dark-goldenrod) !important;
+}
+
+.fi-ta-actions .fi-btn-danger {
+    background-color: var(--vermilion) !important;
 }
 
 /* Stats et widgets */
 .fi-wi-stats-overview-card {
-    background-color: #ffffff !important;
-    border: 1px solid #e5e7eb !important;
+    background-color: var(--white) !important;
+    border: 1px solid var(--primary-200) !important;
     border-radius: 0.5rem;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px 0 rgba(159, 124, 32, 0.1);
+}
+
+/* Notifications */
+.fi-no-success {
+    background-color: var(--primary-50) !important;
+    border-color: var(--dark-goldenrod) !important;
+    color: var(--primary-900) !important;
+}
+
+.fi-no-danger {
+    background-color: var(--secondary-50) !important;
+    border-color: var(--vermilion) !important;
+    color: var(--secondary-900) !important;
+}
+
+/* Tabs */
+.fi-tabs-tab.fi-active {
+    border-bottom-color: var(--dark-goldenrod) !important;
+    color: var(--dark-goldenrod) !important;
+}
+
+/* Progress bars */
+.fi-progress-bar {
+    background-color: var(--dark-goldenrod) !important;
+}
+
+/* Checkboxes et radios */
+.fi-checkbox:checked {
+    background-color: var(--dark-goldenrod) !important;
+    border-color: var(--dark-goldenrod) !important;
+}
+
+.fi-radio:checked {
+    background-color: var(--dark-goldenrod) !important;
+    border-color: var(--dark-goldenrod) !important;
+}
+
+/* Amélioration de l'accessibilité */
+.fi-section {
+    background-color: var(--white) !important;
+    border: 1px solid var(--primary-100) !important;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px 0 rgba(159, 124, 32, 0.05);
 } 

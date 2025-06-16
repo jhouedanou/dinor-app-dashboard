@@ -29,32 +29,7 @@ class AdminPanelProvider extends PanelProvider
             ->login(\App\Filament\Pages\Auth\Login::class)
             ->authGuard('web')
             ->colors([
-                'primary' => [
-                    50 => '#fefbf3',
-                    100 => '#fdf3e1',
-                    200 => '#fae4c2',
-                    300 => '#f5ce98',
-                    400 => '#efb26c',
-                    500 => '#9F7C20',
-                    600 => '#8d6b1c',
-                    700 => '#7a5b18',
-                    800 => '#664b14',
-                    900 => '#523c10',
-                    950 => '#2f2208',
-                ],
-                'danger' => [
-                    50 => '#fef2f2',
-                    100 => '#fee2e2',
-                    200 => '#fecaca',
-                    300 => '#fca5a5',
-                    400 => '#f87171',
-                    500 => '#E33734',
-                    600 => '#AD1311',
-                    700 => '#9B1515',
-                    800 => '#7f1d1d',
-                    900 => '#701a1a',
-                    950 => '#450a0a',
-                ],
+                'primary' => Color::Amber,
             ])
             ->spa()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
@@ -86,7 +61,7 @@ class AdminPanelProvider extends PanelProvider
                 'Interactions',
                 'Gestion',
             ])
-            ->databaseNotifications()
-            ->viteTheme('resources/css/filament/admin/theme.css');
+            ->databaseNotifications();
+            // CSS par défaut de Filament - pas de thème personnalisé
     }
 } 
