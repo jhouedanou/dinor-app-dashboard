@@ -12,6 +12,7 @@ services:
     volumes:
       - ./:/var/www/html
       - /var/www/html/vendor
+      - /var/www/html/node_modules
       - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
       - ./storage:/var/www/html/storage
     networks:
@@ -21,6 +22,7 @@ services:
       - redis
     ports:
       - "8000:80"
+      - "5173:5173"
 
   # PostgreSQL Database (compatible Supabase)
   db:

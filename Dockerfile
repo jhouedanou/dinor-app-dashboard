@@ -22,7 +22,13 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     libpq-dev \
     supervisor \
-    nginx
+    nginx \
+    gnupg \
+    apt-transport-https
+
+# Install Node.js 20.x
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs
 
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -64,6 +70,9 @@ RUN mkdir -p /var/www/html/storage/framework/sessions
 RUN mkdir -p /var/www/html/storage/framework/views
 RUN mkdir -p /var/www/html/bootstrap/cache
 
+# Create log directories for supervisor
+RUN mkdir -p /var/log/supervisor
+
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html
 RUN chmod -R 755 /var/www/html
@@ -74,14 +83,17 @@ RUN chmod -R 775 /var/www/html/bootstrap/cache
 ENV CACHE_DRIVER=file
 ENV SESSION_DRIVER=file
 ENV APP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
-RUN composer install --optimize-autoloader --no-dev --no-scripts
+RUN composer install --optimize-autoloader --no-scripts
 
-# Skip artisan commands during build
-# They will be run in the entrypoint script when containers are started
+# Install npm dependencies
+RUN npm install
+
+# Build assets initially (can be overridden in dev mode)
+RUN npm run build
 
 # Create entrypoint script
 RUN echo '#!/bin/bash\n\
-# Start supervisor directly\n\
+# Start supervisor with all services (nginx, php-fpm, and vite)\n\
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf' > /usr/local/bin/entrypoint.sh
 
 RUN chmod +x /usr/local/bin/entrypoint.sh

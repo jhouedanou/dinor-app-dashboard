@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Public - Dinor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link href="https://cdn.jsdelivr.net/npm/@heroicons/react@2.0.18/24/outline/index.css" rel="stylesheet">
+    <style>
+        [x-cloak] { display: none !important; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .tab-button.active { 
+            @apply border-blue-500 text-blue-600 bg-blue-50;
+        }
+        .loading {
+            @apply animate-pulse;
+        }
+    </style>
+</head>
+<body class="bg-gray-50" x-data="dashboardApp()">
+    <div class="min-h-screen">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center py-4">
+                    <div class="flex items-center">
+                        <h1 class="text-2xl font-bold text-gray-900">Dashboard Dinor</h1>
+                    </div>
+                    <div class="text-sm text-gray-500">
+                        <span x-text="new Date().toLocaleDateString('fr-FR')"></span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Statistiques générales -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center">
+                        <div class="p-2 bg-green-100 rounded-lg">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500">Recettes</p>
+                            <p class="text-2xl font-semibold text-gray-900" x-text="stats.recipes || '...'"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center">
+                        <div class="p-2 bg-blue-100 rounded-lg">
+                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500">Événements</p>
+                            <p class="text-2xl font-semibold text-gray-900" x-text="stats.events || '...'"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center">
+                        <div class="p-2 bg-yellow-100 rounded-lg">
+                            <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500">Pages</p>
+                            <p class="text-2xl font-semibold text-gray-900" x-text="stats.pages || '...'"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center">
+                        <div class="p-2 bg-purple-100 rounded-lg">
+                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500">Médias</p>
+                            <p class="text-2xl font-semibold text-gray-900" x-text="stats.media || '...'"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation par onglets -->
+            <div class="bg-white rounded-lg shadow">
+                <div class="border-b border-gray-200">
+                    <nav class="-mb-px flex space-x-8 px-6">
+                        <button @click="activeTab = 'recipes'" 
+                                :class="activeTab === 'recipes' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
+                            Recettes
+                        </button>
+                        <button @click="activeTab = 'events'" 
+                                :class="activeTab === 'events' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
+                            Événements
+                        </button>
+                        <button @click="activeTab = 'pages'" 
+                                :class="activeTab === 'pages' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
+                            Pages
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- Contenu des onglets -->
+                <div class="p-6">
+                    <!-- Onglet Recettes -->
+                    <div x-show="activeTab === 'recipes'" x-cloak>
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-lg font-semibold text-gray-900">Recettes récentes</h2>
+                            <div class="flex space-x-2">
+                                <input type="text" 
+                                       x-model="searchTerms.recipes"
+                                       @input.debounce.300ms="searchRecipes()"
+                                       placeholder="Rechercher des recettes..."
+                                       class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+                                <select x-model="filters.recipeCategory" @change="loadRecipes()" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+                                    <option value="">Toutes les catégories</option>
+                                    <template x-for="category in categories" :key="category.id">
+                                        <option :value="category.id" x-text="category.name"></option>
+                                    </template>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div x-show="loading.recipes" class="text-center py-8">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                            <p class="mt-2 text-gray-500">Chargement des recettes...</p>
+                        </div>
+
+                        <div x-show="!loading.recipes" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <template x-for="recipe in recipes" :key="recipe.id">
+                                <div class="bg-gray-50 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <h3 class="font-semibold text-gray-900" x-text="recipe.title"></h3>
+                                        <span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full" x-text="recipe.difficulty"></span>
+                                    </div>
+                                    <p class="text-sm text-gray-600 mb-3" x-text="recipe.description ? recipe.description.substring(0, 100) + '...' : ''"></p>
+                                    <div class="flex justify-between items-center text-xs text-gray-500">
+                                        <span x-text="recipe.category ? recipe.category.name : 'Sans catégorie'"></span>
+                                        <span x-text="new Date(recipe.created_at).toLocaleDateString('fr-FR')"></span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+
+                        <div x-show="!loading.recipes && recipes.length === 0" class="text-center py-8">
+                            <p class="text-gray-500">Aucune recette trouvée.</p>
+                        </div>
+                    </div>
+
+                    <!-- Onglet Événements -->
+                    <div x-show="activeTab === 'events'" x-cloak>
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-lg font-semibold text-gray-900">Événements à venir</h2>
+                            <div class="flex space-x-2">
+                                <input type="text" 
+                                       x-model="searchTerms.events"
+                                       @input.debounce.300ms="searchEvents()"
+                                       placeholder="Rechercher des événements..."
+                                       class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+                                <select x-model="filters.eventType" @change="loadEvents()" class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+                                    <option value="">Tous les événements</option>
+                                    <option value="upcoming">À venir</option>
+                                    <option value="featured">En vedette</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div x-show="loading.events" class="text-center py-8">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                            <p class="mt-2 text-gray-500">Chargement des événements...</p>
+                        </div>
+
+                        <div x-show="!loading.events" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <template x-for="event in events" :key="event.id">
+                                <div class="bg-gray-50 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <h3 class="font-semibold text-gray-900" x-text="event.title"></h3>
+                                        <span class="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full" x-text="event.type"></span>
+                                    </div>
+                                    <p class="text-sm text-gray-600 mb-3" x-text="event.description ? event.description.substring(0, 100) + '...' : ''"></p>
+                                    <div class="space-y-1 text-xs text-gray-500">
+                                        <div class="flex items-center">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                            <span x-text="new Date(event.start_date).toLocaleDateString('fr-FR')"></span>
+                                        </div>
+                                        <div class="flex items-center" x-show="event.location">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            </svg>
+                                            <span x-text="event.location"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+
+                        <div x-show="!loading.events && events.length === 0" class="text-center py-8">
+                            <p class="text-gray-500">Aucun événement trouvé.</p>
+                        </div>
+                    </div>
+
+                    <!-- Onglet Pages -->
+                    <div x-show="activeTab === 'pages'" x-cloak>
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-lg font-semibold text-gray-900">Pages publiées</h2>
+                            <div class="flex space-x-2">
+                                <input type="text" 
+                                       x-model="searchTerms.pages"
+                                       @input.debounce.300ms="searchPages()"
+                                       placeholder="Rechercher des pages..."
+                                       class="px-3 py-2 border border-gray-300 rounded-md text-sm">
+                            </div>
+                        </div>
+                        
+                        <div x-show="loading.pages" class="text-center py-8">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                            <p class="mt-2 text-gray-500">Chargement des pages...</p>
+                        </div>
+
+                        <div x-show="!loading.pages" class="space-y-4">
+                            <template x-for="page in pages" :key="page.id">
+                                <div class="bg-gray-50 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <h3 class="font-semibold text-gray-900" x-text="page.title"></h3>
+                                            <p class="text-sm text-gray-600 mt-1" x-text="page.content ? page.content.substring(0, 150) + '...' : ''"></p>
+                                            <div class="flex items-center mt-2 text-xs text-gray-500">
+                                                <span x-text="'/' + page.slug"></span>
+                                                <span class="mx-2">•</span>
+                                                <span x-text="new Date(page.updated_at).toLocaleDateString('fr-FR')"></span>
+                                            </div>
+                                        </div>
+                                        <span x-show="page.is_homepage" class="text-xs px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">
+                                            Accueil
+                                        </span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+
+                        <div x-show="!loading.pages && pages.length === 0" class="text-center py-8">
+                            <p class="text-gray-500">Aucune page trouvée.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function dashboardApp() {
+            return {
+                activeTab: 'recipes',
+                loading: {
+                    recipes: false,
+                    events: false,
+                    pages: false
+                },
+                stats: {
+                    recipes: 0,
+                    events: 0,
+                    pages: 0,
+                    media: 0
+                },
+                recipes: [],
+                events: [],
+                pages: [],
+                categories: [],
+                searchTerms: {
+                    recipes: '',
+                    events: '',
+                    pages: ''
+                },
+                filters: {
+                    recipeCategory: '',
+                    eventType: ''
+                },
+
+                async init() {
+                    await this.loadStats();
+                    await this.loadCategories();
+                    await this.loadRecipes();
+                    await this.loadEvents();
+                    await this.loadPages();
+                },
+
+                async loadStats() {
+                    try {
+                        // Simuler les statistiques basées sur les données récupérées
+                        this.stats.recipes = await this.getCount('/api/v1/recipes');
+                        this.stats.events = await this.getCount('/api/v1/events');
+                        this.stats.pages = await this.getCount('/api/v1/pages');
+                        this.stats.media = 0; // Pas d'endpoint pour les médias
+                    } catch (error) {
+                        console.error('Erreur lors du chargement des statistiques:', error);
+                    }
+                },
+
+                async getCount(endpoint) {
+                    try {
+                        const response = await fetch(endpoint + '?per_page=1');
+                        const data = await response.json();
+                        return data.pagination ? data.pagination.total : data.data.length;
+                    } catch (error) {
+                        return 0;
+                    }
+                },
+
+                async loadCategories() {
+                    try {
+                        const response = await fetch('/api/v1/recipes/categories/list');
+                        const data = await response.json();
+                        if (data.success) {
+                            this.categories = data.data;
+                        }
+                    } catch (error) {
+                        console.error('Erreur lors du chargement des catégories:', error);
+                    }
+                },
+
+                async loadRecipes() {
+                    this.loading.recipes = true;
+                    try {
+                        let url = '/api/v1/recipes?per_page=12';
+                        if (this.searchTerms.recipes) {
+                            url += `&search=${encodeURIComponent(this.searchTerms.recipes)}`;
+                        }
+                        if (this.filters.recipeCategory) {
+                            url += `&category_id=${this.filters.recipeCategory}`;
+                        }
+
+                        const response = await fetch(url);
+                        const data = await response.json();
+                        if (data.success) {
+                            this.recipes = data.data;
+                        }
+                    } catch (error) {
+                        console.error('Erreur lors du chargement des recettes:', error);
+                    } finally {
+                        this.loading.recipes = false;
+                    }
+                },
+
+                async loadEvents() {
+                    this.loading.events = true;
+                    try {
+                        let url = '/api/v1/events?per_page=10';
+                        if (this.searchTerms.events) {
+                            url += `&search=${encodeURIComponent(this.searchTerms.events)}`;
+                        }
+                        if (this.filters.eventType === 'upcoming') {
+                            url += '&upcoming=1';
+                        } else if (this.filters.eventType === 'featured') {
+                            url += '&featured=1';
+                        }
+
+                        const response = await fetch(url);
+                        const data = await response.json();
+                        if (data.success) {
+                            this.events = data.data;
+                        }
+                    } catch (error) {
+                        console.error('Erreur lors du chargement des événements:', error);
+                    } finally {
+                        this.loading.events = false;
+                    }
+                },
+
+                async loadPages() {
+                    this.loading.pages = true;
+                    try {
+                        let url = '/api/v1/pages?per_page=10';
+                        if (this.searchTerms.pages) {
+                            url += `&search=${encodeURIComponent(this.searchTerms.pages)}`;
+                        }
+
+                        const response = await fetch(url);
+                        const data = await response.json();
+                        if (data.success) {
+                            this.pages = data.data;
+                        }
+                    } catch (error) {
+                        console.error('Erreur lors du chargement des pages:', error);
+                    } finally {
+                        this.loading.pages = false;
+                    }
+                },
+
+                searchRecipes() {
+                    this.loadRecipes();
+                },
+
+                searchEvents() {
+                    this.loadEvents();
+                },
+
+                searchPages() {
+                    this.loadPages();
+                }
+            }
+        }
+    </script>
+</body>
+</html>

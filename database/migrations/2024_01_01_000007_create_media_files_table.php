@@ -49,8 +49,7 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
             
-            // Index pour optimiser les requêtes
-            $table->index(['model_type', 'model_id']);
+            // Index pour optimiser les requêtes (model_type, model_id est créé automatiquement par nullableMorphs)
             $table->index(['type', 'is_public']);
             $table->index(['collection_name']);
             $table->index(['mime_type']);
