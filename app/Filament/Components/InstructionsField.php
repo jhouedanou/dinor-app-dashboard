@@ -32,12 +32,15 @@ class InstructionsField extends Component
                     ])
                     ->columnSpanFull(),
             ])
-            ->itemLabel(function (array $state, int $index): ?string {
-                $stepNumber = $index + 1;
+            ->itemLabel(function ($state) {
+                if (!is_array($state) || !isset($state['step'])) {
+                    return 'Nouvelle étape';
+                }
+                
                 $content = strip_tags($state['step'] ?? '');
                 $preview = strlen($content) > 50 ? substr($content, 0, 50) . '...' : $content;
                 
-                return "Étape {$stepNumber}: {$preview}";
+                return $preview ?: 'Étape vide';
             })
             ->defaultItems(1)
             ->reorderable()

@@ -151,6 +151,21 @@ class IngredientsRepeater extends Component
                 TextInput::make('recommended_brand')
                     ->hidden(),
             ])
+            ->itemLabel(function ($state) {
+                if (!is_array($state)) {
+                    return 'Nouvel ingrédient';
+                }
+                
+                $name = $state['name'] ?? 'Ingrédient';
+                $quantity = $state['quantity'] ?? '';
+                $unit = $state['unit'] ?? '';
+                
+                if ($quantity && $unit) {
+                    return "{$quantity} {$unit} {$name}";
+                }
+                
+                return $name;
+            })
             ->defaultItems(1)
             ->reorderable()
             ->collapsible()
