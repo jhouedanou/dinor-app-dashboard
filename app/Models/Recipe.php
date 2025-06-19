@@ -27,6 +27,7 @@ class Recipe extends Model
         'meal_type',
         'diet_type',
         'category_id',
+        'subcategory',
         'featured_image',
         'gallery',
         'video_url',
@@ -191,39 +192,58 @@ class Recipe extends Model
 
     public function getDifficultyLabelAttribute()
     {
-        return match($this->difficulty) {
-            'easy' => 'Facile',
-            'medium' => 'Moyen',
-            'hard' => 'Difficile',
-            default => 'Non défini'
-        };
+        switch($this->difficulty) {
+            case 'easy':
+                return 'Facile';
+            case 'medium':
+                return 'Moyen';
+            case 'hard':
+                return 'Difficile';
+            default:
+                return 'Non défini';
+        }
     }
 
     public function getMealTypeLabelAttribute()
     {
-        return match($this->meal_type) {
-            'breakfast' => 'Petit déjeuner',
-            'lunch' => 'Déjeuner',
-            'dinner' => 'Dîner',
-            'snack' => 'Collation',
-            'dessert' => 'Dessert',
-            'aperitif' => 'Apéritif',
-            default => 'Non défini'
-        };
+        switch($this->meal_type) {
+            case 'breakfast':
+                return 'Petit déjeuner';
+            case 'lunch':
+                return 'Déjeuner';
+            case 'dinner':
+                return 'Dîner';
+            case 'snack':
+                return 'Collation';
+            case 'dessert':
+                return 'Dessert';
+            case 'aperitif':
+                return 'Apéritif';
+            default:
+                return 'Non défini';
+        }
     }
 
     public function getDietTypeLabelAttribute()
     {
-        return match($this->diet_type) {
-            'none' => 'Aucun régime spécial',
-            'vegetarian' => 'Végétarien',
-            'vegan' => 'Végétalien',
-            'gluten_free' => 'Sans gluten',
-            'dairy_free' => 'Sans lactose',
-            'keto' => 'Keto',
-            'paleo' => 'Paléo',
-            default => 'Non défini'
-        };
+        switch($this->diet_type) {
+            case 'none':
+                return 'Aucun régime spécial';
+            case 'vegetarian':
+                return 'Végétarien';
+            case 'vegan':
+                return 'Végétalien';
+            case 'gluten_free':
+                return 'Sans gluten';
+            case 'dairy_free':
+                return 'Sans lactose';
+            case 'keto':
+                return 'Keto';
+            case 'paleo':
+                return 'Paléo';
+            default:
+                return 'Non défini';
+        }
     }
 
     public function incrementViews()
@@ -244,7 +264,7 @@ class Recipe extends Model
     /**
      * Get current likes count
      */
-    public function getCurrentLikesCountAttribute(): int
+    public function getCurrentLikesCountAttribute()
     {
         return $this->likes()->count();
     }
@@ -252,7 +272,7 @@ class Recipe extends Model
     /**
      * Get approved comments count
      */
-    public function getApprovedCommentsCountAttribute(): int
+    public function getApprovedCommentsCountAttribute()
     {
         return $this->approvedComments()->count();
     }
@@ -260,7 +280,7 @@ class Recipe extends Model
     /**
      * Get average rating from comments
      */
-    public function getAverageRatingAttribute(): float
+    public function getAverageRatingAttribute()
     {
         return $this->approvedComments()->whereNotNull('rating')->avg('rating') ?: 0;
     }
@@ -268,7 +288,7 @@ class Recipe extends Model
     /**
      * Check if user has liked this recipe
      */
-    public function isLikedBy(string $userIdentifier): bool
+    public function isLikedBy($userIdentifier)
     {
         return Like::hasLiked($this, $userIdentifier);
     }

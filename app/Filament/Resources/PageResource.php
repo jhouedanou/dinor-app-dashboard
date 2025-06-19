@@ -67,7 +67,9 @@ class PageResource extends Resource
                         Forms\Components\FileUpload::make('featured_image')
                             ->label('Image mise en avant')
                             ->image()
+                            ->disk('public')
                             ->directory('pages')
+                            ->visibility('public')
                             ->maxSize(5120)
                             ->imageEditor(),
                     ])->columns(2),

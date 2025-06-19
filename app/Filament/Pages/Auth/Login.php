@@ -3,6 +3,7 @@
 namespace App\Filament\Pages\Auth;
 
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Form;
 use Filament\Pages\Auth\Login as BaseLogin;
 use Illuminate\Contracts\Support\Htmlable;
@@ -23,8 +24,9 @@ class Login extends BaseLogin
                 TextInput::make('password')
                     ->label(__('dinor.password'))
                     ->password()
+                    ->revealable()
                     ->required()
-                    ->extraInputAttributes(['tabindex' => 2]),
+                    ->extraInputAttributes(['tabindex' => 2])
             ]);
     }
 
@@ -40,7 +42,7 @@ class Login extends BaseLogin
 
     protected function getAuthGuard(): string
     {
-        return 'web';
+        return 'admin';
     }
 
     protected function getCredentialsFromFormData(array $data): array

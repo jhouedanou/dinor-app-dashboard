@@ -18,12 +18,14 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Créer un utilisateur admin par défaut
-        \App\Models\AdminUser::create([
-            'name' => 'Administrateur Dinor',
-            'email' => 'admin@dinor.app',
-            'password' => \Hash::make('Dinor2024!Admin'),
-            'is_active' => true,
-        ]);
+        \App\Models\AdminUser::firstOrCreate(
+            ['email' => 'admin@dinor.app'],
+            [
+                'name' => 'Administrateur Dinor',
+                'password' => \Hash::make('Dinor2024!Admin'),
+                'is_active' => true,
+            ]
+        );
 
         // Créer des catégories
         $categories = [
@@ -36,7 +38,7 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($categories as $categoryData) {
-            Category::create($categoryData);
+            Category::firstOrCreate(['slug' => $categoryData['slug']], $categoryData);
         }
 
         // Créer des recettes

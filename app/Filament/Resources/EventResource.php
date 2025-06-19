@@ -67,7 +67,9 @@ class EventResource extends Resource
                         Forms\Components\FileUpload::make('featured_image')
                             ->label('Image principale')
                             ->image()
+                            ->disk('public')
                             ->directory('events/featured')
+                            ->visibility('public')
                             ->maxSize(5120)
                             ->imageEditor()
                             ->imageEditorAspectRatios([
@@ -80,7 +82,9 @@ class EventResource extends Resource
                             ->label('Galerie d\'images')
                             ->image()
                             ->multiple()
+                            ->disk('public')
                             ->directory('events/gallery')
+                            ->visibility('public')
                             ->maxSize(3072)
                             ->maxFiles(20)
                             ->imageEditor()
@@ -97,7 +101,9 @@ class EventResource extends Resource
                         Forms\Components\FileUpload::make('promotional_video')
                             ->label('Vidéo promotionnelle')
                             ->acceptedFileTypes(['video/mp4', 'video/webm'])
-                            ->directory('events/videos'),
+                            ->disk('public')
+                            ->directory('events/videos')
+                            ->visibility('public'),
                     ])->columns(2),
 
                 Forms\Components\Section::make('Date et heure')

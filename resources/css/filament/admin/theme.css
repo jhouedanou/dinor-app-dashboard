@@ -38,6 +38,98 @@
     --carmine: #9B1515;
 }
 
+/* ===== PAGE DE CONNEXION ===== */
+
+/* Styles spécifiques pour la page de connexion */
+.fi-pa-login {
+    background: linear-gradient(135deg, var(--primary-50) 0%, var(--white) 100%) !important;
+}
+
+/* Bouton de connexion - Utilisation de la couleur rouge du thème */
+.fi-pa-login .fi-form-actions .fi-btn,
+.fi-pa-login button[type="submit"],
+.fi-pa-login .fi-btn.fi-btn-primary,
+button[form*="login"], 
+form[id*="login"] button[type="submit"],
+.fi-simple-page form button[type="submit"] {
+    background-color: var(--vermilion) !important;
+    border-color: var(--vermilion) !important;
+    color: var(--white) !important;
+    font-weight: 600 !important;
+    padding: 0.75rem 1.5rem !important;
+    border-radius: 0.5rem !important;
+    transition: all 0.2s ease-in-out !important;
+    width: 100%;
+    text-shadow: none !important;
+}
+
+.fi-pa-login .fi-form-actions .fi-btn:hover,
+.fi-pa-login button[type="submit"]:hover,
+.fi-pa-login .fi-btn.fi-btn-primary:hover,
+button[form*="login"]:hover,
+form[id*="login"] button[type="submit"]:hover,
+.fi-simple-page form button[type="submit"]:hover {
+    background-color: var(--carmine) !important;
+    border-color: var(--carmine) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(227, 55, 52, 0.3) !important;
+}
+
+.fi-pa-login .fi-form-actions .fi-btn:focus,
+.fi-pa-login button[type="submit"]:focus,
+.fi-pa-login .fi-btn.fi-btn-primary:focus,
+button[form*="login"]:focus,
+form[id*="login"] button[type="submit"]:focus,
+.fi-simple-page form button[type="submit"]:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(227, 55, 52, 0.3) !important;
+}
+
+/* Carte de connexion */
+.fi-pa-login .fi-card {
+    background-color: var(--white) !important;
+    border: 1px solid var(--primary-200) !important;
+    border-radius: 1rem !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Titre de la page de connexion */
+.fi-pa-login .fi-header-heading {
+    color: var(--dark-goldenrod) !important;
+    font-weight: 700 !important;
+    font-size: 1.875rem !important;
+}
+
+/* Champs de saisie sur la page de connexion */
+.fi-pa-login .fi-input-wrapper {
+    border: 2px solid var(--primary-200) !important;
+    border-radius: 0.5rem !important;
+    padding: 0.25rem 0.5rem !important; /* Ajustement du padding */
+    transition: all 0.2s ease-in-out !important;
+}
+
+.fi-pa-login .fi-input-wrapper:focus-within {
+    border-color: var(--dark-goldenrod) !important;
+    box-shadow: 0 0 0 3px rgba(159, 124, 32, 0.1) !important;
+}
+
+/* Bouton d'affichage du mot de passe */
+.fi-pa-login .fi-input-suffix {
+    color: var(--primary-500) !important;
+}
+
+.fi-pa-login .fi-input-suffix:hover {
+    color: var(--dark-goldenrod) !important;
+}
+
+/* Labels des champs */
+.fi-pa-login .fi-fo-field-wrp > div > label {
+    color: var(--primary-700) !important;
+    font-weight: 600 !important;
+    margin-bottom: 0.5rem !important;
+    display: inline-block;
+}
+
 /* ===== DARK MODE SUPPORT ===== */
 
 /* Corps de l'application - Dark Mode */

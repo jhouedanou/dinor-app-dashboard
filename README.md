@@ -1,6 +1,12 @@
 # Dinor Dashboard
 
 Dashboard Filament pour la gestion de contenu de l'application mobile Dinor avec API REST complète.
+NB : Codage assisté par IA. 
+
+Mais j'ai une bonne excuse : le développeur qui a codé le premier dashboard a quitté l'entreprise, suppprimé le runner gitlab, supprimé la base de données, suppprimé la base de code, retiré les accès...bref il était d'humeur jouasse ce jour là.
+
+Il a donc fallu tout refaire. Et c'est ce que j'ai fait.
+Comme quoi, il y a des gens qui ne savent pas faire leur job...heureusement que l'IA est là pour nous aider.
 
 ## 🌟 Nouvelles Fonctionnalités
 

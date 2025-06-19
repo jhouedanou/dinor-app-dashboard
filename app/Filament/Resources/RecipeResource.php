@@ -15,11 +15,30 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class RecipeResource extends Resource
 {
-    protected static ?string $model = Recipe::class;
-    protected static ?string $navigationIcon = 'heroicon-o-cake';
-    protected static ?string $navigationLabel = 'Recettes';
-    protected static ?string $navigationGroup = 'Contenu';
-    protected static ?int $navigationSort = 1;
+    /**
+     * @var string
+     */
+    protected static $model = Recipe::class;
+    
+    /**
+     * @var string
+     */
+    protected static $navigationIcon = 'heroicon-o-cake';
+    
+    /**
+     * @var string
+     */
+    protected static $navigationLabel = 'Recettes';
+    
+    /**
+     * @var string
+     */
+    protected static $navigationGroup = 'Contenu';
+    
+    /**
+     * @var int
+     */
+    protected static $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
@@ -31,22 +50,33 @@ class RecipeResource extends Resource
                             ->label('Titre')
                             ->required()
                             ->maxLength(255)
-                            ->live(onBlur: true)
-                            ->afterStateUpdated(fn (string $context, $state, callable $set) => 
-                                $context === 'create' ? $set('slug', \Str::slug($state)) : null
-                            ),
+                            ->live()
+                            ->afterStateUpdated(function ($context, $state, $set) {
+                                if ($context === 'create') {
+                                    $set('slug', \Str::slug($state));
+                                }
+                            }),
                         
                         Forms\Components\TextInput::make('slug')
                             ->label('Slug URL')
                             ->required()
                             ->maxLength(255)
-                            ->unique(Recipe::class, 'slug', ignoreRecord: true),
+                            ->unique(Recipe::class, 'slug'),
                         
                         Forms\Components\Select::make('category_id')
                             ->label('Catégorie')
                             ->options(Category::active()->pluck('name', 'id'))
                             ->required()
-                            ->searchable(),
+                            ->searchable()
+                            ->live()
+                            ->afterStateUpdated(function ($set) {
+                                $set('subcategory', null);
+                            }),
+                            
+                        Forms\Components\TextInput::make('subcategory')
+                            ->label('Sous-catégorie')
+                            ->placeholder('Exemple: Plat principal, Entrée froide...')
+                            ->maxLength(255),
                             
                         Forms\Components\Textarea::make('description')
                             ->label('Description')
@@ -56,7 +86,9 @@ class RecipeResource extends Resource
                         Forms\Components\FileUpload::make('featured_image')
                             ->label('Image principale')
                             ->image()
+                            ->disk('public')
                             ->directory('recipes/featured')
+                            ->visibility('public')
                             ->maxSize(5120)
                             ->imageEditor()
                             ->imageEditorAspectRatios([
@@ -69,7 +101,9 @@ class RecipeResource extends Resource
                             ->label('Galerie d\'images')
                             ->image()
                             ->multiple()
+                            ->disk('public')
                             ->directory('recipes/gallery')
+                            ->visibility('public')
                             ->maxSize(3072)
                             ->maxFiles(10)
                             ->imageEditor()
@@ -78,7 +112,9 @@ class RecipeResource extends Resource
                         Forms\Components\FileUpload::make('video_thumbnail')
                             ->label('Miniature de la vidéo')
                             ->image()
+                            ->disk('public')
                             ->directory('recipes/video-thumbnails')
+                            ->visibility('public')
                             ->maxSize(2048),
                             
                         Forms\Components\TextInput::make('video_url')
@@ -283,10 +319,17 @@ class RecipeResource extends Resource
                 Tables\Columns\TextColumn::make('difficulty')
                     ->label('Difficulté')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'easy' => 'success',
-                        'medium' => 'warning',
-                        'hard' => 'danger',
+                    ->color(function ($state) {
+                        switch ($state) {
+                            case 'easy':
+                                return 'success';
+                            case 'medium':
+                                return 'warning';
+                            case 'hard':
+                                return 'danger';
+                            default:
+                                return 'gray';
+                        }
                     }),
                     
                 Tables\Columns\TextColumn::make('total_time')
@@ -306,16 +349,20 @@ class RecipeResource extends Resource
                     ->label('Créé le')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('category')
                     ->relationship('category', 'name'),
                 Tables\Filters\SelectFilter::make('difficulty'),
                 Tables\Filters\Filter::make('is_featured')
-                    ->query(fn (Builder $query): Builder => $query->where('is_featured', true)),
+                    ->query(function (Builder $query) {
+                        return $query->where('is_featured', true);
+                    }),
                 Tables\Filters\Filter::make('is_published')
-                    ->query(fn (Builder $query): Builder => $query->where('is_published', true)),
+                    ->query(function (Builder $query) {
+                        return $query->where('is_published', true);
+                    }),
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
