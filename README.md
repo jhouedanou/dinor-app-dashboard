@@ -1,242 +1,287 @@
-# Dinor Dashboard
+# 🍳 Dinor App Dashboard
 
-Dashboard Filament pour la gestion de contenu de l'application mobile Dinor avec API REST complète.
-NB : Codage assisté par IA. 
+Un tableau de bord complet pour la gestion de contenu culinaire avec Filament 3, Laravel 11 et PostgreSQL.
 
-Mais j'ai une bonne excuse : le développeur qui a codé le premier dashboard a quitté l'entreprise, suppprimé le runner gitlab, supprimé la base de données, suppprimé la base de code, retiré les accès...bref il était d'humeur jouasse ce jour là.
+## 📋 Table des Matières
 
-Il a donc fallu tout refaire. Et c'est ce que j'ai fait.
-Comme quoi, il y a des gens qui ne savent pas faire leur job...heureusement que l'IA est là pour nous aider.
+- [🚀 Installation Locale](#-installation-locale)
+- [🔧 Configuration](#-configuration)
+- [🌐 Déploiement sur Laravel Forge](#-déploiement-sur-laravel-forge)
+- [🔒 Variables d'Environnement](#-variables-denvironnement)
+- [🗄️ Base de Données](#️-base-de-données)
+- [📝 Administration](#-administration)
+- [🛠️ Maintenance](#️-maintenance)
 
-## 🌟 Nouvelles Fonctionnalités
-
-### 🇫🇷 Interface Française
-- Application entièrement traduite en français
-- Fuseau horaire Europe/Paris configuré
-- Formats de date et heure français
-- Messages de validation en français
-
-### 🔐 Sécurité Renforcée
-- Authentification sécurisée pour l'accès au dashboard
-- Utilisateur administrateur par défaut avec mot de passe fort
-- Sessions sécurisées avec Redis
-- Protection CSRF et validation des données
-
-### 🚀 Déploiement Automatisé
-- Installation complète avec une seule commande (`./setup.sh`)
-- Configuration automatique de Docker
-- Migrations et seeding automatiques
-- Optimisation des performances intégrée
-
-## 🚀 Fonctionnalités
-
-### Dashboard Admin (Filament)
-- **Recettes de cuisine** : Gestion complète avec ingrédients, instructions, temps de préparation, informations nutritionnelles, équipement requis, galerie d'images
-- **Astuces** : Conseils et techniques culinaires
-- **Événements Dinor** : Gestion complète d'événements avec géolocalisation, inscriptions, tarification flexible, médias
-- **Dinor TV** : Gestion de contenus vidéo avec live streaming
-- **Pages web** : Système de pages personnalisables avec templates et hiérarchie
-- **Catégories** : Organisation du contenu par catégories
-- **Médiathèque** : Gestion centralisée des fichiers (images, vidéos, documents)
-
-### API REST pour Flutter
-- Endpoints complets pour tous les types de contenu
-- Pagination automatique
-- Filtres et recherche
-- Support pour les contenus featured/vedettes
-- Gestion des vues et likes pour les vidéos
-
-## 📱 Structure API pour Flutter
-
-### Endpoints principaux
-```
-GET /api/v1/recipes - Liste des recettes
-GET /api/v1/recipes/{id} - Détail d'une recette
-GET /api/v1/events - Liste des événements
-GET /api/v1/events/{id} - Détail d'un événement
-GET /api/v1/dinor-tv - Liste des vidéos
-GET /api/v1/pages - Pages web
-GET /api/v1/dashboard - Dashboard global pour l'app
-```
-
-### 4 onglets Flutter supportés
-1. **Recettes** : `/api/v1/recipes`
-2. **Événements** : `/api/v1/events`
-3. **Carte** : Utilise les coordonnées des événements (`latitude`, `longitude`)
-4. **Page Web** : `/api/v1/pages/{slug}`
-
-## 🐳 Installation avec Docker
+## 🚀 Installation Locale
 
 ### Prérequis
-- Docker
-- Docker Compose
+- Docker & Docker Compose
+- Git
 
-### Démarrage rapide (Nouvelle méthode automatisée)
+### Installation rapide
 
-1. **Installation en une commande**
 ```bash
-# Rendre le script exécutable et lancer l'installation
-chmod +x setup.sh
-./setup.sh
-```
+# Cloner le repository
+git clone <your-repo-url>
+cd dinor-app-dashboard
 
-Cette commande unique va :
-- Construire et démarrer tous les conteneurs Docker
-- Installer toutes les dépendances PHP
-- Configurer l'application Laravel
-- Exécuter les migrations de base de données
-- Créer les données de démonstration
-- Créer un utilisateur administrateur par défaut
+# Lancer l'environnement Docker
+docker-compose up --build -d
 
-### Méthode manuelle (si nécessaire)
-
-1. **Cloner et démarrer les services**
-```bash
-# Construire et démarrer les conteneurs
-docker-compose up -d --build
-
-# Attendre que les services soient prêts
-sleep 30
-```
-
-2. **Configuration initiale**
-```bash
-# Entrer dans le conteneur de l'application
-docker exec -it dinor-app bash
-
-# Installer les dépendances
-composer install
-
-# Copier le fichier d'environnement
-cp .env.example .env
+# Créer le fichier .env
+docker-compose exec app cp .env.example .env
 
 # Générer la clé d'application
-php artisan key:generate
+docker-compose exec app php artisan key:generate --force
 
-# Exécuter les migrations
-php artisan migrate
+# Lancer les migrations et seeders
+docker-compose exec app php artisan migrate:fresh --seed
 
-# Créer le lien symbolique pour le storage
-php artisan storage:link
-
-# Peupler la base de données (optionnel)
-php artisan db:seed
+# Créer un utilisateur admin
+docker-compose exec app php artisan admin:create-test
 ```
 
-### 🌐 Accès aux services
+🎉 **L'application est accessible sur** : `http://localhost:8000/admin`
 
-- **Dashboard Admin** : http://localhost:8000/admin
-  - Email : `admin@dinor.app`
-  - Mot de passe : `Dinor2024!Admin`
-- **API** : http://localhost:8000/api/v1/
-- **PhpMyAdmin** : http://localhost:8080
-- **Application** : http://localhost:8000
+**Identifiants par défaut** :
+- Email : `admin@dinor.com`
+- Mot de passe : `password`
 
-⚠️ **Important** : Changez le mot de passe administrateur après la première connexion !
+## 🔧 Configuration
 
-### 📊 Base de données
+### Structure des Services
 
-**MySQL** :
-- Host: localhost:3306
-- Database: dinor_dashboard
-- Username: dinor
-- Password: password
+- **App** : Laravel 11 + Filament 3 (PHP 8.2)
+- **Base de données** : PostgreSQL 15
+- **Cache** : Redis 7
+- **Adminer** : Interface de gestion BDD (`http://localhost:8080`)
 
-## 🔧 Configuration pour la production
+### Ports utilisés
+- `8000` : Application principale
+- `5432` : PostgreSQL
+- `6379` : Redis
+- `8080` : Adminer
 
-### Variables d'environnement importantes
+## 🌐 Déploiement sur Laravel Forge
+
+### 📦 Script de Déploiement Forge
+
+Remplacez le script de déploiement par défaut dans Forge par :
+
+```bash
+cd /home/forge/your-domain.com
+git pull origin $FORGE_SITE_BRANCH
+
+# Installation des dépendances Composer (production)
+$FORGE_COMPOSER install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+
+# Installation des dépendances NPM et build des assets
+npm ci
+npm run build
+
+# Optimisation Laravel
+$FORGE_PHP artisan config:cache
+$FORGE_PHP artisan route:cache
+$FORGE_PHP artisan view:cache
+$FORGE_PHP artisan event:cache
+
+# Migrations (avec --force pour éviter la confirmation)
+if [ -f artisan ]; then
+    $FORGE_PHP artisan migrate --force
+fi
+
+# Optimisation des permissions
+chmod -R 755 storage bootstrap/cache
+chown -R forge:forge storage bootstrap/cache
+
+# Restart services
+echo "Restarting services..."
+sudo supervisorctl restart all
+
+# Prevent concurrent php-fpm reloads  
+touch /tmp/fpmlock 2>/dev/null || true
+( flock -w 10 9 || exit 1
+    echo 'Reloading PHP FPM...'; sudo -S service $FORGE_PHP_FPM reload ) 9</tmp/fpmlock
+
+echo "✅ Deployment completed successfully!"
+```
+
+### 🔒 Variables d'Environnement
+
+#### Variables essentielles à configurer dans Forge :
+
 ```env
-APP_NAME="Dinor Dashboard"
+# Application
+APP_NAME="Dinor App"
 APP_ENV=production
 APP_DEBUG=false
-APP_URL=https://votre-domaine.com
+APP_URL=https://your-domain.com
 
-DB_CONNECTION=mysql
-DB_HOST=db
-DB_DATABASE=dinor_dashboard
-DB_USERNAME=dinor
-DB_PASSWORD=password
+# Base de données (PostgreSQL recommandé)
+DB_CONNECTION=pgsql
+DB_HOST=localhost
+DB_PORT=5432
+DB_DATABASE=forge
+DB_USERNAME=forge
+DB_PASSWORD=your-secure-password
 
+# Cache & Sessions
 CACHE_DRIVER=redis
 SESSION_DRIVER=redis
-REDIS_HOST=redis
+QUEUE_CONNECTION=redis
+
+# Redis
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+
+# Mail (configurer selon votre service)
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.mailgun.org
+MAIL_PORT=587
+MAIL_USERNAME=your-username
+MAIL_PASSWORD=your-password
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS="noreply@your-domain.com"
+MAIL_FROM_NAME="${APP_NAME}"
+
+# Stockage de fichiers
+FILESYSTEM_DISK=public
 ```
 
-### Sécurité
-- Changer les mots de passe par défaut
-- Configurer HTTPS
-- Mettre à jour les clés d'API
-- Configurer les CORS pour Flutter
+### 🗄️ Base de Données
 
-## 📱 Intégration Flutter
+#### Configuration PostgreSQL (Recommandé)
 
-### Exemple d'utilisation de l'API
+1. **Créer la base de données** dans Forge
+2. **Configurer les variables** d'environnement
+3. **Lancer les migrations** :
 
-```dart
-// Configuration de base
-const String baseUrl = 'http://votre-domaine.com/api/v1';
-
-// Récupérer les recettes
-Future<List<Recipe>> getRecipes() async {
-  final response = await http.get(Uri.parse('$baseUrl/recipes'));
-  if (response.statusCode == 200) {
-    final data = json.decode(response.body);
-    return (data['data'] as List)
-        .map((recipe) => Recipe.fromJson(recipe))
-        .toList();
-  }
-  throw Exception('Erreur lors du chargement des recettes');
-}
-
-// Récupérer les événements avec géolocalisation
-Future<List<Event>> getEvents() async {
-  final response = await http.get(Uri.parse('$baseUrl/events'));
-  if (response.statusCode == 200) {
-    final data = json.decode(response.body);
-    return (data['data'] as List)
-        .map((event) => Event.fromJson(event))
-        .toList();
-  }
-  throw Exception('Erreur lors du chargement des événements');
-}
-```
-
-### Structure des 4 onglets Flutter
-1. **Recettes** : GridView avec cartes de recettes
-2. **Événements** : ListView avec détails et localisation
-3. **Carte** : Google Maps avec marqueurs des événements
-4. **Page Web** : WebView pour afficher le contenu HTML
-
-## 🛠️ Développement
-
-### Commandes utiles
 ```bash
-# Voir les logs
-docker-compose logs -f app
-
-# Redémarrer les services
-docker-compose restart
-
-# Arrêter les services
-docker-compose down
-
-# Nettoyer complètement
-docker-compose down -v
-docker system prune -a
+php artisan migrate:fresh --seed --force
 ```
 
-### Structure des modèles
-- **Recipe** : Recettes avec ingrédients et instructions
-- **Category** : Catégories pour organiser le contenu
-- **Event** : Événements avec géolocalisation
-- **Tip** : Astuces culinaires
-- **DinorTv** : Contenus vidéo
-- **Page** : Pages web personnalisables
+#### Structure des Tables
 
-## 📞 Support
+- `categories` - Catégories de recettes
+- `recipes` - Recettes avec ingrédients et instructions
+- `ingredients` - Base de données des ingrédients
+- `admin_users` - Utilisateurs administrateurs
+- `likes` - Système de likes
+- `comments` - Commentaires
 
-Pour toute question technique ou problème d'installation, consultez la documentation Laravel/Filament ou contactez l'équipe de développement.
+### 📝 Administration
 
-## 📄 Licence
+#### Créer un utilisateur admin en production
 
-Ce projet est sous licence MIT. 
+```bash
+php artisan make:command CreateAdminUser
+```
+
+Ou utilisez la commande existante :
+
+```bash
+php artisan admin:create-test
+```
+
+#### Accès au dashboard
+
+- **URL** : `https://your-domain.com/admin`
+- **Interface** : Filament 3 avec thème personnalisé
+
+### 🛠️ Maintenance
+
+#### Commandes utiles
+
+```bash
+# Nettoyer les caches
+php artisan optimize:clear
+
+# Recréer les caches
+php artisan optimize
+
+# Vérifier les logs
+tail -f storage/logs/laravel.log
+
+# Lister les routes
+php artisan route:list
+
+# Statut de la queue
+php artisan queue:work --verbose
+```
+
+#### Debugging des erreurs 500
+
+1. **Vérifier les logs** : `storage/logs/laravel.log`
+2. **Permissions** : 
+   ```bash
+   chmod -R 755 storage bootstrap/cache
+   chown -R forge:forge storage bootstrap/cache
+   ```
+3. **Variables d'environnement** : Vérifier le `.env`
+4. **Cache** : Nettoyer avec `php artisan optimize:clear`
+
+#### Performance
+
+```bash
+# Optimisation en production
+php artisan config:cache
+php artisan route:cache  
+php artisan view:cache
+php artisan event:cache
+
+# Pour annuler (en cas de problème)
+php artisan optimize:clear
+```
+
+### 🔐 Sécurité
+
+#### Checklist de sécurité
+
+- [ ] `APP_DEBUG=false` en production
+- [ ] Utiliser HTTPS (certificat SSL)
+- [ ] Mots de passe forts pour la BDD
+- [ ] Sauvegardes automatiques configurées
+- [ ] Mise à jour régulière des dépendances
+
+#### Sauvegardes
+
+Configurer les sauvegardes automatiques dans Forge :
+- Base de données : Quotidienne
+- Fichiers : Hebdomadaire
+
+### 📱 Fonctionnalités
+
+#### Interface Ingrédients
+- ✅ Base de données complète des ingrédients
+- ✅ Catégories et sous-catégories
+- ✅ Unités de mesure (g, kg, ml, l, etc.)
+- ✅ Marques recommandées
+- ✅ Prix moyens et descriptions
+
+#### Interface Recettes  
+- ✅ Sélecteur d'ingrédients intelligent
+- ✅ Popup pour ajouter de nouveaux ingrédients
+- ✅ Instructions avec éditeur riche
+- ✅ Sous-catégories de recettes
+- ✅ Gestion des images et vidéos
+
+#### Gestion de Contenu
+- ✅ Système de likes et commentaires
+- ✅ Catégories personnalisables  
+- ✅ Médias et galeries d'images
+- ✅ Pages statiques
+- ✅ Événements
+
+## 🆘 Support
+
+Si vous rencontrez des problèmes :
+
+1. **Vérifiez les logs** : `storage/logs/laravel.log`
+2. **Testez en local** avec Docker
+3. **Vérifiez les permissions** de fichiers
+4. **Consultez la documentation Filament** : [filamentphp.com](https://filamentphp.com)
+
+---
+
+**Développé avec ❤️ en utilisant Laravel 11, Filament 3, et PostgreSQL** 

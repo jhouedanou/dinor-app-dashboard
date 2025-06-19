@@ -2,71 +2,53 @@
 
 namespace App\Filament\Components;
 
+use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Component;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\Tabs;
-use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
+use Filament\Notifications\Notification;
 
 class InstructionsField extends Component
 {
-    public static function make($name = 'instructions')
+    public static function make(string $name = 'instructions'): Repeater
     {
-        return Tabs::make('instructions_tabs')
-            ->tabs([
-                Tab::make('Mode simple')
-                    ->schema([
-                        Textarea::make('instructions_text')
-                            ->label('Instructions (une par ligne)')
-                            ->placeholder('Préchauffez le four à 180°C
-Mélangez la farine et le sucre
-Ajoutez les œufs un par un
-...')
-                            ->rows(8)
-                            ->afterStateUpdated(function ($state, $set) {
-                                if ($state) {
-                                    $lines = array_filter(explode("\n", $state));
-                                    $instructions = [];
-                                    foreach ($lines as $index => $line) {
-                                        $instructions[] = [
-                                            'step_number' => $index + 1,
-                                            'step' => trim($line)
-                                        ];
-                                    }
-                                    $set('instructions', $instructions);
-                                }
-                            })
-                            ->live()
-                            ->hint('Saisissez chaque étape sur une ligne séparée'),
-                    ]),
-                    
-                Tab::make('Mode avancé')
-                    ->schema([
-                        Repeater::make('instructions')
-                            ->label('Instructions détaillées')
-                            ->schema([
-                                Grid::make(2)
-                                    ->schema([
-                                        Textarea::make('step')
-                                            ->label('Étape')
-                                            ->required()
-                                            ->rows(2)
-                                            ->columnSpan(2),
-                                    ])
-                            ])
-                            ->collapsible()
-                            ->itemLabel(function ($state, $index) {
-                                $stepNumber = $index + 1;
-                                $stepText = $state['step'] ?? '';
-                                $preview = strlen($stepText) > 50 ? substr($stepText, 0, 50) . '...' : $stepText;
-                                return "Étape {$stepNumber}: {$preview}";
-                            })
-                            ->defaultItems(1)
-                            ->addActionLabel('Ajouter une étape')
-                            ->reorderable()
-                            ->cloneable(),
-                    ]),
-            ]);
+        return Repeater::make($name)
+            ->label('Instructions')
+            ->schema([
+                RichEditor::make('step')
+                    ->label('Étape')
+                    ->required()
+                    ->placeholder('Décrivez cette étape de la recette...')
+                    ->toolbarButtons([
+                        'bold',
+                        'italic',
+                        'underline',
+                        'bulletList',
+                        'orderedList',
+                        'link',
+                    ])
+                    ->columnSpanFull(),
+            ])
+            ->itemLabel(function (array $state, int $index): ?string {
+                $stepNumber = $index + 1;
+                $content = strip_tags($state['step'] ?? '');
+                $preview = strlen($content) > 50 ? substr($content, 0, 50) . '...' : $content;
+                
+                return "Étape {$stepNumber}: {$preview}";
+            })
+            ->defaultItems(1)
+            ->reorderable()
+            ->collapsible()
+            ->cloneable()
+            ->addActionLabel('Ajouter une étape')
+            ->deleteAction(function (Action $action) {
+                return $action
+                    ->requiresConfirmation()
+                    ->modalHeading('Supprimer cette étape ?')
+                    ->modalDescription('Êtes-vous sûr de vouloir supprimer cette étape ? Les numéros des étapes suivantes seront automatiquement ajustés.');
+            });
     }
 } 

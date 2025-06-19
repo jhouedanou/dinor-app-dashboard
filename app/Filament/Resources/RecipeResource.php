@@ -3,6 +3,8 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\RecipeResource\Pages;
+use App\Filament\Components\IngredientsRepeater;
+use App\Filament\Components\InstructionsField;
 use App\Models\Recipe;
 use App\Models\Category;
 use Filament\Forms;
@@ -105,32 +107,8 @@ class RecipeResource extends Resource
 
                 Forms\Components\Section::make('Détails de la recette')
                     ->schema([
-                        Forms\Components\Repeater::make('ingredients')
-                            ->label('Ingrédients')
-                            ->schema([
-                                Forms\Components\TextInput::make('name')
-                                    ->label('Ingrédient')
-                                    ->required(),
-                                Forms\Components\TextInput::make('quantity')
-                                    ->label('Quantité')
-                                    ->required(),
-                                Forms\Components\TextInput::make('unit')
-                                    ->label('Unité')
-                                    ->placeholder('g, kg, ml, l, cuillères...'),
-                            ])->columns(3)
-                            ->collapsible()
-                            ->defaultItems(1),
-                            
-                        Forms\Components\Repeater::make('instructions')
-                            ->label('Instructions')
-                            ->schema([
-                                Forms\Components\Textarea::make('step')
-                                    ->label('Étape')
-                                    ->required()
-                                    ->rows(2),
-                            ])
-                            ->collapsible()
-                            ->defaultItems(1),
+                        IngredientsRepeater::make('ingredients'),
+                        InstructionsField::make('instructions'),
                     ]),
 
                 Forms\Components\Section::make('Temps et portions')
