@@ -163,6 +163,7 @@ php artisan env
 | **Cache corrompu** | `php artisan optimize:clear` |
 | **Assets manquants** | `npm run build` |
 | **Erreur Filament** | Vérifier que toutes les migrations sont passées |
+| **BindingResolutionException** | Problème de closure dans Repeater - voir BUGFIXES.md |
 
 ### 📊 Monitoring
 
