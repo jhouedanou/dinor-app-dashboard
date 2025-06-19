@@ -8,10 +8,7 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditIngredient extends EditRecord
 {
-    /**
-     * @var string
-     */
-    protected static $resource = IngredientResource::class;
+    protected static string $resource = IngredientResource::class;
 
     protected function getHeaderActions(): array
     {

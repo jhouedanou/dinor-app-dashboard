@@ -7,8 +7,5 @@ use Filament\Resources\Pages\CreateRecord;
 
 class CreateIngredient extends CreateRecord
 {
-    /**
-     * @var string
-     */
-    protected static $resource = IngredientResource::class;
+    protected static string $resource = IngredientResource::class;
 } 

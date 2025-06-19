@@ -15,30 +15,11 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class RecipeResource extends Resource
 {
-    /**
-     * @var string
-     */
-    protected static $model = Recipe::class;
-    
-    /**
-     * @var string
-     */
-    protected static $navigationIcon = 'heroicon-o-cake';
-    
-    /**
-     * @var string
-     */
-    protected static $navigationLabel = 'Recettes';
-    
-    /**
-     * @var string
-     */
-    protected static $navigationGroup = 'Contenu';
-    
-    /**
-     * @var int
-     */
-    protected static $navigationSort = 1;
+    protected static ?string $model = Recipe::class;
+    protected static ?string $navigationIcon = 'heroicon-o-cake';
+    protected static ?string $navigationLabel = 'Recettes';
+    protected static ?string $navigationGroup = 'Contenu';
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {

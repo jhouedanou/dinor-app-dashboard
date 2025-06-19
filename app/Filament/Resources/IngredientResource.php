@@ -13,30 +13,11 @@ use Illuminate\Database\Eloquent\Builder;
 
 class IngredientResource extends Resource
 {
-    /**
-     * @var string
-     */
-    protected static $model = Ingredient::class;
-    
-    /**
-     * @var string
-     */
-    protected static $navigationIcon = 'heroicon-o-cube';
-    
-    /**
-     * @var string
-     */
-    protected static $navigationLabel = 'Ingrédients';
-    
-    /**
-     * @var string
-     */
-    protected static $navigationGroup = 'Contenu';
-    
-    /**
-     * @var int
-     */
-    protected static $navigationSort = 2;
+    protected static ?string $model = Ingredient::class;
+    protected static ?string $navigationIcon = 'heroicon-o-cube';
+    protected static ?string $navigationLabel = 'Ingrédients';
+    protected static ?string $navigationGroup = 'Contenu';
+    protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {

@@ -8,10 +8,7 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListIngredients extends ListRecords
 {
-    /**
-     * @var string
-     */
-    protected static $resource = IngredientResource::class;
+    protected static string $resource = IngredientResource::class;
 
     protected function getHeaderActions(): array
     {
