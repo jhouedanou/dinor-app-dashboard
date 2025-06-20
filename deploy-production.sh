@@ -19,6 +19,20 @@ NC='\033[0m' # No Color
 APP_ENV="production"
 APP_URL="https://new.dinorapp.com"
 ADMIN_EMAIL="admin@dinor.app"
+USE_DOCKER=true
+
+# Fonction pour exécuter PHP avec Docker ou localement
+run_php() {
+    if [ "$USE_DOCKER" = true ] && command -v docker > /dev/null 2>&1; then
+        docker run --rm \
+            -v $(pwd):/app \
+            -w /app \
+            --network host \
+            php:8.2-cli "$@"
+    else
+        php "$@"
+    fi
+}
 
 # Fonction pour afficher des messages colorés
 log_info() {
@@ -43,8 +57,8 @@ handle_error() {
     log_info "Nettoyage en cours..."
     
     # Nettoyer les fichiers temporaires et caches
-    php artisan config:clear 2>/dev/null || true
-    php artisan cache:clear 2>/dev/null || true
+    run_php artisan config:clear 2>/dev/null || true
+    run_php artisan cache:clear 2>/dev/null || true
     
     exit 1
 }
@@ -54,7 +68,7 @@ trap 'handle_error "$(date)"' ERR
 
 # 0. Mise en mode maintenance
 log_info "🔄 Mise en mode maintenance..."
-php artisan down --retry=60 --render="errors::503" --secret="dinor-maintenance-secret" || log_warning "Impossible de mettre en mode maintenance"
+run_php artisan down --retry=60 --render="errors::503" --secret="dinor-maintenance-secret" || log_warning "Impossible de mettre en mode maintenance"
 
 # Vérifier si le fichier .env existe
 if [ ! -f .env ]; then
@@ -101,8 +115,32 @@ else
 fi
 
 # 3. Installation/mise à jour des dépendances
-log_info "3. Installation des dépendances Composer..."
-if command -v composer > /dev/null 2>&1; then
+log_info "3. Installation des dépendances Composer avec Docker..."
+
+# Vérifier si Docker est disponible
+if command -v docker > /dev/null 2>&1; then
+    log_info "Utilisation de Docker pour PHP 8.2..."
+    
+    # Supprimer le vendor existant pour éviter les conflits
+    rm -rf vendor/ 2>/dev/null || true
+    
+    # Installer les dépendances avec Docker (PHP 8.2)
+    docker run --rm \
+        -v $(pwd):/app \
+        -w /app \
+        composer:latest composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+    
+    log_success "Dépendances Composer installées avec Docker"
+    
+    # Vérifier que les dépendances sont bien installées
+    if [ ! -d "vendor" ] || [ ! -f "vendor/autoload.php" ]; then
+        log_error "Erreur lors de l'installation des dépendances Composer"
+        exit 1
+    fi
+    
+elif command -v composer > /dev/null 2>&1; then
+    log_warning "Docker non disponible, utilisation de Composer local..."
+    
     # Supprimer le vendor existant pour éviter les conflits
     rm -rf vendor/ 2>/dev/null || true
     
@@ -110,14 +148,14 @@ if command -v composer > /dev/null 2>&1; then
     composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
     log_success "Dépendances Composer installées"
 else
-    log_error "Composer non trouvé!"
+    log_error "Ni Docker ni Composer ne sont disponibles!"
     exit 1
 fi
 
 # 4. Génération de la clé d'application si nécessaire
 log_info "4. Vérification de la clé d'application..."
 if ! grep -q "APP_KEY=base64:" .env; then
-    php artisan key:generate --force
+    run_php artisan key:generate --force
     log_success "Clé d'application générée"
 else
     log_info "Clé d'application déjà présente"
@@ -158,10 +196,10 @@ log_success "Variables d'environnement configurées"
 
 # 6. Nettoyage du cache
 log_info "6. Nettoyage du cache..."
-php artisan config:clear
-php artisan cache:clear
-php artisan route:clear
-php artisan view:clear
+run_php artisan config:clear
+run_php artisan cache:clear
+run_php artisan route:clear
+run_php artisan view:clear
 log_success "Cache nettoyé"
 
 # 7. Mise à jour des assets
@@ -188,31 +226,31 @@ log_success "Dossiers de storage créés"
 
 # 9. Migrations de base de données
 log_info "9. Exécution des migrations..."
-php artisan migrate --force
+run_php artisan migrate --force
 log_success "Migrations exécutées"
 
 # 10. Exécution des seeders (y compris AdminUserSeeder)
 log_info "10. Exécution des seeders..."
-php artisan db:seed --class=AdminUserSeeder --force
+run_php artisan db:seed --class=AdminUserSeeder --force
 log_success "Seeders exécutés - Utilisateur admin créé/mis à jour"
 
 # 11. Optimisation pour la production
 log_info "11. Optimisation pour la production..."
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+run_php artisan config:cache
+run_php artisan route:cache
+run_php artisan view:cache
 log_success "Optimisations appliquées"
 
 # 12. Création du lien symbolique pour le storage
 log_info "12. Création du lien symbolique storage..."
-php artisan storage:link
+run_php artisan storage:link
 log_success "Lien symbolique créé"
 
 # 13. Vérification finale
 log_info "13. Vérification de la configuration..."
 
 # Test de connexion à la base de données
-if php artisan migrate:status > /dev/null 2>&1; then
+if run_php artisan migrate:status > /dev/null 2>&1; then
     log_success "Connexion base de données OK"
 else
     log_error "Problème de connexion à la base de données"
@@ -220,7 +258,7 @@ else
 fi
 
 # Vérification de l'utilisateur admin
-ADMIN_EXISTS=$(php artisan tinker --execute="echo App\Models\AdminUser::where('email', '$ADMIN_EMAIL')->exists() ? 'yes' : 'no';" 2>/dev/null | tail -1)
+ADMIN_EXISTS=$(run_php artisan tinker --execute="echo App\Models\AdminUser::where('email', '$ADMIN_EMAIL')->exists() ? 'yes' : 'no';" 2>/dev/null | tail -1)
 if [ "$ADMIN_EXISTS" = "yes" ]; then
     log_success "Utilisateur admin vérifié"
 else
@@ -230,7 +268,7 @@ fi
 
 # 14. Remettre l'application en ligne
 log_info "14. Remise en ligne de l'application..."
-php artisan up
+run_php artisan up
 log_success "Application remise en ligne"
 
 echo ""
