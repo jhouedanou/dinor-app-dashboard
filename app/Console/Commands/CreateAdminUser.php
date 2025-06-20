@@ -16,7 +16,7 @@ class CreateAdminUser extends Command
     protected $signature = 'admin:create 
                            {--email=admin@dinor.app : Email de l\'administrateur} 
                            {--password=Dinor2024!Admin : Mot de passe de l\'administrateur}
-                           {--name=Administrateur Dinor : Nom de l\'administrateur}
+                           {--name=AdministrateurDinor : Nom de l\'administrateur}
                            {--force : Forcer la création même si l\'utilisateur existe}';
 
     /**
