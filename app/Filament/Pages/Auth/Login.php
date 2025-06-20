@@ -7,6 +7,7 @@ use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Form;
 use Filament\Pages\Auth\Login as BaseLogin;
 use Illuminate\Contracts\Support\Htmlable;
+use Filament\Http\Responses\Auth\Contracts\LoginResponse;
 
 class Login extends BaseLogin
 {
@@ -66,7 +67,7 @@ class Login extends BaseLogin
         ];
     }
 
-    public function authenticate(): ?\Illuminate\Http\RedirectResponse
+    public function authenticate(): ?LoginResponse
     {
         try {
             \Log::info('AUTHENTICATE METHOD CALLED', [
