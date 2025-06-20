@@ -46,6 +46,43 @@ L'AdminUserSeeder s'exécute automatiquement avec les migrations :
 php artisan db:seed --class=AdminUserSeeder
 ```
 
+## 🧹 Résolution des Problèmes de Déploiement
+
+### Script de Nettoyage Git (Nouveau!)
+
+Si vous rencontrez des conflits Git lors du déploiement, utilisez le script de nettoyage :
+
+```bash
+# Rendre le script exécutable
+chmod +x git-cleanup.sh
+
+# Lancer le nettoyage
+./git-cleanup.sh
+```
+
+**Ce script résout :**
+- ❌ Conflits avec storage/logs/laravel.log
+- ❌ Fichiers de cache qui causent des conflits
+- ❌ node_modules et vendor corrompus
+- ❌ Fichiers temporaires non suivis
+
+### Erreurs Communes et Solutions
+
+#### Erreur CollisionServiceProvider
+```
+Class "NunoMaduro\Collision\Adapters\Laravel\CollisionServiceProvider" not found
+```
+**Solution :** L'AppServiceProvider a été mis à jour pour gérer automatiquement ce problème.
+
+#### Erreur Git merge
+```
+error: Your local changes to the following files would be overwritten by merge
+```
+**Solution :** Utilisez `./git-cleanup.sh` avant le déploiement.
+
+#### Erreur 419 CSRF Token
+**Solution :** Vérifiez les variables d'environnement de session dans `.env`.
+
 ## 📋 Variables d'Environnement
 
 Ajoutez ces variables à votre fichier `.env` pour configurer automatiquement l'admin :
@@ -78,8 +115,8 @@ DB_PASSWORD=votre_mot_de_passe
 
 ### Option A : Script Automatisé (Plus Simple)
 ```bash
-# 1. Cloner/mettre à jour le code
-git pull origin main
+# 1. Nettoyer les conflits potentiels (si nécessaire)
+./git-cleanup.sh
 
 # 2. Configurer les variables d'environnement (une seule fois)
 # Éditer le fichier .env avec vos paramètres
@@ -90,13 +127,16 @@ git pull origin main
 
 ### Option B : Commandes Manuelles
 ```bash
-# 1. Dépendances
+# 1. Nettoyage préalable
+./git-cleanup.sh
+
+# 2. Dépendances
 composer install --no-dev --optimize-autoloader
 
-# 2. Configuration
+# 3. Configuration
 php artisan dinor:setup-production
 
-# 3. Optimisation
+# 4. Optimisation
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
@@ -108,9 +148,8 @@ php artisan view:cache
 Ajoutez dans votre script de déploiement Forge :
 ```bash
 cd /home/forge/new.dinorapp.com
-git pull origin main
-composer install --no-dev --optimize-autoloader
-php artisan dinor:setup-production --force
+./git-cleanup.sh
+./deploy-production.sh
 ```
 
 ### Serveur VPS/Dédié
@@ -123,17 +162,19 @@ Créez un cron job ou utilisez un webhook :
 ### Docker/Kubernetes
 Ajoutez à votre Dockerfile :
 ```dockerfile
-RUN php artisan dinor:setup-production --force
+COPY . /var/www/html
+RUN ./deploy-production.sh
 ```
 
 ## 🔧 Maintenance et Mise à Jour
 
 ### Mise à jour de l'application
 ```bash
-# Méthode simple
+# Méthode simple avec nettoyage automatique
 ./deploy-production.sh
 
 # Ou étape par étape
+./git-cleanup.sh
 git pull origin main
 php artisan migrate --force
 php artisan db:seed --class=AdminUserSeeder --force
@@ -157,6 +198,9 @@ php artisan db:seed --class=AdminUserSeeder --force
 # Diagnostic complet
 php diagnosis-login.php
 
+# Nettoyage Git
+./git-cleanup.sh
+
 # Vérification avec Artisan
 php artisan dinor:setup-production --force
 ```
@@ -171,6 +215,7 @@ php artisan dinor:setup-production --force
 | Script | Usage | Description |
 |--------|-------|-------------|
 | `deploy-production.sh` | `./deploy-production.sh` | Déploiement complet automatisé |
+| `git-cleanup.sh` | `./git-cleanup.sh` | Nettoyage Git avant déploiement |
 | `create-production-admin.php` | `php create-production-admin.php` | Création admin sans Laravel |
 | `diagnosis-login.php` | `php diagnosis-login.php` | Diagnostic des problèmes |
 
@@ -181,6 +226,7 @@ php artisan dinor:setup-production --force
 3. **Répétable** : Même processus à chaque déploiement
 4. **Robuste** : Vérifications et rollback en cas d'erreur
 5. **Flexible** : Plusieurs méthodes selon vos préférences
+6. **Résistant aux conflits** : Gestion automatique des problèmes Git
 
 ## 🚨 Points Importants
 
@@ -189,5 +235,40 @@ php artisan dinor:setup-production --force
 - Tous les caches sont gérés automatiquement
 - Les permissions sont configurées correctement
 - Les vérifications garantissent que tout fonctionne
+- Les conflits Git sont résolus automatiquement
 
-**Plus besoin de recréer l'admin à chaque déploiement !** 🎉 
+## 🛡️ Sécurité .gitignore
+
+Le `.gitignore` a été amélioré pour exclure automatiquement :
+- ✅ Tous les logs (`storage/logs/*.log`)
+- ✅ Fichiers de cache (`storage/framework/*`)
+- ✅ Sessions (`storage/framework/sessions/*`)
+- ✅ Fichiers temporaires (`*.tmp`, `*.backup`)
+- ✅ Dépendances (`vendor/`, `node_modules/`)
+- ✅ Configuration locale (`.env*`)
+
+**Plus besoin de recréer l'admin à chaque déploiement !** 🎉
+
+## 🆘 En Cas de Problème
+
+Si le déploiement échoue, suivez cette procédure :
+
+1. **Nettoyer d'abord :**
+   ```bash
+   ./git-cleanup.sh
+   ```
+
+2. **Diagnostic :**
+   ```bash
+   php diagnosis-login.php
+   ```
+
+3. **Redéployer :**
+   ```bash
+   ./deploy-production.sh
+   ```
+
+4. **Si ça ne marche toujours pas, créer l'admin manuellement :**
+   ```bash
+   php create-production-admin.php
+   ``` 
