@@ -48,20 +48,50 @@ class Login extends BaseLogin
     protected function getCredentialsFromFormData(array $data): array
     {
         try {
-            \Log::info('LOGIN ATTEMPT', [
+            \Log::info('LOGIN ATTEMPT START', [
                 'email' => $data['email'],
                 'guard' => $this->getAuthGuard(),
                 'admin_users_count' => \App\Models\AdminUser::count(),
                 'user_exists' => \App\Models\AdminUser::where('email', $data['email'])->exists(),
+                'ip' => request()->ip(),
+                'user_agent' => request()->userAgent(),
             ]);
         } catch (\Exception $e) {
-            // Ignore log errors to prevent authentication failures
+            \Log::error('Error in getCredentialsFromFormData: ' . $e->getMessage());
         }
         
         return [
             'email' => $data['email'],
             'password' => $data['password'],
         ];
+    }
+
+    public function authenticate(): ?\Illuminate\Http\RedirectResponse
+    {
+        try {
+            \Log::info('AUTHENTICATE METHOD CALLED', [
+                'form_data' => $this->form->getState(),
+                'guard' => $this->getAuthGuard(),
+            ]);
+
+            $result = parent::authenticate();
+            
+            \Log::info('AUTHENTICATION SUCCESS', [
+                'authenticated' => Auth::guard($this->getAuthGuard())->check(),
+                'user_id' => Auth::guard($this->getAuthGuard())->id(),
+            ]);
+            
+            return $result;
+            
+        } catch (\Exception $e) {
+            \Log::error('AUTHENTICATION ERROR', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'guard' => $this->getAuthGuard(),
+            ]);
+            
+            throw $e;
+        }
     }
 
     protected function throwFailureValidationException(): never
