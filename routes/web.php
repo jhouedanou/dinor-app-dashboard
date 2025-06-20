@@ -24,15 +24,3 @@ Route::get('/dashboard', function () {
 
 // Route pour la page d'erreur de connexion admin
 Route::get('/admin/login-error', [LoginErrorController::class, 'show'])->name('admin.login.error');
-
-// Route de test pour l'authentification
-Route::get('/admin/test-auth', function() {
-    $admin = App\Models\AdminUser::where('email', 'admin@dinor.app')->first();
-    Auth::guard('admin')->login($admin);
-    
-    return [
-        'auth_check' => Auth::guard('admin')->check(),
-        'user' => Auth::guard('admin')->user(),
-        'redirect_to' => '/admin'
-    ];
-});
