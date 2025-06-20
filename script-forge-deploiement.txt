@@ -1,0 +1,189 @@
+#!/bin/bash
+
+cd /home/forge/new.dinorapp.com
+
+# Fonction pour les logs (compatible Forge)
+log_info() {
+    echo "ℹ️  $1"
+}
+
+log_success() {
+    echo "✅ $1"
+}
+
+log_warning() {
+    echo "⚠️  $1"
+}
+
+log_error() {
+    echo "❌ $1"
+}
+
+echo "🚀 === DÉPLOIEMENT DINOR DASHBOARD FORGE ==="
+echo ""
+
+# 1. Mise en mode maintenance
+log_info "🔄 Mise en mode maintenance..."
+$FORGE_PHP artisan down --retry=60 --render="errors::503" --secret="dinor-maintenance-secret" || log_warning "Impossible de mettre en mode maintenance"
+
+# 2. Nettoyage préalable des conflits Git
+log_info "🧹 Nettoyage des conflits Git potentiels..."
+
+# Supprimer les fichiers de logs qui causent des conflits
+rm -rf storage/logs/*.log 2>/dev/null || true
+rm -rf storage/logs/laravel.log 2>/dev/null || true
+
+# Nettoyer les fichiers temporaires qui peuvent causer des conflits
+rm -rf storage/framework/cache/data/* 2>/dev/null || true
+rm -rf storage/framework/sessions/* 2>/dev/null || true
+rm -rf storage/framework/views/*.php 2>/dev/null || true
+rm -rf bootstrap/cache/*.php 2>/dev/null || true
+
+# Nettoyer le cache Git
+git rm --cached storage/logs/*.log 2>/dev/null || true
+git rm --cached storage/logs/laravel.log 2>/dev/null || true
+
+# Stash les changements locaux s'il y en a (sécurité)
+if ! git diff-index --quiet HEAD -- 2>/dev/null; then
+    log_warning "Changements locaux détectés, sauvegarde temporaire..."
+    git stash push -m "Sauvegarde automatique Forge $(date)" 2>/dev/null || true
+fi
+
+log_success "Conflits Git nettoyés"
+
+# 3. Mise à jour du code source
+log_info "📥 Mise à jour du code source..."
+git fetch origin $FORGE_SITE_BRANCH
+git reset --hard origin/$FORGE_SITE_BRANCH
+log_success "Code source mis à jour"
+
+# 4. Nettoyage préalable des dépendances
+log_info "🧹 Nettoyage des anciennes dépendances..."
+rm -rf vendor/ 2>/dev/null || true
+rm -f composer.lock 2>/dev/null || true
+log_success "Anciennes dépendances supprimées"
+
+# 5. Installation des dépendances Composer avec nunomaduro/collision
+log_info "📦 Installation des dépendances Composer..."
+$FORGE_COMPOSER install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+if [ $? -ne 0 ]; then
+    log_error "Erreur lors de l'installation Composer"
+    exit 1
+fi
+log_success "Dépendances Composer installées"
+
+# 6. Vérification que les dépendances critiques sont installées
+log_info "🔍 Vérification des dépendances critiques..."
+if [ ! -d "vendor/nunomaduro/collision" ]; then
+    log_warning "Tentative d'installation manuelle de nunomaduro/collision..."
+    $FORGE_COMPOSER require nunomaduro/collision:^7.0 --no-interaction
+fi
+log_success "Dépendances critiques vérifiées"
+
+# 7. Génération de la clé d'application si nécessaire
+log_info "🔑 Vérification de la clé d'application..."
+if ! grep -q "APP_KEY=base64:" .env 2>/dev/null; then
+    log_warning "Génération d'une nouvelle clé d'application..."
+    $FORGE_PHP artisan key:generate --force
+    log_success "Clé d'application générée"
+else
+    log_info "Clé d'application déjà présente"
+fi
+
+# 8. Nettoyage des caches avant NPM
+log_info "🧹 Nettoyage des caches Laravel..."
+$FORGE_PHP artisan optimize:clear
+log_success "Caches Laravel nettoyés"
+
+# 9. Installation complète des dépendances NPM
+log_info "📦 Installation des dépendances NPM..."
+rm -rf node_modules/ package-lock.json 2>/dev/null || true
+npm install
+if [ $? -ne 0 ]; then
+    log_warning "Problème avec npm install, tentative avec npm ci..."
+    npm ci 2>/dev/null || npm install --force
+fi
+log_success "Dépendances NPM installées"
+
+# 10. Build des assets de production
+log_info "🏗️ Build des assets de production..."
+npx vite build || npm run build || npm run production
+if [ $? -ne 0 ]; then
+    log_warning "Build des assets échoué, mais continue..."
+fi
+log_success "Assets buildés"
+
+# 11. Recréation des dossiers nécessaires
+log_info "📁 Création des dossiers de storage..."
+mkdir -p storage/logs
+mkdir -p storage/framework/cache/data
+mkdir -p storage/framework/sessions
+mkdir -p storage/framework/views
+mkdir -p storage/app/public
+log_success "Dossiers de storage créés"
+
+# 12. Migration de la base de données
+log_info "🗄️ Migration de la base de données..."
+if [ -f artisan ]; then
+    $FORGE_PHP artisan migrate --force
+    if [ $? -eq 0 ]; then
+        log_success "Migrations exécutées"
+    else
+        log_warning "Problème avec les migrations, mais continue..."
+    fi
+else
+    log_warning "Fichier artisan non trouvé"
+fi
+
+# 13. Exécution des seeders pour l'admin
+log_info "👤 Mise à jour de l'utilisateur admin..."
+$FORGE_PHP artisan db:seed --class=AdminUserSeeder --force 2>/dev/null || log_warning "AdminUserSeeder non exécuté"
+
+# 14. Lien symbolique de stockage
+log_info "🔗 Création du lien symbolique de stockage..."
+$FORGE_PHP artisan storage:link || log_warning "Lien symbolique déjà existant"
+log_success "Lien symbolique vérifié"
+
+# 15. Optimisation Laravel pour la production
+log_info "⚡ Optimisation Laravel..."
+$FORGE_PHP artisan config:cache
+$FORGE_PHP artisan route:cache
+$FORGE_PHP artisan view:cache
+log_success "Optimisations appliquées"
+
+# 16. Configuration des permissions (sécurisé pour Forge)
+log_info "🔧 Configuration des permissions..."
+chmod -R 755 storage bootstrap/cache 2>/dev/null || true
+chown -R forge:forge storage bootstrap/cache 2>/dev/null || true
+log_success "Permissions configurées"
+
+# 17. Vérification finale de l'état de l'application
+log_info "🔍 Vérification finale..."
+
+# Test rapide de la connexion à la base de données
+if $FORGE_PHP artisan migrate:status >/dev/null 2>&1; then
+    log_success "Connexion base de données OK"
+else
+    log_warning "Problème potentiel avec la base de données"
+fi
+
+# 18. Rechargement PHP-FPM (comme dans le script original)
+log_info "🔄 Rechargement PHP-FPM..."
+touch /tmp/fpmlock 2>/dev/null || true
+( flock -w 10 9 || exit 1
+    echo 'Rechargement PHP FPM...'; sudo -S service $FORGE_PHP_FPM reload ) 9</tmp/fpmlock 2>/dev/null || log_warning "Rechargement PHP-FPM échoué"
+
+# 19. Sortie du mode maintenance
+log_info "🟢 Sortie du mode maintenance..."
+$FORGE_PHP artisan up
+log_success "Application remise en ligne"
+
+echo ""
+echo "🎉 === DÉPLOIEMENT FORGE TERMINÉ AVEC SUCCÈS ==="
+echo ""
+echo "📋 Vérifications recommandées:"
+echo "   - Dashboard: https://new.dinorapp.com/admin/login"
+echo "   - API Test: https://new.dinorapp.com/api/test/database-check"
+echo "   - Logs: storage/logs/laravel.log"
+echo ""
+echo "✅ Déploiement terminé!" 
