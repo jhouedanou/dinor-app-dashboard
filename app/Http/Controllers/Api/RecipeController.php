@@ -10,11 +10,11 @@ class RecipeController extends Controller
 {
     public function index(Request $request)
     {
+        // Version de diagnostic sans filtres restrictifs
         $query = Recipe::with('category')
-            ->published()
             ->orderBy('created_at', 'desc');
 
-        // Filtres
+        // Filtres optionnels seulement
         if ($request->has('category_id')) {
             $query->where('category_id', $request->category_id);
         }
@@ -24,7 +24,11 @@ class RecipeController extends Controller
         }
 
         if ($request->has('featured')) {
-            $query->featured();
+            $query->where('is_featured', true);
+        }
+
+        if ($request->has('published_only')) {
+            $query->where('is_published', true);
         }
 
         if ($request->has('search')) {
@@ -45,6 +49,11 @@ class RecipeController extends Controller
                 'last_page' => $recipes->lastPage(),
                 'per_page' => $recipes->perPage(),
                 'total' => $recipes->total(),
+            ],
+            'debug_info' => [
+                'total_recipes_in_db' => Recipe::count(),
+                'published_recipes' => Recipe::where('is_published', true)->count(),
+                'featured_recipes' => Recipe::where('is_featured', true)->count(),
             ]
         ]);
     }

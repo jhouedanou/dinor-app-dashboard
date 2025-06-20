@@ -84,4 +84,47 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     // Comments - Routes protégées (modification/suppression)
     Route::put('/comments/{comment}', [CommentController::class, 'update']);
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy']);
+});
+
+// Routes de test pour diagnostiquer le problème des données vides
+Route::prefix('test')->group(function () {
+    // Test sans filtres
+    Route::get('/recipes-all', function() {
+        $recipes = \App\Models\Recipe::all();
+        return response()->json([
+            'total_recipes' => $recipes->count(),
+            'published_recipes' => \App\Models\Recipe::where('is_published', true)->count(),
+            'featured_recipes' => \App\Models\Recipe::where('is_featured', true)->count(),
+            'sample_recipe' => $recipes->first(),
+        ]);
+    });
+    
+    Route::get('/events-all', function() {
+        $events = \App\Models\Event::all();
+        return response()->json([
+            'total_events' => $events->count(),
+            'published_events' => \App\Models\Event::where('is_published', true)->count(),
+            'active_events' => \App\Models\Event::where('status', 'active')->count(),
+            'sample_event' => $events->first(),
+        ]);
+    });
+    
+    Route::get('/categories-all', function() {
+        $categories = \App\Models\Category::all();
+        return response()->json([
+            'total_categories' => $categories->count(),
+            'sample_category' => $categories->first(),
+        ]);
+    });
+    
+    Route::get('/database-check', function() {
+        return response()->json([
+            'database_connected' => true,
+            'recipes_count' => \App\Models\Recipe::count(),
+            'events_count' => \App\Models\Event::count(),
+            'categories_count' => \App\Models\Category::count(),
+            'tips_count' => \App\Models\Tip::count(),
+            'users_count' => \App\Models\User::count(),
+        ]);
+    });
 }); 

@@ -10,22 +10,29 @@ class EventController extends Controller
 {
     public function index(Request $request)
     {
+        // Version de diagnostic sans filtres restrictifs
         $query = Event::with('category')
-            ->published()
-            ->active()
             ->orderBy('start_date', 'asc');
 
-        // Filtres
+        // Filtres optionnels seulement
         if ($request->has('category_id')) {
             $query->where('category_id', $request->category_id);
         }
 
         if ($request->has('upcoming')) {
-            $query->upcoming();
+            $query->where('start_date', '>=', now()->toDateString());
         }
 
         if ($request->has('featured')) {
-            $query->featured();
+            $query->where('is_featured', true);
+        }
+
+        if ($request->has('published_only')) {
+            $query->where('is_published', true);
+        }
+
+        if ($request->has('active_only')) {
+            $query->where('status', 'active');
         }
 
         if ($request->has('location')) {
@@ -51,6 +58,11 @@ class EventController extends Controller
                 'last_page' => $events->lastPage(),
                 'per_page' => $events->perPage(),
                 'total' => $events->total(),
+            ],
+            'debug_info' => [
+                'total_events_in_db' => Event::count(),
+                'published_events' => Event::where('is_published', true)->count(),
+                'active_events' => Event::where('status', 'active')->count(),
             ]
         ]);
     }
