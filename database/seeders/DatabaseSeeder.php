@@ -17,15 +17,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Créer un utilisateur admin par défaut
-        \App\Models\AdminUser::firstOrCreate(
-            ['email' => 'admin@dinor.app'],
-            [
-                'name' => 'Administrateur Dinor',
-                'password' => \Hash::make('Dinor2024!Admin'),
-                'is_active' => true,
-            ]
-        );
+        // Exécuter le seeder pour l'utilisateur admin
+        $this->call([
+            AdminUserSeeder::class,
+        ]);
 
         // Créer des catégories
         $categories = [
