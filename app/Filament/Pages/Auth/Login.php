@@ -30,12 +30,12 @@ class Login extends BaseLogin
             ]);
     }
 
-    public function getTitle()
+    public function getTitle(): string | Htmlable
     {
         return __('dinor.login_title');
     }
 
-    public function getHeading()
+    public function getHeading(): string | Htmlable
     {
         return __('dinor.login_title');
     }
@@ -47,16 +47,12 @@ class Login extends BaseLogin
 
     protected function getCredentialsFromFormData(array $data): array
     {
-        try {
-            \Log::info('LOGIN ATTEMPT', [
-                'email' => $data['email'],
-                'guard' => $this->getAuthGuard(),
-                'admin_users_count' => \App\Models\AdminUser::count(),
-                'user_exists' => \App\Models\AdminUser::where('email', $data['email'])->exists(),
-            ]);
-        } catch (\Exception $e) {
-            // Ignore log errors to prevent authentication failures
-        }
+        \Log::info('LOGIN ATTEMPT', [
+            'email' => $data['email'],
+            'guard' => $this->getAuthGuard(),
+            'admin_users_count' => \App\Models\AdminUser::count(),
+            'user_exists' => \App\Models\AdminUser::where('email', $data['email'])->exists(),
+        ]);
         
         return [
             'email' => $data['email'],
@@ -66,17 +62,11 @@ class Login extends BaseLogin
 
     protected function throwFailureValidationException(): never
     {
-        try {
-            \Log::error('LOGIN FAILED', [
-                'guard' => $this->getAuthGuard(),
-                'attempted_email' => $this->form->getState()['email'] ?? 'unknown',
-            ]);
-        } catch (\Exception $e) {
-            // Ignore log errors to prevent authentication failures
-        }
+        \Log::error('LOGIN FAILED', [
+            'guard' => $this->getAuthGuard(),
+            'attempted_email' => $this->form->getState()['email'] ?? 'unknown',
+        ]);
         
-        // Rediriger vers la page d'erreur personnalisée au lieu d'afficher l'erreur standard
-        redirect()->route('admin.login.error')->send();
-        exit;
+        parent::throwFailureValidationException();
     }
 } 

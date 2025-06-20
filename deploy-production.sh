@@ -190,7 +190,7 @@ update_env_var "SANCTUM_STATEFUL_DOMAINS" "new.dinorapp.com,dinorapp.com,localho
 # Variables pour l'admin par défaut
 update_env_var "ADMIN_DEFAULT_EMAIL" "$ADMIN_EMAIL"
 update_env_var "ADMIN_DEFAULT_PASSWORD" "Dinor2024!Admin"
-update_env_var "ADMIN_DEFAULT_NAME" "AdministrateurDinor"
+update_env_var "ADMIN_DEFAULT_NAME" "Administrateur Dinor"
 
 log_success "Variables d'environnement configurées"
 

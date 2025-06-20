@@ -19,7 +19,7 @@ class ProductionAdminSeeder extends Seeder
         $adminData = [
             'email' => 'admin@dinor.app',
             'password' => 'Dinor2024!Admin',
-            'name' => 'AdministrateurDinor'
+            'name' => 'Administrateur Dinor'
         ];
 
         $this->command->info("🚀 === PRODUCTION ADMIN SEEDER ===");

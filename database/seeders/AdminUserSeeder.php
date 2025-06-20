@@ -18,7 +18,7 @@ class AdminUserSeeder extends Seeder
         // Forcer l'utilisation des valeurs par défaut pour la production
         $adminEmail = env('ADMIN_DEFAULT_EMAIL', 'admin@dinor.app');
         $adminPassword = env('ADMIN_DEFAULT_PASSWORD', 'Dinor2024!Admin');
-        $adminName = env('ADMIN_DEFAULT_NAME', 'AdministrateurDinor');
+        $adminName = env('ADMIN_DEFAULT_NAME', 'Administrateur Dinor');
 
         $this->command->info("🚀 === CRÉATION/MISE À JOUR ADMIN DINOR DASHBOARD ===");
         $this->command->info("📧 Email admin: {$adminEmail}");
