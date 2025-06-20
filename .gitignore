@@ -1,18 +1,109 @@
+# === Laravel Framework ===
+/vendor
 /node_modules
 /public/build
 /public/hot
 /public/storage
 /storage/*.key
-/vendor
 .env
 .env.backup
 .env.production
+.env.local
+.env.*.local
+
+# === Logs ===
+/storage/logs/*.log
+/storage/logs/laravel.log
+storage/logs/laravel.log
+*.log
+
+# === Cache et Sessions ===
+/bootstrap/cache/*.php
+/storage/framework/cache/data/*/*
+/storage/framework/sessions/*
+/storage/framework/views/*.php
+/storage/app/public/*
+/storage/debugbar/*
+
+# === Fichiers temporaires ===
+/storage/app/livewire-tmp/*
+/storage/app/public/livewire-tmp/*
+/public/livewire-tmp/*
+
+# === Tests ===
 .phpunit.result.cache
+/phpunit.xml
+/tests/coverage/*
+/coverage/*
+
+# === IDE et Éditeurs ===
+/.fleet
+/.idea
+/.vscode
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# === Outils de développement ===
 Homestead.json
 Homestead.yaml
 auth.json
 npm-debug.log
 yarn-error.log
-/.fleet
-/.idea
-/.vscode storage/logs/laravel.log
+.yarn-integrity
+
+# === Fichiers de backup ===
+*.backup
+*.bak
+*.tmp
+
+# === Base de données ===
+*.sqlite
+*.sqlite3
+database.sqlite
+
+# === Composer ===
+composer.phar
+/vendor/
+
+# === NPM/Yarn ===
+/node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# === Production ===
+/public/mix-manifest.json
+/public/js/app.js
+/public/css/app.css
+
+# === Divers ===
+.php_cs.cache
+.phpcs.cache
+.phpstan.cache
+.psalm_baseline.xml
+
+# === Fichiers OS ===
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# === Scripts de développement local ===
+# Garder les scripts de déploiement mais ignorer les scripts de dev local
+local-*.sh
+dev-*.sh
+test-*.sh
+
+# === Configuration spécifique serveur ===
+# On garde les configs importantes comme deploy-production.sh
+# mais on ignore les configs locales
+local.conf
+*.local.conf
