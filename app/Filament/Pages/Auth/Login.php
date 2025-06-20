@@ -30,12 +30,12 @@ class Login extends BaseLogin
             ]);
     }
 
-    public function getTitle(): string | Htmlable
+    public function getTitle()
     {
         return __('dinor.login_title');
     }
 
-    public function getHeading(): string | Htmlable
+    public function getHeading()
     {
         return __('dinor.login_title');
     }
@@ -47,12 +47,16 @@ class Login extends BaseLogin
 
     protected function getCredentialsFromFormData(array $data): array
     {
-        \Log::info('LOGIN ATTEMPT', [
-            'email' => $data['email'],
-            'guard' => $this->getAuthGuard(),
-            'admin_users_count' => \App\Models\AdminUser::count(),
-            'user_exists' => \App\Models\AdminUser::where('email', $data['email'])->exists(),
-        ]);
+        try {
+            \Log::info('LOGIN ATTEMPT', [
+                'email' => $data['email'],
+                'guard' => $this->getAuthGuard(),
+                'admin_users_count' => \App\Models\AdminUser::count(),
+                'user_exists' => \App\Models\AdminUser::where('email', $data['email'])->exists(),
+            ]);
+        } catch (\Exception $e) {
+            // Ignore log errors to prevent authentication failures
+        }
         
         return [
             'email' => $data['email'],
@@ -62,10 +66,14 @@ class Login extends BaseLogin
 
     protected function throwFailureValidationException(): never
     {
-        \Log::error('LOGIN FAILED', [
-            'guard' => $this->getAuthGuard(),
-            'attempted_email' => $this->form->getState()['email'] ?? 'unknown',
-        ]);
+        try {
+            \Log::error('LOGIN FAILED', [
+                'guard' => $this->getAuthGuard(),
+                'attempted_email' => $this->form->getState()['email'] ?? 'unknown',
+            ]);
+        } catch (\Exception $e) {
+            // Ignore log errors to prevent authentication failures
+        }
         
         parent::throwFailureValidationException();
     }
