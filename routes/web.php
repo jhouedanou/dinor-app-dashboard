@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\LoginErrorController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,4 +20,7 @@ Route::get('/', function () {
 
 Route::get('/dashboard', function () {
     return redirect('/admin');
-})->name('dashboard'); 
+})->name('dashboard');
+
+// Route pour la page d'erreur de connexion admin
+Route::get('/admin/login-error', [LoginErrorController::class, 'show'])->name('admin.login.error');

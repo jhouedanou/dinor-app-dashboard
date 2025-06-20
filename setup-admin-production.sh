@@ -61,7 +61,7 @@ update_env_var() {
 # Variables essentielles pour l'admin
 update_env_var "ADMIN_DEFAULT_EMAIL" "admin@dinor.app"
 update_env_var "ADMIN_DEFAULT_PASSWORD" "Dinor2024!Admin"
-update_env_var "ADMIN_DEFAULT_NAME" "Administrateur Dinor"
+update_env_var "ADMIN_DEFAULT_NAME" "AdministrateurDinor"
 
 log_success "Variables d'environnement configurées"
 

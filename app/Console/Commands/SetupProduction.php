@@ -101,7 +101,7 @@ class SetupProduction extends Command
     {
         $email = env('ADMIN_DEFAULT_EMAIL', 'admin@dinor.app');
         $password = env('ADMIN_DEFAULT_PASSWORD', 'Dinor2024!Admin');
-        $name = env('ADMIN_DEFAULT_NAME', 'Administrateur Dinor');
+        $name = env('ADMIN_DEFAULT_NAME', 'AdministrateurDinor');
 
         $admin = AdminUser::where('email', $email)->first();
 
