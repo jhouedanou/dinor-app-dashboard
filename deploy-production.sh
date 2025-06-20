@@ -230,9 +230,29 @@ run_php artisan migrate --force
 log_success "Migrations exécutées"
 
 # 10. Exécution des seeders (y compris AdminUserSeeder)
-log_info "10. Exécution des seeders..."
-run_php artisan db:seed --class=AdminUserSeeder --force
-log_success "Seeders exécutés - Utilisateur admin créé/mis à jour"
+log_info "10. Exécution des seeders admin..."
+
+# Essayer d'abord le seeder spécialisé pour la production
+if run_php artisan db:seed --class=ProductionAdminSeeder --force 2>/dev/null; then
+    log_success "✅ Admin production configuré avec le seeder spécialisé"
+else
+    log_warning "Seeder spécialisé non trouvé, utilisation du seeder standard..."
+    run_php artisan db:seed --class=AdminUserSeeder --force
+    log_success "✅ Admin configuré avec le seeder standard"
+fi
+
+# Vérification de l'admin créé
+ADMIN_VERIFICATION=$(run_php artisan tinker --execute="
+\$admin = App\\Models\\AdminUser::where('email', 'admin@dinor.app')->first();
+echo \$admin ? 'ADMIN_OK:' . \$admin->id : 'ADMIN_MISSING';
+" 2>/dev/null | grep -E "ADMIN_OK|ADMIN_MISSING")
+
+if [[ $ADMIN_VERIFICATION == *"ADMIN_OK"* ]]; then
+    log_success "✅ Admin vérifié et opérationnel"
+else
+    log_error "❌ Problème avec la création de l'admin"
+    exit 1
+fi
 
 # 11. Optimisation pour la production
 log_info "11. Optimisation pour la production..."
