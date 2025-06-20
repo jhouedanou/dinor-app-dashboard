@@ -91,7 +91,7 @@ Ajoutez ces variables à votre fichier `.env` pour configurer automatiquement l'
 # Configuration admin par défaut
 ADMIN_DEFAULT_EMAIL=admin@dinor.app
 ADMIN_DEFAULT_PASSWORD=Dinor2024!Admin
-ADMIN_DEFAULT_NAME=AdministrateurDinor
+ADMIN_DEFAULT_NAME=Administrateur Dinor
 
 # Configuration production
 APP_ENV=production

@@ -23,7 +23,7 @@ try {
 
 // Informations de l'admin
 $adminEmail = 'admin@dinor.app';
-$adminName = 'AdministrateurDinor';
+$adminName = 'Administrateur Dinor';
 $adminPassword = 'Dinor2024!Admin';
 
 // Hacher le mot de passe (Laravel utilise bcrypt)
