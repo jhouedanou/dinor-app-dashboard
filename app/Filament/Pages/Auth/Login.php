@@ -75,6 +75,9 @@ class Login extends BaseLogin
             // Ignore log errors to prevent authentication failures
         }
         
+        // Rediriger vers la page d'erreur personnalisée
+        $this->redirect(route('admin.login.error'));
+        
         parent::throwFailureValidationException();
     }
 } 

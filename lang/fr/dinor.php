@@ -259,4 +259,23 @@ return [
     'login_button' => 'Se connecter',
     'invalid_credentials' => 'Identifiants invalides',
     'access_denied' => 'Accès refusé',
+    
+    // Page d'erreur de connexion
+    'login_error_title' => 'Erreur de Connexion - Dashboard Dinor',
+    'login_error_heading' => 'Accès Refusé',
+    'login_error_subheading' => 'Vos identifiants de connexion sont incorrects ou votre compte n\'est pas autorisé.',
+    
+    'login_error_details_title' => 'Pourquoi cette erreur ?',
+    'login_error_reason_1' => 'L\'adresse email ou le mot de passe saisi est incorrect',
+    'login_error_reason_2' => 'Votre compte administrateur n\'est pas activé',
+    'login_error_reason_3' => 'Vous n\'avez pas les droits d\'accès à cette section',
+    
+    'login_error_tips_title' => 'Que faire ?',
+    'login_error_tip_1' => 'Vérifiez que vous utilisez la bonne adresse email',
+    'login_error_tip_2' => 'Assurez-vous que votre mot de passe est correct (attention aux majuscules/minuscules)',
+    'login_error_tip_3' => 'Contactez le support technique si le problème persiste',
+    
+    'return_to_login' => 'Retour à la Connexion',
+    'contact_support' => 'Contacter le Support',
+    'all_rights_reserved' => 'Tous droits réservés',
 ]; 
