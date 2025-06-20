@@ -113,7 +113,7 @@ update_env_var() {
 # Variables pour l'admin (identiques au local)
 update_env_var "ADMIN_DEFAULT_EMAIL" "admin@dinor.app"
 update_env_var "ADMIN_DEFAULT_PASSWORD" "Dinor2024!Admin"
-update_env_var "ADMIN_DEFAULT_NAME" "Administrateur Dinor"
+update_env_var "ADMIN_DEFAULT_NAME" "AdministrateurDinor"
 
 # Variables de production importantes
 update_env_var "APP_ENV" "production"
@@ -202,7 +202,7 @@ else
         \$admin = App\\Models\\AdminUser::updateOrCreate(
             ['email' => 'admin@dinor.app'],
             [
-                'name' => 'Administrateur Dinor',
+                                 'name' => 'AdministrateurDinor',
                 'password' => bcrypt('Dinor2024!Admin'),
                 'email_verified_at' => now(),
                 'is_active' => true
