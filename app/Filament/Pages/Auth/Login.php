@@ -8,6 +8,7 @@ use Filament\Forms\Form;
 use Filament\Pages\Auth\Login as BaseLogin;
 use Illuminate\Contracts\Support\Htmlable;
 use Filament\Http\Responses\Auth\Contracts\LoginResponse;
+use Illuminate\Support\Facades\Auth;
 
 class Login extends BaseLogin
 {
