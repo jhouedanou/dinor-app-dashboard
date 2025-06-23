@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\TipController;
 use App\Http\Controllers\Api\DinorTvController;
 use App\Http\Controllers\Api\LikeController;
 use App\Http\Controllers\Api\CommentController;
+use App\Http\Controllers\Api\CategoryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,6 +29,11 @@ Route::prefix('v1')->group(function () {
     Route::get('/recipes/{id}', [RecipeController::class, 'show']);
     Route::get('/recipes/featured/list', [RecipeController::class, 'featured']);
     Route::get('/recipes/categories/list', [RecipeController::class, 'categories']);
+    
+    // Catégories
+    Route::get('/categories', [CategoryController::class, 'index']);
+    Route::post('/categories', [CategoryController::class, 'store']);
+    Route::get('/categories/check', [CategoryController::class, 'checkExists']);
     
     // Astuces
     Route::get('/tips', [TipController::class, 'index']);

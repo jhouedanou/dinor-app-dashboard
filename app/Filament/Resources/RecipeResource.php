@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\RecipeResource\Pages;
 use App\Filament\Components\IngredientsRepeater;
 use App\Filament\Components\InstructionsField;
+use App\Filament\Components\CategorySelect;
 use App\Models\Recipe;
 use App\Models\Category;
 use Filament\Forms;
@@ -17,11 +18,11 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class RecipeResource extends Resource
 {
-    protected static ?string $model = Recipe::class;
-    protected static ?string $navigationIcon = 'heroicon-o-cake';
-    protected static ?string $navigationLabel = 'Recettes';
-    protected static ?string $navigationGroup = 'Contenu';
-    protected static ?int $navigationSort = 1;
+    public static ?string $model = Recipe::class;
+    public static ?string $navigationIcon = 'heroicon-o-cake';
+    public static ?string $navigationLabel = 'Recettes';
+    public static ?string $navigationGroup = 'Contenu';
+    public static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
@@ -46,15 +47,7 @@ class RecipeResource extends Resource
                             ->maxLength(255)
                             ->unique(Recipe::class, 'slug'),
                         
-                        Forms\Components\Select::make('category_id')
-                            ->label('Catégorie')
-                            ->options(Category::active()->pluck('name', 'id'))
-                            ->required()
-                            ->searchable()
-                            ->live()
-                            ->afterStateUpdated(function ($set) {
-                                $set('subcategory', null);
-                            }),
+                        CategorySelect::make('category_id'),
                             
                         Forms\Components\TextInput::make('subcategory')
                             ->label('Sous-catégorie')

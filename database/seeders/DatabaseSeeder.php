@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
         // Exécuter le seeder pour l'utilisateur admin
         $this->call([
             AdminUserSeeder::class,
+            CategorySeeder::class,
         ]);
 
         // Créer des catégories
