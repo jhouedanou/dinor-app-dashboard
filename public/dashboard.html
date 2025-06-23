@@ -212,223 +212,6 @@
                 </div>
             </div>
 
-            <!-- Section des Routes API -->
-            <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
-                <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4">
-                    <h2 class="text-2xl font-bold text-white flex items-center">
-                        <svg class="w-8 h-8 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                        </svg>
-                        Routes API Disponibles
-                    </h2>
-                    <p class="text-blue-100 mt-1">Endpoints pour l'intégration avec l'application mobile</p>
-                </div>
-                
-                <div class="p-6">
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        
-                        <!-- Recettes API -->
-                        <div class="border border-gray-200 rounded-lg p-4">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                                🍽️ API Recettes
-                            </h3>
-                            <div class="space-y-2 text-sm">
-                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                                    <span class="font-mono text-green-600">GET</span>
-                                    <a href="/api/v1/recipes" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/recipes</a>
-                                </div>
-                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                                    <span class="font-mono text-green-600">GET</span>
-                                    <a href="/api/v1/recipes/1" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/recipes/{id}</a>
-                                </div>
-                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                                    <span class="font-mono text-green-600">GET</span>
-                                    <a href="/api/v1/recipes/featured/list" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/recipes/featured/list</a>
-                                </div>
-                                <div class="flex justify-between items-center py-2">
-                                    <span class="font-mono text-green-600">GET</span>
-                                    <a href="/api/v1/recipes/categories/list" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/recipes/categories/list</a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Catégories API -->
-                        <div class="border border-gray-200 rounded-lg p-4">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                                🏷️ API Catégories
-                            </h3>
-                            <div class="space-y-2 text-sm">
-                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                                    <span class="font-mono text-green-600">GET</span>
-                                    <a href="/api/v1/categories" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/categories</a>
-                                </div>
-                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                                    <span class="font-mono text-blue-600">POST</span>
-                                    <span class="text-gray-600 font-mono text-xs">/api/v1/categories</span>
-                                </div>
-                                <div class="flex justify-between items-center py-2">
-                                    <span class="font-mono text-green-600">GET</span>
-                                    <a href="/api/v1/categories/check" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/categories/check</a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Événements API -->
-                        <div class="border border-gray-200 rounded-lg p-4">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                                📅 API Événements
-                            </h3>
-                            <div class="space-y-2 text-sm">
-                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                                    <span class="font-mono text-green-600">GET</span>
-                                    <a href="/api/v1/events" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/events</a>
-                                </div>
-                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                                    <span class="font-mono text-green-600">GET</span>
-                                    <a href="/api/v1/events/1" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/events/{id}</a>
-                                </div>
-                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                                    <span class="font-mono text-green-600">GET</span>
-                                    <a href="/api/v1/events/upcoming/list" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/events/upcoming/list</a>
-                                </div>
-                                <div class="flex justify-between items-center py-2">
-                                    <span class="font-mono text-green-600">GET</span>
-                                    <a href="/api/v1/events/featured/list" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/events/featured/list</a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Astuces API -->
-                        <div class="border border-gray-200 rounded-lg p-4">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                                💡 API Astuces
-                            </h3>
-                            <div class="space-y-2 text-sm">
-                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                                    <span class="font-mono text-green-600">GET</span>
-                                    <a href="/api/v1/tips" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/tips</a>
-                                </div>
-                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                                    <span class="font-mono text-green-600">GET</span>
-                                    <a href="/api/v1/tips/1" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/tips/{id}</a>
-                                </div>
-                                <div class="flex justify-between items-center py-2">
-                                    <span class="font-mono text-green-600">GET</span>
-                                    <a href="/api/v1/tips/featured/list" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/tips/featured/list</a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Dinor TV API -->
-                        <div class="border border-gray-200 rounded-lg p-4">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                                📺 API Dinor TV
-                            </h3>
-                            <div class="space-y-2 text-sm">
-                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                                    <span class="font-mono text-green-600">GET</span>
-                                    <a href="/api/v1/dinor-tv" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/dinor-tv</a>
-                                </div>
-                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                                    <span class="font-mono text-green-600">GET</span>
-                                    <a href="/api/v1/dinor-tv/featured/list" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/dinor-tv/featured/list</a>
-                                </div>
-                                <div class="flex justify-between items-center py-2">
-                                    <span class="font-mono text-green-600">GET</span>
-                                    <a href="/api/v1/dinor-tv/live/list" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/dinor-tv/live/list</a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Pages API -->
-                        <div class="border border-gray-200 rounded-lg p-4">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                                📄 API Pages
-                            </h3>
-                            <div class="space-y-2 text-sm">
-                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                                    <span class="font-mono text-green-600">GET</span>
-                                    <a href="/api/v1/pages" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/pages</a>
-                                </div>
-                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                                    <span class="font-mono text-green-600">GET</span>
-                                    <a href="/api/v1/pages/homepage" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/pages/homepage</a>
-                                </div>
-                                <div class="flex justify-between items-center py-2">
-                                    <span class="font-mono text-green-600">GET</span>
-                                    <a href="/api/v1/pages/menu" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/pages/menu</a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Dashboard API -->
-                        <div class="border border-gray-200 rounded-lg p-4">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                                📊 API Dashboard
-                            </h3>
-                            <div class="space-y-2 text-sm">
-                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                                    <span class="font-mono text-green-600">GET</span>
-                                    <a href="/api/v1/dashboard" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/dashboard</a>
-                                </div>
-                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                                    <span class="font-mono text-green-600">GET</span>
-                                    <a href="/api/v1/likes" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/likes</a>
-                                </div>
-                                <div class="flex justify-between items-center py-2">
-                                    <span class="font-mono text-green-600">GET</span>
-                                    <a href="/api/v1/comments" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/comments</a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Routes de Test -->
-                        <div class="border border-orange-200 rounded-lg p-4 bg-orange-50">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                                🔧 Routes de Test
-                            </h3>
-                            <div class="space-y-2 text-sm">
-                                <div class="flex justify-between items-center py-2 border-b border-orange-200">
-                                    <span class="font-mono text-green-600">GET</span>
-                                    <a href="/api/test/recipes-all" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/test/recipes-all</a>
-                                </div>
-                                <div class="flex justify-between items-center py-2 border-b border-orange-200">
-                                    <span class="font-mono text-green-600">GET</span>
-                                    <a href="/api/test/events-all" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/test/events-all</a>
-                                </div>
-                                <div class="flex justify-between items-center py-2 border-b border-orange-200">
-                                    <span class="font-mono text-green-600">GET</span>
-                                    <a href="/api/test/categories-all" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/test/categories-all</a>
-                                </div>
-                                <div class="flex justify-between items-center py-2">
-                                    <span class="font-mono text-green-600">GET</span>
-                                    <a href="/api/test/database-check" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/test/database-check</a>
-                                </div>
-                            </div>
-                        </div>
-                        
-                    </div>
-                    
-                    <!-- Note d'information -->
-                    <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <div class="flex items-start">
-                            <svg class="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            <div class="text-sm text-blue-800">
-                                <p class="font-semibold mb-1">Notes importantes :</p>
-                                <ul class="list-disc list-inside space-y-1">
-                                    <li>Toutes les routes API sont accessibles sans authentification</li>
-                                    <li>Les réponses sont au format JSON</li>
-                                    <li>Certaines routes POST nécessitent des données en body</li>
-                                    <li>Les routes de test sont utiles pour le debugging</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Navigation par onglets améliorée -->
             <div class="bg-white rounded-xl shadow-lg overflow-hidden">
                 <div class="border-b border-gray-200 bg-gray-50">
@@ -1004,6 +787,225 @@
                             <span x-show="modal.type === 'recipe'">📖 Voir la recette complète</span>
                             <span x-show="modal.type === 'event'">📅 S'inscrire à l'événement</span>
                         </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section des Routes API -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
+                <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4">
+                    <h2 class="text-2xl font-bold text-white flex items-center">
+                        <svg class="w-8 h-8 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        Routes API Disponibles
+                    </h2>
+                    <p class="text-blue-100 mt-1">Endpoints pour l'intégration avec l'application mobile</p>
+                </div>
+                
+                <div class="p-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        
+                        <!-- Recettes API -->
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                                🍽️ API Recettes
+                            </h3>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                    <span class="font-mono text-green-600">GET</span>
+                                    <a href="/api/v1/recipes" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/recipes</a>
+                                </div>
+                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                    <span class="font-mono text-green-600">GET</span>
+                                    <a href="/api/v1/recipes/1" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/recipes/{id}</a>
+                                </div>
+                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                    <span class="font-mono text-green-600">GET</span>
+                                    <a href="/api/v1/recipes/featured/list" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/recipes/featured/list</a>
+                                </div>
+                                <div class="flex justify-between items-center py-2">
+                                    <span class="font-mono text-green-600">GET</span>
+                                    <a href="/api/v1/recipes/categories/list" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/recipes/categories/list</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Catégories API -->
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                                🏷️ API Catégories
+                            </h3>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                    <span class="font-mono text-green-600">GET</span>
+                                    <a href="/api/v1/categories" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/categories</a>
+                                </div>
+                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                    <span class="font-mono text-blue-600">POST</span>
+                                    <span class="text-gray-600 font-mono text-xs">/api/v1/categories</span>
+                                </div>
+                                <div class="flex justify-between items-center py-2">
+                                    <span class="font-mono text-green-600">GET</span>
+                                    <a href="/api/v1/categories/check" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/categories/check</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Événements API -->
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                                📅 API Événements
+                            </h3>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                    <span class="font-mono text-green-600">GET</span>
+                                    <a href="/api/v1/events" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/events</a>
+                                </div>
+                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                    <span class="font-mono text-green-600">GET</span>
+                                    <a href="/api/v1/events/1" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/events/{id}</a>
+                                </div>
+                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                    <span class="font-mono text-green-600">GET</span>
+                                    <a href="/api/v1/events/upcoming/list" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/events/upcoming/list</a>
+                                </div>
+                                <div class="flex justify-between items-center py-2">
+                                    <span class="font-mono text-green-600">GET</span>
+                                    <a href="/api/v1/events/featured/list" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/events/featured/list</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Astuces API -->
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                                💡 API Astuces
+                            </h3>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                    <span class="font-mono text-green-600">GET</span>
+                                    <a href="/api/v1/tips" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/tips</a>
+                                </div>
+                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                    <span class="font-mono text-green-600">GET</span>
+                                    <a href="/api/v1/tips/1" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/tips/{id}</a>
+                                </div>
+                                <div class="flex justify-between items-center py-2">
+                                    <span class="font-mono text-green-600">GET</span>
+                                    <a href="/api/v1/tips/featured/list" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/tips/featured/list</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dinor TV API -->
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                                📺 API Dinor TV
+                            </h3>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                    <span class="font-mono text-green-600">GET</span>
+                                    <a href="/api/v1/dinor-tv" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/dinor-tv</a>
+                                </div>
+                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                    <span class="font-mono text-green-600">GET</span>
+                                    <a href="/api/v1/dinor-tv/featured/list" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/dinor-tv/featured/list</a>
+                                </div>
+                                <div class="flex justify-between items-center py-2">
+                                    <span class="font-mono text-green-600">GET</span>
+                                    <a href="/api/v1/dinor-tv/live/list" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/dinor-tv/live/list</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pages API -->
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                                📄 API Pages
+                            </h3>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                    <span class="font-mono text-green-600">GET</span>
+                                    <a href="/api/v1/pages" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/pages</a>
+                                </div>
+                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                    <span class="font-mono text-green-600">GET</span>
+                                    <a href="/api/v1/pages/homepage" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/pages/homepage</a>
+                                </div>
+                                <div class="flex justify-between items-center py-2">
+                                    <span class="font-mono text-green-600">GET</span>
+                                    <a href="/api/v1/pages/menu" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/pages/menu</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dashboard API -->
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                                📊 API Dashboard
+                            </h3>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                    <span class="font-mono text-green-600">GET</span>
+                                    <a href="/api/v1/dashboard" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/dashboard</a>
+                                </div>
+                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                    <span class="font-mono text-green-600">GET</span>
+                                    <a href="/api/v1/likes" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/likes</a>
+                                </div>
+                                <div class="flex justify-between items-center py-2">
+                                    <span class="font-mono text-green-600">GET</span>
+                                    <a href="/api/v1/comments" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/v1/comments</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Routes de Test -->
+                        <div class="border border-orange-200 rounded-lg p-4 bg-orange-50">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                                🔧 Routes de Test
+                            </h3>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between items-center py-2 border-b border-orange-200">
+                                    <span class="font-mono text-green-600">GET</span>
+                                    <a href="/api/test/recipes-all" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/test/recipes-all</a>
+                                </div>
+                                <div class="flex justify-between items-center py-2 border-b border-orange-200">
+                                    <span class="font-mono text-green-600">GET</span>
+                                    <a href="/api/test/events-all" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/test/events-all</a>
+                                </div>
+                                <div class="flex justify-between items-center py-2 border-b border-orange-200">
+                                    <span class="font-mono text-green-600">GET</span>
+                                    <a href="/api/test/categories-all" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/test/categories-all</a>
+                                </div>
+                                <div class="flex justify-between items-center py-2">
+                                    <span class="font-mono text-green-600">GET</span>
+                                    <a href="/api/test/database-check" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono text-xs">/api/test/database-check</a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    
+                    <!-- Note d'information -->
+                    <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div class="flex items-start">
+                            <svg class="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <div class="text-sm text-blue-800">
+                                <p class="font-semibold mb-1">Notes importantes :</p>
+                                <ul class="list-disc list-inside space-y-1">
+                                    <li>Toutes les routes API sont accessibles sans authentification</li>
+                                    <li>Les réponses sont au format JSON</li>
+                                    <li>Certaines routes POST nécessitent des données en body</li>
+                                    <li>Les routes de test sont utiles pour le debugging</li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
