@@ -11,6 +11,7 @@ class Category extends Model
 
     protected $fillable = [
         'name',
+        'type',
         'slug',
         'description',
         'image',
@@ -46,5 +47,25 @@ class Category extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    public function scopeByType($query, $type)
+    {
+        return $query->where('type', $type);
+    }
+
+    public function scopeForEvents($query)
+    {
+        return $query->where('type', 'event');
+    }
+
+    public function scopeForRecipes($query)
+    {
+        return $query->where('type', 'recipe');
+    }
+
+    public function scopeGeneral($query)
+    {
+        return $query->where('type', 'general');
     }
 } 

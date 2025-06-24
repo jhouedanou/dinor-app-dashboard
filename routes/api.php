@@ -32,6 +32,8 @@ Route::prefix('v1')->group(function () {
     
     // Catégories
     Route::get('/categories', [CategoryController::class, 'index']);
+    Route::get('/categories/events', [CategoryController::class, 'events']);
+    Route::get('/categories/recipes', [CategoryController::class, 'recipes']);
     Route::post('/categories', [CategoryController::class, 'store']);
     Route::get('/categories/check', [CategoryController::class, 'checkExists']);
     
@@ -80,6 +82,48 @@ Route::prefix('v1')->group(function () {
                 'upcoming_events' => \App\Models\Event::published()->upcoming()->limit(5)->get(),
                 'latest_tips' => \App\Models\Tip::published()->orderBy('created_at', 'desc')->limit(5)->get(),
                 'featured_videos' => \App\Models\DinorTv::published()->featured()->limit(5)->get(),
+            ]
+        ]);
+    });
+
+    // Statistiques détaillées des likes par catégorie
+    Route::get('/likes/stats', function() {
+        $recipeLikes = \App\Models\Like::where('likeable_type', 'App\Models\Recipe')->count();
+        $eventLikes = \App\Models\Like::where('likeable_type', 'App\Models\Event')->count();
+        $tipLikes = \App\Models\Like::where('likeable_type', 'App\Models\Tip')->count();
+        $videoLikes = \App\Models\Like::where('likeable_type', 'App\Models\DinorTv')->count();
+        
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'total_likes' => $recipeLikes + $eventLikes + $tipLikes + $videoLikes,
+                'likes_by_category' => [
+                    'recipes' => $recipeLikes,
+                    'events' => $eventLikes,
+                    'tips' => $tipLikes,
+                    'videos' => $videoLikes
+                ]
+            ]
+        ]);
+    });
+
+    // Statistiques détaillées des commentaires par catégorie
+    Route::get('/comments/stats', function() {
+        $recipeComments = \App\Models\Comment::where('commentable_type', 'App\Models\Recipe')->count();
+        $eventComments = \App\Models\Comment::where('commentable_type', 'App\Models\Event')->count();
+        $tipComments = \App\Models\Comment::where('commentable_type', 'App\Models\Tip')->count();
+        $videoComments = \App\Models\Comment::where('commentable_type', 'App\Models\DinorTv')->count();
+        
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'total_comments' => $recipeComments + $eventComments + $tipComments + $videoComments,
+                'comments_by_category' => [
+                    'recipes' => $recipeComments,
+                    'events' => $eventComments,
+                    'tips' => $tipComments,
+                    'videos' => $videoComments
+                ]
             ]
         ]);
     });

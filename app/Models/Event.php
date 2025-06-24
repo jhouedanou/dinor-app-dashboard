@@ -138,6 +138,11 @@ class Event extends Model
         'rating_count' => 'integer'
     ];
 
+    protected $appends = [
+        'featured_image_url',
+        'gallery_urls'
+    ];
+
     public function category()
     {
         return $this->belongsTo(Category::class);

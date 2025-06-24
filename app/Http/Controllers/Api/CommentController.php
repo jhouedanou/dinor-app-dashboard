@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Recipe;
 use App\Models\Event;
 use App\Models\DinorTv;
+use App\Models\Tip;
 use App\Models\Comment;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -20,7 +21,7 @@ class CommentController extends Controller
     public function index(Request $request): JsonResponse
     {
         $request->validate([
-            'type' => 'required|in:recipe,event,dinor_tv',
+            'type' => 'required|in:recipe,event,dinor_tv,tip',
             'id' => 'required|integer|exists:' . $this->getTableName($request->type) . ',id',
             'per_page' => 'sometimes|integer|min:1|max:50'
         ]);
@@ -58,7 +59,7 @@ class CommentController extends Controller
     public function store(Request $request): JsonResponse
     {
         $request->validate([
-            'type' => 'required|in:recipe,event,dinor_tv',
+            'type' => 'required|in:recipe,event,dinor_tv,tip',
             'id' => 'required|integer|exists:' . $this->getTableName($request->type) . ',id',
             'content' => 'required|string|min:3|max:1000',
             'author_name' => 'required_without:user_id|string|max:100',
@@ -193,6 +194,7 @@ class CommentController extends Controller
             'recipe' => Recipe::find($id),
             'event' => Event::find($id),
             'dinor_tv' => DinorTv::find($id),
+            'tip' => Tip::find($id),
             default => null
         };
     }
@@ -206,6 +208,7 @@ class CommentController extends Controller
             'recipe' => 'recipes',
             'event' => 'events',
             'dinor_tv' => 'dinor_tv',
+            'tip' => 'tips',
             default => ''
         };
     }

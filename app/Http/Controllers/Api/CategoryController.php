@@ -13,9 +13,46 @@ class CategoryController extends Controller
     /**
      * Récupérer toutes les catégories actives
      */
-    public function index()
+    public function index(Request $request)
+    {
+        $query = Category::active()->orderBy('name');
+
+        // Filtrer par type si spécifié
+        if ($request->has('type')) {
+            $query->byType($request->type);
+        }
+
+        $categories = $query->get(['id', 'name', 'slug', 'type', 'color', 'icon']);
+
+        return response()->json([
+            'success' => true,
+            'data' => $categories
+        ]);
+    }
+
+    /**
+     * Récupérer les catégories d'événements uniquement
+     */
+    public function events()
     {
         $categories = Category::active()
+            ->forEvents()
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug', 'color', 'icon']);
+
+        return response()->json([
+            'success' => true,
+            'data' => $categories
+        ]);
+    }
+
+    /**
+     * Récupérer les catégories de recettes uniquement
+     */
+    public function recipes()
+    {
+        $categories = Category::active()
+            ->forRecipes()
             ->orderBy('name')
             ->get(['id', 'name', 'slug', 'color', 'icon']);
 
@@ -32,6 +69,7 @@ class CategoryController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'type' => 'required|in:general,recipe,event',
             'slug' => 'nullable|string|max:255|unique:categories,slug',
             'description' => 'nullable|string|max:500',
             'color' => 'nullable|string|max:7',
@@ -40,6 +78,7 @@ class CategoryController extends Controller
 
         $category = Category::create([
             'name' => $request->name,
+            'type' => $request->type,
             'slug' => $request->slug ?? Str::slug($request->name),
             'description' => $request->description,
             'color' => $request->color,
@@ -61,9 +100,16 @@ class CategoryController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'type' => 'nullable|in:general,recipe,event',
         ]);
 
-        $exists = Category::where('name', $request->name)->exists();
+        $query = Category::where('name', $request->name);
+        
+        if ($request->has('type')) {
+            $query->where('type', $request->type);
+        }
+
+        $exists = $query->exists();
 
         return response()->json([
             'success' => true,

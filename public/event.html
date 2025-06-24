@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Événement - Dinor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        [x-cloak] { display: none !important; }
+        .like-button {
+            transition: all 0.2s ease;
+        }
+        .like-button.liked {
+            color: #ef4444;
+            transform: scale(1.1);
+        }
+        .comment-form {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1rem;
+            background: #f9fafb;
+        }
+        .comment-item {
+            border-left: 3px solid #f59e0b;
+            padding-left: 1rem;
+            margin-bottom: 1rem;
+        }
+        .reply-form {
+            margin-left: 2rem;
+            margin-top: 0.5rem;
+        }
+        .event-status {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+            text-sm;
+        }
+        .status-active { background: #10b981; color: white; }
+        .status-cancelled { background: #ef4444; color: white; }
+        .status-completed { background: #6b7280; color: white; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div x-data="eventApp()" x-init="init()" class="min-h-screen">
+        <!-- Navigation -->
+        <nav class="bg-white shadow-sm border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <a href="dashboard.html" class="text-xl font-bold text-yellow-600">Dinor</a>
+                        <span class="ml-2 text-gray-500">/ Événement</span>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <a href="dashboard.html" class="text-gray-600 hover:text-gray-900">
+                            <i class="fas fa-arrow-left mr-2"></i>Retour au dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Contenu principal -->
+        <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div x-show="loading" class="text-center">
+                <div class="animate-spin rounded-full h-32 w-32 border-b-2 border-yellow-500 mx-auto"></div>
+                <p class="mt-4 text-gray-600">Chargement de l'événement...</p>
+            </div>
+
+            <div x-show="!loading && event" class="space-y-8">
+                <!-- En-tête de l'événement -->
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <div class="relative h-96">
+                        <img :src="event.featured_image_url || '/images/default-event.jpg'" 
+                             :alt="event.title" 
+                             class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <div class="event-status" :class="getStatusClass(event.status)" x-text="getStatusLabel(event.status)"></div>
+                        <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
+                            <h1 class="text-4xl font-bold mb-2" x-text="event.title"></h1>
+                            <p class="text-lg opacity-90" x-text="event.short_description"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informations de l'événement -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <!-- Détails de l'événement -->
+                        <div class="space-y-6">
+                            <div>
+                                <h2 class="text-2xl font-bold mb-4">Détails de l'événement</h2>
+                                <div class="space-y-3">
+                                    <div class="flex items-center space-x-3">
+                                        <i class="fas fa-calendar text-yellow-500"></i>
+                                        <span x-text="formatDate(event.start_date)"></span>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <i class="fas fa-clock text-yellow-500"></i>
+                                        <span x-text="formatTime(event.start_time) + ' - ' + formatTime(event.end_time)"></span>
+                                    </div>
+                                    <div class="flex items-center space-x-3" x-show="event.location">
+                                        <i class="fas fa-map-marker-alt text-yellow-500"></i>
+                                        <span x-text="event.location"></span>
+                                    </div>
+                                    <div class="flex items-center space-x-3" x-show="event.is_online">
+                                        <i class="fas fa-laptop text-yellow-500"></i>
+                                        <span>Événement en ligne</span>
+                                    </div>
+                                    <div class="flex items-center space-x-3" x-show="event.price && !event.is_free">
+                                        <i class="fas fa-euro-sign text-yellow-500"></i>
+                                        <span x-text="event.price + ' €'"></span>
+                                    </div>
+                                    <div class="flex items-center space-x-3" x-show="event.is_free">
+                                        <i class="fas fa-gift text-green-500"></i>
+                                        <span class="text-green-600 font-medium">Gratuit</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Organisateur -->
+                            <div x-show="event.organizer_name">
+                                <h3 class="text-lg font-semibold mb-2">Organisateur</h3>
+                                <div class="space-y-2">
+                                    <p class="font-medium" x-text="event.organizer_name"></p>
+                                    <div x-show="event.organizer_email" class="flex items-center space-x-2">
+                                        <i class="fas fa-envelope text-gray-400"></i>
+                                        <a :href="'mailto:' + event.organizer_email" class="text-yellow-600 hover:underline" x-text="event.organizer_email"></a>
+                                    </div>
+                                    <div x-show="event.organizer_phone" class="flex items-center space-x-2">
+                                        <i class="fas fa-phone text-gray-400"></i>
+                                        <span x-text="event.organizer_phone"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Actions et statistiques -->
+                        <div class="space-y-6">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-4">
+                                    <button @click="toggleLike()" 
+                                            class="like-button flex items-center space-x-2 px-4 py-2 rounded-lg border"
+                                            :class="userLiked ? 'bg-red-50 border-red-200 text-red-600' : 'bg-gray-50 border-gray-200 text-gray-600'">
+                                        <i class="fas fa-heart"></i>
+                                        <span x-text="likesCount"></span>
+                                    </button>
+                                    <div class="flex items-center space-x-2 text-gray-600">
+                                        <i class="fas fa-comment"></i>
+                                        <span x-text="commentsCount + ' commentaires'"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Participation -->
+                            <div x-show="event.max_participants" class="bg-gray-50 rounded-lg p-4">
+                                <h3 class="text-lg font-semibold mb-2">Participation</h3>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between">
+                                        <span>Places disponibles:</span>
+                                        <span class="font-medium" x-text="event.available_spots + '/' + event.max_participants"></span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-yellow-500 h-2 rounded-full" 
+                                             :style="'width: ' + ((event.current_participants / event.max_participants) * 100) + '%'"></div>
+                                    </div>
+                                    <p class="text-sm text-gray-600" x-text="event.current_participants + ' participants inscrits'"></p>
+                                </div>
+                            </div>
+
+                            <!-- Bouton d'inscription -->
+                            <button x-show="event.is_registration_open && event.registration_url" 
+                                    @click="window.open(event.registration_url, '_blank')"
+                                    class="w-full bg-yellow-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-yellow-600 transition-colors">
+                                <i class="fas fa-ticket-alt mr-2"></i>S'inscrire à l'événement
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Description complète -->
+                    <div class="mt-8" x-show="event.description">
+                        <h2 class="text-2xl font-bold mb-4">Description</h2>
+                        <div class="prose max-w-none" x-html="event.description"></div>
+                    </div>
+                </div>
+
+                <!-- Section commentaires -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h2 class="text-2xl font-bold mb-6">Commentaires (<span x-text="commentsCount"></span>)</h2>
+                    
+                    <!-- Formulaire de commentaire -->
+                    <div class="comment-form mb-6">
+                        <form @submit.prevent="submitComment()">
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Votre commentaire</label>
+                                <textarea x-model="newComment.content" 
+                                         rows="4" 
+                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                                         placeholder="Partagez votre avis sur cet événement..."
+                                         required></textarea>
+                            </div>
+                            <div class="flex space-x-4 mb-4">
+                                <div class="flex-1">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Nom</label>
+                                    <input type="text" 
+                                           x-model="newComment.author_name" 
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                                           required>
+                                </div>
+                                <div class="flex-1">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                    <input type="email" 
+                                           x-model="newComment.author_email" 
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                                           required>
+                                </div>
+                            </div>
+                            <button type="submit" 
+                                    class="bg-yellow-500 text-white px-6 py-2 rounded-lg hover:bg-yellow-600 transition-colors"
+                                    :disabled="submittingComment">
+                                <span x-show="!submittingComment">Publier le commentaire</span>
+                                <span x-show="submittingComment">Publication...</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Liste des commentaires -->
+                    <div x-show="loadingComments" class="text-center py-4">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500 mx-auto"></div>
+                    </div>
+
+                    <div x-show="!loadingComments" class="space-y-4">
+                        <template x-for="comment in comments" :key="comment.id">
+                            <div class="comment-item">
+                                <div class="flex items-start justify-between mb-2">
+                                    <div>
+                                        <h4 class="font-medium text-gray-900" x-text="comment.author_name || comment.user?.name"></h4>
+                                        <p class="text-sm text-gray-500" x-text="formatDate(comment.created_at)"></p>
+                                    </div>
+                                </div>
+                                <p class="text-gray-700 mb-3" x-text="comment.content"></p>
+                                <button @click="showReplyForm(comment.id)" 
+                                        class="text-sm text-yellow-600 hover:text-yellow-700">
+                                    <i class="fas fa-reply mr-1"></i>Répondre
+                                </button>
+                                
+                                <!-- Formulaire de réponse -->
+                                <div x-show="replyFormVisible === comment.id" class="reply-form mt-3">
+                                    <form @submit.prevent="submitReply(comment.id)">
+                                        <textarea x-model="replyContent" 
+                                                 rows="3" 
+                                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 mb-2"
+                                                 placeholder="Votre réponse..."
+                                                 required></textarea>
+                                        <div class="flex space-x-2">
+                                            <button type="submit" 
+                                                    class="bg-yellow-500 text-white px-4 py-1 rounded text-sm hover:bg-yellow-600">
+                                                Répondre
+                                            </button>
+                                            <button type="button" 
+                                                    @click="replyFormVisible = null"
+                                                    class="bg-gray-300 text-gray-700 px-4 py-1 rounded text-sm hover:bg-gray-400">
+                                                Annuler
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <div x-show="!loading && !event" class="text-center py-12">
+                <div class="text-gray-500">
+                    <i class="fas fa-exclamation-circle text-4xl mb-4"></i>
+                    <h2 class="text-2xl font-bold mb-2">Événement non trouvé</h2>
+                    <p>L'événement que vous recherchez n'existe pas ou a été supprimé.</p>
+                    <a href="dashboard.html" class="inline-block mt-4 bg-yellow-500 text-white px-6 py-2 rounded-lg hover:bg-yellow-600">
+                        Retour au dashboard
+                    </a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function eventApp() {
+            return {
+                loading: true,
+                loadingComments: false,
+                submittingComment: false,
+                event: null,
+                comments: [],
+                commentsCount: 0,
+                likesCount: 0,
+                userLiked: false,
+                newComment: {
+                    content: '',
+                    author_name: '',
+                    author_email: ''
+                },
+                replyFormVisible: null,
+                replyContent: '',
+
+                init() {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const eventId = urlParams.get('id');
+                    
+                    if (eventId) {
+                        this.loadEvent(eventId);
+                        this.loadComments(eventId);
+                        this.checkUserLike(eventId);
+                    } else {
+                        this.loading = false;
+                    }
+                },
+
+                async loadEvent(id) {
+                    try {
+                        const response = await fetch(`/api/v1/events/${id}`);
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            this.event = data.data;
+                            this.likesCount = this.event.likes_count || 0;
+                            this.commentsCount = this.event.approved_comments_count || 0;
+                        }
+                    } catch (error) {
+                        console.error('Erreur lors du chargement de l\'événement:', error);
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                async loadComments(eventId) {
+                    this.loadingComments = true;
+                    try {
+                        const response = await fetch(`/api/v1/comments?type=event&id=${eventId}`);
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            this.comments = data.data;
+                            this.commentsCount = data.pagination.total;
+                        }
+                    } catch (error) {
+                        console.error('Erreur lors du chargement des commentaires:', error);
+                    } finally {
+                        this.loadingComments = false;
+                    }
+                },
+
+                async checkUserLike(eventId) {
+                    try {
+                        const response = await fetch(`/api/v1/likes/check?type=event&id=${eventId}`);
+                        const data = await response.json();
+                        this.userLiked = data.success && data.data.liked;
+                    } catch (error) {
+                        console.error('Erreur lors de la vérification du like:', error);
+                    }
+                },
+
+                async toggleLike() {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const eventId = urlParams.get('id');
+                    
+                    try {
+                        const response = await fetch('/api/v1/likes/toggle', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                likeable_type: 'event',
+                                likeable_id: eventId
+                            })
+                        });
+                        
+                        const data = await response.json();
+                        if (data.success) {
+                            this.userLiked = data.data.liked;
+                            this.likesCount = data.data.likes_count;
+                        }
+                    } catch (error) {
+                        console.error('Erreur lors du toggle like:', error);
+                    }
+                },
+
+                async submitComment() {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const eventId = urlParams.get('id');
+                    
+                    this.submittingComment = true;
+                    try {
+                        const response = await fetch('/api/v1/comments', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                type: 'event',
+                                id: eventId,
+                                content: this.newComment.content,
+                                author_name: this.newComment.author_name,
+                                author_email: this.newComment.author_email
+                            })
+                        });
+                        
+                        const data = await response.json();
+                        if (data.success) {
+                            this.comments.unshift(data.data);
+                            this.commentsCount++;
+                            this.newComment = { content: '', author_name: '', author_email: '' };
+                        }
+                    } catch (error) {
+                        console.error('Erreur lors de la soumission du commentaire:', error);
+                    } finally {
+                        this.submittingComment = false;
+                    }
+                },
+
+                showReplyForm(commentId) {
+                    this.replyFormVisible = this.replyFormVisible === commentId ? null : commentId;
+                    this.replyContent = '';
+                },
+
+                async submitReply(parentId) {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const eventId = urlParams.get('id');
+                    
+                    try {
+                        const response = await fetch('/api/v1/comments', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                type: 'event',
+                                id: eventId,
+                                content: this.replyContent,
+                                author_name: this.newComment.author_name || 'Utilisateur',
+                                author_email: this.newComment.author_email || 'user@example.com',
+                                parent_id: parentId
+                            })
+                        });
+                        
+                        const data = await response.json();
+                        if (data.success) {
+                            this.loadComments(eventId);
+                            this.replyFormVisible = null;
+                            this.replyContent = '';
+                        }
+                    } catch (error) {
+                        console.error('Erreur lors de la soumission de la réponse:', error);
+                    }
+                },
+
+                getStatusClass(status) {
+                    const classes = {
+                        'active': 'status-active',
+                        'cancelled': 'status-cancelled',
+                        'completed': 'status-completed'
+                    };
+                    return classes[status] || 'bg-gray-500 text-white';
+                },
+
+                getStatusLabel(status) {
+                    const labels = {
+                        'active': 'Actif',
+                        'cancelled': 'Annulé',
+                        'completed': 'Terminé',
+                        'draft': 'Brouillon',
+                        'postponed': 'Reporté'
+                    };
+                    return labels[status] || 'Non défini';
+                },
+
+                formatDate(dateString) {
+                    return new Date(dateString).toLocaleDateString('fr-FR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                },
+
+                formatTime(timeString) {
+                    if (!timeString) return '';
+                    return new Date(timeString).toLocaleTimeString('fr-FR', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                }
+            }
+        }
+    </script>
+</body>
+</html>

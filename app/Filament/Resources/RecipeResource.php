@@ -254,8 +254,9 @@ class RecipeResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('image')
+                Tables\Columns\ImageColumn::make('featured_image')
                     ->label('Image')
+                    ->disk('public')
                     ->circular(),
                     
                 Tables\Columns\TextColumn::make('title')
@@ -319,7 +320,8 @@ class RecipeResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->url(fn (Recipe $record): string => static::getUrl('edit', ['record' => $record])),
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([

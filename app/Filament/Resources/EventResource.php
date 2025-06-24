@@ -44,9 +44,10 @@ class EventResource extends Resource
                         
                         Forms\Components\Select::make('category_id')
                             ->label('Catégorie')
-                            ->options(Category::active()->pluck('name', 'id'))
+                            ->options(Category::active()->forEvents()->pluck('name', 'id'))
                             ->required()
-                            ->searchable(),
+                            ->searchable()
+                            ->helperText('Seules les catégories de type "Événement" sont affichées'),
                             
                         Forms\Components\Textarea::make('description')
                             ->label('Description courte')

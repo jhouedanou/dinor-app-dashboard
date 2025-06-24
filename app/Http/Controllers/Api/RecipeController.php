@@ -64,6 +64,21 @@ class RecipeController extends Controller
             ->published()
             ->findOrFail($id);
 
+        // Enrichir les ingrédients avec les noms depuis la base de données
+        if ($recipe->ingredients) {
+            $ingredients = collect($recipe->ingredients)->map(function ($ingredient) {
+                if (isset($ingredient['ingredient_id'])) {
+                    $ingredientModel = \App\Models\Ingredient::find($ingredient['ingredient_id']);
+                    if ($ingredientModel) {
+                        $ingredient['name'] = $ingredientModel->name;
+                        $ingredient['category'] = $ingredientModel->category;
+                    }
+                }
+                return $ingredient;
+            });
+            $recipe->ingredients = $ingredients->toArray();
+        }
+
         return response()->json([
             'success' => true,
             'data' => $recipe

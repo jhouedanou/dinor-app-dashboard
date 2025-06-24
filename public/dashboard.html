@@ -268,10 +268,10 @@
                         <div x-show="!loading.recipes" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             <template x-for="recipe in recipes" :key="recipe.id">
                                 <div class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden card-hover cursor-pointer"
-                                     @click="openModal('recipe', recipe)">
+                                     @click="window.open(`recipe.html?id=${recipe.id}`, '_blank')">
                                     <!-- Image principale -->
                                     <div class="relative h-48 bg-gray-200 overflow-hidden">
-                                        <img :src="recipe.featured_image ? recipe.featured_image : '/storage/recipes/featured/default-recipe.jpg'" 
+                                        <img :src="recipe.featured_image_url ? recipe.featured_image_url : '/storage/recipes/featured/default-recipe.jpg'" 
                                              :alt="recipe.title"
                                              class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                                              @error="$event.target.src='/storage/recipes/featured/default-recipe.jpg'">
@@ -364,7 +364,7 @@
                                      @click="openModal('event', event)">
                                     <!-- Image principale -->
                                     <div class="relative h-48 bg-gray-200 overflow-hidden">
-                                        <img :src="event.featured_image ? event.featured_image : '/storage/events/featured/default-event.jpg'" 
+                                        <img :src="event.featured_image_url ? event.featured_image_url : '/storage/events/featured/default-event.jpg'" 
                                              :alt="event.title"
                                              class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                                              @error="$event.target.src='/storage/events/featured/default-event.jpg'">
@@ -605,7 +605,7 @@
                             <div>
                                 <!-- Image principale -->
                                 <div class="mb-4">
-                                    <img :src="modal.data?.featured_image || '/storage/recipes/featured/default-recipe.jpg'" 
+                                    <img :src="modal.data?.featured_image_url || modal.data?.featured_image || '/storage/recipes/featured/default-recipe.jpg'" 
                                          :alt="modal.data?.title"
                                          class="w-full h-64 object-cover rounded-lg cursor-zoom-in hover:opacity-95 transition-opacity"
                                          x-ref="modalMainImage"
@@ -660,7 +660,7 @@
                                             <template x-for="ingredient in modal.data?.ingredients || []" :key="ingredient">
                                                 <li class="flex items-start">
                                                     <span class="text-yellow-500 mr-2">•</span>
-                                                    <span x-text="ingredient"></span>
+                                                    <span x-text="typeof ingredient === 'string' ? ingredient : (ingredient.quantity ? ingredient.quantity + ' ' + ingredient.unit : ingredient.name || JSON.stringify(ingredient))"></span>
                                                 </li>
                                             </template>
                                         </ul>
@@ -675,7 +675,7 @@
                                             <template x-for="(instruction, index) in modal.data?.instructions || []" :key="index">
                                                 <li class="flex items-start">
                                                     <span class="bg-yellow-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5 flex-shrink-0" x-text="index + 1"></span>
-                                                    <span x-text="instruction"></span>
+                                                    <span x-html="typeof instruction === 'string' ? instruction : (instruction.step ? instruction.step : instruction.text || JSON.stringify(instruction))"></span>
                                                 </li>
                                             </template>
                                         </ol>
@@ -692,7 +692,7 @@
                             <div>
                                 <!-- Image principale -->
                                 <div class="mb-4">
-                                    <img :src="modal.data?.featured_image || '/storage/events/featured/default-event.jpg'" 
+                                    <img :src="modal.data?.featured_image_url || modal.data?.featured_image || '/storage/events/featured/default-event.jpg'" 
                                          :alt="modal.data?.title"
                                          class="w-full h-64 object-cover rounded-lg cursor-zoom-in hover:opacity-95 transition-opacity"
                                          x-ref="modalMainImageEvent"
@@ -1128,8 +1128,16 @@
                         this.stats.pages = responses[2] || 0;
                         this.stats.tips = tipsCount;
                         
-                        // Calculer interactions (simulation)
-                        this.stats.interactions = (this.stats.recipes * 15) + (this.stats.events * 8) + (this.stats.tips * 5) + Math.floor(Math.random() * 100);
+                        // Calculer interactions à partir des vraies données de likes
+                        try {
+                            const likesResponse = await fetch('/api/v1/likes?per_page=1');
+                            const likesData = await likesResponse.json();
+                            this.stats.interactions = likesData.pagination ? likesData.pagination.total : (likesData.data ? likesData.data.length : 0);
+                        } catch (error) {
+                            console.warn('Erreur lors du chargement des likes:', error);
+                            // Fallback vers simulation si API indisponible
+                            this.stats.interactions = (this.stats.recipes * 15) + (this.stats.events * 8) + (this.stats.tips * 5) + Math.floor(Math.random() * 100);
+                        }
                         
                         console.log('Stats loaded:', this.stats);
                         
@@ -1423,8 +1431,7 @@
                     
                     if (this.modal.type === 'recipe') {
                         // Construire l'URL de détail de la recette
-                        const slug = this.modal.data.slug || this.modal.data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-                        detailUrl = `${baseUrl}/recipes/${this.modal.data.id}/${slug}`;
+                        detailUrl = `recipe.html?id=${this.modal.data.id}`;
                     } else if (this.modal.type === 'event') {
                         // Construire l'URL de détail de l'événement
                         const slug = this.modal.data.slug || this.modal.data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');

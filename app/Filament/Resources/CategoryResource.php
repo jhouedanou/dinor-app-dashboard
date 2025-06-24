@@ -43,6 +43,17 @@ class CategoryResource extends Resource
                             ->maxLength(255)
                             ->unique(Category::class, 'slug'),
 
+                        Forms\Components\Select::make('type')
+                            ->label('Type de catégorie')
+                            ->options([
+                                'general' => 'Générale',
+                                'recipe' => 'Recette',
+                                'event' => 'Événement',
+                            ])
+                            ->default('general')
+                            ->required()
+                            ->helperText('Définit à quel type de contenu cette catégorie est associée'),
+
                         Forms\Components\Textarea::make('description')
                             ->label('Description')
                             ->rows(3)
@@ -94,6 +105,23 @@ class CategoryResource extends Resource
                     ->searchable()
                     ->toggleable(),
 
+                Tables\Columns\TextColumn::make('type')
+                    ->label('Type')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'general' => 'gray',
+                        'recipe' => 'success',
+                        'event' => 'warning',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'general' => 'Générale',
+                        'recipe' => 'Recette',
+                        'event' => 'Événement',
+                        default => $state,
+                    })
+                    ->sortable(),
+
                 Tables\Columns\ColorColumn::make('color')
                     ->label('Couleur')
                     ->copyable()
@@ -130,6 +158,15 @@ class CategoryResource extends Resource
                     ->boolean()
                     ->trueLabel('Actives seulement')
                     ->falseLabel('Inactives seulement')
+                    ->native(false),
+                    
+                Tables\Filters\SelectFilter::make('type')
+                    ->label('Type')
+                    ->options([
+                        'general' => 'Générale',
+                        'recipe' => 'Recette',
+                        'event' => 'Événement',
+                    ])
                     ->native(false),
             ])
             ->actions([

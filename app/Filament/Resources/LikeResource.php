@@ -69,6 +69,7 @@ class LikeResource extends Resource
                         'App\Models\Recipe' => 'Recette',
                         'App\Models\Event' => 'Événement',
                         'App\Models\DinorTv' => 'Dinor TV',
+                        'App\Models\Tip' => 'Astuce',
                         default => $state
                     })
                     ->badge()
@@ -76,6 +77,7 @@ class LikeResource extends Resource
                         'App\Models\Recipe' => 'success',
                         'App\Models\Event' => 'warning',
                         'App\Models\DinorTv' => 'info',
+                        'App\Models\Tip' => 'primary',
                         default => 'gray'
                     }),
 
@@ -100,6 +102,7 @@ class LikeResource extends Resource
                         'App\Models\Recipe' => 'Recettes',
                         'App\Models\Event' => 'Événements',
                         'App\Models\DinorTv' => 'Dinor TV',
+                        'App\Models\Tip' => 'Astuces',
                     ]),
             ])
             ->actions([

@@ -58,10 +58,23 @@ class CommentResource extends Resource
                     ->schema([
                         Forms\Components\TextInput::make('commentable_type')
                             ->label('Type de contenu')
+                            ->formatStateUsing(fn (string $state): string => match($state) {
+                                'App\Models\Recipe' => 'Recette',
+                                'App\Models\Event' => 'Événement',
+                                'App\Models\DinorTv' => 'Dinor TV',
+                                'App\Models\Tip' => 'Astuce',
+                                default => $state
+                            })
                             ->disabled(),
                         
-                        Forms\Components\TextInput::make('commentable_id')
-                            ->label('ID du contenu')
+                        Forms\Components\TextInput::make('related_content')
+                            ->label('Contenu concerné')
+                            ->formatStateUsing(function ($record) {
+                                if (!$record || !$record->commentable) {
+                                    return 'Non disponible';
+                                }
+                                return $record->commentable->title ?? 'Titre non disponible';
+                            })
                             ->disabled(),
                     ])->columns(2),
 
@@ -99,6 +112,7 @@ class CommentResource extends Resource
                         'App\Models\Recipe' => 'Recette',
                         'App\Models\Event' => 'Événement',
                         'App\Models\DinorTv' => 'Dinor TV',
+                        'App\Models\Tip' => 'Astuce',
                         default => $state
                     })
                     ->badge()
@@ -106,8 +120,15 @@ class CommentResource extends Resource
                         'App\Models\Recipe' => 'success',
                         'App\Models\Event' => 'warning',
                         'App\Models\DinorTv' => 'info',
+                        'App\Models\Tip' => 'primary',
                         default => 'gray'
                     }),
+
+                Tables\Columns\TextColumn::make('commentable.title')
+                    ->label('Contenu concerné')
+                    ->limit(30)
+                    ->searchable()
+                    ->sortable(),
 
                 Tables\Columns\IconColumn::make('is_approved')
                     ->label('Approuvé')
@@ -138,6 +159,7 @@ class CommentResource extends Resource
                         'App\Models\Recipe' => 'Recettes',
                         'App\Models\Event' => 'Événements',
                         'App\Models\DinorTv' => 'Dinor TV',
+                        'App\Models\Tip' => 'Astuces',
                     ]),
 
                 Tables\Filters\TrashedFilter::make(),

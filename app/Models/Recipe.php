@@ -82,6 +82,12 @@ class Recipe extends Model
         'rating_count' => 'integer'
     ];
 
+    protected $appends = [
+        'featured_image_url',
+        'gallery_urls',
+        'video_thumbnail_url'
+    ];
+
     public function category()
     {
         return $this->belongsTo(Category::class);
