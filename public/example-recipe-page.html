@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exemple - Page de Recette avec Authentification</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/auth-components.css">
+</head>
+<body class="bg-gray-100">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="text-xl font-bold text-gray-800">Dinor App</div>
+                <div id="authStatus">
+                    <!-- Sera mis à jour par JavaScript -->
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenu principal -->
+    <main class="max-w-4xl mx-auto py-8 px-4">
+        <!-- En-tête de la recette -->
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
+            <img src="https://via.placeholder.com/800x400" alt="Image de la recette" class="w-full h-64 object-cover">
+            <div class="p-6">
+                <h1 class="text-3xl font-bold text-gray-900 mb-4">Poulet Yassa Sénégalais</h1>
+                <p class="text-gray-600 mb-6">Un plat traditionnel sénégalais délicieux et parfumé aux oignons et au citron.</p>
+                
+                <!-- Actions -->
+                <div class="flex items-center gap-4 mb-6">
+                    <!-- Bouton Like -->
+                    <button data-like-type="recipe" 
+                            data-like-id="3" 
+                            class="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                        <span class="text-xl">🤍</span>
+                        <span data-like-count-type="recipe" data-like-count-id="3">12</span>
+                        <span>J'aime</span>
+                    </button>
+
+                    <!-- Bouton Partager -->
+                    <button class="flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">
+                        <span>📤</span>
+                        <span>Partager</span>
+                    </button>
+
+                    <!-- Bouton Favoris -->
+                    <button class="flex items-center gap-2 px-4 py-2 bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200 transition-colors">
+                        <span>⭐</span>
+                        <span>Favoris</span>
+                    </button>
+                </div>
+
+                <!-- Informations de la recette -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <div class="text-sm text-gray-500">Temps de préparation</div>
+                        <div class="text-lg font-semibold">30 min</div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <div class="text-sm text-gray-500">Temps de cuisson</div>
+                        <div class="text-lg font-semibold">45 min</div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <div class="text-sm text-gray-500">Portions</div>
+                        <div class="text-lg font-semibold">4 personnes</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Commentaires -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Commentaires</h2>
+            
+            <!-- Formulaire d'ajout de commentaire -->
+            <form class="comment-form mb-8" data-type="recipe" data-id="3">
+                <div class="mb-4">
+                    <textarea name="content" 
+                              placeholder="Partagez votre avis sur cette recette..." 
+                              class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              rows="3"></textarea>
+                </div>
+                <button type="submit" 
+                        class="action-button primary">
+                    <span>💬</span>
+                    Ajouter un commentaire
+                </button>
+            </form>
+
+            <!-- Liste des commentaires -->
+            <div data-comments-type="recipe" data-comments-id="3" class="space-y-4">
+                <!-- Les commentaires seront chargés ici par JavaScript -->
+                <div class="text-center text-gray-500 py-8">
+                    Chargement des commentaires...
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="/js/auth-manager.js"></script>
+    <script src="/js/likes-manager.js"></script>
+    <script src="/js/comments-manager.js"></script>
+
+    <script>
+        // Mettre à jour le statut d'authentification dans la navigation
+        function updateAuthStatus() {
+            const authStatusDiv = document.getElementById('authStatus');
+            
+            if (authManager.isAuthenticated()) {
+                authStatusDiv.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <span class="text-gray-700">Bonjour, ${authManager.user.name}!</span>
+                        <button onclick="logout()" class="action-button secondary">
+                            Déconnexion
+                        </button>
+                    </div>
+                `;
+            } else {
+                authStatusDiv.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <button onclick="showLogin()" class="action-button primary">
+                            Connexion
+                        </button>
+                        <button onclick="showRegister()" class="action-button secondary">
+                            Inscription
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Fonctions pour les boutons de la navigation
+        function showLogin() {
+            authManager.showAuthModal();
+            authManager.switchTab('login');
+        }
+
+        function showRegister() {
+            authManager.showAuthModal();
+            authManager.switchTab('register');
+        }
+
+        async function logout() {
+            await authManager.logout();
+            updateAuthStatus();
+        }
+
+        // Mettre à jour le statut d'authentification au chargement
+        document.addEventListener('DOMContentLoaded', () => {
+            updateAuthStatus();
+        });
+
+        // Exemple de fonction Alpine.js pour les likes (si vous utilisez Alpine.js)
+        function recipeData() {
+            return {
+                recipe: {
+                    id: 3,
+                    title: "Poulet Yassa Sénégalais",
+                    likes_count: 12,
+                    is_liked: false
+                },
+                
+                async toggleLike() {
+                    const result = await window.toggleLike('recipe', this.recipe.id);
+                    if (result.success) {
+                        this.recipe.likes_count = result.likes_count;
+                        this.recipe.is_liked = result.action === 'liked';
+                    }
+                },
+
+                async addComment(content) {
+                    if (!content.trim()) return;
+                    
+                    const result = await window.addComment('recipe', this.recipe.id, content);
+                    if (result.success) {
+                        // Le commentaire a été ajouté avec succès
+                        document.querySelector('textarea[name="content"]').value = '';
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>

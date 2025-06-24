@@ -1,0 +1,223 @@
+/* Styles pour les composants d'authentification et d'interaction */
+
+/* Modal d'authentification */
+#authModal {
+    backdrop-filter: blur(4px);
+}
+
+/* Onglets du modal */
+.auth-tab {
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.auth-tab.active {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Formulaires d'authentification */
+.auth-form {
+    transition: opacity 0.3s ease;
+}
+
+.auth-form.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Boutons de like */
+[data-like-type] {
+    transition: all 0.3s ease;
+    cursor: pointer;
+    user-select: none;
+}
+
+[data-like-type].liked {
+    color: #ef4444;
+    transform: scale(1.1);
+}
+
+[data-like-type].not-liked {
+    color: #6b7280;
+}
+
+[data-like-type]:hover {
+    transform: scale(1.05);
+}
+
+[data-like-type].liked:hover {
+    transform: scale(1.15);
+}
+
+/* Animation du cœur */
+[data-like-type].liked::before {
+    content: '❤️';
+}
+
+[data-like-type].not-liked::before {
+    content: '🤍';
+}
+
+/* Compteur de likes */
+[data-like-count-type] {
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+/* Commentaires */
+.comment {
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    padding: 12px;
+    background-color: #f9fafb;
+    margin-bottom: 12px;
+}
+
+.comment:hover {
+    background-color: #f3f4f6;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Formulaire de commentaire */
+.comment-form textarea {
+    transition: border-color 0.3s ease;
+    resize: vertical;
+    min-height: 80px;
+}
+
+.comment-form textarea:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    outline: none;
+}
+
+/* Notifications */
+.notification {
+    animation: slideInRight 0.5s ease, slideOutRight 0.5s ease 2.5s forwards;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+    #authModal .bg-white {
+        margin: 1rem;
+        max-width: calc(100% - 2rem);
+    }
+    
+    .auth-tab {
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+    
+    .comment {
+        margin-left: 0 !important;
+        padding: 8px;
+    }
+}
+
+/* États de chargement */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Boutons d'action */
+.action-button {
+    transition: all 0.3s ease;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.action-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.action-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.action-button.primary {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.action-button.primary:hover {
+    background-color: #2563eb;
+}
+
+.action-button.secondary {
+    background-color: #6b7280;
+    color: white;
+}
+
+.action-button.secondary:hover {
+    background-color: #4b5563;
+}
+
+.action-button.success {
+    background-color: #10b981;
+    color: white;
+}
+
+.action-button.success:hover {
+    background-color: #059669;
+}
+
+.action-button.danger {
+    background-color: #ef4444;
+    color: white;
+}
+
+.action-button.danger:hover {
+    background-color: #dc2626;
+}
