@@ -180,6 +180,25 @@ else
     log_success "✅ Admin configuré avec le seeder standard"
 fi
 
+# Exécuter les seeders manquants pour les panels
+log_info "📋 Exécution des seeders manquants pour les panels..."
+
+# EventCategoriesSeeder - crucial pour les panels d'événements
+if $FORGE_PHP artisan db:seed --class=EventCategoriesSeeder --force 2>/dev/null; then
+    log_success "✅ EventCategoriesSeeder exécuté"
+else
+    log_warning "EventCategoriesSeeder non trouvé ou erreur"
+fi
+
+# IngredientsSeeder - pour les ingrédients
+if $FORGE_PHP artisan db:seed --class=IngredientsSeeder --force 2>/dev/null; then
+    log_success "✅ IngredientsSeeder exécuté"
+else
+    log_warning "IngredientsSeeder non trouvé ou erreur"
+fi
+
+log_success "✅ Seeders manquants traités"
+
 # Vérification que l'admin est bien créé
 ADMIN_CHECK=$($FORGE_PHP artisan tinker --execute="
 \$admin = App\\Models\\AdminUser::where('email', 'admin@dinor.app')->first();
