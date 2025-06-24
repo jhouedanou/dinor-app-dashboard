@@ -17,10 +17,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Exécuter le seeder pour l'utilisateur admin
+        // Exécuter les seeders de base
         $this->call([
             AdminUserSeeder::class,
+            UserSeeder::class,
             CategorySeeder::class,
+            ProductionDataSeeder::class,
         ]);
 
         // Créer des catégories
