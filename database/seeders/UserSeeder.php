@@ -13,19 +13,14 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+        // Générer un mot de passe sécurisé pour les comptes de test
+        $testPassword = env('TEST_USER_PASSWORD', bin2hex(random_bytes(8)));
+        
         $users = [
-            [
-                'name' => 'Admin Dinor',
-                'email' => 'admin@dinor.app',
-                'password' => Hash::make('admin123'),
-                'role' => 'admin',
-                'is_active' => true,
-                'email_verified_at' => now(),
-            ],
             [
                 'name' => 'Chef Aya Kouamé',
                 'email' => 'chef.aya@dinor.app',
-                'password' => Hash::make('password'),
+                'password' => Hash::make($testPassword),
                 'role' => 'moderator',
                 'is_active' => true,
                 'email_verified_at' => now(),
@@ -33,7 +28,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Marie Adjoua',
                 'email' => 'marie.adjoua@example.com',
-                'password' => Hash::make('password'),
+                'password' => Hash::make($testPassword),
                 'role' => 'user',
                 'is_active' => true,
                 'email_verified_at' => now(),
@@ -41,7 +36,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Kouadio Jean',
                 'email' => 'kouadio.jean@example.com',
-                'password' => Hash::make('password'),
+                'password' => Hash::make($testPassword),
                 'role' => 'user',
                 'is_active' => true,
                 'email_verified_at' => now(),
@@ -49,7 +44,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Fatima Traoré',
                 'email' => 'fatima.traore@example.com',
-                'password' => Hash::make('password'),
+                'password' => Hash::make($testPassword),
                 'role' => 'user',
                 'is_active' => true,
                 'email_verified_at' => now(),
@@ -57,7 +52,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Yves Diabaté',
                 'email' => 'yves.diabate@example.com',
-                'password' => Hash::make('password'),
+                'password' => Hash::make($testPassword),
                 'role' => 'user',
                 'is_active' => true,
                 'email_verified_at' => now(),
@@ -65,7 +60,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Aminata Coulibaly',
                 'email' => 'aminata.coulibaly@example.com',
-                'password' => Hash::make('password'),
+                'password' => Hash::make($testPassword),
                 'role' => 'user',
                 'is_active' => true,
                 'email_verified_at' => now(),
@@ -73,7 +68,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Ibrahim Ouattara',
                 'email' => 'ibrahim.ouattara@example.com',
-                'password' => Hash::make('password'),
+                'password' => Hash::make($testPassword),
                 'role' => 'user',
                 'is_active' => true,
                 'email_verified_at' => now(),
@@ -89,8 +84,8 @@ class UserSeeder extends Seeder
 
         $this->command->info('Utilisateurs créés avec succès!');
         $this->command->info('Comptes de test disponibles:');
-        $this->command->info('- Admin: admin@dinor.app / admin123');
-        $this->command->info('- Chef: chef.aya@dinor.app / password');
-        $this->command->info('- Utilisateurs: marie.adjoua@example.com / password (et autres)');
+        $this->command->info("- Chef: chef.aya@dinor.app / {$testPassword}");
+        $this->command->info("- Utilisateur test: marie.adjoua@example.com / {$testPassword}");
+        $this->command->warn('⚠️ Mot de passe de test généré - changez-le en production!');
     }
 }
