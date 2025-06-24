@@ -17,6 +17,17 @@ class LikeController extends Controller
      */
     public function toggle(Request $request): JsonResponse
     {
+        // Vérifier que l'utilisateur est connecté
+        if (!Auth::check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vous devez vous connecter ou vous inscrire pour aimer ce contenu',
+                'requires_auth' => true,
+                'login_url' => '/login',
+                'register_url' => '/register'
+            ], 401);
+        }
+
         $request->validate([
             'type' => 'required|in:recipe,event,dinor_tv',
             'id' => 'required|integer|exists:' . $this->getTableName($request->type) . ',id'
@@ -37,10 +48,14 @@ class LikeController extends Controller
 
         $result = $model->toggleLike($userId, $ipAddress, $userAgent);
 
+        // Recalculer et mettre à jour le compteur réel
+        $actualCount = $model->likes()->count();
+        $model->update(['likes_count' => $actualCount]);
+
         return response()->json([
             'success' => true,
             'action' => $result['action'],
-            'likes_count' => $result['likes_count'],
+            'likes_count' => $actualCount,
             'message' => $result['action'] === 'liked' ? 'Contenu aimé' : 'Like retiré'
         ]);
     }

@@ -58,12 +58,21 @@ class CommentController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        // Vérifier que l'utilisateur est connecté
+        if (!Auth::check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vous devez vous connecter ou vous inscrire pour laisser un commentaire',
+                'requires_auth' => true,
+                'login_url' => '/login',
+                'register_url' => '/register'
+            ], 401);
+        }
+
         $request->validate([
             'type' => 'required|in:recipe,event,dinor_tv,tip',
             'id' => 'required|integer|exists:' . $this->getTableName($request->type) . ',id',
             'content' => 'required|string|min:3|max:1000',
-            'author_name' => 'required_without:user_id|string|max:100',
-            'author_email' => 'required_without:user_id|email|max:255',
             'parent_id' => 'sometimes|integer|exists:comments,id'
         ]);
 
@@ -89,14 +98,15 @@ class CommentController extends Controller
             }
         }
 
-        $userId = Auth::id();
+        $user = Auth::user();
+        $userId = $user->id;
         $ipAddress = $request->ip();
         $userAgent = $request->userAgent();
 
         $comment = $model->addComment([
             'user_id' => $userId,
-            'author_name' => $request->author_name,
-            'author_email' => $request->author_email,
+            'author_name' => $user->name,
+            'author_email' => $user->email,
             'content' => $request->content,
             'is_approved' => true, // Auto-approve for now, can be changed to false for moderation
             'ip_address' => $ipAddress,

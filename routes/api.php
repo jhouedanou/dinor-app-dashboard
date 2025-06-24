@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\DinorTvController;
 use App\Http\Controllers\Api\LikeController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\AuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,6 +20,18 @@ use App\Http\Controllers\Api\CategoryController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+// Routes d'authentification
+Route::prefix('v1/auth')->group(function () {
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+    
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::get('/profile', [AuthController::class, 'profile']);
+        Route::put('/profile', [AuthController::class, 'updateProfile']);
+    });
 });
 
 // Routes publiques pour l'app mobile
@@ -63,14 +76,12 @@ Route::prefix('v1')->group(function () {
     Route::get('/pages/menu', [PageController::class, 'menu']);
     Route::get('/pages/{slug}', [PageController::class, 'show']);
     
-    // Likes - Routes publiques
-    Route::post('/likes/toggle', [LikeController::class, 'toggle']);
+    // Likes - Routes publiques (lecture seulement)
     Route::get('/likes/check', [LikeController::class, 'check']);
     Route::get('/likes', [LikeController::class, 'index']);
     
-    // Comments - Routes publiques
+    // Comments - Routes publiques (lecture seulement)
     Route::get('/comments', [CommentController::class, 'index']);
-    Route::post('/comments', [CommentController::class, 'store']);
     Route::get('/comments/{comment}/replies', [CommentController::class, 'replies']);
     
     // Dashboard global pour l'app
@@ -129,9 +140,13 @@ Route::prefix('v1')->group(function () {
     });
 });
 
-// Routes avec middleware d'authentification si nécessaire
+// Routes avec middleware d'authentification
 Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
-    // Comments - Routes protégées (modification/suppression)
+    // Likes - Routes protégées
+    Route::post('/likes/toggle', [LikeController::class, 'toggle']);
+    
+    // Comments - Routes protégées
+    Route::post('/comments', [CommentController::class, 'store']);
     Route::put('/comments/{comment}', [CommentController::class, 'update']);
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy']);
 });

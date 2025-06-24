@@ -128,7 +128,19 @@ class CommentResource extends Resource
                     ->label('Contenu concerné')
                     ->limit(30)
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->url(function ($record) {
+                        if (!$record->commentable) return null;
+                        
+                        return match($record->commentable_type) {
+                            'App\Models\Recipe' => route('filament.admin.resources.recipes.view', $record->commentable),
+                            'App\Models\Event' => route('filament.admin.resources.events.view', $record->commentable),
+                            'App\Models\DinorTv' => route('filament.admin.resources.dinor-tv.view', $record->commentable),
+                            'App\Models\Tip' => route('filament.admin.resources.tips.view', $record->commentable),
+                            default => null
+                        };
+                    })
+                    ->color('primary'),
 
                 Tables\Columns\IconColumn::make('is_approved')
                     ->label('Approuvé')

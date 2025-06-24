@@ -45,7 +45,7 @@ class RecipeResource extends Resource
                             ->label('Slug URL')
                             ->required()
                             ->maxLength(255)
-                            ->unique(Recipe::class, 'slug'),
+                            ->unique(Recipe::class, 'slug', ignoreRecord: true),
                         
                         CategorySelect::make('category_id'),
                             

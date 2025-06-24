@@ -17,6 +17,7 @@ class Tip extends Model
         'content',
         'category_id',
         'image',
+        'gallery',
         'video_url',
         'tags',
         'is_featured',
@@ -31,6 +32,7 @@ class Tip extends Model
 
     protected $casts = [
         'tags' => 'array',
+        'gallery' => 'array',
         'is_featured' => 'boolean',
         'is_published' => 'boolean',
         'estimated_time' => 'integer',
@@ -47,6 +49,15 @@ class Tip extends Model
     public function getImageUrlAttribute()
     {
         return $this->image ? asset('storage/' . $this->image) : null;
+    }
+
+    public function getGalleryUrlsAttribute()
+    {
+        if (!$this->gallery) return [];
+        
+        return array_map(function($image) {
+            return asset('storage/' . $image);
+        }, $this->gallery);
     }
 
     public function scopePublished($query)
