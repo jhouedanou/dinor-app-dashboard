@@ -82,7 +82,9 @@ class LikeController extends Controller
         $userId = Auth::id();
         $ipAddress = $request->ip();
 
-        $isLiked = $model->isLikedBy($userId, $ipAddress);
+        // Utiliser l'ID utilisateur si connecté, sinon l'IP
+        $userIdentifier = $userId ?: $ipAddress;
+        $isLiked = $model->isLikedBy($userIdentifier);
 
         return response()->json([
             'success' => true,

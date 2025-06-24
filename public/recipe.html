@@ -7,6 +7,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/auth-components.css">
+    <script src="/js/auth-manager.js"></script>
+    <script src="/js/likes-manager.js"></script>
+    <script src="/js/comments-manager.js"></script>
     <style>
         [x-cloak] { display: none !important; }
         .like-button {
@@ -44,6 +48,9 @@
                         <span class="ml-2 text-gray-500">/ Recette</span>
                     </div>
                     <div class="flex items-center space-x-4">
+                        <div id="authStatus" class="flex items-center space-x-2">
+                            <!-- Sera mis à jour par JavaScript -->
+                        </div>
                         <a href="dashboard.html" class="text-gray-600 hover:text-gray-900">
                             <i class="fas fa-arrow-left mr-2"></i>Retour au dashboard
                         </a>
@@ -63,13 +70,13 @@
                 <!-- En-tête de la recette -->
                 <div class="bg-white rounded-lg shadow-lg overflow-hidden">
                     <div class="relative h-96">
-                        <img :src="recipe.featured_image_url || '/images/default-recipe.jpg'" 
-                             :alt="recipe.title" 
+                        <img :src="recipe?.featured_image_url || '/images/default-recipe.jpg'" 
+                             :alt="recipe?.title || 'Recette'" 
                              class="w-full h-full object-cover">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                         <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
-                            <h1 class="text-4xl font-bold mb-2" x-text="recipe.title"></h1>
-                            <p class="text-lg opacity-90" x-text="recipe.short_description"></p>
+                            <h1 class="text-4xl font-bold mb-2" x-text="recipe?.title || ''"></h1>
+                            <p class="text-lg opacity-90" x-text="recipe?.short_description || ''"></p>
                         </div>
                     </div>
                 </div>
@@ -79,15 +86,15 @@
                     <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
                         <div class="flex items-center space-x-6">
                             <div class="text-center">
-                                <div class="text-2xl font-bold text-yellow-600" x-text="recipe.preparation_time + ' min'"></div>
+                                <div class="text-2xl font-bold text-yellow-600" x-text="(recipe?.preparation_time || 0) + ' min'"></div>
                                 <div class="text-sm text-gray-500">Préparation</div>
                             </div>
                             <div class="text-center">
-                                <div class="text-2xl font-bold text-yellow-600" x-text="recipe.cooking_time + ' min'"></div>
+                                <div class="text-2xl font-bold text-yellow-600" x-text="(recipe?.cooking_time || 0) + ' min'"></div>
                                 <div class="text-sm text-gray-500">Cuisson</div>
                             </div>
                             <div class="text-center">
-                                <div class="text-2xl font-bold text-yellow-600" x-text="recipe.servings"></div>
+                                <div class="text-2xl font-bold text-yellow-600" x-text="recipe?.servings || 0"></div>
                                 <div class="text-sm text-gray-500">Portions</div>
                             </div>
                         </div>
@@ -109,7 +116,7 @@
                     <div class="mb-8">
                         <h2 class="text-2xl font-bold mb-4">Ingrédients</h2>
                         <ul class="space-y-2">
-                            <template x-for="ingredient in recipe.ingredients" :key="ingredient">
+                            <template x-for="(ingredient, index) in (recipe?.ingredients || [])" :key="index">
                                 <li class="flex items-center space-x-2">
                                     <i class="fas fa-check text-yellow-500"></i>
                                     <span x-text="typeof ingredient === 'object' ? 
@@ -126,7 +133,7 @@
                     <div class="mb-8">
                         <h2 class="text-2xl font-bold mb-4">Instructions</h2>
                         <ol class="space-y-4">
-                            <template x-for="(instruction, index) in recipe.instructions" :key="index">
+                            <template x-for="(instruction, index) in (recipe?.instructions || [])" :key="index">
                                 <li class="flex space-x-4">
                                     <span class="flex-shrink-0 w-8 h-8 bg-yellow-500 text-white rounded-full flex items-center justify-center font-bold" x-text="index + 1"></span>
                                     <div x-html="typeof instruction === 'object' ? instruction.step || instruction : instruction" class="pt-1"></div>
@@ -331,25 +338,12 @@
                     const urlParams = new URLSearchParams(window.location.search);
                     const recipeId = urlParams.get('id');
                     
-                    try {
-                        const response = await fetch('/api/v1/likes/toggle', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                type: 'recipe',
-                                id: recipeId
-                            })
-                        });
-                        
-                        const data = await response.json();
-                        if (data.success) {
-                            this.userLiked = data.action === 'liked';
-                            this.likesCount = data.likes_count;
-                        }
-                    } catch (error) {
-                        console.error('Erreur lors du toggle like:', error);
+                    // Utiliser le gestionnaire de likes avec authentification
+                    const result = await likesManager.toggleLike('recipe', recipeId);
+                    
+                    if (result.success) {
+                        this.userLiked = result.action === 'liked';
+                        this.likesCount = result.likes_count;
                     }
                 },
 
@@ -358,32 +352,17 @@
                     const recipeId = urlParams.get('id');
                     
                     this.submittingComment = true;
-                    try {
-                        const response = await fetch('/api/v1/comments', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                type: 'recipe',
-                                id: recipeId,
-                                content: this.newComment.content,
-                                author_name: this.newComment.author_name,
-                                author_email: this.newComment.author_email
-                            })
-                        });
-                        
-                        const data = await response.json();
-                        if (data.success) {
-                            this.comments.unshift(data.data);
-                            this.commentsCount++;
-                            this.newComment = { content: '', author_name: '', author_email: '' };
-                        }
-                    } catch (error) {
-                        console.error('Erreur lors de la soumission du commentaire:', error);
-                    } finally {
-                        this.submittingComment = false;
+                    
+                    // Utiliser le gestionnaire de commentaires avec authentification
+                    const result = await commentsManager.addComment('recipe', recipeId, this.newComment.content);
+                    
+                    if (result.success) {
+                        this.comments.unshift(result.comment);
+                        this.commentsCount++;
+                        this.newComment = { content: '', author_name: '', author_email: '' };
                     }
+                    
+                    this.submittingComment = false;
                 },
 
                 showReplyForm(commentId) {
@@ -433,6 +412,52 @@
                 }
             }
         }
+    </script>
+
+    <script>
+        // Mettre à jour le statut d'authentification dans la navigation
+        function updateAuthStatus() {
+            const authStatusDiv = document.getElementById('authStatus');
+            
+            if (authManager.isAuthenticated()) {
+                authStatusDiv.innerHTML = `
+                    <span class="text-gray-700 text-sm">Bonjour, ${authManager.user.name}!</span>
+                    <button onclick="logout()" class="text-red-600 hover:text-red-800 text-sm">
+                        Déconnexion
+                    </button>
+                `;
+            } else {
+                authStatusDiv.innerHTML = `
+                    <button onclick="showLogin()" class="bg-yellow-500 text-white px-3 py-1 rounded text-sm hover:bg-yellow-600">
+                        Connexion
+                    </button>
+                    <button onclick="showRegister()" class="bg-gray-500 text-white px-3 py-1 rounded text-sm hover:bg-gray-600">
+                        Inscription
+                    </button>
+                `;
+            }
+        }
+
+        // Fonctions pour les boutons de la navigation
+        function showLogin() {
+            authManager.showAuthModal();
+            authManager.switchTab('login');
+        }
+
+        function showRegister() {
+            authManager.showAuthModal();
+            authManager.switchTab('register');
+        }
+
+        async function logout() {
+            await authManager.logout();
+            updateAuthStatus();
+        }
+
+        // Mettre à jour le statut d'authentification au chargement
+        document.addEventListener('DOMContentLoaded', () => {
+            updateAuthStatus();
+        });
     </script>
 </body>
 </html>

@@ -7,6 +7,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/auth-components.css">
+    <script src="/js/auth-manager.js"></script>
+    <script src="/js/likes-manager.js"></script>
+    <script src="/js/comments-manager.js"></script>
     <style>
         [x-cloak] { display: none !important; }
         .like-button {
@@ -72,20 +76,20 @@
             <div x-show="!loading && tip" class="space-y-8">
                 <!-- En-tête de l'astuce -->
                 <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-                    <div class="relative h-96" x-show="tip.image_url">
-                        <img :src="tip.image_url || '/images/default-tip.jpg'" 
-                             :alt="tip.title" 
+                    <div class="relative h-96" x-show="tip?.image_url">
+                        <img :src="tip?.image_url || '/images/default-tip.jpg'" 
+                             :alt="tip?.title || 'Astuce'" 
                              class="w-full h-full object-cover">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                         <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
-                            <h1 class="text-4xl font-bold mb-2" x-text="tip.title"></h1>
+                            <h1 class="text-4xl font-bold mb-2" x-text="tip?.title || ''"></h1>
                         </div>
                     </div>
-                    <div x-show="!tip.image_url" class="p-8 text-center">
+                    <div x-show="!tip?.image_url" class="p-8 text-center">
                         <div class="inline-flex items-center justify-center w-20 h-20 bg-yellow-100 rounded-full mb-4">
                             <i class="fas fa-lightbulb text-3xl text-yellow-600"></i>
                         </div>
-                        <h1 class="text-4xl font-bold text-gray-900 mb-2" x-text="tip.title"></h1>
+                        <h1 class="text-4xl font-bold text-gray-900 mb-2" x-text="tip?.title || ''"></h1>
                     </div>
                 </div>
 
@@ -93,17 +97,17 @@
                 <div class="bg-white rounded-lg shadow-lg p-6">
                     <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
                         <div class="flex items-center space-x-6">
-                            <div class="text-center" x-show="tip.estimated_time">
-                                <div class="text-2xl font-bold text-yellow-600" x-text="tip.estimated_time + ' min'"></div>
+                            <div class="text-center" x-show="tip?.estimated_time">
+                                <div class="text-2xl font-bold text-yellow-600" x-text="(tip?.estimated_time || 0) + ' min'"></div>
                                 <div class="text-sm text-gray-500">Temps estimé</div>
                             </div>
-                            <div x-show="tip.difficulty_level">
+                            <div x-show="tip?.difficulty_level">
                                 <div class="text-sm text-gray-500 mb-1">Difficulté</div>
-                                <span class="difficulty-badge" :class="getDifficultyClass(tip.difficulty_level)" x-text="getDifficultyLabel(tip.difficulty_level)"></span>
+                                <span class="difficulty-badge" :class="getDifficultyClass(tip?.difficulty_level)" x-text="getDifficultyLabel(tip?.difficulty_level)"></span>
                             </div>
-                            <div x-show="tip.category">
+                            <div x-show="tip?.category">
                                 <div class="text-sm text-gray-500 mb-1">Catégorie</div>
-                                <span class="inline-block bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-medium" x-text="tip.category.name"></span>
+                                <span class="inline-block bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-medium" x-text="tip?.category?.name || ''"></span>
                             </div>
                         </div>
                         <div class="flex items-center space-x-4">
@@ -121,9 +125,9 @@
                     </div>
 
                     <!-- Tags -->
-                    <div x-show="tip.tags && tip.tags.length > 0" class="mb-6">
+                    <div x-show="tip?.tags && tip?.tags.length > 0" class="mb-6">
                         <div class="flex flex-wrap gap-2">
-                            <template x-for="tag in tip.tags" :key="tag">
+                            <template x-for="(tag, index) in (tip?.tags || [])" :key="index">
                                 <span class="inline-block bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm" x-text="'#' + tag"></span>
                             </template>
                         </div>
@@ -131,14 +135,14 @@
 
                     <!-- Contenu de l'astuce -->
                     <div class="prose max-w-none">
-                        <div x-html="tip.content"></div>
+                        <div x-html="tip?.content || ''"></div>
                     </div>
 
                     <!-- Vidéo si disponible -->
-                    <div x-show="tip.video_url" class="mt-8">
+                    <div x-show="tip?.video_url" class="mt-8">
                         <h3 class="text-xl font-bold mb-4">Vidéo explicative</h3>
                         <div class="aspect-video">
-                            <iframe :src="tip.video_url" 
+                            <iframe :src="tip?.video_url" 
                                     frameborder="0" 
                                     allowfullscreen
                                     class="w-full h-full rounded-lg"></iframe>

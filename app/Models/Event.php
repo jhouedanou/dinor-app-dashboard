@@ -408,4 +408,12 @@ class Event extends Model
     {
         return Like::hasLiked($this, $userIdentifier);
     }
+
+    /**
+     * Toggle like for this event
+     */
+    public function toggleLike($userId = null, $ipAddress = null, $userAgent = null)
+    {
+        return Like::toggle($this, $userId, $ipAddress, $userAgent);
+    }
 } 

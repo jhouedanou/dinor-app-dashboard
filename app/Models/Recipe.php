@@ -298,4 +298,12 @@ class Recipe extends Model
     {
         return Like::hasLiked($this, $userIdentifier);
     }
+
+    /**
+     * Toggle like for this recipe
+     */
+    public function toggleLike($userId = null, $ipAddress = null, $userAgent = null)
+    {
+        return Like::toggle($this, $userId, $ipAddress, $userAgent);
+    }
 } 

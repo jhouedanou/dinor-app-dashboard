@@ -108,4 +108,36 @@ class Tip extends Model
     {
         return Like::hasLiked($this, $userIdentifier);
     }
+
+    /**
+     * Toggle like for this tip
+     */
+    public function toggleLike($userId = null, $ipAddress = null, $userAgent = null)
+    {
+        return Like::toggle($this, $userId, $ipAddress, $userAgent);
+    }
+
+    /**
+     * Get all likes for this tip
+     */
+    public function likes()
+    {
+        return $this->morphMany(Like::class, 'likeable');
+    }
+
+    /**
+     * Get all comments for this tip
+     */
+    public function comments()
+    {
+        return $this->morphMany(Comment::class, 'commentable');
+    }
+
+    /**
+     * Get approved comments only
+     */
+    public function approvedComments()
+    {
+        return $this->morphMany(Comment::class, 'commentable')->approved();
+    }
 } 

@@ -86,4 +86,23 @@ class Like extends Model
             return ['action' => 'liked', 'likes_count' => $likeable->likes_count + 1];
         }
     }
+
+    /**
+     * Check if a content is liked by user/IP
+     */
+    public static function hasLiked($likeable, $userIdentifier)
+    {
+        $query = static::where('likeable_id', $likeable->id)
+                      ->where('likeable_type', get_class($likeable));
+
+        // Si c'est un utilisateur authentifié
+        if (is_numeric($userIdentifier)) {
+            $query->where('user_id', $userIdentifier);
+        } else {
+            // Sinon c'est une IP
+            $query->where('ip_address', $userIdentifier);
+        }
+
+        return $query->exists();
+    }
 } 
