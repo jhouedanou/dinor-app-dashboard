@@ -62,53 +62,52 @@ const RecipesList = {
                     <p class="md3-body-large dinor-text-gray">Chargement des recettes...</p>
                 </div>
 
-            <!-- Liste des recettes -->
-            <div v-else-if="filteredRecipes.length > 0" class="recipes-grid">
-                <div 
-                    v-for="recipe in filteredRecipes" 
-                    :key="recipe.id"
-                    @click="goToRecipe(recipe.id)"
-                    class="recipe-card card-hover">
-                    <div class="recipe-image-container">
-                        <img 
-                            :src="recipe.featured_image_url || '/images/default-recipe.jpg'" 
-                            :alt="recipe.title"
-                            class="recipe-image"
-                            loading="lazy"
-                            @error="handleImageError">
-                        <div class="recipe-overlay">
-                            <div class="recipe-info">
-                                <h3 class="recipe-title">{{ recipe.title }}</h3>
-                                <p class="recipe-description">{{ truncateText(recipe.short_description, 80) }}</p>
+                <!-- Liste des recettes Material Design 3 -->
+                <div v-else-if="filteredRecipes.length > 0" class="md3-recipes-grid">
+                    <div 
+                        v-for="recipe in filteredRecipes" 
+                        :key="recipe.id"
+                        @click="goToRecipe(recipe.id)"
+                        class="md3-card md3-card-elevated recipe-card-md3">
+                        <div class="recipe-image-container">
+                            <img 
+                                :src="recipe.featured_image_url || '/images/default-recipe.jpg'" 
+                                :alt="recipe.title"
+                                class="recipe-image"
+                                loading="lazy"
+                                @error="handleImageError">
+                            <div class="recipe-overlay dinor-gradient-primary">
+                                <div class="recipe-badges">
+                                    <div v-if="recipe.difficulty" class="md3-chip recipe-difficulty" :class="getDifficultyClass(recipe.difficulty)">
+                                        <i class="material-icons">local_fire_department</i>
+                                        <span>{{ getDifficultyLabel(recipe.difficulty) }}</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="recipe-badges">
-                            <span v-if="recipe.difficulty" class="difficulty-badge" :class="getDifficultyClass(recipe.difficulty)">
-                                {{ getDifficultyLabel(recipe.difficulty) }}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="recipe-details">
-                        <div class="recipe-stats">
-                            <span class="stat">
-                                <i class="fas fa-clock"></i>
-                                {{ recipe.preparation_time }}min
-                            </span>
-                            <span class="stat">
-                                <i class="fas fa-users"></i>
-                                {{ recipe.servings }}
-                            </span>
-                            <span class="stat">
-                                <i class="fas fa-heart"></i>
-                                {{ recipe.likes_count || 0 }}
-                            </span>
-                        </div>
-                        <div v-if="recipe.category" class="recipe-category">
-                            {{ recipe.category.name }}
+                        <div class="recipe-content">
+                            <h3 class="md3-title-large recipe-title dinor-text-primary">{{ recipe.title }}</h3>
+                            <p class="md3-body-medium recipe-description dinor-text-gray">{{ truncateText(recipe.short_description, 80) }}</p>
+                            <div class="recipe-stats">
+                                <div class="stat-item">
+                                    <i class="material-icons dinor-text-secondary">schedule</i>
+                                    <span class="md3-body-small">{{ recipe.preparation_time }}min</span>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="material-icons dinor-text-secondary">people</i>
+                                    <span class="md3-body-small">{{ recipe.servings }}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="material-icons dinor-text-secondary">favorite</i>
+                                    <span class="md3-body-small">{{ recipe.likes_count || 0 }}</span>
+                                </div>
+                            </div>
+                            <div v-if="recipe.category" class="recipe-category">
+                                <span class="md3-chip">{{ recipe.category.name }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
             <!-- État vide -->
             <div v-else class="empty-state">
@@ -144,6 +143,7 @@ const RecipesList = {
         const categories = ref([]);
         const searchQuery = ref('');
         const selectedCategory = ref(null);
+        const showSearch = ref(false);
         
         const { request } = useApi();
         
@@ -208,6 +208,13 @@ const RecipesList = {
         
         const clearSearch = () => {
             searchQuery.value = '';
+        };
+        
+        const toggleSearch = () => {
+            showSearch.value = !showSearch.value;
+            if (!showSearch.value) {
+                searchQuery.value = '';
+            }
         };
         
         const truncateText = (text, length) => {
@@ -275,10 +282,12 @@ const RecipesList = {
             categories,
             searchQuery,
             selectedCategory,
+            showSearch,
             filteredRecipes,
             debouncedSearch,
             goToRecipe,
             clearSearch,
+            toggleSearch,
             truncateText,
             getDifficultyClass,
             getDifficultyLabel,
