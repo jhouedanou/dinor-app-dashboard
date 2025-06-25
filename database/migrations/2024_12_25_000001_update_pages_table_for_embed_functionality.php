@@ -9,6 +9,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('pages', function (Blueprint $table) {
+            // Supprimer d'abord la contrainte de clé étrangère si elle existe
+            $table->dropForeign(['parent_id']);
+            
             // Supprimer les colonnes non utilisées
             $table->dropColumn([
                 'content',
