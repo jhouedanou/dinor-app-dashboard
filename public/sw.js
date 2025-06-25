@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dinor-pwa-v1';
+const CACHE_NAME = 'dinor-pwa-v2';
 const urlsToCache = [
   '/pwa/',
   '/pwa/index.html',
@@ -17,8 +17,46 @@ const urlsToCache = [
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'
 ];
 
+// Fonction pour vérifier si une requête peut être mise en cache
+function canCache(request) {
+  try {
+    const url = new URL(request.url);
+    
+    // Exclure les extensions Chrome et autres schémas non-supportés
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      console.log(`SW: Schéma non supporté: ${url.protocol}`);
+      return false;
+    }
+    
+    // Seules les requêtes GET peuvent être mises en cache
+    if (request.method !== 'GET') {
+      console.log(`SW: Méthode non supportée: ${request.method}`);
+      return false;
+    }
+    
+    // Exclure les requêtes vers des extensions
+    if (url.href.includes('chrome-extension') || 
+        url.href.includes('moz-extension') || 
+        url.href.includes('safari-extension') ||
+        url.protocol === 'chrome-extension:' ||
+        url.protocol === 'moz-extension:' ||
+        url.protocol === 'safari-extension:') {
+      console.log(`SW: Requête extension détectée: ${url.href}`);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.log(`SW: Erreur analyse URL: ${error.message}`);
+    return false;
+  }
+}
+
 // Installation du service worker
 self.addEventListener('install', event => {
+  // Force la mise à jour immédiate
+  self.skipWaiting();
+  
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
@@ -33,16 +71,20 @@ self.addEventListener('install', event => {
 
 // Activation du service worker
 self.addEventListener('activate', event => {
+  // Prendre le contrôle immédiatement
   event.waitUntil(
     caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
+      return Promise.all([
+        // Supprimer les anciens caches
+        ...cacheNames.map(cacheName => {
           if (cacheName !== CACHE_NAME) {
             console.log('Suppression du cache obsolète:', cacheName);
             return caches.delete(cacheName);
           }
-        })
-      );
+        }),
+        // Prendre le contrôle de tous les clients
+        self.clients.claim()
+      ]);
     })
   );
 });
@@ -50,6 +92,16 @@ self.addEventListener('activate', event => {
 // Stratégie de cache : Network First pour les APIs, Cache First pour les assets
 self.addEventListener('fetch', event => {
   const { request } = event;
+  
+  // Vérifier si la requête peut être mise en cache
+  if (!canCache(request)) {
+    console.log(`SW: Requête ignorée: ${request.url}`);
+    // Laisser passer la requête sans l'intercepter
+    return;
+  }
+  
+  console.log(`SW: Traitement de la requête: ${request.url}`);
+  
   const url = new URL(request.url);
 
   // Stratégie pour les API calls
@@ -57,12 +109,16 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       fetch(request)
         .then(response => {
-          // Clone la réponse pour la mettre en cache
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME)
-            .then(cache => {
-              cache.put(request, responseClone);
-            });
+          // Vérifier si la réponse peut être mise en cache
+          if (response.status === 200 && canCache(request)) {
+            // Clone la réponse pour la mettre en cache
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME)
+              .then(cache => {
+                cache.put(request, responseClone);
+              })
+              .catch(err => console.log('Erreur mise en cache API:', err));
+          }
           return response;
         })
         .catch(() => {
@@ -85,8 +141,8 @@ self.addEventListener('fetch', event => {
         // Sinon, récupère depuis le réseau
         return fetch(request)
           .then(response => {
-            // Vérifie si la réponse est valide
-            if (!response || response.status !== 200 || response.type !== 'basic') {
+            // Vérifie si la réponse est valide et peut être mise en cache
+            if (!response || response.status !== 200 || response.type !== 'basic' || !canCache(request)) {
               return response;
             }
 
@@ -95,10 +151,19 @@ self.addEventListener('fetch', event => {
             caches.open(CACHE_NAME)
               .then(cache => {
                 cache.put(request, responseToCache);
-              });
+              })
+              .catch(err => console.log('Erreur mise en cache asset:', err));
 
             return response;
           });
+      })
+      .catch(err => {
+        console.log('Erreur fetch:', err);
+        // Retourner une réponse par défaut ou une page offline
+        return new Response('Contenu non disponible hors ligne', {
+          status: 503,
+          statusText: 'Service Unavailable'
+        });
       })
   );
 });

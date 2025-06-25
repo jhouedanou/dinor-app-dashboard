@@ -12,57 +12,24 @@ class Page extends Model
 
     protected $fillable = [
         'title',
-        'content',
-        'slug',
-        'meta_title',
-        'meta_description',
-        'meta_keywords',
-        'template',
+        'url',
+        'description',
         'is_published',
-        'is_homepage',
-        'order',
-        'parent_id',
-        'featured_image'
+        'order'
     ];
 
     protected $casts = [
         'is_published' => 'boolean',
-        'is_homepage' => 'boolean',
         'order' => 'integer'
     ];
-
-    public function parent()
-    {
-        return $this->belongsTo(Page::class, 'parent_id');
-    }
-
-    public function children()
-    {
-        return $this->hasMany(Page::class, 'parent_id')->orderBy('order');
-    }
-
-    public function getFeaturedImageUrlAttribute()
-    {
-        return $this->featured_image ? asset('storage/' . $this->featured_image) : null;
-    }
 
     public function scopePublished($query)
     {
         return $query->where('is_published', true);
     }
 
-    public function scopeRootPages($query)
-    {
-        return $query->whereNull('parent_id');
-    }
-
     public function scopeOrdered($query)
     {
         return $query->orderBy('order');
-    }
-
-    public function getUrlAttribute()
-    {
-        return url('/page/' . $this->slug);
     }
 } 

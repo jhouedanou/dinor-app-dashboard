@@ -24,8 +24,8 @@ class PageResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Page Web')
-                    ->description('Configuration simplifiée pour l\'intégration PWA')
+                Forms\Components\Section::make('Page Embed/Iframe')
+                    ->description('Ajoutez une URL qui sera affichée dans un embed/iframe dans la PWA')
                     ->schema([
                         Forms\Components\TextInput::make('title')
                             ->label('Titre de la page')
@@ -34,10 +34,10 @@ class PageResource extends Resource
                             ->helperText('Nom affiché dans l\'application mobile'),
                         
                         Forms\Components\TextInput::make('url')
-                            ->label('URL de la page')
+                            ->label('URL pour Embed/Iframe')
                             ->required()
                             ->url()
-                            ->helperText('URL complète de la page web à afficher (ex: https://example.com)')
+                            ->helperText('URL complète à afficher dans un embed/iframe dans la PWA (ex: https://example.com)')
                             ->placeholder('https://'),
 
                         Forms\Components\Textarea::make('description')
@@ -71,7 +71,7 @@ class PageResource extends Resource
                     ->weight('bold'),
 
                 Tables\Columns\TextColumn::make('url')
-                    ->label('URL')
+                    ->label('URL Embed')
                     ->searchable()
                     ->copyable()
                     ->copyMessage('URL copiée!')

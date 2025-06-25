@@ -23,21 +23,21 @@ class DinorTvResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Vidéo YouTube')
-                    ->description('Configuration simplifiée pour l\'intégration PWA')
+                Forms\Components\Section::make('Contenu Embed/Iframe')
+                    ->description('Ajoutez une URL qui sera affichée dans un embed/iframe dans la PWA')
                     ->schema([
                         Forms\Components\TextInput::make('title')
-                            ->label('Titre de la vidéo')
+                            ->label('Titre du contenu')
                             ->required()
                             ->maxLength(255)
                             ->helperText('Nom affiché dans l\'application mobile'),
                         
                         Forms\Components\TextInput::make('video_url')
-                            ->label('URL YouTube')
+                            ->label('URL pour Embed/Iframe')
                             ->required()
                             ->url()
-                            ->helperText('URL complète de la vidéo YouTube (ex: https://www.youtube.com/watch?v=...)')
-                            ->placeholder('https://www.youtube.com/watch?v='),
+                            ->helperText('URL complète à afficher dans un embed/iframe dans la PWA (ex: https://www.youtube.com/embed/...)')
+                            ->placeholder('https://'),
 
                         Forms\Components\Textarea::make('description')
                             ->label('Description (optionnelle)')
