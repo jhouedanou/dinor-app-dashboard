@@ -9,9 +9,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('dinor_tv', function (Blueprint $table) {
-            // Supprimer les colonnes non utilisées
-            $table->dropForeign(['category_id']);
-            $table->dropColumn([
+            // Supprimer d'abord la contrainte de clé étrangère si elle existe
+            if (Schema::hasColumn('dinor_tv', 'category_id')) {
+                $table->dropForeign(['category_id']);
+            }
+            
+            // Supprimer les colonnes non utilisées si elles existent
+            $columnsToRemove = [
                 'thumbnail',
                 'duration',
                 'category_id',
@@ -20,10 +24,18 @@ return new class extends Migration
                 'scheduled_at',
                 'like_count',
                 'slug'
-            ]);
+            ];
             
-            // Modifier la colonne description pour la rendre nullable
-            $table->text('description')->nullable()->change();
+            foreach ($columnsToRemove as $column) {
+                if (Schema::hasColumn('dinor_tv', $column)) {
+                    $table->dropColumn($column);
+                }
+            }
+            
+            // Modifier la colonne description pour la rendre nullable si elle existe
+            if (Schema::hasColumn('dinor_tv', 'description')) {
+                $table->text('description')->nullable()->change();
+            }
         });
     }
 
