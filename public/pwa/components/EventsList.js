@@ -1,5 +1,5 @@
 // Composant Liste des Événements
-export default {
+const EventsList = {
     template: `
         <div class="events-page">
             <!-- Header -->

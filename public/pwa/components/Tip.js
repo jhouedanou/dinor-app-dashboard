@@ -1,5 +1,5 @@
 // Composant Tip optimisé pour PWA
-export default {
+const Tip = {
     template: `
         <div class="min-h-screen bg-gray-50">
             <!-- Navigation -->

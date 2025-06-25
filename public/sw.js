@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dinor-pwa-v3';
+const CACHE_NAME = 'dinor-pwa-v4';
 const urlsToCache = [
   '/pwa/',
   '/pwa/index.html',

@@ -1,55 +1,66 @@
 // Composant Liste des Recettes optimisé
-export default {
+const RecipesList = {
     template: `
-        <div class="recipes-page">
-            <!-- Header avec recherche -->
-            <div class="page-header">
-                <h1 class="page-title">
-                    <i class="fas fa-utensils mr-2"></i>
-                    Recettes
-                </h1>
-                <div class="search-container">
-                    <div class="search-input-wrapper">
-                        <i class="fas fa-search search-icon"></i>
-                        <input 
-                            v-model="searchQuery"
-                            @input="debouncedSearch"
-                            type="text" 
-                            placeholder="Rechercher une recette..."
-                            class="search-input">
-                        <button 
-                            v-if="searchQuery" 
-                            @click="clearSearch"
-                            class="clear-search">
-                            <i class="fas fa-times"></i>
+        <div class="recipes-page recipe-page">
+            <!-- Top App Bar Material Design 3 -->
+            <nav class="md3-top-app-bar">
+                <div class="md3-app-bar-container">
+                    <div class="md3-app-bar-title">
+                        <i class="material-icons dinor-text-primary">restaurant</i>
+                        <span class="dinor-text-primary">Recettes</span>
+                    </div>
+                    <div class="md3-app-bar-actions">
+                        <button @click="toggleSearch" class="md3-icon-button">
+                            <i class="material-icons">search</i>
                         </button>
                     </div>
+                </div>
+            </nav>
+
+            <!-- Search Bar -->
+            <div v-if="showSearch" class="md3-search-container">
+                <div class="md3-search-bar">
+                    <i class="material-icons search-icon dinor-text-secondary">search</i>
+                    <input 
+                        v-model="searchQuery"
+                        @input="debouncedSearch"
+                        type="text" 
+                        placeholder="Rechercher une recette..."
+                        class="md3-search-input">
+                    <button 
+                        v-if="searchQuery" 
+                        @click="clearSearch"
+                        class="md3-icon-button">
+                        <i class="material-icons">clear</i>
+                    </button>
                 </div>
             </div>
 
             <!-- Filtres rapides -->
-            <div class="filters-container" v-if="categories.length > 0">
-                <div class="filters-scroll">
+            <div class="md3-filter-container" v-if="categories.length > 0">
+                <div class="md3-filter-scroll">
                     <button 
                         @click="selectedCategory = null"
-                        :class="['filter-chip', { 'filter-active': !selectedCategory }]">
+                        :class="['md3-chip', { 'md3-chip-selected': !selectedCategory }]">
                         Toutes
                     </button>
                     <button 
                         v-for="category in categories"
                         :key="category.id"
                         @click="selectedCategory = category.id"
-                        :class="['filter-chip', { 'filter-active': selectedCategory === category.id }]">
+                        :class="['md3-chip', { 'md3-chip-selected': selectedCategory === category.id }]">
                         {{ category.name }}
                     </button>
                 </div>
             </div>
 
-            <!-- Loading -->
-            <div v-if="loading" class="loading-container">
-                <div class="spinner"></div>
-                <p class="loading-text">Chargement des recettes...</p>
-            </div>
+            <!-- Main Content -->
+            <main class="md3-main-content">
+                <!-- Loading -->
+                <div v-if="loading" class="md3-loading-state">
+                    <div class="md3-circular-progress"></div>
+                    <p class="md3-body-large dinor-text-gray">Chargement des recettes...</p>
+                </div>
 
             <!-- Liste des recettes -->
             <div v-else-if="filteredRecipes.length > 0" class="recipes-grid">
