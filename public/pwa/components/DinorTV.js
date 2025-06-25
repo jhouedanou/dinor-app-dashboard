@@ -1,5 +1,5 @@
-// Composant Dinor TV (YouTube intégré)
-export default {
+// Composant Dinor TV avec Player Intégré
+const DinorTV = {
     template: `
         <div class="dinortv-page">
             <!-- Header -->
@@ -23,13 +23,29 @@ export default {
             <!-- Player principal -->
             <div v-if="currentVideo" class="main-player">
                 <div class="video-container">
-                    <iframe 
-                        :src="getEmbedUrl(currentVideo.url)"
-                        class="video-iframe"
-                        frameborder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowfullscreen>
-                    </iframe>
+                    <!-- Player Vidéo Intégré avec Overlay -->
+                    <div class="video-player-container" @click="togglePlayer">
+                        <div v-if="!playerActive" class="video-poster">
+                            <img 
+                                :src="currentVideo.thumbnail || getThumbnail(currentVideo.video_url)" 
+                                :alt="currentVideo.title"
+                                class="poster-image">
+                            <div class="play-button-overlay">
+                                <div class="play-button">
+                                    <i class="fas fa-play"></i>
+                                </div>
+                                <div class="play-text">Cliquer pour regarder</div>
+                            </div>
+                        </div>
+                        <iframe 
+                            v-if="playerActive"
+                            :src="getEmbedUrl(currentVideo.video_url)"
+                            class="video-iframe"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen>
+                        </iframe>
+                    </div>
                 </div>
                 <div class="video-info">
                     <h2 class="video-title">{{ currentVideo.title }}</h2>
@@ -74,7 +90,7 @@ export default {
                         :class="{ 'video-active': currentVideo && currentVideo.id === video.id }">
                         <div class="video-thumbnail">
                             <img 
-                                :src="getThumbnail(video.url)" 
+                                :src="video.thumbnail || getThumbnail(video.video_url)" 
                                 :alt="video.title"
                                 class="thumbnail-image"
                                 loading="lazy"
@@ -155,6 +171,7 @@ export default {
         const videos = ref([]);
         const currentVideo = ref(null);
         const showShareModal = ref(false);
+        const playerActive = ref(false);
         
         const { request } = useApi();
         const { toggleLike } = useLikes();
@@ -208,12 +225,17 @@ export default {
         
         const playVideo = (video) => {
             currentVideo.value = video;
+            playerActive.value = false; // Reset player pour nouvelle vidéo
             
             // Scroll vers le player
             const player = document.querySelector('.main-player');
             if (player) {
                 player.scrollIntoView({ behavior: 'smooth' });
             }
+        };
+        
+        const togglePlayer = () => {
+            playerActive.value = !playerActive.value;
         };
         
         const getEmbedUrl = (youtubeUrl) => {
@@ -375,9 +397,11 @@ export default {
             videos,
             currentVideo,
             showShareModal,
+            playerActive,
             filteredVideos,
             refreshVideos,
             playVideo,
+            togglePlayer,
             getEmbedUrl,
             getThumbnail,
             likeVideo,

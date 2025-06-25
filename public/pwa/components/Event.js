@@ -1,189 +1,205 @@
-// Composant Event optimisé pour PWA
-export default {
+// Composant Event avec Material Design 3 Dinor
+const Event = {
     template: `
-        <div class="min-h-screen bg-gray-50">
-            <!-- Navigation -->
-            <nav class="nav-bar px-4 py-3">
-                <div class="max-w-7xl mx-auto flex items-center">
-                    <button @click="goBack" class="text-yellow-600 hover:text-yellow-700 mr-4">
-                        <i class="fas fa-arrow-left"></i>
+        <div class="recipe-page event-page">
+            <!-- Navigation Material Design -->
+            <nav class="md3-top-app-bar">
+                <div class="md3-app-bar-container">
+                    <button @click="goBack" class="md3-icon-button">
+                        <i class="material-icons">arrow_back</i>
                     </button>
-                    <h1 class="text-xl font-bold text-yellow-600">Dinor</h1>
-                    <span class="ml-2 text-gray-500">/ Événement</span>
+                    <div class="md3-app-bar-title">
+                        <span class="dinor-text-primary">Dinor</span>
+                        <span class="md3-breadcrumb">/ Événement</span>
+                    </div>
+                    <div class="md3-app-bar-actions">
+                        <button @click="shareEvent" class="md3-icon-button">
+                            <i class="material-icons">share</i>
+                        </button>
+                    </div>
                 </div>
             </nav>
 
-            <!-- Contenu -->
-            <main class="max-w-4xl mx-auto px-4 py-6">
-                <div v-if="loading" class="text-center py-12">
-                    <div class="spinner mx-auto"></div>
-                    <p class="mt-4 text-gray-600">Chargement de l'événement...</p>
+            <!-- Contenu Material Design -->
+            <main class="md3-main-content">
+                <div v-if="loading" class="md3-loading-state">
+                    <div class="md3-circular-progress"></div>
+                    <p class="md3-body-large dinor-text-gray">Chargement de l'événement...</p>
                 </div>
 
-                <div v-else-if="event" class="space-y-6">
-                    <!-- En-tête -->
-                    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-                        <div class="relative h-64 md:h-96">
+                <div v-else-if="event" class="recipe-content">
+                    <!-- Hero Image Card -->
+                    <div class="md3-card md3-card-filled recipe-hero">
+                        <div class="recipe-hero-image">
                             <img 
                                 :src="event.featured_image_url || '/images/default-event.jpg'" 
                                 :alt="event.title"
-                                class="w-full h-full object-cover"
+                                class="hero-image"
                                 loading="eager">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                            <div class="absolute top-4 right-4">
-                                <span :class="getStatusClass(event.status)" class="px-3 py-1 rounded-full text-sm font-bold">
-                                    {{ getStatusLabel(event.status) }}
-                                </span>
-                            </div>
-                            <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
-                                <h1 class="text-2xl md:text-4xl font-bold mb-2">{{ event.title }}</h1>
-                                <p class="text-lg opacity-90">{{ event.short_description }}</p>
+                            <div class="hero-overlay dinor-gradient-primary"></div>
+                            <div class="hero-content">
+                                <div class="hero-badges" style="position: absolute; top: 0; right: 0; margin: 16px;">
+                                    <div class="md3-chip event-status" :class="getStatusClass(event.status)">
+                                        <i class="material-icons">event</i>
+                                        <span>{{ getStatusLabel(event.status) }}</span>
+                                    </div>
+                                </div>
+                                <h1 class="md3-display-small hero-title">{{ event.title }}</h1>
+                                <p class="md3-body-large hero-subtitle">{{ event.short_description }}</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Informations -->
-                    <div class="bg-white rounded-lg shadow-lg p-6">
-                        <div class="grid md:grid-cols-2 gap-8">
-                            <!-- Détails -->
-                            <div class="space-y-6">
-                                <div>
-                                    <h2 class="text-2xl font-bold mb-4">Détails de l'événement</h2>
-                                    <div class="space-y-3">
-                                        <div class="flex items-center space-x-3">
-                                            <i class="fas fa-calendar text-yellow-500"></i>
-                                            <span>{{ formatDate(event.start_date) }}</span>
-                                        </div>
-                                        <div class="flex items-center space-x-3">
-                                            <i class="fas fa-clock text-yellow-500"></i>
-                                            <span>{{ formatTime(event.start_time) }} - {{ formatTime(event.end_time) }}</span>
-                                        </div>
-                                        <div v-if="event.location" class="flex items-center space-x-3">
-                                            <i class="fas fa-map-marker-alt text-yellow-500"></i>
-                                            <span>{{ event.location }}</span>
-                                        </div>
-                                        <div v-if="event.is_online" class="flex items-center space-x-3">
-                                            <i class="fas fa-laptop text-yellow-500"></i>
-                                            <span>Événement en ligne</span>
-                                        </div>
-                                        <div v-if="event.price && !event.is_free" class="flex items-center space-x-3">
-                                            <i class="fas fa-euro-sign text-yellow-500"></i>
-                                            <span>{{ event.price }} €</span>
-                                        </div>
-                                        <div v-if="event.is_free" class="flex items-center space-x-3">
-                                            <i class="fas fa-gift text-green-500"></i>
-                                            <span class="text-green-600 font-medium">Gratuit</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Organisateur -->
-                                <div v-if="event.organizer_name">
-                                    <h3 class="text-lg font-semibold mb-2">Organisateur</h3>
-                                    <div class="space-y-2">
-                                        <p class="font-medium">{{ event.organizer_name }}</p>
-                                        <div v-if="event.organizer_email" class="flex items-center space-x-2">
-                                            <i class="fas fa-envelope text-gray-400"></i>
-                                            <a :href="'mailto:' + event.organizer_email" class="text-yellow-600 hover:underline">
-                                                {{ event.organizer_email }}
-                                            </a>
-                                        </div>
-                                        <div v-if="event.organizer_phone" class="flex items-center space-x-2">
-                                            <i class="fas fa-phone text-gray-400"></i>
-                                            <span>{{ event.organizer_phone }}</span>
-                                        </div>
-                                    </div>
-                                </div>
+                    <!-- Détails de l'événement -->
+                    <div class="content-section">
+                        <h2 class="section-title">
+                            <i class="material-icons">event</i>
+                            Détails de l'événement
+                        </h2>
+                        <div class="event-details">
+                            <div class="event-detail-item">
+                                <i class="material-icons dinor-text-secondary">calendar_today</i>
+                                <span class="md3-body-large">{{ formatDate(event.start_date) }}</span>
                             </div>
-
-                            <!-- Actions et participation -->
-                            <div class="space-y-6">
-                                <div class="flex items-center space-x-4">
-                                    <button 
-                                        @click="toggleLike" 
-                                        :class="[
-                                            'flex items-center space-x-2 px-4 py-2 rounded-lg border transition-all',
-                                            userLiked ? 'bg-red-50 border-red-200 text-red-600' : 'bg-gray-50 border-gray-200 text-gray-600'
-                                        ]">
-                                        <i class="fas fa-heart"></i>
-                                        <span>{{ likesCount }}</span>
-                                    </button>
-                                    <div class="flex items-center space-x-2 text-gray-600">
-                                        <i class="fas fa-comment"></i>
-                                        <span>{{ comments.length }} commentaires</span>
-                                    </div>
-                                </div>
-
-                                <!-- Participation -->
-                                <div v-if="event.max_participants" class="bg-gray-50 rounded-lg p-4">
-                                    <h3 class="text-lg font-semibold mb-2">Participation</h3>
-                                    <div class="space-y-2">
-                                        <div class="flex justify-between">
-                                            <span>Places disponibles:</span>
-                                            <span class="font-medium">{{ event.available_spots }}/{{ event.max_participants }}</span>
-                                        </div>
-                                        <div class="w-full bg-gray-200 rounded-full h-2">
-                                            <div 
-                                                class="bg-yellow-500 h-2 rounded-full" 
-                                                :style="'width: ' + ((event.current_participants / event.max_participants) * 100) + '%'">
-                                            </div>
-                                        </div>
-                                        <p class="text-sm text-gray-600">{{ event.current_participants }} participants inscrits</p>
-                                    </div>
-                                </div>
-
-                                <!-- Bouton d'inscription -->
-                                <button 
-                                    v-if="event.is_registration_open && event.registration_url"
-                                    @click="openRegistration"
-                                    class="w-full bg-yellow-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-yellow-600 transition-colors">
-                                    <i class="fas fa-ticket-alt mr-2"></i>S'inscrire à l'événement
-                                </button>
+                            <div class="event-detail-item">
+                                <i class="material-icons dinor-text-secondary">access_time</i>
+                                <span class="md3-body-large">{{ formatTime(event.start_time) }} - {{ formatTime(event.end_time) }}</span>
+                            </div>
+                            <div v-if="event.location" class="event-detail-item">
+                                <i class="material-icons dinor-text-secondary">location_on</i>
+                                <span class="md3-body-large">{{ event.location }}</span>
+                            </div>
+                            <div v-if="event.is_online" class="event-detail-item">
+                                <i class="material-icons dinor-text-secondary">computer</i>
+                                <span class="md3-body-large">Événement en ligne</span>
+                            </div>
+                            <div v-if="event.price && !event.is_free" class="event-detail-item">
+                                <i class="material-icons dinor-text-secondary">euro</i>
+                                <span class="md3-body-large">{{ event.price }} €</span>
+                            </div>
+                            <div v-if="event.is_free" class="event-detail-item">
+                                <i class="material-icons dinor-text-secondary">card_giftcard</i>
+                                <span class="md3-body-large dinor-text-secondary">Gratuit</span>
                             </div>
                         </div>
 
-                        <!-- Description complète -->
-                        <div v-if="event.description" class="mt-8">
-                            <h2 class="text-2xl font-bold mb-4">Description</h2>
-                            <div class="prose max-w-none" v-html="event.description"></div>
+                        
+                        <!-- Organisateur -->
+                        <div v-if="event.organizer_name" class="organizer-section">
+                            <h3 class="md3-title-large dinor-text-primary">Organisateur</h3>
+                            <div class="organizer-details">
+                                <p class="md3-body-large font-medium">{{ event.organizer_name }}</p>
+                                <div v-if="event.organizer_email" class="event-detail-item">
+                                    <i class="material-icons dinor-text-secondary">email</i>
+                                    <a :href="'mailto:' + event.organizer_email" class="md3-body-large dinor-text-primary hover:underline">
+                                        {{ event.organizer_email }}
+                                    </a>
+                                </div>
+                                <div v-if="event.organizer_phone" class="event-detail-item">
+                                    <i class="material-icons dinor-text-secondary">phone</i>
+                                    <span class="md3-body-large">{{ event.organizer_phone }}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
+                    
+                    <!-- Actions et participation -->
+                    <div class="content-section">
+                        <div class="recipe-actions">
+                            <button 
+                                @click="toggleLike" 
+                                :class="[
+                                    'md3-button',
+                                    userLiked ? 'md3-button-filled' : 'md3-button-outlined'
+                                ]">
+                                <i class="material-icons">{{ userLiked ? 'favorite' : 'favorite_border' }}</i>
+                                <span>{{ likesCount }}</span>
+                            </button>
+                            <div class="md3-chip">
+                                <i class="material-icons">comment</i>
+                                <span>{{ comments.length }} commentaires</span>
+                            </div>
+                        </div>
+
+                        <!-- Participation -->
+                        <div v-if="event.max_participants" class="participation-section">
+                            <h3 class="md3-title-large dinor-text-primary">Participation</h3>
+                            <div class="participation-stats">
+                                <div class="participation-info">
+                                    <span class="md3-body-medium">Places disponibles:</span>
+                                    <span class="md3-body-medium font-medium">{{ event.available_spots }}/{{ event.max_participants }}</span>
+                                </div>
+                                <div class="participation-progress">
+                                    <div class="progress-bar">
+                                        <div 
+                                            class="progress-fill" 
+                                            :style="'width: ' + ((event.current_participants / event.max_participants) * 100) + '%'">
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="md3-body-small dinor-text-gray">{{ event.current_participants }} participants inscrits</p>
+                            </div>
+                        </div>
+
+                        <!-- Bouton d'inscription -->
+                        <button 
+                            v-if="event.is_registration_open && event.registration_url"
+                            @click="openRegistration"
+                            class="md3-button md3-button-filled registration-button">
+                            <i class="material-icons">event_available</i>
+                            S'inscrire à l'événement
+                        </button>
+                    </div>
+
+                    
+                    <!-- Description complète -->
+                    <div v-if="event.description" class="content-section">
+                        <h2 class="section-title">
+                            <i class="material-icons">description</i>
+                            Description
+                        </h2>
+                        <div class="md3-body-large event-description" v-html="event.description"></div>
+                    </div>
+
+                    
                     <!-- Commentaires -->
-                    <div class="bg-white rounded-lg shadow-lg p-6">
-                        <h2 class="text-2xl font-bold mb-6">Commentaires ({{ comments.length }})</h2>
+                    <div class="content-section">
+                        <h2 class="section-title">
+                            <i class="material-icons">comment</i>
+                            Commentaires ({{ comments.length }})
+                        </h2>
                         
                         <!-- Formulaire -->
-                        <div class="border border-gray-200 rounded-lg p-4 bg-gray-50 mb-6">
+                        <div class="comment-form">
                             <form @submit.prevent="submitComment">
                                 <textarea 
                                     v-model="newComment"
                                     rows="3" 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 mb-3"
+                                    class="md3-text-field"
                                     placeholder="Partagez votre avis sur cet événement..."
                                     required></textarea>
                                 <button 
                                     type="submit" 
                                     :disabled="submittingComment"
-                                    class="bg-yellow-500 text-white px-6 py-2 rounded-lg hover:bg-yellow-600 transition-colors disabled:opacity-50">
+                                    class="md3-button md3-button-filled">
+                                    <i class="material-icons">send</i>
                                     {{ submittingComment ? 'Publication...' : 'Publier' }}
                                 </button>
                             </form>
                         </div>
 
                         <!-- Liste des commentaires -->
-                        <div v-if="loadingComments" class="text-center py-4">
-                            <div class="spinner mx-auto"></div>
+                        <div v-if="loadingComments" class="md3-loading-state">
+                            <div class="md3-circular-progress"></div>
                         </div>
-                        <div v-else class="space-y-4">
-                            <div v-for="comment in comments" :key="comment.id" class="border-l-3 border-yellow-400 pl-4">
-                                <div class="flex items-start justify-between mb-2">
-                                    <div>
-                                        <h4 class="font-medium text-gray-900">{{ comment.author_name || comment.user?.name }}</h4>
-                                        <p class="text-sm text-gray-500">{{ formatDate(comment.created_at) }}</p>
-                                    </div>
+                        <div v-else class="comments-list">
+                            <div v-for="comment in comments" :key="comment.id" class="comment-item">
+                                <div class="comment-header">
+                                    <h4 class="md3-title-medium">{{ comment.author_name || comment.user?.name }}</h4>
+                                    <p class="md3-body-medium dinor-text-gray">{{ formatDate(comment.created_at) }}</p>
                                 </div>
-                                <p class="text-gray-700">{{ comment.content }}</p>
+                                <p class="md3-body-large comment-content">{{ comment.content }}</p>
                             </div>
                         </div>
                     </div>
@@ -282,11 +298,13 @@ export default {
         
         const getStatusClass = (status) => {
             const classes = {
-                'active': 'bg-green-500 text-white',
-                'cancelled': 'bg-red-500 text-white',
-                'completed': 'bg-gray-500 text-white'
+                'active': 'event-status-active',
+                'cancelled': 'event-status-cancelled', 
+                'completed': 'event-status-completed',
+                'draft': 'event-status-draft',
+                'postponed': 'event-status-postponed'
             };
-            return classes[status] || 'bg-gray-500 text-white';
+            return classes[status] || 'event-status-draft';
         };
         
         const getStatusLabel = (status) => {
@@ -323,7 +341,17 @@ export default {
         };
         
         const goBack = () => {
-            router.push('/');
+            router.push('/events');
+        };
+        
+        const shareEvent = () => {
+            if (navigator.share && event.value) {
+                navigator.share({
+                    title: event.value.title,
+                    text: event.value.short_description,
+                    url: window.location.href
+                });
+            }
         };
         
         onMounted(() => {
@@ -346,7 +374,8 @@ export default {
             formatDate,
             formatTime,
             openRegistration,
-            goBack
+            goBack,
+            shareEvent
         };
     }
 };

@@ -1,0 +1,127 @@
+/* Palette de couleurs Dinor - Material Design 3 */
+
+:root {
+    /* Palette de couleurs principale Dinor */
+    --dinor-red: #E1251B;           /* Rouge principal */
+    --dinor-gray: #818080;          /* Gris neutre */
+    --dinor-champagne: #E6D9D0;     /* Champagne rosé */
+    --dinor-goldenrod: #9E7C22;     /* Doré foncé */
+    --dinor-blood-red: #690E08;     /* Rouge sang (foncé) */
+    
+    /* Variations automatiques */
+    --dinor-red-light: #FF5A50;     /* Rouge clair */
+    --dinor-red-dark: #B71C1C;      /* Rouge très foncé */
+    --dinor-champagne-light: #F4ECE6; /* Champagne très clair */
+    --dinor-champagne-dark: #D4C4B8; /* Champagne foncé */
+    
+    /* System colors Material Design 3 avec palette Dinor */
+    --md-sys-color-primary: var(--dinor-red);
+    --md-sys-color-primary-container: var(--dinor-champagne);
+    --md-sys-color-on-primary: #FFFFFF;
+    --md-sys-color-on-primary-container: var(--dinor-blood-red);
+    
+    --md-sys-color-secondary: var(--dinor-goldenrod);
+    --md-sys-color-secondary-container: var(--dinor-champagne-light);
+    --md-sys-color-on-secondary: #FFFFFF;
+    --md-sys-color-on-secondary-container: var(--dinor-blood-red);
+    
+    --md-sys-color-surface: #FEFBFF;
+    --md-sys-color-surface-variant: var(--dinor-champagne);
+    --md-sys-color-surface-container: var(--dinor-champagne-light);
+    --md-sys-color-surface-container-high: var(--dinor-champagne);
+    --md-sys-color-surface-container-highest: var(--dinor-champagne-dark);
+    
+    --md-sys-color-on-surface: var(--dinor-blood-red);
+    --md-sys-color-on-surface-variant: var(--dinor-gray);
+    
+    --md-sys-color-outline: var(--dinor-gray);
+    --md-sys-color-outline-variant: rgba(129, 128, 128, 0.3);
+    
+    --md-sys-color-error: var(--dinor-red);
+    --md-sys-color-on-error: #FFFFFF;
+    
+    /* Couleurs d'accent spécifiques Dinor */
+    --dinor-accent: var(--dinor-goldenrod);
+    --dinor-accent-light: #D4A848;
+    --dinor-neutral: var(--dinor-gray);
+    --dinor-neutral-light: #A8A7A7;
+    
+    /* Couleurs de statut avec palette Dinor */
+    --dinor-success: #4CAF50;
+    --dinor-warning: var(--dinor-goldenrod);
+    --dinor-info: #2196F3;
+    --dinor-danger: var(--dinor-blood-red);
+}
+
+/* Mode sombre adapté à la palette Dinor */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --md-sys-color-primary: var(--dinor-red-light);
+        --md-sys-color-primary-container: var(--dinor-blood-red);
+        --md-sys-color-on-primary: var(--dinor-blood-red);
+        --md-sys-color-on-primary-container: var(--dinor-champagne-light);
+        
+        --md-sys-color-secondary: var(--dinor-goldenrod);
+        --md-sys-color-secondary-container: #4A3811;
+        --md-sys-color-on-secondary: var(--dinor-blood-red);
+        --md-sys-color-on-secondary-container: var(--dinor-champagne-light);
+        
+        --md-sys-color-surface: #141218;
+        --md-sys-color-surface-variant: #49454F;
+        --md-sys-color-surface-container: #211F26;
+        --md-sys-color-surface-container-high: #2B2930;
+        --md-sys-color-surface-container-highest: #36343B;
+        
+        --md-sys-color-on-surface: var(--dinor-champagne-light);
+        --md-sys-color-on-surface-variant: #CAC4D0;
+        
+        --md-sys-color-outline: #938F99;
+        --md-sys-color-outline-variant: #49454F;
+        
+        --md-sys-color-error: var(--dinor-red-light);
+        --md-sys-color-on-error: var(--dinor-blood-red);
+    }
+}
+
+/* Utility classes pour la palette Dinor */
+.dinor-bg-primary { background-color: var(--dinor-red); }
+.dinor-bg-secondary { background-color: var(--dinor-goldenrod); }
+.dinor-bg-champagne { background-color: var(--dinor-champagne); }
+.dinor-bg-gray { background-color: var(--dinor-gray); }
+.dinor-bg-blood { background-color: var(--dinor-blood-red); }
+
+.dinor-text-primary { color: var(--dinor-red); }
+.dinor-text-secondary { color: var(--dinor-goldenrod); }
+.dinor-text-champagne { color: var(--dinor-champagne); }
+.dinor-text-gray { color: var(--dinor-gray); }
+.dinor-text-blood { color: var(--dinor-blood-red); }
+
+.dinor-border-primary { border-color: var(--dinor-red); }
+.dinor-border-secondary { border-color: var(--dinor-goldenrod); }
+.dinor-border-champagne { border-color: var(--dinor-champagne); }
+
+/* Gradients Dinor */
+.dinor-gradient-primary {
+    background: linear-gradient(135deg, var(--dinor-red) 0%, var(--dinor-blood-red) 100%);
+}
+
+.dinor-gradient-secondary {
+    background: linear-gradient(135deg, var(--dinor-goldenrod) 0%, var(--dinor-champagne) 100%);
+}
+
+.dinor-gradient-soft {
+    background: linear-gradient(135deg, var(--dinor-champagne-light) 0%, var(--dinor-champagne) 100%);
+}
+
+/* Ombres avec couleurs Dinor */
+.dinor-shadow {
+    box-shadow: 0 4px 16px rgba(225, 37, 27, 0.15);
+}
+
+.dinor-shadow-strong {
+    box-shadow: 0 8px 32px rgba(225, 37, 27, 0.25);
+}
+
+.dinor-shadow-accent {
+    box-shadow: 0 4px 16px rgba(158, 124, 34, 0.15);
+}

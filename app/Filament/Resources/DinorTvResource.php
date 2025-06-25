@@ -77,6 +77,12 @@ class DinorTvResource extends Resource
                     ->sortable()
                     ->weight('bold'),
 
+                Tables\Columns\ImageColumn::make('thumbnail')
+                    ->label('Miniature')
+                    ->circular()
+                    ->size(40)
+                    ->defaultImageUrl('/images/default-video-thumb.jpg'),
+
                 Tables\Columns\TextColumn::make('video_url')
                     ->label('URL Embed')
                     ->searchable()
