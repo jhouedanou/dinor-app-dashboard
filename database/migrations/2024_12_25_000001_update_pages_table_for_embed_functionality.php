@@ -10,12 +10,14 @@ return new class extends Migration
     {
         Schema::table('pages', function (Blueprint $table) {
             // Supprimer d'abord la contrainte de clé étrangère si elle existe
-            $table->dropForeign(['parent_id']);
+            if (Schema::hasColumn('pages', 'parent_id')) {
+                $table->dropForeign(['parent_id']);
+            }
             
-            // Supprimer les colonnes non utilisées
-            $table->dropColumn([
+            // Supprimer les colonnes non utilisées si elles existent
+            $columnsToRemove = [
                 'content',
-                'slug',
+                'slug', 
                 'meta_title',
                 'meta_description',
                 'meta_keywords',
@@ -23,11 +25,24 @@ return new class extends Migration
                 'is_homepage',
                 'parent_id',
                 'featured_image'
-            ]);
+            ];
             
-            // Ajouter les nouvelles colonnes nécessaires
-            $table->string('url')->after('title');
-            $table->text('description')->nullable()->after('url');
+            foreach ($columnsToRemove as $column) {
+                if (Schema::hasColumn('pages', $column)) {
+                    $table->dropColumn($column);
+                }
+            }
+        });
+        
+        // Ajouter les nouvelles colonnes dans une transaction séparée
+        Schema::table('pages', function (Blueprint $table) {
+            // Ajouter les nouvelles colonnes seulement si elles n'existent pas
+            if (!Schema::hasColumn('pages', 'url')) {
+                $table->string('url')->after('title');
+            }
+            if (!Schema::hasColumn('pages', 'description')) {
+                $table->text('description')->nullable()->after('url');
+            }
         });
     }
 
