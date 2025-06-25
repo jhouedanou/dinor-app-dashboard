@@ -1,150 +1,132 @@
-// Composant Recipe avec Material Design Dinor
-const Recipe = {
+// Composant Recipe optimisé pour PWA
+export default {
     template: `
-        <div class="recipe-page">
-            <!-- Navigation Material Design -->
-            <nav class="md3-top-app-bar">
-                <div class="md3-app-bar-container">
-                    <button @click="goBack" class="md3-icon-button">
-                        <i class="material-icons">arrow_back</i>
+        <div class="min-h-screen bg-gray-50">
+            <!-- Navigation -->
+            <nav class="nav-bar px-4 py-3">
+                <div class="max-w-7xl mx-auto flex items-center">
+                    <button @click="goBack" class="text-yellow-600 hover:text-yellow-700 mr-4">
+                        <i class="fas fa-arrow-left"></i>
                     </button>
-                    <div class="md3-app-bar-title">
-                        <span class="dinor-text-primary">Dinor</span>
-                        <span class="md3-breadcrumb">/ Recette</span>
-                    </div>
-                    <div class="md3-app-bar-actions">
-                        <button @click="shareRecipe" class="md3-icon-button">
-                            <i class="material-icons">share</i>
-                        </button>
-                    </div>
+                    <h1 class="text-xl font-bold text-yellow-600">Dinor</h1>
+                    <span class="ml-2 text-gray-500">/ Recette</span>
                 </div>
             </nav>
 
-            <!-- Contenu Material Design -->
-            <main class="md3-main-content">
-                <div v-if="loading" class="md3-loading-state">
-                    <div class="md3-circular-progress"></div>
-                    <p class="md3-body-large dinor-text-gray">Chargement de la recette...</p>
+            <!-- Contenu -->
+            <main class="max-w-4xl mx-auto px-4 py-6">
+                <div v-if="loading" class="text-center py-12">
+                    <div class="spinner mx-auto"></div>
+                    <p class="mt-4 text-gray-600">Chargement de la recette...</p>
                 </div>
 
-                <div v-else-if="recipe" class="recipe-content">
-                    <!-- Hero Image Card -->
-                    <div class="md3-card md3-card-filled recipe-hero">
-                        <div class="recipe-hero-image">
+                <div v-else-if="recipe" class="space-y-6">
+                    <!-- Image principale -->
+                    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                        <div class="relative h-64 md:h-96">
                             <img 
                                 :src="recipe.featured_image_url || '/images/default-recipe.jpg'" 
                                 :alt="recipe.title"
-                                class="hero-image"
+                                class="w-full h-full object-cover"
                                 loading="eager">
-                            <div class="hero-overlay dinor-gradient-primary"></div>
-                            <div class="hero-content">
-                                <h1 class="md3-display-small hero-title">{{ recipe.title }}</h1>
-                                <p class="md3-body-large hero-subtitle">{{ recipe.short_description }}</p>
-                                <div class="hero-badges">
-                                    <div v-if="recipe.difficulty" class="md3-chip recipe-difficulty" :class="getDifficultyClass(recipe.difficulty)">
-                                        <i class="material-icons">local_fire_department</i>
-                                        <span>{{ getDifficultyLabel(recipe.difficulty) }}</span>
-                                    </div>
-                                </div>
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                            <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
+                                <h1 class="text-2xl md:text-4xl font-bold mb-2">{{ recipe.title }}</h1>
+                                <p class="text-lg opacity-90">{{ recipe.short_description }}</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Stats Section -->
-                    <div class="md3-card md3-card-filled recipe-stats">
-                        <div class="stat-item">
-                            <i class="material-icons stat-icon">schedule</i>
-                            <div class="stat-value">{{ recipe.preparation_time }}min</div>
-                            <div class="stat-label">Préparation</div>
+                    <!-- Informations et actions -->
+                    <div class="bg-white rounded-lg shadow-lg p-6">
+                        <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                            <div class="flex items-center space-x-6">
+                                <div class="text-center">
+                                    <div class="text-xl font-bold text-yellow-600">{{ recipe.preparation_time }}min</div>
+                                    <div class="text-sm text-gray-500">Préparation</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-xl font-bold text-yellow-600">{{ recipe.cooking_time }}min</div>
+                                    <div class="text-sm text-gray-500">Cuisson</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-xl font-bold text-yellow-600">{{ recipe.servings }}</div>
+                                    <div class="text-sm text-gray-500">Portions</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <button 
+                                    @click="toggleLike" 
+                                    :class="[
+                                        'flex items-center space-x-2 px-4 py-2 rounded-lg border transition-all',
+                                        userLiked ? 'bg-red-50 border-red-200 text-red-600' : 'bg-gray-50 border-gray-200 text-gray-600'
+                                    ]">
+                                    <i class="fas fa-heart"></i>
+                                    <span>{{ likesCount }}</span>
+                                </button>
+                            </div>
                         </div>
-                        <div class="stat-item">
-                            <i class="material-icons stat-icon">local_fire_department</i>
-                            <div class="stat-value">{{ recipe.cooking_time }}min</div>
-                            <div class="stat-label">Cuisson</div>
-                        </div>
-                        <div class="stat-item">
-                            <i class="material-icons stat-icon">people</i>
-                            <div class="stat-value">{{ recipe.servings }}</div>
-                            <div class="stat-label">Portions</div>
-                        </div>
-                        <div class="stat-item">
-                            <button 
-                                @click="toggleLike" 
-                                :class="[
-                                    'md3-button',
-                                    userLiked ? 'md3-button-filled' : 'md3-button-outlined'
-                                ]">
-                                <i class="material-icons">{{ userLiked ? 'favorite' : 'favorite_border' }}</i>
-                                <span>{{ likesCount }}</span>
-                            </button>
-                        </div>
-                    </div>
 
-                    <!-- Ingrédients -->
-                    <div class="content-section">
-                        <h2 class="section-title">
-                            <i class="material-icons">shopping_cart</i>
-                            Ingrédients
-                        </h2>
-                        <ul class="md3-list">
-                            <li v-for="ingredient in recipe.ingredients" :key="ingredient.id" class="md3-list-item">
-                                <i class="material-icons dinor-text-secondary">check_circle</i>
-                                <span class="md3-body-large">{{ formatIngredient(ingredient) }}</span>
-                            </li>
-                        </ul>
-                    </div>
+                        <!-- Ingrédients -->
+                        <div class="mb-8">
+                            <h2 class="text-2xl font-bold mb-4">Ingrédients</h2>
+                            <ul class="space-y-2">
+                                <li v-for="ingredient in recipe.ingredients" :key="ingredient.id" class="flex items-center space-x-2">
+                                    <i class="fas fa-check text-yellow-500"></i>
+                                    <span>{{ formatIngredient(ingredient) }}</span>
+                                </li>
+                            </ul>
+                        </div>
 
-                    <!-- Instructions -->
-                    <div class="content-section">
-                        <h2 class="section-title">
-                            <i class="material-icons">receipt</i>
-                            Instructions
-                        </h2>
-                        <ol class="instruction-list">
-                            <li v-for="(instruction, index) in recipe.instructions" :key="index" class="instruction-item">
-                                <div class="instruction-number">{{ index + 1 }}</div>
-                                <div class="instruction-content md3-body-large" v-html="formatInstruction(instruction)"></div>
-                            </li>
-                        </ol>
+                        <!-- Instructions -->
+                        <div class="mb-8">
+                            <h2 class="text-2xl font-bold mb-4">Instructions</h2>
+                            <ol class="space-y-4">
+                                <li v-for="(instruction, index) in recipe.instructions" :key="index" class="flex space-x-4">
+                                    <span class="flex-shrink-0 w-8 h-8 bg-yellow-500 text-white rounded-full flex items-center justify-center font-bold">
+                                        {{ index + 1 }}
+                                    </span>
+                                    <div class="pt-1" v-html="formatInstruction(instruction)"></div>
+                                </li>
+                            </ol>
+                        </div>
                     </div>
 
                     <!-- Commentaires -->
-                    <div class="content-section">
-                        <h2 class="section-title">
-                            <i class="material-icons">comment</i>
-                            Commentaires ({{ comments.length }})
-                        </h2>
+                    <div class="bg-white rounded-lg shadow-lg p-6">
+                        <h2 class="text-2xl font-bold mb-6">Commentaires ({{ comments.length }})</h2>
                         
                         <!-- Formulaire -->
-                        <div class="comment-form">
+                        <div class="border border-gray-200 rounded-lg p-4 bg-gray-50 mb-6">
                             <form @submit.prevent="submitComment">
                                 <textarea 
                                     v-model="newComment"
                                     rows="3" 
-                                    class="md3-text-field"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 mb-3"
                                     placeholder="Partagez votre avis sur cette recette..."
                                     required></textarea>
                                 <button 
                                     type="submit" 
                                     :disabled="submittingComment"
-                                    class="md3-button md3-button-filled">
-                                    <i class="material-icons">send</i>
+                                    class="bg-yellow-500 text-white px-6 py-2 rounded-lg hover:bg-yellow-600 transition-colors disabled:opacity-50">
                                     {{ submittingComment ? 'Publication...' : 'Publier' }}
                                 </button>
                             </form>
                         </div>
 
                         <!-- Liste des commentaires -->
-                        <div v-if="loadingComments" class="md3-loading-state">
-                            <div class="md3-circular-progress"></div>
+                        <div v-if="loadingComments" class="text-center py-4">
+                            <div class="spinner mx-auto"></div>
                         </div>
-                        <div v-else class="comments-list">
-                            <div v-for="comment in comments" :key="comment.id" class="comment-item">
-                                <div class="comment-header">
-                                    <h4 class="md3-title-medium">{{ comment.author_name || comment.user?.name }}</h4>
-                                    <p class="md3-body-medium dinor-text-gray">{{ formatDate(comment.created_at) }}</p>
+                        <div v-else class="space-y-4">
+                            <div v-for="comment in comments" :key="comment.id" class="border-l-3 border-yellow-400 pl-4">
+                                <div class="flex items-start justify-between mb-2">
+                                    <div>
+                                        <h4 class="font-medium text-gray-900">{{ comment.author_name || comment.user?.name }}</h4>
+                                        <p class="text-sm text-gray-500">{{ formatDate(comment.created_at) }}</p>
+                                    </div>
                                 </div>
-                                <p class="md3-body-large comment-content">{{ comment.content }}</p>
+                                <p class="text-gray-700">{{ comment.content }}</p>
                             </div>
                         </div>
                     </div>
@@ -268,31 +250,6 @@ const Recipe = {
             router.push('/recipes');
         };
         
-        const shareRecipe = () => {
-            if (navigator.share && recipe.value) {
-                navigator.share({
-                    title: recipe.value.title,
-                    text: recipe.value.short_description,
-                    url: window.location.href
-                });
-            }
-        };
-        
-        const getDifficultyClass = (difficulty) => {
-            const level = typeof difficulty === 'string' ? difficulty.toLowerCase() : 'medium';
-            return `difficulty-${level}`;
-        };
-        
-        const getDifficultyLabel = (difficulty) => {
-            const labels = {
-                'easy': 'Facile',
-                'medium': 'Moyen',
-                'hard': 'Difficile'
-            };
-            const level = typeof difficulty === 'string' ? difficulty.toLowerCase() : 'medium';
-            return labels[level] || 'Moyen';
-        };
-        
         onMounted(() => {
             loadRecipe();
         });
@@ -311,10 +268,7 @@ const Recipe = {
             formatIngredient,
             formatInstruction,
             formatDate,
-            goBack,
-            shareRecipe,
-            getDifficultyClass,
-            getDifficultyLabel
+            goBack
         };
     }
 };

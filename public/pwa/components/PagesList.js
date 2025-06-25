@@ -1,5 +1,5 @@
 // Composant Pages (WebView intégré)
-const PagesList = {
+export default {
     template: `
         <div class="pages-page">
             <!-- Header -->

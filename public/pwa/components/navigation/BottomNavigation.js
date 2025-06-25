@@ -220,7 +220,30 @@ const md3BottomNavStyles = `
     font-family: 'Roboto', system-ui, -apple-system, sans-serif;
 }
 
-/* Import de la palette Dinor - Les couleurs sont définies dans dinor-color-palette.css */
+/* Material Design 3 Color System */
+:root {
+    /* Light theme */
+    --md-sys-color-surface-container: #f7f2fa;
+    --md-sys-color-on-surface-variant: #49454f;
+    --md-sys-color-secondary-container: #e8def8;
+    --md-sys-color-on-secondary-container: #1d192b;
+    --md-sys-color-outline-variant: #cac4d0;
+    --md-sys-color-error: #ba1a1a;
+    --md-sys-color-on-error: #ffffff;
+}
+
+/* Dark theme */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --md-sys-color-surface-container: #211f26;
+        --md-sys-color-on-surface-variant: #cac4d0;
+        --md-sys-color-secondary-container: #4f378b;
+        --md-sys-color-on-secondary-container: #e8def8;
+        --md-sys-color-outline-variant: #49454f;
+        --md-sys-color-error: #ffb4ab;
+        --md-sys-color-on-error: #690005;
+    }
+}
 
 /* Material Icons */
 .material-icons {

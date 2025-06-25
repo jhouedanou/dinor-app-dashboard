@@ -24,34 +24,39 @@ class PageResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Configuration de la page')
-                    ->description('Configurez simplement le nom du menu et l\'URL à afficher')
+                Forms\Components\Section::make('Page Embed/Iframe')
+                    ->description('Ajoutez une URL qui sera affichée dans un embed/iframe dans la PWA')
                     ->schema([
                         Forms\Components\TextInput::make('title')
-                            ->label('Nom du menu')
+                            ->label('Titre de la page')
                             ->required()
                             ->maxLength(255)
-                            ->helperText('Nom qui apparaîtra dans le menu de navigation de la PWA')
-                            ->placeholder('Ex: À propos, Contact, Boutique...'),
+                            ->helperText('Nom affiché dans l\'application mobile'),
                         
                         Forms\Components\TextInput::make('url')
-                            ->label('URL à afficher')
+                            ->label('URL pour Embed/Iframe')
                             ->required()
                             ->url()
-                            ->helperText('Page web qui s\'ouvrira dans un iframe dans l\'application')
-                            ->placeholder('https://example.com'),
+                            ->helperText('URL complète à afficher dans un embed/iframe dans la PWA (ex: https://example.com)')
+                            ->placeholder('https://'),
+
+                        Forms\Components\Textarea::make('description')
+                            ->label('Description (optionnelle)')
+                            ->maxLength(500)
+                            ->rows(3)
+                            ->helperText('Description courte de la page'),
 
                         Forms\Components\Toggle::make('is_published')
-                            ->label('Activer cette page')
+                            ->label('Visible dans l\'app')
                             ->default(true)
-                            ->helperText('Afficher dans le menu de l\'application mobile'),
+                            ->helperText('Afficher cette page dans l\'application mobile'),
 
                         Forms\Components\TextInput::make('order')
-                            ->label('Position dans le menu')
+                            ->label('Ordre d\'affichage')
                             ->numeric()
                             ->default(0)
-                            ->helperText('Ordre d\'affichage (0 = en premier)'),
-                    ])->columns(2),
+                            ->helperText('Ordre dans la liste (0 = premier)'),
+                    ])->columns(1),
             ]);
     }
 
@@ -60,18 +65,23 @@ class PageResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('title')
-                    ->label('Nom du menu')
+                    ->label('Titre')
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
 
                 Tables\Columns\TextColumn::make('url')
-                    ->label('URL')
+                    ->label('URL Embed')
                     ->searchable()
                     ->copyable()
                     ->copyMessage('URL copiée!')
                     ->limit(50)
                     ->tooltip(fn ($record) => $record->url),
+
+                Tables\Columns\TextColumn::make('description')
+                    ->label('Description')
+                    ->limit(60)
+                    ->placeholder('Aucune description'),
                     
                 Tables\Columns\IconColumn::make('is_published')
                     ->label('Visible')
@@ -80,10 +90,9 @@ class PageResource extends Resource
                     ->falseIcon('heroicon-o-eye-slash'),
 
                 Tables\Columns\TextColumn::make('order')
-                    ->label('Position')
+                    ->label('Ordre')
                     ->sortable()
-                    ->alignCenter()
-                    ->badge(),
+                    ->alignCenter(),
                     
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('Modifié le')
@@ -105,13 +114,11 @@ class PageResource extends Resource
                     ->visible(fn (Page $record): bool => !empty($record->url)),
 
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make()
-                    ->successNotificationTitle('Page supprimée avec succès'),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()
-                        ->successNotificationTitle('Pages supprimées avec succès'),
+                    Tables\Actions\DeleteBulkAction::make(),
 
                     Tables\Actions\BulkAction::make('show')
                         ->label('Rendre visible')
