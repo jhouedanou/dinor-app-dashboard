@@ -24,6 +24,37 @@ services:
       - "8000:80"
       - "5173:5173"
 
+  # BrowserSync pour le hot reload PWA (développement uniquement)
+  browsersync:
+    image: node:18-alpine
+    container_name: dinor-browsersync
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+      - /var/www/html/node_modules
+    ports:
+      - "3000:3000"  # BrowserSync UI
+      - "3001:3001"  # BrowserSync proxy
+    networks:
+      - dinor-network
+    depends_on:
+      - app
+    profiles:
+      - dev  # Utiliser seulement en développement
+    command: >
+      sh -c "
+        npm install -g browser-sync &&
+        browser-sync start 
+          --proxy 'dinor-app:80' 
+          --files 'public/pwa/**/*.js,public/pwa/**/*.html,public/pwa/**/*.css,public/**/*.html' 
+          --port 3001 
+          --ui-port 3000 
+          --host 0.0.0.0 
+          --no-open 
+          --reload-delay 1000
+      "
+
   # PostgreSQL Database (compatible Supabase)
   db:
     image: postgres:15

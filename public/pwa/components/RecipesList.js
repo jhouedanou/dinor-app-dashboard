@@ -1,0 +1,277 @@
+// Composant Liste des Recettes optimisé
+export default {
+    template: `
+        <div class="recipes-page">
+            <!-- Header avec recherche -->
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-utensils mr-2"></i>
+                    Recettes
+                </h1>
+                <div class="search-container">
+                    <div class="search-input-wrapper">
+                        <i class="fas fa-search search-icon"></i>
+                        <input 
+                            v-model="searchQuery"
+                            @input="debouncedSearch"
+                            type="text" 
+                            placeholder="Rechercher une recette..."
+                            class="search-input">
+                        <button 
+                            v-if="searchQuery" 
+                            @click="clearSearch"
+                            class="clear-search">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtres rapides -->
+            <div class="filters-container" v-if="categories.length > 0">
+                <div class="filters-scroll">
+                    <button 
+                        @click="selectedCategory = null"
+                        :class="['filter-chip', { 'filter-active': !selectedCategory }]">
+                        Toutes
+                    </button>
+                    <button 
+                        v-for="category in categories"
+                        :key="category.id"
+                        @click="selectedCategory = category.id"
+                        :class="['filter-chip', { 'filter-active': selectedCategory === category.id }]">
+                        {{ category.name }}
+                    </button>
+                </div>
+            </div>
+
+            <!-- Loading -->
+            <div v-if="loading" class="loading-container">
+                <div class="spinner"></div>
+                <p class="loading-text">Chargement des recettes...</p>
+            </div>
+
+            <!-- Liste des recettes -->
+            <div v-else-if="filteredRecipes.length > 0" class="recipes-grid">
+                <div 
+                    v-for="recipe in filteredRecipes" 
+                    :key="recipe.id"
+                    @click="goToRecipe(recipe.id)"
+                    class="recipe-card card-hover">
+                    <div class="recipe-image-container">
+                        <img 
+                            :src="recipe.featured_image_url || '/images/default-recipe.jpg'" 
+                            :alt="recipe.title"
+                            class="recipe-image"
+                            loading="lazy"
+                            @error="handleImageError">
+                        <div class="recipe-overlay">
+                            <div class="recipe-info">
+                                <h3 class="recipe-title">{{ recipe.title }}</h3>
+                                <p class="recipe-description">{{ truncateText(recipe.short_description, 80) }}</p>
+                            </div>
+                        </div>
+                        <div class="recipe-badges">
+                            <span v-if="recipe.difficulty" class="difficulty-badge" :class="getDifficultyClass(recipe.difficulty)">
+                                {{ getDifficultyLabel(recipe.difficulty) }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="recipe-details">
+                        <div class="recipe-stats">
+                            <span class="stat">
+                                <i class="fas fa-clock"></i>
+                                {{ recipe.preparation_time }}min
+                            </span>
+                            <span class="stat">
+                                <i class="fas fa-users"></i>
+                                {{ recipe.servings }}
+                            </span>
+                            <span class="stat">
+                                <i class="fas fa-heart"></i>
+                                {{ recipe.likes_count || 0 }}
+                            </span>
+                        </div>
+                        <div v-if="recipe.category" class="recipe-category">
+                            {{ recipe.category.name }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- État vide -->
+            <div v-else class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-utensils"></i>
+                </div>
+                <h3 class="empty-title">{{ searchQuery ? 'Aucune recette trouvée' : 'Aucune recette disponible' }}</h3>
+                <p class="empty-description">
+                    {{ searchQuery ? 
+                        'Essayez avec d\'autres mots-clés' : 
+                        'Les recettes apparaîtront ici bientôt' 
+                    }}
+                </p>
+                <button v-if="searchQuery" @click="clearSearch" class="btn-primary">
+                    Voir toutes les recettes
+                </button>
+            </div>
+
+            <!-- Pull to refresh indicator -->
+            <div v-if="isRefreshing" class="refresh-indicator">
+                <div class="spinner"></div>
+                <span>Actualisation...</span>
+            </div>
+        </div>
+    `,
+    setup() {
+        const { ref, computed, onMounted, watch } = Vue;
+        const router = VueRouter.useRouter();
+        
+        const loading = ref(true);
+        const isRefreshing = ref(false);
+        const recipes = ref([]);
+        const categories = ref([]);
+        const searchQuery = ref('');
+        const selectedCategory = ref(null);
+        
+        const { request } = useApi();
+        
+        const filteredRecipes = computed(() => {
+            let filtered = recipes.value;
+            
+            // Filtrer par catégorie
+            if (selectedCategory.value) {
+                filtered = filtered.filter(recipe => 
+                    recipe.category && recipe.category.id === selectedCategory.value
+                );
+            }
+            
+            // Filtrer par recherche
+            if (searchQuery.value) {
+                const query = searchQuery.value.toLowerCase();
+                filtered = filtered.filter(recipe => 
+                    recipe.title.toLowerCase().includes(query) ||
+                    recipe.short_description.toLowerCase().includes(query) ||
+                    (recipe.category && recipe.category.name.toLowerCase().includes(query))
+                );
+            }
+            
+            return filtered;
+        });
+        
+        const debouncedSearch = debounce(() => {
+            // La recherche est automatique grâce au computed
+        }, 300);
+        
+        const loadRecipes = async (refresh = false) => {
+            if (refresh) {
+                isRefreshing.value = true;
+            } else {
+                loading.value = true;
+            }
+            
+            try {
+                const [recipesData, categoriesData] = await Promise.all([
+                    request('/api/v1/recipes'),
+                    request('/api/v1/categories?type=recipe')
+                ]);
+                
+                if (recipesData.success) {
+                    recipes.value = recipesData.data;
+                }
+                
+                if (categoriesData.success) {
+                    categories.value = categoriesData.data;
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement des recettes:', error);
+            } finally {
+                loading.value = false;
+                isRefreshing.value = false;
+            }
+        };
+        
+        const goToRecipe = (id) => {
+            router.push(`/recipe/${id}`);
+        };
+        
+        const clearSearch = () => {
+            searchQuery.value = '';
+        };
+        
+        const truncateText = (text, length) => {
+            if (!text) return '';
+            return text.length > length ? text.substring(0, length) + '...' : text;
+        };
+        
+        const getDifficultyClass = (difficulty) => {
+            const classes = {
+                'easy': 'difficulty-easy',
+                'medium': 'difficulty-medium',
+                'hard': 'difficulty-hard'
+            };
+            return classes[difficulty] || 'difficulty-easy';
+        };
+        
+        const getDifficultyLabel = (difficulty) => {
+            const labels = {
+                'easy': 'Facile',
+                'medium': 'Moyen',
+                'hard': 'Difficile'
+            };
+            return labels[difficulty] || 'Facile';
+        };
+        
+        const handleImageError = (event) => {
+            event.target.src = '/images/default-recipe.jpg';
+        };
+        
+        // Pull to refresh
+        let startY = 0;
+        let isScrolling = false;
+        
+        const handleTouchStart = (e) => {
+            if (window.scrollY === 0) {
+                startY = e.touches[0].clientY;
+                isScrolling = true;
+            }
+        };
+        
+        const handleTouchMove = (e) => {
+            if (!isScrolling) return;
+            
+            const currentY = e.touches[0].clientY;
+            const diff = currentY - startY;
+            
+            if (diff > 100 && !isRefreshing.value) {
+                loadRecipes(true);
+                isScrolling = false;
+            }
+        };
+        
+        onMounted(() => {
+            loadRecipes();
+            
+            // Ajouter les listeners pour pull to refresh
+            document.addEventListener('touchstart', handleTouchStart, { passive: true });
+            document.addEventListener('touchmove', handleTouchMove, { passive: true });
+        });
+        
+        return {
+            loading,
+            isRefreshing,
+            recipes,
+            categories,
+            searchQuery,
+            selectedCategory,
+            filteredRecipes,
+            debouncedSearch,
+            goToRecipe,
+            clearSearch,
+            truncateText,
+            getDifficultyClass,
+            getDifficultyLabel,
+            handleImageError
+        };
+    }
+};

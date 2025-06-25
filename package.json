@@ -4,19 +4,33 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
-        "watch": "vite --watch"
+        "watch": "vite --watch",
+        "scss:compile": "sass public/pwa/styles/main.scss:public/pwa/styles/main.css public/pwa/styles/bottom-navigation.scss:public/pwa/styles/bottom-navigation.css public/pwa/styles/components.scss:public/pwa/styles/components.css --style=compressed",
+        "scss:watch": "sass --watch public/pwa/styles/:public/pwa/styles/ --style=compressed",
+        "pwa:dev": "concurrently \"npm run dev\" \"npm run scss:watch\" \"npm run browsersync\"",
+        "pwa:dev-no-sync": "concurrently \"npm run dev\" \"npm run scss:watch\"",
+        "browsersync": "browser-sync start --proxy 'localhost:8000' --files 'public/pwa/**/*.js,public/pwa/**/*.html,public/pwa/**/*.css' --port 3001 --ui-port 3000 --reload-delay 500",
+        "pwa:build": "npm run scss:compile && vite build --mode production && npm run sw:generate",
+        "sw:generate": "workbox generateSW workbox-config.js"
     },
     "devDependencies": {
         "@tailwindcss/forms": "^0.5.2",
         "@tailwindcss/typography": "^0.5.0",
         "autoprefixer": "^10.4.7",
         "axios": "^1.6.4",
+        "browser-sync": "^2.29.3",
+        "concurrently": "^8.2.2",
         "laravel-vite-plugin": "^1.0",
         "postcss": "^8.4.31",
+        "sass": "^1.69.5",
         "tailwindcss": "^3.2.1",
-        "vite": "^5.0"
+        "vite": "^5.0",
+        "workbox-cli": "^7.0.0",
+        "workbox-webpack-plugin": "^7.0.0"
     },
     "dependencies": {
-        "alpinejs": "^3.4.2"
+        "alpinejs": "^3.4.2",
+        "vue": "^3.4.0",
+        "vue-router": "^4.2.5"
     }
 } 

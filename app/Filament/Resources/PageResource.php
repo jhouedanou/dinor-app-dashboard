@@ -24,110 +24,39 @@ class PageResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Informations générales')
+                Forms\Components\Section::make('Page Web')
+                    ->description('Configuration simplifiée pour l\'intégration PWA')
                     ->schema([
                         Forms\Components\TextInput::make('title')
-                            ->label('Titre')
+                            ->label('Titre de la page')
                             ->required()
                             ->maxLength(255)
-                            ->live(onBlur: true)
-                            ->afterStateUpdated(fn (string $context, $state, callable $set) => 
-                                $context === 'create' ? $set('slug', \Str::slug($state)) : null
-                            ),
+                            ->helperText('Nom affiché dans l\'application mobile'),
                         
-                        Forms\Components\TextInput::make('slug')
-                            ->label('Slug URL')
+                        Forms\Components\TextInput::make('url')
+                            ->label('URL de la page')
                             ->required()
-                            ->maxLength(255)
-                            ->unique(Page::class, 'slug', ignoreRecord: true),
+                            ->url()
+                            ->helperText('URL complète de la page web à afficher (ex: https://example.com)')
+                            ->placeholder('https://'),
 
-                        Forms\Components\Select::make('parent_id')
-                            ->label('Page parent')
-                            ->options(fn () => Page::published()->rootPages()->pluck('title', 'id'))
-                            ->searchable()
-                            ->placeholder('Aucune (page racine)'),
+                        Forms\Components\Textarea::make('description')
+                            ->label('Description (optionnelle)')
+                            ->maxLength(500)
+                            ->rows(3)
+                            ->helperText('Description courte de la page'),
 
-                        Forms\Components\Select::make('template')
-                            ->label('Template')
-                            ->options([
-                                'default' => 'Par défaut',
-                                'full_width' => 'Pleine largeur',
-                                'landing' => 'Page d\'atterrissage',
-                                'blog' => 'Blog',
-                                'contact' => 'Contact',
-                                'about' => 'À propos',
-                            ])
-                            ->default('default'),
+                        Forms\Components\Toggle::make('is_published')
+                            ->label('Visible dans l\'app')
+                            ->default(true)
+                            ->helperText('Afficher cette page dans l\'application mobile'),
 
                         Forms\Components\TextInput::make('order')
                             ->label('Ordre d\'affichage')
                             ->numeric()
-                            ->default(0),
-
-                        Forms\Components\FileUpload::make('featured_image')
-                            ->label('Image mise en avant')
-                            ->image()
-                            ->disk('public')
-                            ->directory('pages')
-                            ->visibility('public')
-                            ->maxSize(5120)
-                            ->imageEditor(),
-                    ])->columns(2),
-
-                Forms\Components\Section::make('Contenu')
-                    ->schema([
-                        Forms\Components\RichEditor::make('content')
-                            ->label('Contenu')
-                            ->required()
-                            ->columnSpanFull()
-                            ->toolbarButtons([
-                                'attachFiles',
-                                'blockquote',
-                                'bold',
-                                'bulletList',
-                                'codeBlock',
-                                'h2',
-                                'h3',
-                                'italic',
-                                'link',
-                                'orderedList',
-                                'redo',
-                                'strike',
-                                'table',
-                                'undo',
-                            ]),
-                    ]),
-
-                Forms\Components\Section::make('SEO et métadonnées')
-                    ->schema([
-                        Forms\Components\TextInput::make('meta_title')
-                            ->label('Titre META')
-                            ->maxLength(60)
-                            ->helperText('Optimisé pour les moteurs de recherche (60 caractères max)'),
-
-                        Forms\Components\Textarea::make('meta_description')
-                            ->label('Description META')
-                            ->maxLength(160)
-                            ->rows(3)
-                            ->helperText('Description pour les moteurs de recherche (160 caractères max)'),
-
-                        Forms\Components\Textarea::make('meta_keywords')
-                            ->label('Mots-clés META')
-                            ->rows(2)
-                            ->helperText('Mots-clés séparés par des virgules'),
+                            ->default(0)
+                            ->helperText('Ordre dans la liste (0 = premier)'),
                     ])->columns(1),
-
-                Forms\Components\Section::make('Paramètres')
-                    ->schema([
-                        Forms\Components\Toggle::make('is_published')
-                            ->label('Publié')
-                            ->default(false),
-
-                        Forms\Components\Toggle::make('is_homepage')
-                            ->label('Page d\'accueil')
-                            ->default(false)
-                            ->helperText('Définir cette page comme page d\'accueil du site'),
-                    ])->columns(2),
             ]);
     }
 
@@ -135,138 +64,69 @@ class PageResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('featured_image')
-                    ->label('Image')
-                    ->circular(),
-                    
                 Tables\Columns\TextColumn::make('title')
                     ->label('Titre')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->weight('bold'),
 
-                Tables\Columns\TextColumn::make('slug')
+                Tables\Columns\TextColumn::make('url')
                     ->label('URL')
                     ->searchable()
                     ->copyable()
                     ->copyMessage('URL copiée!')
-                    ->prefix(url('/page/')),
+                    ->limit(50)
+                    ->tooltip(fn ($record) => $record->url),
 
-                Tables\Columns\TextColumn::make('parent.title')
-                    ->label('Page parent')
-                    ->placeholder('Page racine'),
-
-                Tables\Columns\TextColumn::make('template')
-                    ->label('Template')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'default' => 'gray',
-                        'full_width' => 'info',
-                        'landing' => 'success',
-                        'blog' => 'warning',
-                        'contact' => 'primary',
-                        'about' => 'secondary',
-                        default => 'gray',
-                    }),
+                Tables\Columns\TextColumn::make('description')
+                    ->label('Description')
+                    ->limit(60)
+                    ->placeholder('Aucune description'),
+                    
+                Tables\Columns\IconColumn::make('is_published')
+                    ->label('Visible')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-eye')
+                    ->falseIcon('heroicon-o-eye-slash'),
 
                 Tables\Columns\TextColumn::make('order')
                     ->label('Ordre')
-                    ->sortable(),
-                    
-                Tables\Columns\IconColumn::make('is_homepage')
-                    ->label('Accueil')
-                    ->boolean(),
-                    
-                Tables\Columns\IconColumn::make('is_published')
-                    ->label('Publié')
-                    ->boolean(),
-
-                Tables\Columns\TextColumn::make('children_count')
-                    ->label('Sous-pages')
-                    ->counts('children')
-                    ->sortable(),
-                    
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Créé le')
-                    ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-
+                    ->alignCenter(),
+                    
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('Modifié le')
-                    ->dateTime()
+                    ->dateTime('d/m/Y H:i')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->since(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('template')
-                    ->label('Template')
-                    ->options([
-                        'default' => 'Par défaut',
-                        'full_width' => 'Pleine largeur',
-                        'landing' => 'Page d\'atterrissage',
-                        'blog' => 'Blog',
-                        'contact' => 'Contact',
-                        'about' => 'À propos',
-                    ]),
-
-                Tables\Filters\Filter::make('root_pages')
-                    ->label('Pages racines')
-                    ->query(fn (Builder $query): Builder => $query->rootPages()),
-
-                Tables\Filters\Filter::make('child_pages')
-                    ->label('Sous-pages')
-                    ->query(fn (Builder $query): Builder => $query->whereNotNull('parent_id')),
-
-                Tables\Filters\Filter::make('is_homepage')
-                    ->label('Page d\'accueil')
-                    ->query(fn (Builder $query): Builder => $query->where('is_homepage', true)),
-
                 Tables\Filters\Filter::make('is_published')
-                    ->label('Pages publiées')
+                    ->label('Pages visibles')
                     ->query(fn (Builder $query): Builder => $query->where('is_published', true)),
-
-                Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\Action::make('view_page')
-                    ->label('Voir')
-                    ->icon('heroicon-o-eye')
+                Tables\Actions\Action::make('open_url')
+                    ->label('Ouvrir')
+                    ->icon('heroicon-o-arrow-top-right-on-square')
                     ->url(fn (Page $record): string => $record->url)
-                    ->openUrlInNewTab()
-                    ->visible(fn (Page $record): bool => $record->is_published),
+                    ->openUrlInNewTab(),
 
-                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
-
-                Tables\Actions\Action::make('duplicate')
-                    ->label('Dupliquer')
-                    ->icon('heroicon-o-document-duplicate')
-                    ->action(function (Page $record) {
-                        $newPage = $record->replicate();
-                        $newPage->title = $record->title . ' (Copie)';
-                        $newPage->slug = $record->slug . '-copie';
-                        $newPage->is_published = false;
-                        $newPage->is_homepage = false;
-                        $newPage->save();
-                        
-                        return redirect()->route('filament.admin.resources.pages.edit', $newPage);
-                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
 
-                    Tables\Actions\BulkAction::make('publish')
-                        ->label('Publier')
+                    Tables\Actions\BulkAction::make('show')
+                        ->label('Rendre visible')
                         ->icon('heroicon-o-eye')
                         ->action(fn ($records) => $records->each->update(['is_published' => true]))
                         ->deselectRecordsAfterCompletion(),
 
-                    Tables\Actions\BulkAction::make('unpublish')
-                        ->label('Dépublier')
+                    Tables\Actions\BulkAction::make('hide')
+                        ->label('Masquer')
                         ->icon('heroicon-o-eye-slash')
                         ->action(fn ($records) => $records->each->update(['is_published' => false]))
                         ->deselectRecordsAfterCompletion(),

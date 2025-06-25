@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test PWA Dinor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-yellow-600 mb-8">Test PWA Dinor</h1>
+        
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Vérification des fichiers PWA</h2>
+            <div id="file-checks" class="space-y-2">
+                <!-- Les vérifications seront ajoutées ici -->
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Test des APIs</h2>
+            <div class="space-y-2">
+                <button onclick="testAPI('/api/v1/recipes')" class="bg-blue-500 text-white px-4 py-2 rounded mr-2">Test Recettes</button>
+                <button onclick="testAPI('/api/v1/tips')" class="bg-green-500 text-white px-4 py-2 rounded mr-2">Test Astuces</button>
+                <button onclick="testAPI('/api/v1/events')" class="bg-purple-500 text-white px-4 py-2 rounded mr-2">Test Événements</button>
+            </div>
+            <div id="api-results" class="mt-4 p-4 bg-gray-50 rounded"></div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4">Navigation PWA</h2>
+            <div class="space-y-2">
+                <a href="/pwa/" class="inline-block bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
+                    🚀 Lancer la PWA
+                </a>
+                <a href="/pwa/icons/generate-icons.html" class="inline-block bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 ml-2">
+                    🎨 Générer les icônes
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Vérification des fichiers PWA
+        const filesToCheck = [
+            '/manifest.json',
+            '/sw.js', 
+            '/pwa/app.js',
+            '/pwa/components/Recipe.js',
+            '/pwa/components/Tip.js',
+            '/pwa/components/Event.js'
+        ];
+
+        async function checkFiles() {
+            const container = document.getElementById('file-checks');
+            
+            for (const file of filesToCheck) {
+                const div = document.createElement('div');
+                div.className = 'flex items-center space-x-2';
+                
+                try {
+                    const response = await fetch(file, { method: 'HEAD' });
+                    if (response.ok) {
+                        div.innerHTML = `<span class="text-green-500">✅</span> <span>${file}</span>`;
+                    } else {
+                        div.innerHTML = `<span class="text-red-500">❌</span> <span>${file} (${response.status})</span>`;
+                    }
+                } catch (error) {
+                    div.innerHTML = `<span class="text-red-500">❌</span> <span>${file} (erreur réseau)</span>`;
+                }
+                
+                container.appendChild(div);
+            }
+        }
+
+        // Test des APIs
+        async function testAPI(endpoint) {
+            const resultsDiv = document.getElementById('api-results');
+            resultsDiv.innerHTML = `<div class="text-blue-500">Test de ${endpoint}...</div>`;
+            
+            try {
+                const response = await fetch(endpoint);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultsDiv.innerHTML = `
+                        <div class="text-green-500 font-semibold">✅ ${endpoint} - Success</div>
+                        <pre class="text-sm text-gray-600 mt-2 overflow-auto">${JSON.stringify(data, null, 2).slice(0, 500)}${JSON.stringify(data, null, 2).length > 500 ? '...' : ''}</pre>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="text-red-500 font-semibold">❌ ${endpoint} - ${response.status}</div>
+                        <pre class="text-sm text-gray-600 mt-2">${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="text-red-500 font-semibold">❌ ${endpoint} - Erreur réseau</div>
+                    <div class="text-sm text-gray-600 mt-2">${error.message}</div>
+                `;
+            }
+        }
+
+        // Vérification au chargement
+        checkFiles();
+    </script>
+</body>
+</html>
