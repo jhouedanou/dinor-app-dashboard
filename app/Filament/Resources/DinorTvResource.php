@@ -43,15 +43,15 @@ class DinorTvResource extends Resource
                             ->label('Description (optionnelle)')
                             ->maxLength(500)
                             ->rows(3)
-                            ->helperText('Description courte de la vidéo'),
+                            ->helperText('Description courte du contenu'),
 
                         Forms\Components\Toggle::make('is_published')
                             ->label('Visible dans l\'app')
                             ->default(true)
-                            ->helperText('Afficher cette vidéo dans l\'application mobile'),
+                            ->helperText('Afficher ce contenu dans l\'application mobile'),
 
                         Forms\Components\Toggle::make('is_featured')
-                            ->label('Vidéo mise en avant')
+                            ->label('Contenu mis en avant')
                             ->default(false)
                             ->helperText('Afficher en premier dans l\'application'),
                     ])->columns(1),
@@ -69,7 +69,7 @@ class DinorTvResource extends Resource
                     ->weight('bold'),
 
                 Tables\Columns\TextColumn::make('video_url')
-                    ->label('URL YouTube')
+                    ->label('URL Embed')
                     ->searchable()
                     ->copyable()
                     ->copyMessage('URL copiée!')
@@ -107,16 +107,16 @@ class DinorTvResource extends Resource
             ])
             ->filters([
                 Tables\Filters\Filter::make('is_published')
-                    ->label('Vidéos visibles')
+                    ->label('Contenus visibles')
                     ->query(fn (Builder $query): Builder => $query->where('is_published', true)),
 
                 Tables\Filters\Filter::make('is_featured')
-                    ->label('Vidéos mises en avant')
+                    ->label('Contenus mis en avant')
                     ->query(fn (Builder $query): Builder => $query->where('is_featured', true)),
             ])
             ->actions([
-                Tables\Actions\Action::make('open_youtube')
-                    ->label('Ouvrir sur YouTube')
+                Tables\Actions\Action::make('open_url')
+                    ->label('Ouvrir URL')
                     ->icon('heroicon-o-arrow-top-right-on-square')
                     ->url(fn (DinorTv $record): string => $record->video_url)
                     ->openUrlInNewTab(),

@@ -107,8 +107,8 @@ export default {
                 <h3 class="empty-title">{{ searchQuery ? 'Aucune recette trouvée' : 'Aucune recette disponible' }}</h3>
                 <p class="empty-description">
                     {{ searchQuery ? 
-                        'Essayez avec d\'autres mots-clés' : 
-                        'Les recettes apparaîtront ici bientôt' 
+                        "Essayez avec d'autres mots-clés" : 
+                        "Les recettes apparaîtront ici bientôt" 
                     }}
                 </p>
                 <button v-if="searchQuery" @click="clearSearch" class="btn-primary">

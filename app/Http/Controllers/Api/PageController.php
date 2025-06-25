@@ -11,14 +11,13 @@ class PageController extends Controller
     public function index(Request $request)
     {
         $query = Page::published()
-            ->rootPages()
             ->ordered();
 
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('content', 'like', "%{$search}%");
+                  ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -36,11 +35,10 @@ class PageController extends Controller
         ]);
     }
 
-    public function show($slug)
+    public function show($id)
     {
-        $page = Page::where('slug', $slug)
+        $page = Page::where('id', $id)
             ->published()
-            ->with('children')
             ->firstOrFail();
 
         return response()->json([
@@ -51,14 +49,14 @@ class PageController extends Controller
 
     public function homepage()
     {
-        $page = Page::where('is_homepage', true)
-            ->published()
+        $page = Page::published()
+            ->ordered()
             ->first();
 
         if (!$page) {
             return response()->json([
                 'success' => false,
-                'message' => 'Aucune page d\'accueil définie'
+                'message' => 'Aucune page définie'
             ], 404);
         }
 
@@ -71,9 +69,7 @@ class PageController extends Controller
     public function menu()
     {
         $pages = Page::published()
-            ->rootPages()
             ->ordered()
-            ->with('children')
             ->get();
 
         return response()->json([

@@ -22,5 +22,10 @@ Route::get('/dashboard', function () {
     return redirect('/admin');
 })->name('dashboard');
 
+// Route pour la PWA
+Route::get('/pwa', function () {
+    return redirect('/pwa/index.html');
+})->name('pwa');
+
 // Route pour la page d'erreur de connexion admin
 Route::get('/admin/login-error', [LoginErrorController::class, 'show'])->name('admin.login.error');

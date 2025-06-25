@@ -121,11 +121,23 @@ update_env_var "APP_DEBUG" "false"
 update_env_var "SESSION_SECURE_COOKIE" "true"
 update_env_var "SESSION_SAME_SITE" "lax"
 
+# Variables de cache pour éviter les erreurs
+update_env_var "CACHE_DRIVER" "file"
+update_env_var "SESSION_DRIVER" "file"
+update_env_var "QUEUE_CONNECTION" "sync"
+
+# Variables de logging
+update_env_var "LOG_CHANNEL" "stack"
+update_env_var "LOG_DEPRECATIONS_CHANNEL" "null"
+update_env_var "LOG_LEVEL" "debug"
+
 log_success "Variables d'environnement configurées"
 
 # 9. Nettoyage des caches avant NPM  
 log_info "🧹 Nettoyage des caches Laravel..."
-$FORGE_PHP artisan optimize:clear
+$FORGE_PHP artisan optimize:clear || log_warning "Problème avec optimize:clear, mais continue..."
+# Nettoyage manuel des caches en cas d'échec
+rm -rf bootstrap/cache/*.php storage/framework/cache/data/* storage/framework/views/*.php 2>/dev/null || true
 log_success "Caches Laravel nettoyés"
 
 # 10. Installation complète des dépendances NPM
@@ -146,14 +158,20 @@ if [ $? -ne 0 ]; then
 fi
 log_success "Assets buildés"
 
-# 12. Recréation des dossiers nécessaires
+# 12. Recréation des dossiers nécessaires avec permissions
 log_info "📁 Création des dossiers de storage..."
 mkdir -p storage/logs
 mkdir -p storage/framework/cache/data
 mkdir -p storage/framework/sessions
 mkdir -p storage/framework/views
 mkdir -p storage/app/public
-log_success "Dossiers de storage créés"
+mkdir -p bootstrap/cache
+
+# Configuration des permissions de base
+chmod -R 775 storage bootstrap/cache 2>/dev/null || true
+chown -R forge:www-data storage bootstrap/cache 2>/dev/null || true
+
+log_success "Dossiers de storage créés avec permissions"
 
 # 13. Migration de la base de données
 log_info "🗄️ Migration de la base de données..."

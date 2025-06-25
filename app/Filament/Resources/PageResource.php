@@ -109,8 +109,9 @@ class PageResource extends Resource
                 Tables\Actions\Action::make('open_url')
                     ->label('Ouvrir')
                     ->icon('heroicon-o-arrow-top-right-on-square')
-                    ->url(fn (Page $record): string => $record->url)
-                    ->openUrlInNewTab(),
+                    ->url(fn (Page $record): string => $record->url ?? '#')
+                    ->openUrlInNewTab()
+                    ->visible(fn (Page $record): bool => !empty($record->url)),
 
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
