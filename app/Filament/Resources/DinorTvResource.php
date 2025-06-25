@@ -39,6 +39,15 @@ class DinorTvResource extends Resource
                             ->helperText('URL complète à afficher dans un embed/iframe dans la PWA (ex: https://www.youtube.com/embed/...)')
                             ->placeholder('https://'),
 
+                        Forms\Components\FileUpload::make('thumbnail')
+                            ->label('Miniature/Thumbnail')
+                            ->image()
+                            ->directory('dinor-tv-thumbnails')
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                            ->maxSize(2048)
+                            ->helperText('Image d\'aperçu pour la vidéo (JPEG, PNG, WebP - max 2MB)')
+                            ->columnSpanFull(),
+
                         Forms\Components\Textarea::make('description')
                             ->label('Description (optionnelle)')
                             ->maxLength(500)

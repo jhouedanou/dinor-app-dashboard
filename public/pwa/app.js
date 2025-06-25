@@ -389,17 +389,22 @@ const Dashboard = {
 
 // Fonction d'import dynamique pour les composants
 const lazyLoad = (path) => {
-    return () => import(path).catch(err => {
-        console.error(`Erreur lors du chargement de ${path}:`, err);
-        // Fallback vers un composant d'erreur
-        return {
-            template: `<div class="error-fallback">
-                <h2>Erreur de chargement</h2>
-                <p>Impossible de charger le composant</p>
-                <button @click="$router.push('/')">Retour à l'accueil</button>
-            </div>`
-        };
-    });
+    return async () => {
+        try {
+            const module = await import(path);
+            return module.default;
+        } catch (err) {
+            console.error(`Erreur lors du chargement de ${path}:`, err);
+            // Fallback vers un composant d'erreur
+            return {
+                template: `<div class="error-fallback">
+                    <h2>Erreur de chargement</h2>
+                    <p>Impossible de charger le composant</p>
+                    <button @click="$router.push('/')">Retour à l'accueil</button>
+                </div>`
+            };
+        }
+    };
 };
 
 // Router avec les nouvelles routes bottom navigation
@@ -433,11 +438,11 @@ const App = {
     template: `
         <div id="app-container">
             <!-- Contenu principal -->
-            <main class="main-content" :class="{ 'with-bottom-nav': showBottomNav }">
+            <main class="main-content" :class="{ 'with-bottom-nav': showBottomNav, 'md3-main-content': true }">
                 <router-view></router-view>
             </main>
             
-            <!-- Bottom Navigation -->
+            <!-- Bottom Navigation Material Design 3 -->
             <BottomNavigation v-if="showBottomNav" />
         </div>
     `,
@@ -456,7 +461,7 @@ const App = {
         };
     },
     components: {
-        BottomNavigation: () => import('./components/navigation/BottomNavigation.js')
+        BottomNavigation
     }
 };
 

@@ -247,7 +247,7 @@ export default {
         };
         
         const goBack = () => {
-            router.push('/');
+            router.push('/recipes');
         };
         
         onMounted(() => {

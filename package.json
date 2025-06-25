@@ -7,9 +7,7 @@
         "watch": "vite --watch",
         "scss:compile": "sass public/pwa/styles/main.scss:public/pwa/styles/main.css public/pwa/styles/bottom-navigation.scss:public/pwa/styles/bottom-navigation.css public/pwa/styles/components.scss:public/pwa/styles/components.css --style=compressed",
         "scss:watch": "sass --watch public/pwa/styles/:public/pwa/styles/ --style=compressed",
-        "pwa:dev": "concurrently \"npm run dev\" \"npm run scss:watch\" \"npm run browsersync\"",
-        "pwa:dev-no-sync": "concurrently \"npm run dev\" \"npm run scss:watch\"",
-        "browsersync": "browser-sync start --proxy 'localhost:8000' --files 'public/pwa/**/*.js,public/pwa/**/*.html,public/pwa/**/*.css' --port 3001 --ui-port 3000 --reload-delay 500",
+        "pwa:dev": "concurrently \"npm run dev\" \"npm run scss:watch\"",
         "pwa:build": "npm run scss:compile && vite build --mode production && npm run sw:generate",
         "sw:generate": "workbox generateSW workbox-config.js"
     },

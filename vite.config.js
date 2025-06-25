@@ -30,7 +30,7 @@ export default defineConfig({
                 'resources/**/*'
             ]
         },
-        // Proxy configuration pour BrowserSync
+        // Proxy configuration pour l'API
         proxy: {
             '/api': {
                 target: 'http://localhost:8000',
