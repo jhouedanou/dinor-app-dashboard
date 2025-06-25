@@ -249,41 +249,27 @@ class ProductionDataSeeder extends Seeder
         $additionalVideos = [
             [
                 'title' => 'Les Secrets du Riz au Gras',
-                'slug' => 'secrets-riz-au-gras',
                 'description' => 'Découvrez tous les secrets pour réussir un riz au gras parfait',
                 'video_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-                'duration' => 720, // 12 minutes
-                'category_id' => Category::first()->id,
-                'tags' => ['riz', 'gras', 'technique', 'secret'],
                 'is_published' => true,
                 'is_featured' => true,
             ],
             [
                 'title' => 'Visite de Marché à Adjamé',
-                'slug' => 'visite-marche-adjame',
                 'description' => 'Suivez-nous dans une visite guidée du marché d\'Adjamé',
                 'video_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-                'duration' => 960, // 16 minutes
-                'category_id' => Category::first()->id,
-                'tags' => ['marché', 'adjamé', 'visite', 'produits'],
                 'is_published' => true,
             ],
             [
                 'title' => 'Cours en Direct : Bangui aux Épinards',
-                'slug' => 'cours-direct-bangui-epinards',
                 'description' => 'Cours de cuisine en direct pour apprendre le bangui',
                 'video_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-                'duration' => 2400, // 40 minutes
-                'category_id' => Category::first()->id,
-                'is_live' => false,
-                'scheduled_at' => now()->addDays(5),
-                'tags' => ['cours', 'bangui', 'épinards', 'direct'],
                 'is_published' => true,
             ],
         ];
 
         foreach ($additionalVideos as $videoData) {
-            DinorTv::firstOrCreate(['slug' => $videoData['slug']], $videoData);
+            DinorTv::firstOrCreate(['title' => $videoData['title']], $videoData);
         }
 
         // Créer des likes et commentaires pour rendre l'application vivante
@@ -297,19 +283,31 @@ class ProductionDataSeeder extends Seeder
         $tips = Tip::all();
         $events = Event::all();
 
-        // Créer des likes
+        // Créer des likes (éviter les doublons)
         foreach ($recipes as $recipe) {
             $likeCount = rand(5, 25);
+            $usedUsers = [];
             for ($i = 0; $i < $likeCount; $i++) {
                 $user = $users->random();
-                Like::firstOrCreate([
-                    'user_id' => $user->id,
-                    'likeable_id' => $recipe->id,
-                    'likeable_type' => Recipe::class,
-                ], [
-                    'ip_address' => '192.168.1.' . rand(1, 254),
-                    'user_agent' => 'Mozilla/5.0 (Mobile App)',
-                ]);
+                // Éviter les doublons d'utilisateur pour le même contenu
+                if (in_array($user->id, $usedUsers)) {
+                    continue;
+                }
+                $usedUsers[] = $user->id;
+                
+                try {
+                    Like::firstOrCreate([
+                        'user_id' => $user->id,
+                        'likeable_id' => $recipe->id,
+                        'likeable_type' => Recipe::class,
+                    ], [
+                        'ip_address' => '192.168.1.' . rand(1, 254),
+                        'user_agent' => 'Mozilla/5.0 (Mobile App)',
+                    ]);
+                } catch (\Exception $e) {
+                    // Ignorer les erreurs de contrainte unique
+                    continue;
+                }
             }
             // Mettre à jour le compteur
             $recipe->update(['likes_count' => $recipe->likes()->count()]);
@@ -317,16 +315,28 @@ class ProductionDataSeeder extends Seeder
 
         foreach ($tips as $tip) {
             $likeCount = rand(3, 15);
+            $usedUsers = [];
             for ($i = 0; $i < $likeCount; $i++) {
                 $user = $users->random();
-                Like::firstOrCreate([
-                    'user_id' => $user->id,
-                    'likeable_id' => $tip->id,
-                    'likeable_type' => Tip::class,
-                ], [
-                    'ip_address' => '192.168.1.' . rand(1, 254),
-                    'user_agent' => 'Mozilla/5.0 (Mobile App)',
-                ]);
+                // Éviter les doublons d'utilisateur pour le même contenu
+                if (in_array($user->id, $usedUsers)) {
+                    continue;
+                }
+                $usedUsers[] = $user->id;
+                
+                try {
+                    Like::firstOrCreate([
+                        'user_id' => $user->id,
+                        'likeable_id' => $tip->id,
+                        'likeable_type' => Tip::class,
+                    ], [
+                        'ip_address' => '192.168.1.' . rand(1, 254),
+                        'user_agent' => 'Mozilla/5.0 (Mobile App)',
+                    ]);
+                } catch (\Exception $e) {
+                    // Ignorer les erreurs de contrainte unique
+                    continue;
+                }
             }
             $tip->update(['likes_count' => $tip->likes()->count()]);
         }
