@@ -38,23 +38,159 @@ class PwaMenuItemResource extends Resource
                             ->label('Icône')
                             ->required()
                             ->options([
-                                'heroicon-o-home' => '🏠 Accueil',
-                                'heroicon-o-cake' => '🍰 Recettes',
-                                'heroicon-o-light-bulb' => '💡 Astuces',
-                                'heroicon-o-play-circle' => '▶️ Vidéo',
-                                'heroicon-o-calendar-days' => '📅 Calendrier',
-                                'heroicon-o-document-text' => '📄 Pages',
-                                'heroicon-o-heart' => '❤️ Favoris',
-                                'heroicon-o-star' => '⭐ Étoile',
-                                'heroicon-o-fire' => '🔥 Tendance',
-                                'heroicon-o-bolt' => '⚡ Éclair',
-                                'heroicon-o-map-pin' => '📍 Localisation',
-                                'heroicon-o-phone' => '📞 Contact',
-                                'heroicon-o-user' => '👤 Profil',
-                                'heroicon-o-cog-6-tooth' => '⚙️ Paramètres',
+                                // Navigation & Actions
+                                'home' => '🏠 home - Accueil',
+                                'menu' => '☰ menu - Menu',
+                                'arrow_back' => '← arrow_back - Retour',
+                                'arrow_forward' => '→ arrow_forward - Suivant',
+                                'search' => '🔍 search - Recherche',
+                                'refresh' => '🔄 refresh - Actualiser',
+                                'close' => '✕ close - Fermer',
+                                'add' => '+ add - Ajouter',
+                                'remove' => '- remove - Supprimer',
+                                'edit' => '✏️ edit - Modifier',
+                                'delete' => '🗑️ delete - Supprimer',
+                                'save' => '💾 save - Sauvegarder',
+                                
+                                // Contenu & Médias
+                                'article' => '📄 article - Article',
+                                'description' => '📝 description - Description',
+                                'book' => '📚 book - Livre',
+                                'library_books' => '📚 library_books - Bibliothèque',
+                                'image' => '🖼️ image - Image',
+                                'photo' => '📷 photo - Photo',
+                                'video_library' => '🎬 video_library - Vidéothèque',
+                                'play_circle' => '▶️ play_circle - Lecture',
+                                'play_arrow' => '▶️ play_arrow - Play',
+                                'pause' => '⏸️ pause - Pause',
+                                'stop' => '⏹️ stop - Stop',
+                                
+                                // Nourriture & Cuisine
+                                'restaurant' => '🍽️ restaurant - Restaurant',
+                                'restaurant_menu' => '📋 restaurant_menu - Menu restaurant',
+                                'local_dining' => '🍴 local_dining - Repas',
+                                'cake' => '🍰 cake - Gâteau',
+                                'coffee' => '☕ coffee - Café',
+                                'local_bar' => '🍹 local_bar - Bar',
+                                'kitchen' => '👨‍🍳 kitchen - Cuisine',
+                                'room_service' => '🛎️ room_service - Service',
+                                
+                                // Astuces & Conseils
+                                'lightbulb' => '💡 lightbulb - Ampoule',
+                                'tips_and_updates' => '💡 tips_and_updates - Conseils',
+                                'help' => '❓ help - Aide',
+                                'info' => 'ℹ️ info - Information',
+                                'quiz' => '❓ quiz - Quiz',
+                                'psychology' => '🧠 psychology - Psychologie',
+                                
+                                // Événements & Calendrier
+                                'event' => '📅 event - Événement',
+                                'calendar_today' => '📅 calendar_today - Calendrier',
+                                'schedule' => '🕐 schedule - Horaire',
+                                'access_time' => '⏰ access_time - Heure',
+                                'today' => '📅 today - Aujourd\'hui',
+                                'date_range' => '📅 date_range - Période',
+                                'celebration' => '🎉 celebration - Célébration',
+                                'party_mode' => '🎉 party_mode - Fête',
+                                
+                                // Communication & Social
+                                'chat' => '💬 chat - Chat',
+                                'message' => '💬 message - Message',
+                                'email' => '✉️ email - Email',
+                                'phone' => '📞 phone - Téléphone',
+                                'contact_mail' => '📧 contact_mail - Contact',
+                                'forum' => '💬 forum - Forum',
+                                'comment' => '💬 comment - Commentaire',
+                                
+                                // Utilisateurs & Profils
+                                'person' => '👤 person - Personne',
+                                'people' => '👥 people - Personnes',
+                                'account_circle' => '👤 account_circle - Compte',
+                                'face' => '😊 face - Visage',
+                                'group' => '👥 group - Groupe',
+                                'family_restroom' => '👪 family_restroom - Famille',
+                                
+                                // Shopping & Commerce
+                                'shopping_cart' => '🛒 shopping_cart - Panier',
+                                'shopping_bag' => '🛍️ shopping_bag - Sac shopping',
+                                'store' => '🏪 store - Magasin',
+                                'local_grocery_store' => '🏪 local_grocery_store - Épicerie',
+                                'payment' => '💳 payment - Paiement',
+                                'local_offer' => '🏷️ local_offer - Offre',
+                                
+                                // Loisirs & Divertissement
+                                'sports_esports' => '🎮 sports_esports - Jeux',
+                                'music_note' => '🎵 music_note - Musique',
+                                'radio' => '📻 radio - Radio',
+                                'theater_comedy' => '🎭 theater_comedy - Théâtre',
+                                'movie' => '🎬 movie - Film',
+                                'camera' => '📸 camera - Caméra',
+                                
+                                // Localisation & Voyage
+                                'location_on' => '📍 location_on - Localisation',
+                                'map' => '🗺️ map - Carte',
+                                'directions' => '🧭 directions - Directions',
+                                'place' => '📍 place - Lieu',
+                                'travel_explore' => '🧳 travel_explore - Voyage',
+                                'flight' => '✈️ flight - Vol',
+                                'train' => '🚆 train - Train',
+                                'directions_car' => '🚗 directions_car - Voiture',
+                                
+                                // Favoris & Évaluations
+                                'favorite' => '❤️ favorite - Favori',
+                                'heart_broken' => '💔 heart_broken - Cœur brisé',
+                                'star' => '⭐ star - Étoile',
+                                'star_rate' => '⭐ star_rate - Notation',
+                                'thumb_up' => '👍 thumb_up - Pouce levé',
+                                'thumb_down' => '👎 thumb_down - Pouce baissé',
+                                
+                                // Paramètres & Configuration
+                                'settings' => '⚙️ settings - Paramètres',
+                                'tune' => '🎛️ tune - Réglages',
+                                'build' => '🔧 build - Construction',
+                                'engineering' => '🔧 engineering - Ingénierie',
+                                'admin_panel_settings' => '🔧 admin_panel_settings - Admin',
+                                
+                                // Sécurité & Confidentialité
+                                'lock' => '🔒 lock - Verrouillé',
+                                'lock_open' => '🔓 lock_open - Déverrouillé',
+                                'security' => '🔒 security - Sécurité',
+                                'visibility' => '👁️ visibility - Visible',
+                                'visibility_off' => '👁️‍🗨️ visibility_off - Masqué',
+                                
+                                // Statuts & Notifications
+                                'notifications' => '🔔 notifications - Notifications',
+                                'notifications_off' => '🔕 notifications_off - Notifications off',
+                                'check' => '✅ check - Validé',
+                                'check_circle' => '✅ check_circle - Cercle validé',
+                                'cancel' => '❌ cancel - Annuler',
+                                'error' => '❌ error - Erreur',
+                                'warning' => '⚠️ warning - Attention',
+                                
+                                // Tendances & Statistiques
+                                'trending_up' => '📈 trending_up - Tendance hausse',
+                                'trending_down' => '📉 trending_down - Tendance baisse',
+                                'analytics' => '📊 analytics - Analytiques',
+                                'bar_chart' => '📊 bar_chart - Graphique',
+                                'pie_chart' => '📊 pie_chart - Camembert',
+                                'show_chart' => '📈 show_chart - Graphique ligne',
+                                
+                                // Météo & Nature
+                                'wb_sunny' => '☀️ wb_sunny - Soleil',
+                                'cloud' => '☁️ cloud - Nuage',
+                                'beach_access' => '🏖️ beach_access - Plage',
+                                'nature' => '🌿 nature - Nature',
+                                'local_florist' => '🌸 local_florist - Fleuriste',
+                                
+                                // Outils & Utilitaires
+                                'build_circle' => '🔧 build_circle - Outil',
+                                'handyman' => '🔨 handyman - Bricoleur',
+                                'construction' => '🚧 construction - Construction',
+                                'electrical_services' => '⚡ electrical_services - Électricité',
                             ])
                             ->searchable()
-                            ->helperText('Icône affichée dans le menu de navigation'),
+                            ->helperText('Icône Material Design affichée dans le menu de navigation')
+                            ->placeholder('Recherchez une icône...'),
 
                         Forms\Components\Select::make('route')
                             ->label('Route/Section')
