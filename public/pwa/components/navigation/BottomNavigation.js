@@ -35,7 +35,17 @@ const BottomNavigation = {
                 icon: 'restaurant',
                 iconFilled: 'restaurant',
                 path: '/recipes',
-                badge: null
+                badge: null,
+                color: '#9E7C22'
+            },
+            {
+                name: 'tips',
+                label: 'Astuces',
+                icon: 'lightbulb',
+                iconFilled: 'lightbulb',
+                path: '/tips',
+                badge: null,
+                color: '#E6D9D0'
             },
             {
                 name: 'events',
@@ -43,15 +53,8 @@ const BottomNavigation = {
                 icon: 'event',
                 iconFilled: 'event',
                 path: '/events',
-                badge: null
-            },
-            {
-                name: 'pages',
-                label: 'Pages',
-                icon: 'description',
-                iconFilled: 'description',
-                path: '/pages',
-                badge: null
+                badge: null,
+                color: '#818080'
             },
             {
                 name: 'dinortv',
@@ -59,7 +62,17 @@ const BottomNavigation = {
                 icon: 'play_circle',
                 iconFilled: 'play_circle',
                 path: '/dinor-tv',
-                badge: null
+                badge: null,
+                color: '#690E08'
+            },
+            {
+                name: 'pages',
+                label: 'Pages',
+                icon: 'description',
+                iconFilled: 'description',
+                path: '/pages',
+                badge: null,
+                color: '#E1251B'
             }
         ];
         
@@ -220,30 +233,7 @@ const md3BottomNavStyles = `
     font-family: 'Roboto', system-ui, -apple-system, sans-serif;
 }
 
-/* Material Design 3 Color System */
-:root {
-    /* Light theme */
-    --md-sys-color-surface-container: #f7f2fa;
-    --md-sys-color-on-surface-variant: #49454f;
-    --md-sys-color-secondary-container: #e8def8;
-    --md-sys-color-on-secondary-container: #1d192b;
-    --md-sys-color-outline-variant: #cac4d0;
-    --md-sys-color-error: #ba1a1a;
-    --md-sys-color-on-error: #ffffff;
-}
-
-/* Dark theme */
-@media (prefers-color-scheme: dark) {
-    :root {
-        --md-sys-color-surface-container: #211f26;
-        --md-sys-color-on-surface-variant: #cac4d0;
-        --md-sys-color-secondary-container: #4f378b;
-        --md-sys-color-on-secondary-container: #e8def8;
-        --md-sys-color-outline-variant: #49454f;
-        --md-sys-color-error: #ffb4ab;
-        --md-sys-color-on-error: #690005;
-    }
-}
+/* Import de la palette Dinor - Les couleurs sont définies dans dinor-color-palette.css */
 
 /* Material Icons */
 .material-icons {

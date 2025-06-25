@@ -211,33 +211,83 @@ class TipResource extends Resource
                     ->sortable()
                     ->toggleable(),
             ])
+            ->actions([
+                Tables\Actions\ViewAction::make()
+                    ->label('Voir')
+                    ->icon('heroicon-o-eye'),
+                    
+                Tables\Actions\EditAction::make()
+                    ->label('Modifier')
+                    ->icon('heroicon-o-pencil-square'),
+                    
+                Tables\Actions\DeleteAction::make()
+                    ->label('Supprimer')
+                    ->icon('heroicon-o-trash')
+                    ->successNotificationTitle('Astuce supprimée avec succès'),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->label('Supprimer sélectionnées')
+                        ->successNotificationTitle('Astuces supprimées avec succès'),
+
+                    Tables\Actions\BulkAction::make('publish')
+                        ->label('Publier')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->action(fn ($records) => $records->each->update(['is_published' => true]))
+                        ->deselectRecordsAfterCompletion()
+                        ->successNotificationTitle('Astuces publiées'),
+
+                    Tables\Actions\BulkAction::make('unpublish')
+                        ->label('Dépublier')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('warning')
+                        ->action(fn ($records) => $records->each->update(['is_published' => false]))
+                        ->deselectRecordsAfterCompletion()
+                        ->successNotificationTitle('Astuces dépubliées'),
+
+                    Tables\Actions\BulkAction::make('feature')
+                        ->label('Marquer en vedette')
+                        ->icon('heroicon-o-star')
+                        ->color('warning')
+                        ->action(fn ($records) => $records->each->update(['is_featured' => true]))
+                        ->deselectRecordsAfterCompletion()
+                        ->successNotificationTitle('Astuces marquées en vedette'),
+                ]),
+            ])
             ->filters([
-                Tables\Filters\SelectFilter::make('category')
-                    ->relationship('category', 'name'),
+                Tables\Filters\TernaryFilter::make('is_published')
+                    ->label('Statut de publication')
+                    ->boolean()
+                    ->trueLabel('Publiées seulement')
+                    ->falseLabel('Non publiées seulement')
+                    ->native(false),
+
+                Tables\Filters\TernaryFilter::make('is_featured')
+                    ->label('Astuces vedettes')
+                    ->boolean()
+                    ->trueLabel('Vedettes seulement')
+                    ->falseLabel('Non vedettes seulement')
+                    ->native(false),
+
+                Tables\Filters\SelectFilter::make('category_id')
+                    ->label('Catégorie')
+                    ->relationship('category', 'name')
+                    ->native(false),
+
                 Tables\Filters\SelectFilter::make('difficulty_level')
+                    ->label('Niveau de difficulté')
                     ->options([
                         'beginner' => 'Débutant',
                         'intermediate' => 'Intermédiaire',
                         'advanced' => 'Avancé',
-                    ]),
-                Tables\Filters\TernaryFilter::make('is_featured')
-                    ->label('Vedette'),
-                Tables\Filters\TernaryFilter::make('is_published')
-                    ->label('Publié'),
-                Tables\Filters\TrashedFilter::make(),
+                    ])
+                    ->native(false),
             ])
-            ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
-                ]),
-            ])
+            ->emptyStateHeading('Aucune astuce créée')
+            ->emptyStateDescription('Créez votre première astuce pour commencer.')
+            ->emptyStateIcon('heroicon-o-light-bulb')
             ->defaultSort('created_at', 'desc');
     }
 

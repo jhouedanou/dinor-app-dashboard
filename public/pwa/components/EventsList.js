@@ -1,99 +1,105 @@
 // Composant Liste des Événements
-export default {
+const EventsList = {
     template: `
-        <div class="events-page">
-            <!-- Header -->
-            <div class="page-header">
-                <h1 class="page-title">
-                    <i class="fas fa-calendar-alt mr-2"></i>
-                    Événements
-                </h1>
-            </div>
+        <div class="events-page recipe-page">
+            <!-- Top App Bar Material Design 3 -->
+            <nav class="md3-top-app-bar">
+                <div class="md3-app-bar-container">
+                    <div class="md3-app-bar-title">
+                        <i class="material-icons dinor-text-primary">event</i>
+                        <span class="dinor-text-primary">Événements</span>
+                    </div>
+                </div>
+            </nav>
 
             <!-- Filtres de statut -->
-            <div class="filters-container">
-                <div class="filters-scroll">
+            <div class="md3-filter-container">
+                <div class="md3-filter-scroll">
                     <button 
                         @click="selectedStatus = null"
-                        :class="['filter-chip', { 'filter-active': !selectedStatus }]">
+                        :class="['md3-chip', { 'md3-chip-selected': !selectedStatus }]">
                         Tous
                     </button>
                     <button 
                         v-for="status in statusFilters"
                         :key="status.value"
                         @click="selectedStatus = status.value"
-                        :class="['filter-chip', { 'filter-active': selectedStatus === status.value }]">
+                        :class="['md3-chip', { 'md3-chip-selected': selectedStatus === status.value }]">
                         {{ status.label }}
                     </button>
                 </div>
             </div>
 
-            <!-- Loading -->
-            <div v-if="loading" class="loading-container">
-                <div class="spinner"></div>
-                <p class="loading-text">Chargement des événements...</p>
-            </div>
+            <!-- Main Content -->
+            <main class="md3-main-content">
+                <!-- Loading -->
+                <div v-if="loading" class="md3-loading-state">
+                    <div class="md3-circular-progress"></div>
+                    <p class="md3-body-large dinor-text-gray">Chargement des événements...</p>
+                </div>
 
-            <!-- Liste des événements -->
-            <div v-else-if="filteredEvents.length > 0" class="events-list">
-                <div 
-                    v-for="event in filteredEvents" 
-                    :key="event.id"
-                    @click="goToEvent(event.id)"
-                    class="event-card card-hover">
-                    <div class="event-header">
-                        <div class="event-date">
-                            <div class="date-day">{{ formatDay(event.start_date) }}</div>
-                            <div class="date-month">{{ formatMonth(event.start_date) }}</div>
+                <!-- Liste des événements Material Design 3 -->
+                <div v-else-if="filteredEvents.length > 0" class="md3-events-grid">
+                    <div 
+                        v-for="event in filteredEvents" 
+                        :key="event.id"
+                        @click="goToEvent(event.id)"
+                        class="md3-card md3-card-elevated event-card-md3">
+                        <div v-if="event.featured_image_url" class="event-image-container">
+                            <img 
+                                :src="event.featured_image_url" 
+                                :alt="event.title"
+                                class="event-image"
+                                loading="lazy"
+                                @error="handleImageError">
                         </div>
-                        <div class="event-status">
-                            <span :class="getStatusClass(event.status)" class="status-badge">
-                                {{ getStatusLabel(event.status) }}
-                            </span>
-                        </div>
-                    </div>
-                    
-                    <div class="event-content">
-                        <h3 class="event-title">{{ event.title }}</h3>
-                        <p class="event-description">{{ truncateText(event.short_description, 100) }}</p>
-                        
-                        <div class="event-details">
-                            <div class="event-time">
-                                <i class="fas fa-clock"></i>
-                                <span>{{ formatTime(event.start_time) }}</span>
-                                <span v-if="event.end_time">- {{ formatTime(event.end_time) }}</span>
+                        <div class="event-content">
+                            <div class="event-header-info">
+                                <div class="event-date-chip">
+                                    <i class="material-icons dinor-text-secondary">calendar_today</i>
+                                    <span class="md3-body-small">{{ formatDay(event.start_date) }} {{ formatMonth(event.start_date) }}</span>
+                                </div>
+                                <div class="md3-chip event-status" :class="getStatusClass(event.status)">
+                                    {{ getStatusLabel(event.status) }}
+                                </div>
+                            </div>
+                            <h3 class="md3-title-large event-title dinor-text-primary">{{ event.title }}</h3>
+                            <p class="md3-body-medium event-description dinor-text-gray">{{ truncateText(event.short_description, 100) }}</p>
+                            
+                            <div class="event-meta">
+                                <div class="event-meta-item">
+                                    <i class="material-icons dinor-text-secondary">schedule</i>
+                                    <span class="md3-body-small">{{ formatTime(event.start_time) }}<span v-if="event.end_time"> - {{ formatTime(event.end_time) }}</span></span>
+                                </div>
+                                <div v-if="event.location" class="event-meta-item">
+                                    <i class="material-icons dinor-text-secondary">location_on</i>
+                                    <span class="md3-body-small">{{ event.location }}</span>
+                                </div>
+                                <div v-if="event.is_online" class="event-meta-item">
+                                    <i class="material-icons dinor-text-secondary">computer</i>
+                                    <span class="md3-body-small">Événement en ligne</span>
+                                </div>
                             </div>
                             
-                            <div v-if="event.location" class="event-location">
-                                <i class="fas fa-map-marker-alt"></i>
-                                <span>{{ event.location }}</span>
-                            </div>
-                            
-                            <div v-if="event.is_online" class="event-online">
-                                <i class="fas fa-laptop"></i>
-                                <span>Événement en ligne</span>
-                            </div>
-                        </div>
-                        
-                        <div class="event-footer">
-                            <div class="event-price">
-                                <span v-if="event.is_free" class="price-free">Gratuit</span>
-                                <span v-else-if="event.price" class="price">{{ event.price }}€</span>
-                            </div>
-                            
-                            <div class="event-participants" v-if="event.max_participants">
-                                <i class="fas fa-users"></i>
-                                <span>{{ event.current_participants || 0 }}/{{ event.max_participants }}</span>
-                            </div>
-                            
-                            <div class="event-likes">
-                                <i class="fas fa-heart"></i>
-                                <span>{{ event.likes_count || 0 }}</span>
+                            <div class="event-footer-stats">
+                                <div class="event-price">
+                                    <span v-if="event.is_free" class="md3-chip dinor-bg-secondary">Gratuit</span>
+                                    <span v-else-if="event.price" class="md3-chip">{{ event.price }}€</span>
+                                </div>
+                                <div class="event-stats">
+                                    <div v-if="event.max_participants" class="stat-item">
+                                        <i class="material-icons dinor-text-secondary">people</i>
+                                        <span class="md3-body-small">{{ event.current_participants || 0 }}/{{ event.max_participants }}</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <i class="material-icons dinor-text-secondary">favorite</i>
+                                        <span class="md3-body-small">{{ event.likes_count || 0 }}</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
             <!-- État vide -->
             <div v-else class="empty-state">

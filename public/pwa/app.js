@@ -387,23 +387,25 @@ const Dashboard = {
     }
 };
 
-// Fonction d'import dynamique pour les composants
-const lazyLoad = (path) => {
-    return async () => {
-        try {
-            const module = await import(path);
-            return module.default;
-        } catch (err) {
-            console.error(`Erreur lors du chargement de ${path}:`, err);
-            // Fallback vers un composant d'erreur
-            return {
-                template: `<div class="error-fallback">
-                    <h2>Erreur de chargement</h2>
-                    <p>Impossible de charger le composant</p>
-                    <button @click="$router.push('/')">Retour à l'accueil</button>
-                </div>`
-            };
-        }
+// Fonction de chargement des composants - pas d'import dynamique
+const lazyLoad = (componentName) => {
+    // Les composants sont déjà chargés via les scripts dans index.html
+    const components = {
+        'RecipesList': RecipesList,
+        'EventsList': EventsList,
+        'PagesList': PagesList,
+        'DinorTV': DinorTV,
+        'Recipe': Recipe,
+        'Event': Event,
+        'Tip': Tip
+    };
+    
+    return components[componentName] || {
+        template: `<div class="error-fallback">
+            <h2>Composant non trouvé</h2>
+            <p>Le composant ${componentName} n'existe pas</p>
+            <button @click="$router.push('/')">Retour à l'accueil</button>
+        </div>`
     };
 };
 
@@ -413,16 +415,16 @@ const routes = [
     { path: '/', redirect: '/recipes' },
     
     // Routes principales (bottom navigation)
-    { path: '/recipes', component: lazyLoad('./components/RecipesList.js'), name: 'recipes' },
-    { path: '/events', component: lazyLoad('./components/EventsList.js'), name: 'events' },
-    { path: '/pages', component: lazyLoad('./components/PagesList.js'), name: 'pages' },
-    { path: '/pages/:id', component: lazyLoad('./components/PagesList.js'), name: 'page-detail' },
-    { path: '/dinor-tv', component: lazyLoad('./components/DinorTV.js'), name: 'dinor-tv' },
+    { path: '/recipes', component: lazyLoad('RecipesList'), name: 'recipes' },
+    { path: '/events', component: lazyLoad('EventsList'), name: 'events' },
+    { path: '/pages', component: lazyLoad('PagesList'), name: 'pages' },
+    { path: '/pages/:id', component: lazyLoad('PagesList'), name: 'page-detail' },
+    { path: '/dinor-tv', component: lazyLoad('DinorTV'), name: 'dinor-tv' },
     
     // Routes de détail
-    { path: '/recipe/:id', component: lazyLoad('./components/Recipe.js'), name: 'recipe' },
-    { path: '/tip/:id', component: lazyLoad('./components/Tip.js'), name: 'tip' },
-    { path: '/event/:id', component: lazyLoad('./components/Event.js'), name: 'event' },
+    { path: '/recipe/:id', component: lazyLoad('Recipe'), name: 'recipe' },
+    { path: '/tip/:id', component: lazyLoad('Tip'), name: 'tip' },
+    { path: '/event/:id', component: lazyLoad('Event'), name: 'event' },
     
     // Route 404
     { path: '/:pathMatch(.*)*', redirect: '/recipes' }

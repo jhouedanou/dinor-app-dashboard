@@ -24,8 +24,13 @@ Route::get('/dashboard', function () {
 
 // Route pour la PWA
 Route::get('/pwa', function () {
-    return redirect('/pwa/index.html');
+    return redirect('/pwa/');
 })->name('pwa');
+
+// Route catch-all pour la PWA SPA (doit être en dernier)
+Route::get('/pwa/{path?}', function () {
+    return response()->file(public_path('pwa/index.html'));
+})->where('path', '.*');
 
 // Route pour la page d'erreur de connexion admin
 Route::get('/admin/login-error', [LoginErrorController::class, 'show'])->name('admin.login.error');

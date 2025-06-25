@@ -24,39 +24,34 @@ class PageResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Page Embed/Iframe')
-                    ->description('Ajoutez une URL qui sera affichée dans un embed/iframe dans la PWA')
+                Forms\Components\Section::make('Configuration de la page')
+                    ->description('Configurez simplement le nom du menu et l\'URL à afficher')
                     ->schema([
                         Forms\Components\TextInput::make('title')
-                            ->label('Titre de la page')
+                            ->label('Nom du menu')
                             ->required()
                             ->maxLength(255)
-                            ->helperText('Nom affiché dans l\'application mobile'),
+                            ->helperText('Nom qui apparaîtra dans le menu de navigation de la PWA')
+                            ->placeholder('Ex: À propos, Contact, Boutique...'),
                         
                         Forms\Components\TextInput::make('url')
-                            ->label('URL pour Embed/Iframe')
+                            ->label('URL à afficher')
                             ->required()
                             ->url()
-                            ->helperText('URL complète à afficher dans un embed/iframe dans la PWA (ex: https://example.com)')
-                            ->placeholder('https://'),
-
-                        Forms\Components\Textarea::make('description')
-                            ->label('Description (optionnelle)')
-                            ->maxLength(500)
-                            ->rows(3)
-                            ->helperText('Description courte de la page'),
+                            ->helperText('Page web qui s\'ouvrira dans un iframe dans l\'application')
+                            ->placeholder('https://example.com'),
 
                         Forms\Components\Toggle::make('is_published')
-                            ->label('Visible dans l\'app')
+                            ->label('Activer cette page')
                             ->default(true)
-                            ->helperText('Afficher cette page dans l\'application mobile'),
+                            ->helperText('Afficher dans le menu de l\'application mobile'),
 
                         Forms\Components\TextInput::make('order')
-                            ->label('Ordre d\'affichage')
+                            ->label('Position dans le menu')
                             ->numeric()
                             ->default(0)
-                            ->helperText('Ordre dans la liste (0 = premier)'),
-                    ])->columns(1),
+                            ->helperText('Ordre d\'affichage (0 = en premier)'),
+                    ])->columns(2),
             ]);
     }
 
@@ -65,23 +60,18 @@ class PageResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('title')
-                    ->label('Titre')
+                    ->label('Nom du menu')
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
 
                 Tables\Columns\TextColumn::make('url')
-                    ->label('URL Embed')
+                    ->label('URL')
                     ->searchable()
                     ->copyable()
                     ->copyMessage('URL copiée!')
                     ->limit(50)
                     ->tooltip(fn ($record) => $record->url),
-
-                Tables\Columns\TextColumn::make('description')
-                    ->label('Description')
-                    ->limit(60)
-                    ->placeholder('Aucune description'),
                     
                 Tables\Columns\IconColumn::make('is_published')
                     ->label('Visible')
@@ -90,51 +80,73 @@ class PageResource extends Resource
                     ->falseIcon('heroicon-o-eye-slash'),
 
                 Tables\Columns\TextColumn::make('order')
-                    ->label('Ordre')
+                    ->label('Position')
                     ->sortable()
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->badge()
+                    ->color('primary'),
                     
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('Modifié le')
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
-                    ->since(),
+                    ->since()
+                    ->toggleable(),
             ])
             ->filters([
-                Tables\Filters\Filter::make('is_published')
-                    ->label('Pages visibles')
-                    ->query(fn (Builder $query): Builder => $query->where('is_published', true)),
+                Tables\Filters\TernaryFilter::make('is_published')
+                    ->label('Statut')
+                    ->boolean()
+                    ->trueLabel('Pages visibles')
+                    ->falseLabel('Pages masquées')
+                    ->native(false),
             ])
             ->actions([
                 Tables\Actions\Action::make('open_url')
                     ->label('Ouvrir')
                     ->icon('heroicon-o-arrow-top-right-on-square')
+                    ->color('gray')
                     ->url(fn (Page $record): string => $record->url ?? '#')
                     ->openUrlInNewTab()
                     ->visible(fn (Page $record): bool => !empty($record->url)),
 
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->label('Modifier')
+                    ->icon('heroicon-o-pencil-square'),
+                    
+                Tables\Actions\DeleteAction::make()
+                    ->label('Supprimer')
+                    ->icon('heroicon-o-trash')
+                    ->successNotificationTitle('Page supprimée avec succès'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->label('Supprimer sélectionnées')
+                        ->successNotificationTitle('Pages supprimées avec succès'),
 
                     Tables\Actions\BulkAction::make('show')
-                        ->label('Rendre visible')
+                        ->label('Rendre visibles')
                         ->icon('heroicon-o-eye')
+                        ->color('success')
                         ->action(fn ($records) => $records->each->update(['is_published' => true]))
-                        ->deselectRecordsAfterCompletion(),
+                        ->deselectRecordsAfterCompletion()
+                        ->successNotificationTitle('Pages rendues visibles'),
 
                     Tables\Actions\BulkAction::make('hide')
                         ->label('Masquer')
                         ->icon('heroicon-o-eye-slash')
+                        ->color('warning')
                         ->action(fn ($records) => $records->each->update(['is_published' => false]))
-                        ->deselectRecordsAfterCompletion(),
+                        ->deselectRecordsAfterCompletion()
+                        ->successNotificationTitle('Pages masquées'),
                 ]),
             ])
             ->defaultSort('order', 'asc')
-            ->reorderable('order');
+            ->reorderable('order')
+            ->emptyStateHeading('Aucune page créée')
+            ->emptyStateDescription('Créez votre première page pour commencer.')
+            ->emptyStateIcon('heroicon-o-document-text');
     }
 
     public static function getRelations(): array
@@ -148,7 +160,6 @@ class PageResource extends Resource
     {
         return [
             'index' => Pages\ListPages::route('/'),
-            'create' => Pages\CreatePage::route('/create'),
             'view' => Pages\ViewPage::route('/{record}'),
             'edit' => Pages\EditPage::route('/{record}/edit'),
         ];
@@ -161,4 +172,9 @@ class PageResource extends Resource
                 SoftDeletingScope::class,
             ]);
     }
-} 
+    
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+}

@@ -71,6 +71,12 @@ class DinorTvResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\ImageColumn::make('thumbnail')
+                    ->label('Miniature')
+                    ->circular()
+                    ->size(60)
+                    ->defaultImageUrl('/images/default-video-thumb.jpg'),
+
                 Tables\Columns\TextColumn::make('title')
                     ->label('Titre')
                     ->searchable()
@@ -88,13 +94,16 @@ class DinorTvResource extends Resource
                 Tables\Columns\TextColumn::make('description')
                     ->label('Description')
                     ->limit(60)
-                    ->placeholder('Aucune description'),
+                    ->placeholder('Aucune description')
+                    ->toggleable(),
 
                 Tables\Columns\IconColumn::make('is_featured')
                     ->label('Mise en avant')
                     ->boolean()
                     ->trueIcon('heroicon-o-star')
-                    ->falseIcon('heroicon-o-star'),
+                    ->falseIcon('heroicon-o-star')
+                    ->trueColor('warning')
+                    ->falseColor('gray'),
                     
                 Tables\Columns\IconColumn::make('is_published')
                     ->label('Visible')
@@ -106,56 +115,90 @@ class DinorTvResource extends Resource
                     ->label('Vues')
                     ->numeric()
                     ->alignCenter()
-                    ->default(0),
+                    ->default(0)
+                    ->toggleable(),
                     
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('Modifié le')
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
-                    ->since(),
+                    ->since()
+                    ->toggleable(),
             ])
             ->filters([
-                Tables\Filters\Filter::make('is_published')
-                    ->label('Contenus visibles')
-                    ->query(fn (Builder $query): Builder => $query->where('is_published', true)),
+                Tables\Filters\TernaryFilter::make('is_published')
+                    ->label('Statut de publication')
+                    ->boolean()
+                    ->trueLabel('Contenus visibles')
+                    ->falseLabel('Contenus masqués')
+                    ->native(false),
 
-                Tables\Filters\Filter::make('is_featured')
-                    ->label('Contenus mis en avant')
-                    ->query(fn (Builder $query): Builder => $query->where('is_featured', true)),
+                Tables\Filters\TernaryFilter::make('is_featured')
+                    ->label('Mise en avant')
+                    ->boolean()
+                    ->trueLabel('Mis en avant seulement')
+                    ->falseLabel('Non mis en avant')
+                    ->native(false),
             ])
             ->actions([
                 Tables\Actions\Action::make('open_url')
-                    ->label('Ouvrir URL')
+                    ->label('Ouvrir')
                     ->icon('heroicon-o-arrow-top-right-on-square')
+                    ->color('gray')
                     ->url(fn (DinorTv $record): string => $record->video_url)
                     ->openUrlInNewTab(),
 
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->label('Modifier')
+                    ->icon('heroicon-o-pencil-square'),
+                    
+                Tables\Actions\DeleteAction::make()
+                    ->label('Supprimer')
+                    ->icon('heroicon-o-trash')
+                    ->successNotificationTitle('Contenu supprimé avec succès'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->label('Supprimer sélectionnés')
+                        ->successNotificationTitle('Contenus supprimés avec succès'),
 
-                    Tables\Actions\BulkAction::make('show')
-                        ->label('Rendre visible')
-                        ->icon('heroicon-o-eye')
+                    Tables\Actions\BulkAction::make('publish')
+                        ->label('Publier')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
                         ->action(fn ($records) => $records->each->update(['is_published' => true]))
-                        ->deselectRecordsAfterCompletion(),
+                        ->deselectRecordsAfterCompletion()
+                        ->successNotificationTitle('Contenus publiés'),
 
-                    Tables\Actions\BulkAction::make('hide')
+                    Tables\Actions\BulkAction::make('unpublish')
                         ->label('Masquer')
                         ->icon('heroicon-o-eye-slash')
+                        ->color('warning')
                         ->action(fn ($records) => $records->each->update(['is_published' => false]))
-                        ->deselectRecordsAfterCompletion(),
+                        ->deselectRecordsAfterCompletion()
+                        ->successNotificationTitle('Contenus masqués'),
 
                     Tables\Actions\BulkAction::make('feature')
                         ->label('Mettre en avant')
                         ->icon('heroicon-o-star')
+                        ->color('warning')
                         ->action(fn ($records) => $records->each->update(['is_featured' => true]))
-                        ->deselectRecordsAfterCompletion(),
+                        ->deselectRecordsAfterCompletion()
+                        ->successNotificationTitle('Contenus mis en avant'),
+
+                    Tables\Actions\BulkAction::make('unfeature')
+                        ->label('Retirer de la mise en avant')
+                        ->icon('heroicon-o-star')
+                        ->color('gray')
+                        ->action(fn ($records) => $records->each->update(['is_featured' => false]))
+                        ->deselectRecordsAfterCompletion()
+                        ->successNotificationTitle('Contenus retirés de la mise en avant'),
                 ]),
             ])
+            ->emptyStateHeading('Aucun contenu Dinor TV créé')
+            ->emptyStateDescription('Créez votre premier contenu vidéo pour commencer.')
+            ->emptyStateIcon('heroicon-o-play-circle')
             ->defaultSort('is_featured', 'desc')
             ->defaultSort('updated_at', 'desc');
     }
@@ -174,5 +217,10 @@ class DinorTvResource extends Resource
             'create' => Pages\CreateDinorTv::route('/create'),
             'edit' => Pages\EditDinorTv::route('/{record}/edit'),
         ];
+    }
+    
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
     }
 }

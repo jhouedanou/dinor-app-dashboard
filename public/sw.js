@@ -1,9 +1,24 @@
-const CACHE_NAME = 'dinor-pwa-v2';
+const CACHE_NAME = 'dinor-pwa-v4';
 const urlsToCache = [
   '/pwa/',
   '/pwa/index.html',
   '/pwa/app.js',
-  '/pwa/style.css',
+  // Nouveaux fichiers CSS
+  '/pwa/styles/dinor-color-palette.css',
+  '/pwa/styles/md3-single-pages.css',
+  '/pwa/styles/main.css',
+  '/pwa/styles/bottom-navigation.css',
+  '/pwa/styles/components.css',
+  '/pwa/styles/dinor-tv-player.css',
+  // Composants JavaScript
+  '/pwa/components/navigation/BottomNavigation.js',
+  '/pwa/components/DinorTV.js',
+  '/pwa/components/Recipe.js',
+  '/pwa/components/Event.js',
+  '/pwa/components/RecipesList.js',
+  '/pwa/components/EventsList.js',
+  '/pwa/components/PagesList.js',
+  '/pwa/components/Tip.js',
   '/manifest.json',
   // Assets statiques
   '/css/auth-components.css',
@@ -13,6 +28,8 @@ const urlsToCache = [
   // CDN resources (mise en cache pour l'offline)
   'https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js',
   'https://unpkg.com/vue-router@4/dist/vue-router.global.prod.js',
+  'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap',
+  'https://fonts.googleapis.com/icon?family=Material+Icons',
   'https://cdn.tailwindcss.com',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'
 ];

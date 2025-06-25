@@ -2,40 +2,85 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
-/* Palette de couleurs personnalisée Dinor */
+/* ===== NOUVELLE PALETTE DE COULEURS DINOR ===== */
 :root {
-    /* Couleurs principales basées sur votre palette */
-    --primary-50: #fefbf3;
-    --primary-100: #fdf3e1;
-    --primary-200: #fae4c2;
-    --primary-300: #f5ce98;
-    --primary-400: #efb26c;
-    --primary-500: #9F7C20;
-    --primary-600: #8d6b1c;
-    --primary-700: #7a5b18;
-    --primary-800: #664b14;
-    --primary-900: #523c10;
-    --primary-950: #2f2208;
+    /* Nouvelle palette de couleurs */
+    --red-cmyk: #E1251B;           /* Rouge principal */
+    --gray: #818080;               /* Gris neutre */
+    --champagne-pink: #E6D9D0;     /* Rose champagne */
+    --dark-goldenrod: #9E7C22;     /* Or foncé */
+    --blood-red: #690E08;          /* Rouge sanguin */
 
-    /* Couleurs secondaires (rouge Cornell/Vermilion) */
+    /* Couleurs principales dérivées */
+    --primary-50: #fefbf8;
+    --primary-100: #fdf5ec;
+    --primary-200: #fae8d4;
+    --primary-300: #f5d0a7;
+    --primary-400: #efb069;
+    --primary-500: #9E7C22;        /* dark-goldenrod */
+    --primary-600: #8a6b1e;
+    --primary-700: #765b1a;
+    --primary-800: #624a16;
+    --primary-900: #4e3a11;
+    --primary-950: #2f220a;
+
+    /* Couleurs secondaires (rouge) */
     --secondary-50: #fef2f2;
     --secondary-100: #fee2e2;
     --secondary-200: #fecaca;
     --secondary-300: #fca5a5;
     --secondary-400: #f87171;
-    --secondary-500: #E33734;
+    --secondary-500: #E1251B;       /* red-cmyk */
     --secondary-600: #AD1311;
-    --secondary-700: #9B1515;
-    --secondary-800: #7f1d1d;
-    --secondary-900: #701a1a;
-    --secondary-950: #450a0a;
+    --secondary-700: #690E08;       /* blood-red */
+    --secondary-800: #5a0c07;
+    --secondary-900: #4b0a06;
+    --secondary-950: #2d0504;
 
-    /* Variables CSS personnalisées */
-    --dark-goldenrod: #9F7C20;
-    --cornell-red: #AD1311;
+    /* Couleurs neutres */
+    --neutral-50: #fafafa;
+    --neutral-100: #f5f5f5;
+    --neutral-200: #e5e5e5;
+    --neutral-300: #d4d4d4;
+    --neutral-400: #a3a3a3;
+    --neutral-500: #818080;         /* gray */
+    --neutral-600: #737373;
+    --neutral-700: #525252;
+    --neutral-800: #404040;
+    --neutral-900: #262626;
+    --neutral-950: #171717;
+
+    /* Couleurs accent (champagne pink) */
+    --accent-50: #fefcfa;
+    --accent-100: #fdf8f3;
+    --accent-200: #fbeee3;
+    --accent-300: #f7dcc8;
+    --accent-400: #f1c19f;
+    --accent-500: #E6D9D0;          /* champagne-pink */
+    --accent-600: #d4c2b6;
+    --accent-700: #b8a291;
+    --accent-800: #9d8775;
+    --accent-900: #857260;
+    --accent-950: #463b32;
+
+    /* Variables personnalisées pour compatibilité */
     --white: #FFFFFF;
-    --vermilion: #E33734;
-    --carmine: #9B1515;
+    --vermilion: #E1251B;
+    --carmine: #690E08;
+}
+
+/* ===== STYLES GLOBAUX ===== */
+
+/* Corps de l'application */
+.fi-body {
+    background: linear-gradient(135deg, var(--primary-50) 0%, #fafafa 50%, var(--white) 100%) !important;
+    color: #1f2937 !important;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+}
+
+.dark .fi-body {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%) !important;
+    color: #e2e8f0 !important;
 }
 
 /* ===== PAGE DE CONNEXION ===== */
@@ -43,24 +88,49 @@
 /* Styles spécifiques pour la page de connexion */
 .fi-pa-login {
     background: linear-gradient(135deg, var(--primary-50) 0%, var(--white) 100%) !important;
+    min-height: 100vh !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
 
-/* Bouton de connexion - Utilisation de la couleur rouge du thème */
+/* Carte de connexion */
+.fi-pa-login .fi-card {
+    background-color: var(--white) !important;
+    border: 1px solid var(--primary-200) !important;
+    border-radius: 1rem !important;
+    box-shadow: 0 20px 40px rgba(159, 124, 32, 0.1), 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    backdrop-filter: blur(10px) !important;
+    padding: 2rem !important;
+}
+
+/* Titre de la page de connexion */
+.fi-pa-login .fi-header-heading {
+    color: var(--dark-goldenrod) !important;
+    font-weight: 700 !important;
+    font-size: 1.875rem !important;
+    text-align: center !important;
+    margin-bottom: 1.5rem !important;
+}
+
+/* Bouton de connexion */
 .fi-pa-login .fi-form-actions .fi-btn,
 .fi-pa-login button[type="submit"],
 .fi-pa-login .fi-btn.fi-btn-primary,
 button[form*="login"], 
 form[id*="login"] button[type="submit"],
 .fi-simple-page form button[type="submit"] {
-    background-color: var(--vermilion) !important;
-    border-color: var(--vermilion) !important;
+    background: linear-gradient(135deg, var(--vermilion) 0%, var(--carmine) 100%) !important;
+    border: none !important;
     color: var(--white) !important;
     font-weight: 600 !important;
-    padding: 0.75rem 1.5rem !important;
-    border-radius: 0.5rem !important;
-    transition: all 0.2s ease-in-out !important;
-    width: 100%;
+    padding: 0.875rem 2rem !important;
+    border-radius: 0.75rem !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    width: 100% !important;
     text-shadow: none !important;
+    box-shadow: 0 4px 14px 0 rgba(227, 55, 52, 0.25) !important;
 }
 
 .fi-pa-login .fi-form-actions .fi-btn:hover,
@@ -69,92 +139,80 @@ form[id*="login"] button[type="submit"],
 button[form*="login"]:hover,
 form[id*="login"] button[type="submit"]:hover,
 .fi-simple-page form button[type="submit"]:hover {
-    background-color: var(--carmine) !important;
-    border-color: var(--carmine) !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 4px 12px rgba(227, 55, 52, 0.3) !important;
-}
-
-.fi-pa-login .fi-form-actions .fi-btn:focus,
-.fi-pa-login button[type="submit"]:focus,
-.fi-pa-login .fi-btn.fi-btn-primary:focus,
-button[form*="login"]:focus,
-form[id*="login"] button[type="submit"]:focus,
-.fi-simple-page form button[type="submit"]:focus {
-    outline: none !important;
-    box-shadow: 0 0 0 3px rgba(227, 55, 52, 0.3) !important;
-}
-
-/* Carte de connexion */
-.fi-pa-login .fi-card {
-    background-color: var(--white) !important;
-    border: 1px solid var(--primary-200) !important;
-    border-radius: 1rem !important;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
-}
-
-/* Titre de la page de connexion */
-.fi-pa-login .fi-header-heading {
-    color: var(--dark-goldenrod) !important;
-    font-weight: 700 !important;
-    font-size: 1.875rem !important;
+    background: linear-gradient(135deg, var(--carmine) 0%, #7d1212 100%) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 25px rgba(227, 55, 52, 0.4) !important;
 }
 
 /* Champs de saisie sur la page de connexion */
 .fi-pa-login .fi-input-wrapper {
     border: 2px solid var(--primary-200) !important;
-    border-radius: 0.5rem !important;
-    padding: 0.25rem 0.5rem !important; /* Ajustement du padding */
-    transition: all 0.2s ease-in-out !important;
+    border-radius: 0.75rem !important;
+    padding: 0.5rem 0.875rem !important;
+    transition: all 0.3s ease !important;
+    background-color: var(--white) !important;
 }
 
 .fi-pa-login .fi-input-wrapper:focus-within {
     border-color: var(--dark-goldenrod) !important;
-    box-shadow: 0 0 0 3px rgba(159, 124, 32, 0.1) !important;
-}
-
-/* Bouton d'affichage du mot de passe */
-.fi-pa-login .fi-input-suffix {
-    color: var(--primary-500) !important;
-}
-
-.fi-pa-login .fi-input-suffix:hover {
-    color: var(--dark-goldenrod) !important;
+    box-shadow: 0 0 0 4px rgba(159, 124, 32, 0.15) !important;
+    transform: translateY(-1px) !important;
 }
 
 /* Labels des champs */
 .fi-pa-login .fi-fo-field-wrp > div > label {
     color: var(--primary-700) !important;
     font-weight: 600 !important;
-    margin-bottom: 0.5rem !important;
-    display: inline-block;
-}
-
-/* ===== DARK MODE SUPPORT ===== */
-
-/* Corps de l'application - Dark Mode */
-.dark .fi-body {
-    background-color: #0f172a !important;
-    color: #e2e8f0 !important;
-}
-
-.fi-body {
-    background-color: var(--white) !important;
-    color: #1f2937 !important;
+    margin-bottom: 0.75rem !important;
+    display: inline-block !important;
+    font-size: 0.875rem !important;
 }
 
 /* ===== SIDEBAR ===== */
 
-/* Sidebar Dark Mode */
-.dark .fi-sidebar {
-    background-color: #1e293b !important;
-    border-right: 1px solid #334155 !important;
-}
-
 /* Sidebar Light Mode */
 .fi-sidebar {
-    background-color: #fefbf3 !important;
+    background: linear-gradient(180deg, var(--white) 0%, var(--primary-50) 100%) !important;
     border-right: 1px solid var(--primary-200) !important;
+    box-shadow: 4px 0 15px rgba(159, 124, 32, 0.05) !important;
+}
+
+/* Sidebar Dark Mode */
+.dark .fi-sidebar {
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%) !important;
+    border-right: 1px solid #334155 !important;
+    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Logo/Branding dans la sidebar */
+.fi-sidebar-header {
+    padding: 1.5rem !important;
+    border-bottom: 1px solid var(--primary-200) !important;
+}
+
+.dark .fi-sidebar-header {
+    border-bottom: 1px solid #334155 !important;
+}
+
+/* Navigation Items - Light Mode */
+.fi-sidebar-nav-item {
+    margin: 0.25rem 0.75rem !important;
+    border-radius: 0.75rem !important;
+    transition: all 0.2s ease !important;
+}
+
+.fi-sidebar-nav-item.fi-active {
+    background: linear-gradient(135deg, var(--primary-100) 0%, var(--primary-200) 100%) !important;
+    color: var(--dark-goldenrod) !important;
+    border-left: 4px solid var(--dark-goldenrod) !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 8px rgba(159, 124, 32, 0.2) !important;
+}
+
+.fi-sidebar-nav-item:hover {
+    background-color: var(--primary-50) !important;
+    color: var(--dark-goldenrod) !important;
+    transform: translateX(2px) !important;
 }
 
 /* Navigation Items - Dark Mode */
@@ -164,290 +222,272 @@ form[id*="login"] button[type="submit"]:focus,
 
 .dark .fi-sidebar-nav-item:hover {
     background-color: #334155 !important;
-    color: var(--dark-goldenrod) !important;
+    color: var(--primary-300) !important;
 }
 
 .dark .fi-sidebar-nav-item.fi-active {
-    background-color: #1e40af !important;
-    color: var(--dark-goldenrod) !important;
-    border-left: 3px solid var(--dark-goldenrod) !important;
-}
-
-/* Navigation Items - Light Mode */
-.fi-sidebar-nav-item.fi-active {
-    background-color: var(--primary-100) !important;
-    color: var(--dark-goldenrod) !important;
-    border-left: 3px solid var(--dark-goldenrod) !important;
-}
-
-.fi-sidebar-nav-item:hover {
-    background-color: var(--primary-50) !important;
-    color: var(--dark-goldenrod) !important;
+    background: linear-gradient(135deg, #334155 0%, #475569 100%) !important;
+    color: var(--primary-300) !important;
+    border-left: 4px solid var(--primary-300) !important;
 }
 
 /* ===== TOPBAR ===== */
 
-/* Topbar Dark Mode */
-.dark .fi-topbar {
-    background-color: #1e293b !important;
-    border-bottom: 1px solid #334155 !important;
-}
-
 /* Topbar Light Mode */
 .fi-topbar {
-    background-color: var(--white) !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    backdrop-filter: blur(10px) !important;
     border-bottom: 1px solid var(--primary-200) !important;
+    box-shadow: 0 2px 10px rgba(159, 124, 32, 0.05) !important;
+}
+
+/* Topbar Dark Mode */
+.dark .fi-topbar {
+    background: rgba(30, 41, 59, 0.95) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    backdrop-filter: blur(10px) !important;
+    border-bottom: 1px solid #334155 !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2) !important;
 }
 
 /* ===== BOUTONS ===== */
 
-/* Boutons primaires avec dark-goldenrod */
+/* Boutons primaires */
 .fi-btn-primary {
-    background-color: var(--dark-goldenrod) !important;
-    border-color: var(--dark-goldenrod) !important;
+    background: linear-gradient(135deg, var(--vermilion) 0%, var(--carmine) 100%) !important;
+    border: none !important;
     color: var(--white) !important;
+    font-weight: 600 !important;
+    border-radius: 0.5rem !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 2px 8px rgba(227, 55, 52, 0.2) !important;
 }
 
 .fi-btn-primary:hover {
-    background-color: var(--primary-700) !important;
-    border-color: var(--primary-700) !important;
+    background: linear-gradient(135deg, var(--carmine) 0%, #7d1212 100%) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 15px rgba(227, 55, 52, 0.3) !important;
 }
 
-/* Boutons secondaires avec vermilion */
+/* Boutons secondaires */
 .fi-btn-secondary {
-    background-color: var(--vermilion) !important;
-    border-color: var(--vermilion) !important;
-    color: var(--white) !important;
+    background: linear-gradient(135deg, var(--primary-100) 0%, var(--primary-200) 100%) !important;
+    border: 1px solid var(--primary-300) !important;
+    color: var(--primary-700) !important;
+    font-weight: 500 !important;
+    border-radius: 0.5rem !important;
+    transition: all 0.3s ease !important;
 }
 
 .fi-btn-secondary:hover {
-    background-color: var(--carmine) !important;
-    border-color: var(--carmine) !important;
-}
-
-/* Boutons de danger avec carmine */
-.fi-btn-danger {
-    background-color: var(--carmine) !important;
-    border-color: var(--carmine) !important;
-    color: var(--white) !important;
-}
-
-.fi-btn-danger:hover {
-    background-color: var(--cornell-red) !important;
-    border-color: var(--cornell-red) !important;
-}
-
-/* ===== LIENS ET ÉLÉMENTS INTERACTIFS ===== */
-
-.fi-link {
-    color: var(--dark-goldenrod) !important;
-}
-
-.fi-link:hover {
-    color: var(--primary-700) !important;
-}
-
-.dark .fi-link {
-    color: var(--dark-goldenrod) !important;
-}
-
-.dark .fi-link:hover {
-    color: #fbbf24 !important;
-}
-
-/* ===== FORMULAIRES ===== */
-
-/* Dark Mode Forms */
-.dark .fi-input {
-    background-color: #334155 !important;
-    border: 1px solid #475569 !important;
-    color: #e2e8f0 !important;
-}
-
-.dark .fi-input:focus {
-    border-color: var(--dark-goldenrod) !important;
-    box-shadow: 0 0 0 3px rgba(159, 124, 32, 0.2) !important;
-}
-
-.dark .fi-select {
-    background-color: #334155 !important;
-    border: 1px solid #475569 !important;
-    color: #e2e8f0 !important;
-}
-
-.dark .fi-select:focus {
-    border-color: var(--dark-goldenrod) !important;
-    box-shadow: 0 0 0 3px rgba(159, 124, 32, 0.2) !important;
-}
-
-/* Light Mode Forms */
-.fi-input:focus {
-    border-color: var(--dark-goldenrod) !important;
-    box-shadow: 0 0 0 3px rgba(159, 124, 32, 0.1) !important;
-}
-
-.fi-select:focus {
-    border-color: var(--dark-goldenrod) !important;
-    box-shadow: 0 0 0 3px rgba(159, 124, 32, 0.1) !important;
+    background: linear-gradient(135deg, var(--primary-200) 0%, var(--primary-300) 100%) !important;
+    color: var(--primary-800) !important;
+    transform: translateY(-1px) !important;
 }
 
 /* ===== TABLEAUX ===== */
 
-/* Dark Mode Tables */
-.dark .fi-ta {
-    background-color: #1e293b !important;
+/* En-têtes de tableau */
+.fi-ta-header {
+    background: linear-gradient(135deg, var(--primary-50) 0%, var(--primary-100) 100%) !important;
+    border-bottom: 2px solid var(--primary-200) !important;
+    font-weight: 600 !important;
+    color: var(--primary-800) !important;
 }
 
 .dark .fi-ta-header {
-    background-color: #334155 !important;
-    border-bottom: 1px solid #475569 !important;
-}
-
-.dark .fi-ta-row {
-    border-bottom: 1px solid #334155 !important;
-}
-
-.dark .fi-ta-row:hover {
-    background-color: #334155 !important;
-}
-
-/* Light Mode Tables */
-.fi-ta-header {
-    background-color: var(--primary-50) !important;
-    border-bottom: 1px solid var(--primary-200) !important;
-}
-
-.fi-ta-row:hover {
-    background-color: var(--primary-25) !important;
-}
-
-/* ===== CARTES ET SECTIONS ===== */
-
-/* Dark Mode Cards */
-.dark .fi-section {
-    background-color: #1e293b !important;
-    border: 1px solid #334155 !important;
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-}
-
-.dark .fi-wi-stats-overview-card {
-    background-color: #1e293b !important;
-    border: 1px solid #334155 !important;
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-}
-
-/* Light Mode Cards */
-.fi-section {
-    background-color: var(--white) !important;
-    border: 1px solid var(--primary-100) !important;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px 0 rgba(159, 124, 32, 0.05);
-}
-
-.fi-wi-stats-overview-card {
-    background-color: var(--white) !important;
-    border: 1px solid var(--primary-200) !important;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px 0 rgba(159, 124, 32, 0.1);
-}
-
-/* ===== BADGES ET INDICATEURS ===== */
-
-.fi-badge-primary {
-    background-color: var(--dark-goldenrod) !important;
-    color: var(--white) !important;
-}
-
-.fi-badge-danger {
-    background-color: var(--vermilion) !important;
-    color: var(--white) !important;
-}
-
-/* ===== NOTIFICATIONS ===== */
-
-/* Dark Mode Notifications */
-.dark .fi-no-success {
-    background-color: #1e3a2e !important;
-    border-color: var(--dark-goldenrod) !important;
-    color: #90ee90 !important;
-}
-
-.dark .fi-no-danger {
-    background-color: #3a1e1e !important;
-    border-color: var(--vermilion) !important;
-    color: #ffb3b3 !important;
-}
-
-/* Light Mode Notifications */
-.fi-no-success {
-    background-color: var(--primary-50) !important;
-    border-color: var(--dark-goldenrod) !important;
-    color: var(--primary-900) !important;
-}
-
-.fi-no-danger {
-    background-color: var(--secondary-50) !important;
-    border-color: var(--vermilion) !important;
-    color: var(--secondary-900) !important;
-}
-
-/* ===== TABS ===== */
-
-.fi-tabs-tab.fi-active {
-    border-bottom-color: var(--dark-goldenrod) !important;
-    color: var(--dark-goldenrod) !important;
-}
-
-.dark .fi-tabs-tab.fi-active {
-    border-bottom-color: var(--dark-goldenrod) !important;
-    color: var(--dark-goldenrod) !important;
-}
-
-/* ===== ÉLÉMENTS DE CONTRÔLE ===== */
-
-/* Progress bars */
-.fi-progress-bar {
-    background-color: var(--dark-goldenrod) !important;
-}
-
-/* Checkboxes et radios */
-.fi-checkbox:checked {
-    background-color: var(--dark-goldenrod) !important;
-    border-color: var(--dark-goldenrod) !important;
-}
-
-.fi-radio:checked {
-    background-color: var(--dark-goldenrod) !important;
-    border-color: var(--dark-goldenrod) !important;
-}
-
-/* ===== MODAL ET OVERLAY ===== */
-
-.dark .fi-modal {
-    background-color: #1e293b !important;
-}
-
-.dark .fi-modal-content {
-    background-color: #1e293b !important;
-    border: 1px solid #334155 !important;
-}
-
-/* ===== AMÉLIORATION DE LA LISIBILITÉ ===== */
-
-.dark .fi-header-heading {
-    color: #f1f5f9 !important;
-}
-
-.dark .fi-body .text-gray-500 {
-    color: #94a3b8 !important;
-}
-
-.dark .fi-body .text-gray-700 {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
+    border-bottom: 2px solid #475569 !important;
     color: #cbd5e1 !important;
 }
 
-.dark .fi-body .text-gray-900 {
-    color: #f1f5f9 !important;
+/* Lignes de tableau */
+.fi-ta-row:hover {
+    background: linear-gradient(135deg, var(--primary-25) 0%, var(--primary-50) 100%) !important;
+    transform: scale(1.001) !important;
+    transition: all 0.2s ease !important;
+}
+
+.dark .fi-ta-row:hover {
+    background: linear-gradient(135deg, #334155 0%, #475569 100%) !important;
+}
+
+/* ===== SECTIONS ET CARTES ===== */
+
+/* Sections */
+.fi-section {
+    background: var(--white) !important;
+    border: 1px solid var(--primary-200) !important;
+    border-radius: 1rem !important;
+    box-shadow: 0 4px 12px rgba(159, 124, 32, 0.08) !important;
+    transition: all 0.3s ease !important;
+}
+
+.fi-section:hover {
+    box-shadow: 0 8px 25px rgba(159, 124, 32, 0.12) !important;
+    transform: translateY(-1px) !important;
+}
+
+.dark .fi-section {
+    background: #1e293b !important;
+    border: 1px solid #334155 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Cartes de statistiques */
+.fi-wi-stats-overview-card {
+    background: linear-gradient(135deg, var(--white) 0%, var(--primary-25) 100%) !important;
+    border: 1px solid var(--primary-200) !important;
+    border-radius: 1rem !important;
+    box-shadow: 0 4px 15px rgba(159, 124, 32, 0.1) !important;
+    transition: all 0.3s ease !important;
+}
+
+.fi-wi-stats-overview-card:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 25px rgba(159, 124, 32, 0.15) !important;
+}
+
+.dark .fi-wi-stats-overview-card {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
+    border: 1px solid #475569 !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* ===== BADGES ET NOTIFICATIONS ===== */
+
+/* Badges primaires */
+.fi-badge-primary {
+    background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%) !important;
+    color: var(--white) !important;
+    font-weight: 600 !important;
+    border-radius: 0.5rem !important;
+}
+
+/* Badges de succès */
+.fi-badge-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    color: var(--white) !important;
+    font-weight: 600 !important;
+    border-radius: 0.5rem !important;
+}
+
+/* Badges de danger */
+.fi-badge-danger {
+    background: linear-gradient(135deg, var(--vermilion) 0%, var(--carmine) 100%) !important;
+    color: var(--white) !important;
+    font-weight: 600 !important;
+    border-radius: 0.5rem !important;
+}
+
+/* ===== CHAMPS DE FORMULAIRE ===== */
+
+/* Champs de saisie */
+.fi-input {
+    border: 2px solid var(--primary-200) !important;
+    border-radius: 0.5rem !important;
+    transition: all 0.3s ease !important;
+    background-color: var(--white) !important;
+}
+
+.fi-input:focus {
+    border-color: var(--dark-goldenrod) !important;
+    box-shadow: 0 0 0 3px rgba(159, 124, 32, 0.1) !important;
+    transform: translateY(-1px) !important;
+}
+
+.dark .fi-input {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    color: #e2e8f0 !important;
+}
+
+.dark .fi-input:focus {
+    border-color: var(--primary-400) !important;
+    box-shadow: 0 0 0 3px rgba(239, 178, 108, 0.2) !important;
+}
+
+/* ===== ONGLETS ===== */
+
+/* Onglets actifs */
+.fi-tabs-tab.fi-active {
+    background: linear-gradient(135deg, var(--primary-100) 0%, var(--primary-200) 100%) !important;
+    color: var(--dark-goldenrod) !important;
+    border-bottom: 3px solid var(--dark-goldenrod) !important;
+    font-weight: 600 !important;
+}
+
+.dark .fi-tabs-tab.fi-active {
+    background: linear-gradient(135deg, #334155 0%, #475569 100%) !important;
+    color: var(--primary-300) !important;
+    border-bottom: 3px solid var(--primary-300) !important;
+}
+
+/* ===== ANIMATIONS ET TRANSITIONS ===== */
+
+/* Animation pour les éléments qui apparaissent */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fi-card,
+.fi-section,
+.fi-wi-stats-overview-card {
+    animation: fadeInUp 0.4s ease-out !important;
+}
+
+/* ===== RESPONSIVE ===== */
+
+@media (max-width: 768px) {
+    .fi-sidebar {
+        transform: translateX(-100%) !important;
+        transition: transform 0.3s ease !important;
+    }
+    
+    .fi-sidebar.open {
+        transform: translateX(0) !important;
+    }
+}
+
+/* ===== AMÉLIORATIONS UX ===== */
+
+/* Indicateur de chargement */
+.fi-loading {
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.fi-loading::after {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: -100% !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: linear-gradient(90deg, transparent, rgba(159, 124, 32, 0.2), transparent) !important;
+    animation: loading 1.5s infinite !important;
+}
+
+@keyframes loading {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* États vides améliorés */
+.fi-ta-empty-state {
+    padding: 3rem !important;
+    text-align: center !important;
+    color: var(--primary-600) !important;
+}
+
+.dark .fi-ta-empty-state {
+    color: var(--primary-400) !important;
 } 

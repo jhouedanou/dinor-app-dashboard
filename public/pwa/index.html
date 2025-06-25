@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dinor - Dashboard Culinaire</title>
+    <title>Dinor App</title>
     
     <!-- PWA Meta -->
     <meta name="description" content="Application de recettes, astuces et événements culinaires">
-    <meta name="theme-color" content="#f59e0b">
+    <meta name="theme-color" content="#E1251B">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -37,7 +37,7 @@
             -webkit-font-smoothing: antialiased;
         }
         
-        /* Material Design 3 CSS Variables */
+        /* Variables de base - La palette complète est dans dinor-color-palette.css */
         :root {
             --md-sys-color-surface: #fefbff;
             --md-sys-color-on-surface: #1c1b1f;
@@ -69,7 +69,7 @@
             width: 40px;
             height: 40px;
             border: 4px solid #f3f4f6;
-            border-top: 4px solid #f59e0b;
+            border-top: 4px solid var(--dinor-red, #E1251B);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -80,9 +80,12 @@
     </style>
     
     <!-- Styles SCSS compilés -->
+    <link rel="stylesheet" href="styles/dinor-color-palette.css">
+    <link rel="stylesheet" href="styles/md3-single-pages.css">
     <link rel="stylesheet" href="styles/main.css">
     <link rel="stylesheet" href="styles/bottom-navigation.css">
     <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/dinor-tv-player.css">
 </head>
 <body>
     <div id="app">
@@ -103,6 +106,23 @@
     
     <!-- Bottom Navigation Component -->
     <script src="components/navigation/BottomNavigation.js"></script>
+    
+    <!-- DinorTV Component -->
+    <script src="components/DinorTV.js"></script>
+    
+    <!-- Recipe Component -->
+    <script src="components/Recipe.js"></script>
+    
+    <!-- Event Component -->
+    <script src="components/Event.js"></script>
+    
+    <!-- List Components -->
+    <script src="components/RecipesList.js"></script>
+    <script src="components/EventsList.js"></script>
+    <script src="components/PagesList.js"></script>
+    
+    <!-- Tip Component -->
+    <script src="components/Tip.js"></script>
     
     <!-- App principal -->
     <script src="app.js"></script>
