@@ -149,15 +149,25 @@ log_success "Caches Laravel nettoyés"
 # 10. Installation complète des dépendances NPM
 log_info "📦 Installation des dépendances NPM..."
 
-# Corriger les permissions avant suppression
+# Correction complète des permissions NPM (y compris fichiers cachés)
+log_info "🔐 Correction des permissions NPM (fichiers cachés inclus)..."
 chown -R forge:forge node_modules/ 2>/dev/null || true
 chown -R forge:forge package-lock.json 2>/dev/null || true
+chown -R forge:forge .npm/ 2>/dev/null || true
+# Correction spécifique pour les fichiers cachés dans node_modules
+find node_modules/ -name ".*" -exec chown forge:forge {} \; 2>/dev/null || true
+find node_modules/ -name ".*" -exec chmod 755 {} \; 2>/dev/null || true
 chmod -R 755 node_modules/ 2>/dev/null || true
 
-# Suppression avec permissions corrigées
-rm -rf node_modules/ package-lock.json 2>/dev/null || true
+# Suppression complète avec permissions corrigées (y compris fichiers cachés)
+log_info "🗑️ Suppression complète node_modules et lock files..."
+rm -rf node_modules/ 2>/dev/null || true
+rm -f package-lock.json 2>/dev/null || true
+rm -f .package-lock.json 2>/dev/null || true
+rm -rf .npm/ 2>/dev/null || true
 
 # Installation NPM avec gestion d'erreurs améliorée
+log_info "🚀 Tentative d'installation NPM..."
 if npm install --no-fund --no-audit; then
     log_success "Dépendances NPM installées avec succès"
 elif npm ci --no-fund --no-audit 2>/dev/null; then
@@ -165,8 +175,16 @@ elif npm ci --no-fund --no-audit 2>/dev/null; then
 elif npm install --force --no-fund --no-audit; then
     log_warning "Dépendances NPM installées avec --force"
 else
-    log_error "Échec de l'installation NPM"
-    # Continuer quand même pour ne pas bloquer le déploiement
+    log_warning "Échec NPM standard, tentative avec sudo..."
+    # Méthode de dernier recours avec sudo
+    sudo rm -rf node_modules/ package-lock.json .package-lock.json 2>/dev/null || true
+    if sudo npm install --no-fund --no-audit; then
+        log_warning "Dépendances NPM installées avec sudo (permissions corrigées ensuite)"
+        # Corriger les permissions après installation sudo
+        sudo chown -R forge:forge node_modules/ package-lock.json 2>/dev/null || true
+    else
+        log_error "Échec complet de l'installation NPM - continue sans node_modules"
+    fi
 fi
 
 # Vérifier et corriger les permissions finales
