@@ -10,11 +10,12 @@ class EventController extends Controller
 {
     public function index(Request $request)
     {
-        // Version de diagnostic sans filtres restrictifs
         $query = Event::with('category')
+            ->where('is_published', true)
+            ->where('status', 'active')
             ->orderBy('start_date', 'asc');
 
-        // Filtres optionnels seulement
+        // Filtres optionnels
         if ($request->has('category_id')) {
             $query->where('category_id', $request->category_id);
         }
@@ -27,12 +28,9 @@ class EventController extends Controller
             $query->where('is_featured', true);
         }
 
-        if ($request->has('published_only')) {
-            $query->where('is_published', true);
-        }
-
-        if ($request->has('active_only')) {
-            $query->where('status', 'active');
+        // Option pour inclure le contenu non publié (pour debug admin)
+        if ($request->has('include_unpublished')) {
+            $query = Event::with('category')->orderBy('start_date', 'asc');
         }
 
         if ($request->has('location')) {

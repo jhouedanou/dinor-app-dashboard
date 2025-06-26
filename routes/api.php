@@ -12,7 +12,8 @@ use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BannerController;
-use App\Http\Controllers\PWA\CacheController;
+use App\Http\Controllers\Api\CacheController;
+use App\Http\Controllers\PWA\CacheController as PWACacheController;
 
 /*
 |--------------------------------------------------------------------------
@@ -102,6 +103,10 @@ Route::prefix('v1')->group(function () {
             ]
         ]);
     });
+
+    // Cache management
+    Route::post('/cache/invalidate', [CacheController::class, 'invalidate']);
+    Route::post('/cache/clear', [CacheController::class, 'clear']);
 
     // Statistiques détaillées des likes par catégorie
     Route::get('/likes/stats', function() {

@@ -64,6 +64,15 @@ class ApiService {
     }
   }
 
+  // Clear cache manually
+  clearCache() {
+    this.cache.clear()
+    // Also clear service worker cache if available
+    if ('serviceWorker' in navigator && 'caches' in window) {
+      caches.delete('api-cache')
+    }
+  }
+
   // Recipes
   async getRecipes(params = {}) {
     const queryString = new URLSearchParams(params).toString()
