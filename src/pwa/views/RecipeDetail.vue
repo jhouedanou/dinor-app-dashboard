@@ -202,7 +202,7 @@ export default {
 
     const toggleLike = async () => {
       try {
-        const data = await request('/likes/toggle', {
+        const data = await apiStore.request('/likes/toggle', {
           method: 'POST',
           body: {
             likeable_type: 'recipe',
@@ -224,7 +224,7 @@ export default {
       if (!newComment.value.trim()) return
       
       try {
-        const data = await request('/comments', {
+        const data = await apiStore.request('/comments', {
           method: 'POST',
           body: {
             type: 'recipe',

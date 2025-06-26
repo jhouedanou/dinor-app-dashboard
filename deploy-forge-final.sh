@@ -148,13 +148,30 @@ log_success "Caches Laravel nettoyés"
 
 # 10. Installation complète des dépendances NPM
 log_info "📦 Installation des dépendances NPM..."
+
+# Corriger les permissions avant suppression
+chown -R forge:forge node_modules/ 2>/dev/null || true
+chown -R forge:forge package-lock.json 2>/dev/null || true
+chmod -R 755 node_modules/ 2>/dev/null || true
+
+# Suppression avec permissions corrigées
 rm -rf node_modules/ package-lock.json 2>/dev/null || true
-npm install
-if [ $? -ne 0 ]; then
-    log_warning "Problème avec npm install, tentative avec npm ci..."
-    npm ci 2>/dev/null || npm install --force
+
+# Installation NPM avec gestion d'erreurs améliorée
+if npm install --no-fund --no-audit; then
+    log_success "Dépendances NPM installées avec succès"
+elif npm ci --no-fund --no-audit 2>/dev/null; then
+    log_success "Dépendances NPM installées avec npm ci"
+elif npm install --force --no-fund --no-audit; then
+    log_warning "Dépendances NPM installées avec --force"
+else
+    log_error "Échec de l'installation NPM"
+    # Continuer quand même pour ne pas bloquer le déploiement
 fi
-log_success "Dépendances NPM installées"
+
+# Vérifier et corriger les permissions finales
+chown -R forge:forge node_modules/ 2>/dev/null || true
+chmod -R 755 node_modules/ 2>/dev/null || true
 
 # 11. Build des assets de production
 log_info "🏗️ Build des assets de production..."
