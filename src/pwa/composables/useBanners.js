@@ -14,7 +14,7 @@ export function useBanners() {
     
     try {
       const params = position ? { position } : {}
-      const data = await request('/api/v1/banners', { params })
+      const data = await request('/banners', { params })
       
       if (data.success) {
         banners.value = data.data
@@ -31,7 +31,7 @@ export function useBanners() {
 
   const getBanner = async (id) => {
     try {
-      const data = await request(`/api/v1/banners/${id}`)
+      const data = await request(`/banners/${id}`)
       
       if (data.success) {
         return data.data

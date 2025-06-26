@@ -35,7 +35,7 @@ export default {
     const loadWebPageSettings = async () => {
       try {
         // Chercher une page avec un slug spécial 'web-link' ou similaire
-        const data = await request('/api/v1/pages?slug=web-embed')
+        const data = await request('/pages?slug=web-embed')
         if (data.success && data.data.length > 0) {
           const webPage = data.data[0]
           webPageUrl.value = webPage.embed_url || webPage.content || ''
@@ -57,7 +57,7 @@ export default {
     
     const loadNavItems = async () => {
       try {
-        const data = await request('/api/v1/pwa-menu-items')
+        const data = await request('/pwa-menu-items')
         if (data.success) {
           navItems.value = data.data.map(item => {
             const navItem = {
