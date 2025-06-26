@@ -58,6 +58,20 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->spa()
             ->darkMode()
+            ->resources([
+                \App\Filament\Resources\RecipeResource::class,
+                \App\Filament\Resources\CategoryResource::class,
+                \App\Filament\Resources\TipResource::class,
+                \App\Filament\Resources\EventResource::class,
+                \App\Filament\Resources\PageResource::class,
+                \App\Filament\Resources\DinorTvResource::class,
+                \App\Filament\Resources\UserResource::class,
+                \App\Filament\Resources\IngredientResource::class,
+                \App\Filament\Resources\MediaFileResource::class,
+                \App\Filament\Resources\LikeResource::class,
+                \App\Filament\Resources\CommentResource::class,
+                \App\Filament\Resources\PwaMenuItemResource::class,
+            ])
             ->discoverResources(app_path('Filament/Resources'), 'App\\Filament\\Resources')
             ->discoverPages(app_path('Filament/Pages'), 'App\\Filament\\Pages')
             ->pages([
@@ -85,9 +99,10 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->navigationGroups([
                 'Contenu',
-                'Administration',
+                'Administration', 
                 'Interactions',
                 'Gestion',
+                'Configuration PWA',
             ])
             ->databaseNotifications()
             ->viteTheme('resources/css/filament/admin/theme.css');

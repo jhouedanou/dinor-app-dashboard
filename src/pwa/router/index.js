@@ -16,6 +16,10 @@ const routes = [
     meta: { title: 'Accueil' }
   },
   {
+    path: '/home',
+    redirect: '/'
+  },
+  {
     path: '/recipes',
     name: 'recipes',
     component: RecipesList,
