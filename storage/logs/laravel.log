@@ -2116,3 +2116,46 @@ LINE 1: select count(*) as aggregate from \"\" where \"id\" = $1
 #76 /var/www/html/public/index.php(36): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
 #77 {main}
 "} 
+[2025-06-26 17:47:57] laravel.EMERGENCY: Unable to create configured logger. Using emergency logger. {"exception":"[object] (InvalidArgumentException(code: 0): Log [] is not defined. at /home/bigfiver/Documents/GitHub/dinor-app-dashboard/vendor/laravel/framework/src/Illuminate/Log/LogManager.php:212)
+[stacktrace]
+#0 /home/bigfiver/Documents/GitHub/dinor-app-dashboard/vendor/laravel/framework/src/Illuminate/Log/LogManager.php(137): Illuminate\\Log\\LogManager->resolve()
+#1 /home/bigfiver/Documents/GitHub/dinor-app-dashboard/vendor/laravel/framework/src/Illuminate/Log/LogManager.php(124): Illuminate\\Log\\LogManager->get()
+#2 /home/bigfiver/Documents/GitHub/dinor-app-dashboard/vendor/laravel/framework/src/Illuminate/Log/LogManager.php(681): Illuminate\\Log\\LogManager->driver()
+#3 /home/bigfiver/Documents/GitHub/dinor-app-dashboard/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(317): Illuminate\\Log\\LogManager->error()
+#4 /home/bigfiver/Documents/GitHub/dinor-app-dashboard/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(278): Illuminate\\Foundation\\Exceptions\\Handler->reportThrowable()
+#5 /home/bigfiver/Documents/GitHub/dinor-app-dashboard/vendor/nunomaduro/collision/src/Adapters/Laravel/ExceptionHandler.php(46): Illuminate\\Foundation\\Exceptions\\Handler->report()
+#6 /home/bigfiver/Documents/GitHub/dinor-app-dashboard/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(523): NunoMaduro\\Collision\\Adapters\\Laravel\\ExceptionHandler->report()
+#7 /home/bigfiver/Documents/GitHub/dinor-app-dashboard/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(203): Illuminate\\Foundation\\Console\\Kernel->reportException()
+#8 /home/bigfiver/Documents/GitHub/dinor-app-dashboard/artisan(24): Illuminate\\Foundation\\Console\\Kernel->handle()
+#9 {main}
+"} 
+[2025-06-26 17:47:57] laravel.ERROR: Command "filament:list-resources" is not defined.
+
+Did you mean one of these?
+    filament:about
+    filament:assets
+    filament:cache-components
+    filament:check-translations
+    filament:clear-cached-components
+    filament:install
+    filament:optimize
+    filament:optimize-clear
+    filament:upgrade {"exception":"[object] (Symfony\\Component\\Console\\Exception\\CommandNotFoundException(code: 0): Command \"filament:list-resources\" is not defined.
+
+Did you mean one of these?
+    filament:about
+    filament:assets
+    filament:cache-components
+    filament:check-translations
+    filament:clear-cached-components
+    filament:install
+    filament:optimize
+    filament:optimize-clear
+    filament:upgrade at /home/bigfiver/Documents/GitHub/dinor-app-dashboard/vendor/symfony/console/Application.php:737)
+[stacktrace]
+#0 /home/bigfiver/Documents/GitHub/dinor-app-dashboard/vendor/symfony/console/Application.php(266): Symfony\\Component\\Console\\Application->find()
+#1 /home/bigfiver/Documents/GitHub/dinor-app-dashboard/vendor/symfony/console/Application.php(175): Symfony\\Component\\Console\\Application->doRun()
+#2 /home/bigfiver/Documents/GitHub/dinor-app-dashboard/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(201): Symfony\\Component\\Console\\Application->run()
+#3 /home/bigfiver/Documents/GitHub/dinor-app-dashboard/artisan(24): Illuminate\\Foundation\\Console\\Kernel->handle()
+#4 {main}
+"} 

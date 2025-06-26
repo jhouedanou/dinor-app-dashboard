@@ -95,6 +95,7 @@ export default defineConfig({
     })
   ],
   root: 'src/pwa',
+  base: '/pwa/dist/',
   build: {
     outDir: '../../public/pwa/dist',
     emptyOutDir: true,

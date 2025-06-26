@@ -22,6 +22,9 @@ class DatabaseSeeder extends Seeder
             AdminUserSeeder::class,
             UserSeeder::class,
             CategorySeeder::class,
+            PwaMenuItemSeeder::class,
+            EventCategoriesSeeder::class,
+            IngredientsSeeder::class,
             ProductionDataSeeder::class,
         ]);
 
