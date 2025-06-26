@@ -7,8 +7,9 @@
         "watch": "vite --watch",
         "scss:compile": "sass public/pwa/styles/main.scss:public/pwa/styles/main.css public/pwa/styles/bottom-navigation.scss:public/pwa/styles/bottom-navigation.css public/pwa/styles/components.scss:public/pwa/styles/components.css --style=compressed",
         "scss:watch": "sass --watch public/pwa/styles/:public/pwa/styles/ --style=compressed",
-        "pwa:dev": "concurrently \"npm run dev\" \"npm run scss:watch\"",
-        "pwa:build": "npm run scss:compile && vite build --mode production && npm run sw:generate",
+        "pwa:dev": "vite --config vite.pwa.config.js",
+        "pwa:build": "vite build --config vite.pwa.config.js --mode production",
+        "pwa:preview": "vite preview --config vite.pwa.config.js",
         "sw:generate": "workbox generateSW workbox-config.js"
     },
     "devDependencies": {
@@ -29,6 +30,10 @@
     "dependencies": {
         "alpinejs": "^3.4.2",
         "vue": "^3.4.0",
-        "vue-router": "^4.2.5"
+        "vue-router": "^4.2.5",
+        "@vitejs/plugin-vue": "^4.5.0",
+        "@vueuse/core": "^10.5.0",
+        "pinia": "^2.1.7",
+        "vite-plugin-pwa": "^0.17.0"
     }
 } 

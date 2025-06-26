@@ -152,9 +152,17 @@ log_success "Dépendances NPM installées"
 
 # 11. Build des assets de production
 log_info "🏗️ Build des assets de production..."
+# Build Laravel assets
 npx vite build || npm run build || npm run production
 if [ $? -ne 0 ]; then
-    log_warning "Build des assets échoué, mais continue..."
+    log_warning "Build Laravel assets échoué, mais continue..."
+fi
+
+# Build PWA Vue.js
+log_info "🏗️ Build PWA Vue.js..."
+npm run pwa:build
+if [ $? -ne 0 ]; then
+    log_warning "Build PWA échoué, mais continue..."
 fi
 log_success "Assets buildés"
 
