@@ -30,6 +30,13 @@ if [ ! -f "package.json" ]; then
     exit 1
 fi
 
+# Détecter si on est root et corriger immédiatement
+if [ "$EUID" -eq 0 ]; then
+    log_warning "Script exécuté en tant que ROOT - correction des permissions globales..."
+    chown -R forge:forge /home/forge/new.dinorapp.com/
+    chmod -R 755 /home/forge/new.dinorapp.com/
+fi
+
 # 1. Diagnostic complet
 log_info "🔍 Diagnostic des permissions bloquées..."
 if [ -f "node_modules/.package-lock.json" ]; then
@@ -47,6 +54,12 @@ sleep 3
 log_info "☢️  Méthode nucléaire: isolation du dossier problématique..."
 
 if [ -d "node_modules" ]; then
+    # Correction forcée des permissions avant isolation
+    if [ "$EUID" -eq 0 ]; then
+        chown -R root:root node_modules/ 2>/dev/null || true
+        chmod -R 777 node_modules/ 2>/dev/null || true
+    fi
+    
     # Renommer node_modules pour l'isoler
     TIMESTAMP=$(date +%s)
     mv node_modules "node_modules_broken_$TIMESTAMP" 2>/dev/null || true
@@ -54,9 +67,13 @@ if [ -d "node_modules" ]; then
     if [ -d "node_modules_broken_$TIMESTAMP" ]; then
         log_success "Dossier problématique isolé: node_modules_broken_$TIMESTAMP"
         
-        # Tentative de suppression en arrière-plan (sans bloquer)
-        log_info "🧹 Suppression en arrière-plan du dossier isolé..."
-        (rm -rf "node_modules_broken_$TIMESTAMP" 2>/dev/null &) || true
+        # Tentative de suppression agressive en arrière-plan
+        log_info "🧹 Suppression agressive en arrière-plan..."
+        if [ "$EUID" -eq 0 ]; then
+            (chmod -R 777 "node_modules_broken_$TIMESTAMP" && rm -rf "node_modules_broken_$TIMESTAMP" 2>/dev/null &) || true
+        else
+            (rm -rf "node_modules_broken_$TIMESTAMP" 2>/dev/null &) || true
+        fi
     fi
 fi
 
@@ -94,8 +111,13 @@ if npm install --no-fund --no-audit --production=false; then
         mv "$TEMP_DIR/node_modules" . || cp -r "$TEMP_DIR/node_modules" .
         
         # Corriger les permissions du nouveau node_modules
-        chown -R forge:forge node_modules/ 2>/dev/null || true
-        chmod -R 755 node_modules/ 2>/dev/null || true
+        if [ "$EUID" -eq 0 ]; then
+            chown -R forge:forge node_modules/ 2>/dev/null || true
+            chmod -R 755 node_modules/ 2>/dev/null || true
+        else
+            chown -R forge:forge node_modules/ 2>/dev/null || true
+            chmod -R 755 node_modules/ 2>/dev/null || true
+        fi
         
         log_success "node_modules propre installé"
     fi
@@ -103,7 +125,9 @@ if npm install --no-fund --no-audit --production=false; then
     # Copier le package-lock.json si créé
     if [ -f "$TEMP_DIR/package-lock.json" ]; then
         cp "$TEMP_DIR/package-lock.json" . 2>/dev/null || true
-        chown forge:forge package-lock.json 2>/dev/null || true
+        if [ "$EUID" -eq 0 ]; then
+            chown forge:forge package-lock.json 2>/dev/null || true
+        fi
     fi
     
 else
@@ -114,7 +138,10 @@ else
     log_info "🆘 Plan B: structure minimale manuelle..."
     mkdir -p node_modules/.bin
     echo '{}' > package-lock.json
-    chown -R forge:forge node_modules/ package-lock.json 2>/dev/null || true
+    if [ "$EUID" -eq 0 ]; then
+        chown -R forge:forge node_modules/ package-lock.json 2>/dev/null || true
+        chmod -R 755 node_modules/ 2>/dev/null || true
+    fi
 fi
 
 # Nettoyage du répertoire temporaire
@@ -133,6 +160,9 @@ if [ -d "node_modules" ]; then
     else
         log_warning "Permissions d'écriture limitées"
     fi
+    
+    # Afficher les permissions finales
+    echo "   Propriétaire final: $(stat -c '%U:%G' node_modules/ 2>/dev/null || echo 'inconnu')"
 else
     log_error "Échec de la création de node_modules"
 fi
@@ -146,6 +176,14 @@ pkill -f "npm" 2>/dev/null || true
 # Nettoyer le cache NPM utilisateur
 npm cache clean --force 2>/dev/null || true
 rm -rf ~/.npm/_cacache 2>/dev/null || true
+rm -rf /home/forge/.npm/_cacache 2>/dev/null || true
+
+# Correction finale des permissions si root
+if [ "$EUID" -eq 0 ]; then
+    log_info "🔐 Correction finale des permissions (root vers forge)..."
+    chown -R forge:forge /home/forge/new.dinorapp.com/
+    chmod -R 755 /home/forge/new.dinorapp.com/
+fi
 
 echo ""
 log_success "☢️  Correctif nucléaire terminé!"
@@ -154,12 +192,16 @@ echo "📋 Actions effectuées:"
 echo "   ✅ Isolation du dossier problématique"
 echo "   ✅ Installation dans un environnement propre"
 echo "   ✅ Transfert du node_modules fonctionnel"
-echo "   ✅ Correction des permissions"
+echo "   ✅ Correction des permissions (root → forge)"
 echo ""
 echo "🧪 Tests recommandés:"
 echo "   1. npm ls (vérifier les dépendances)"
 echo "   2. npm run build (tester le build)"
 echo "   3. ls -la node_modules/ (vérifier les permissions)"
+echo ""
+echo "⚠️  Si vous êtes connecté en root, passez à l'utilisateur forge:"
+echo "   su - forge"
+echo "   cd /home/forge/new.dinorapp.com"
 echo ""
 echo "🗑️ Nettoyage manuel si nécessaire:"
 echo "   rm -rf node_modules_broken_* (supprimer les dossiers isolés)"
