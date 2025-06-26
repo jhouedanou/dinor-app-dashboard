@@ -91,7 +91,7 @@
           <!-- Instructions -->
           <div v-if="recipe.instructions" class="recipe-instructions">
             <h2 class="md3-title-medium dinor-text-primary">Instructions</h2>
-            <div class="md3-body-large dinor-text-gray" v-html="recipe.instructions"></div>
+            <div class="md3-body-large dinor-text-gray" v-html="formatInstructions(recipe.instructions)"></div>
           </div>
 
           <!-- Comments Section -->
@@ -277,6 +277,33 @@ export default {
       event.target.src = '/images/default-recipe.jpg'
     }
 
+    const formatInstructions = (instructions) => {
+      if (!instructions) return ''
+      
+      // Si c'est déjà une chaîne, la retourner
+      if (typeof instructions === 'string') return instructions
+      
+      // Si c'est un array d'objets, les formater
+      if (Array.isArray(instructions)) {
+        return instructions.map((instruction, index) => {
+          if (typeof instruction === 'object' && instruction.step) {
+            return `<div class="instruction-step">
+              <h4>Étape ${index + 1}</h4>
+              <p>${instruction.step}</p>
+            </div>`
+          } else if (typeof instruction === 'string') {
+            return `<div class="instruction-step">
+              <h4>Étape ${index + 1}</h4>
+              <p>${instruction}</p>
+            </div>`
+          }
+          return `<div class="instruction-step"><p>${instruction}</p></div>`
+        }).join('')
+      }
+      
+      return instructions.toString()
+    }
+
     onMounted(() => {
       loadRecipe()
     })
@@ -293,7 +320,8 @@ export default {
       goBack,
       getDifficultyLabel,
       formatDate,
-      handleImageError
+      handleImageError,
+      formatInstructions
     }
   }
 }

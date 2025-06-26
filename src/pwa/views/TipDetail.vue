@@ -71,7 +71,7 @@
           <!-- Content -->
           <div class="tip-content-text">
             <h2 class="md3-title-medium dinor-text-primary">Astuce</h2>
-            <div class="md3-body-large dinor-text-gray" v-html="tip.content"></div>
+            <div class="md3-body-large dinor-text-gray" v-html="formatContent(tip.content)"></div>
           </div>
 
           <!-- Tags -->
@@ -123,7 +123,10 @@
         </div>
         <h2 class="md3-title-large">Astuce introuvable</h2>
         <p class="md3-body-large dinor-text-gray">L'astuce demandée n'existe pas ou a été supprimée.</p>
-        <button @click="goBack" class="btn-primary">Retour</button>
+        <div class="error-actions">
+          <button @click="goBack" class="btn-secondary">Retour aux astuces</button>
+          <button @click="goHome" class="btn-primary">Accueil</button>
+        </div>
       </div>
     </main>
   </div>
@@ -132,7 +135,7 @@
 <script>
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useApi } from '@/composables/useApi'
+import { useApiStore } from '@/stores/api'
 
 export default {
   name: 'TipDetail',
@@ -145,7 +148,7 @@ export default {
   setup(props) {
     const router = useRouter()
     const route = useRoute()
-    const { request } = useApi()
+    const apiStore = useApiStore()
     
     const tip = ref(null)
     const comments = ref([])
@@ -155,7 +158,7 @@ export default {
 
     const loadTip = async () => {
       try {
-        const data = await request(`/api/v1/tips/${props.id}`)
+        const data = await apiStore.get(`/tips/${props.id}`)
         if (data.success) {
           tip.value = data.data
           await loadComments()
@@ -170,7 +173,7 @@ export default {
 
     const loadComments = async () => {
       try {
-        const data = await request(`/api/v1/comments?type=tip&id=${props.id}`)
+        const data = await apiStore.get(`/comments`, { type: 'tip', id: props.id })
         if (data.success) {
           comments.value = data.data
         }
@@ -181,7 +184,7 @@ export default {
 
     const checkUserLike = async () => {
       try {
-        const data = await request(`/api/v1/likes/check?type=tip&id=${props.id}`)
+        const data = await apiStore.get(`/likes/check`, { type: 'tip', id: props.id })
         userLiked.value = data.success && data.data.liked
       } catch (error) {
         console.error('Erreur lors de la vérification du like:', error)
@@ -190,12 +193,9 @@ export default {
 
     const toggleLike = async () => {
       try {
-        const data = await request('/api/v1/likes/toggle', {
-          method: 'POST',
-          body: {
-            likeable_type: 'tip',
-            likeable_id: props.id
-          }
+        const data = await apiStore.post('/likes/toggle', {
+          likeable_type: 'tip',
+          likeable_id: props.id
         })
         if (data.success) {
           userLiked.value = !userLiked.value
@@ -212,14 +212,11 @@ export default {
       if (!newComment.value.trim()) return
       
       try {
-        const data = await request('/api/v1/comments', {
-          method: 'POST',
-          body: {
-            type: 'tip',
-            id: props.id,
-            content: newComment.value,
-            author_name: 'Utilisateur'
-          }
+        const data = await apiStore.post('/comments', {
+          type: 'tip',
+          id: props.id,
+          content: newComment.value,
+          author_name: 'Utilisateur'
         })
         if (data.success) {
           await loadComments()
@@ -247,6 +244,10 @@ export default {
       router.push('/tips')
     }
 
+    const goHome = () => {
+      router.push('/')
+    }
+
     const getDifficultyLabel = (level) => {
       const labels = {
         'beginner': 'Débutant',
@@ -264,6 +265,32 @@ export default {
       event.target.src = '/images/default-recipe.jpg'
     }
 
+    const formatContent = (content) => {
+      if (!content) return ''
+      
+      // Si c'est déjà une chaîne, la retourner
+      if (typeof content === 'string') return content
+      
+      // Si c'est un array d'objets, les formater
+      if (Array.isArray(content)) {
+        return content.map((item, index) => {
+          if (typeof item === 'object' && item.step) {
+            return `<div class="content-step">
+              <h4>Étape ${index + 1}</h4>
+              <p>${item.step}</p>
+            </div>`
+          } else if (typeof item === 'string') {
+            return `<div class="content-step">
+              <p>${item}</p>
+            </div>`
+          }
+          return `<div class="content-step"><p>${item}</p></div>`
+        }).join('')
+      }
+      
+      return content.toString()
+    }
+
     onMounted(() => {
       loadTip()
     })
@@ -278,9 +305,11 @@ export default {
       addComment,
       shareTip,
       goBack,
+      goHome,
       getDifficultyLabel,
       formatDate,
-      handleImageError
+      handleImageError,
+      formatContent
     }
   }
 }
