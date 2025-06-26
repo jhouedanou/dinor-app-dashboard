@@ -52,6 +52,9 @@ Route::prefix('v1')->group(function () {
     
     // PWA Menu Items
     Route::get('/pwa-menu-items', [PwaMenuItemController::class, 'index']);
+    
+    // Pages
+    Route::get('/pages', [PageController::class, 'index']);
     Route::get('/banners/{id}', [BannerController::class, 'show']);
     
     // Catégories
