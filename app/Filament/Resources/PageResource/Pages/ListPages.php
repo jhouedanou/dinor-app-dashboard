@@ -12,12 +12,8 @@ class ListPages extends ListRecords
 
     public function mount(): void
     {
-        // Rediriger directement vers la création d'une page si aucune page n'existe
-        $pagesCount = PageResource::getModel()::count();
-        
-        if ($pagesCount === 0) {
-            redirect()->to(PageResource::getUrl('create'));
-        }
+        // Plus de redirection automatique car on utilise maintenant un modal de création
+        parent::mount();
     }
 
     protected function getHeaderActions(): array
