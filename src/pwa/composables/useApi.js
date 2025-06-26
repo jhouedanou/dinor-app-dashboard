@@ -5,6 +5,7 @@ export function useApi() {
   const apiStore = useApiStore()
   
   return {
+    request: apiStore.request,
     get: apiStore.get,
     post: apiStore.post,
     put: apiStore.put,

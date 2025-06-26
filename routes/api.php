@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\CacheController;
 use App\Http\Controllers\PWA\CacheController as PWACacheController;
+use App\Http\Controllers\PWA\PwaMenuItemController;
 
 /*
 |--------------------------------------------------------------------------
@@ -48,6 +49,9 @@ Route::prefix('v1')->group(function () {
     
     // Bannières
     Route::get('/banners', [BannerController::class, 'index']);
+    
+    // PWA Menu Items
+    Route::get('/pwa-menu-items', [PwaMenuItemController::class, 'index']);
     Route::get('/banners/{id}', [BannerController::class, 'show']);
     
     // Catégories
