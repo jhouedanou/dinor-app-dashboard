@@ -1,28 +1,51 @@
 <template>
   <div class="home">
-    <!-- Hero Section -->
-    <section class="hero">
+    <!-- Bannière dynamique avec overlay -->
+    <section 
+      v-for="banner in banners" 
+      :key="banner.id"
+      class="hero banner" 
+      :style="{
+        backgroundColor: banner.background_color,
+        backgroundImage: banner.image_url ? `url(${banner.image_url})` : null,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }"
+    >
+      <!-- Overlay pour améliorer la lisibilité du texte -->
+      <div 
+        v-if="banner.image_url" 
+        class="banner-overlay"
+        :style="{
+          background: `linear-gradient(135deg, ${banner.background_color}CC, ${banner.background_color}88)`
+        }"
+      ></div>
+      
+      <!-- Contenu avec overlay -->
+      <div class="hero-content" :style="{ color: banner.text_color }">
+        <h1 class="banner-title">{{ banner.title }}</h1>
+        <p v-if="banner.description" class="banner-description">{{ banner.description }}</p>
+        <router-link 
+          v-if="banner.button_text && banner.button_url"
+          :to="banner.button_url"
+          class="hero-button"
+          :style="{
+            backgroundColor: banner.button_color,
+            color: getContrastColor(banner.button_color),
+            borderColor: banner.button_color
+          }"
+        >
+          {{ banner.button_text }}
+        </router-link>
+      </div>
+    </section>
+
+    <!-- Bannière par défaut si aucune bannière configurée -->
+    <section v-if="!banners.length && !loadingBanners" class="hero">
       <div class="hero-content">
         <h1>Bienvenue sur Dinor</h1>
         <p>Découvrez les saveurs authentiques de la Côte d'Ivoire</p>
-        <div class="hero-stats">
-          <div class="stat">
-            <span class="stat-number">{{ stats.recipes }}</span>
-            <span class="stat-label">Recettes</span>
-          </div>
-          <div class="stat">
-            <span class="stat-number">{{ stats.tips }}</span>
-            <span class="stat-label">Astuces</span>
-          </div>
-          <div class="stat">
-            <span class="stat-number">{{ stats.events }}</span>
-            <span class="stat-label">Événements</span>
-          </div>
-          <div class="stat">
-            <span class="stat-number">{{ stats.videos }}</span>
-            <span class="stat-label">Vidéos</span>
-          </div>
-        </div>
       </div>
     </section>
 
@@ -195,6 +218,7 @@ import { useRecipes } from '@/composables/useRecipes'
 import { useTips } from '@/composables/useTips'
 import { useEvents } from '@/composables/useEvents'
 import { useDinorTV } from '@/composables/useDinorTV'
+import { useBanners } from '@/composables/useBanners'
 import ContentCarousel from '@/components/common/ContentCarousel.vue'
 
 export default {
@@ -204,6 +228,13 @@ export default {
   },
   setup() {
     const router = useRouter()
+    
+    // Composable pour les bannières
+    const {
+      banners,
+      loading: loadingBanners,
+      error: errorBanners
+    } = useBanners()
     
     // Composables optimisés pour récupérer les 4 derniers items de chaque type
     const { 
@@ -332,7 +363,26 @@ export default {
       return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
     }
     
+    // Fonction pour calculer la couleur de contraste pour les boutons
+    const getContrastColor = (hexColor) => {
+      // Convertir hex en RGB
+      const r = parseInt(hexColor.slice(1, 3), 16)
+      const g = parseInt(hexColor.slice(3, 5), 16)
+      const b = parseInt(hexColor.slice(5, 7), 16)
+      
+      // Calculer la luminance
+      const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+      
+      // Retourner noir ou blanc selon la luminance
+      return luminance > 0.5 ? '#000000' : '#FFFFFF'
+    }
+    
     return {
+      // Bannières
+      banners,
+      loadingBanners,
+      errorBanners,
+      
       // Données
       latestRecipes,
       latestTips,
@@ -365,7 +415,8 @@ export default {
       getStatusLabel,
       formatDate,
       getVideoThumbnail,
-      formatDuration
+      formatDuration,
+      getContrastColor
     }
   }
 }
@@ -382,6 +433,30 @@ export default {
   background: linear-gradient(135deg, var(--md-sys-color-primary-container, #eaddff) 0%, var(--md-sys-color-tertiary-container, #ffd8e4) 100%);
   padding: 48px 16px;
   text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero.banner {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.hero.banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 1;
+}
+
+.hero.banner .hero-content {
+  position: relative;
+  z-index: 2;
 }
 
 .hero-content h1 {
@@ -391,11 +466,37 @@ export default {
   color: var(--md-sys-color-on-primary-container, #21005d);
 }
 
+.hero.banner h1 {
+  color: inherit;
+}
+
 .hero-content p {
   margin: 0 0 32px 0;
   font-size: 18px;
   color: var(--md-sys-color-on-primary-container, #21005d);
   opacity: 0.8;
+}
+
+.hero.banner p {
+  color: inherit;
+  opacity: 0.9;
+}
+
+.hero-button {
+  display: inline-block;
+  padding: 12px 24px;
+  border-radius: 24px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-top: 16px;
+}
+
+.hero-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .hero-stats {
@@ -971,10 +1072,66 @@ export default {
   opacity: 0.8;
 }
 
+/* Banner Overlay Styles */
+.banner {
+  position: relative;
+  min-height: 300px;
+  overflow: hidden;
+}
+
+.banner-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+}
+
+.banner-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  margin-bottom: 1rem;
+}
+
+.banner-description {
+  font-size: 1.1rem;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  margin-bottom: 2rem;
+  line-height: 1.5;
+}
+
+.hero-button {
+  display: inline-block;
+  padding: 12px 24px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  text-shadow: none;
+}
+
+.hero-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
-  .hero-content h1 {
+  .hero-content h1,
+  .banner-title {
     font-size: 28px;
+  }
+  
+  .banner-description {
+    font-size: 1rem;
   }
   
   .hero-stats {

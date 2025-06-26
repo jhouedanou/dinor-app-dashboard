@@ -10,66 +10,82 @@ class PwaMenuItemSeeder extends Seeder
     /**
      * Run the database seeds.
      */
-    public function run()
+    public function run(): void
     {
         $menuItems = [
             [
-                'title' => 'Accueil',
-                'url' => '/',
+                'name' => 'home',
+                'label' => 'Accueil',
                 'icon' => 'home',
-                'order' => 1,
+                'path' => '/',
+                'action_type' => 'route',
+                'web_url' => null,
                 'is_active' => true,
+                'order' => 1,
                 'description' => 'Page d\'accueil de l\'application'
             ],
             [
-                'title' => 'Recettes',
-                'url' => '/recipes',
+                'name' => 'recipes',
+                'label' => 'Recettes',
                 'icon' => 'restaurant',
-                'order' => 2,
+                'path' => '/recipes',
+                'action_type' => 'route',
+                'web_url' => null,
                 'is_active' => true,
-                'description' => 'Découvrez nos recettes authentiques'
+                'order' => 2,
+                'description' => 'Liste des recettes disponibles'
             ],
             [
-                'title' => 'Astuces',
-                'url' => '/tips',
+                'name' => 'tips',
+                'label' => 'Astuces',
                 'icon' => 'lightbulb',
-                'order' => 3,
+                'path' => '/tips',
+                'action_type' => 'route',
+                'web_url' => null,
                 'is_active' => true,
+                'order' => 3,
                 'description' => 'Conseils et astuces culinaires'
             ],
             [
-                'title' => 'Événements',
-                'url' => '/events',
+                'name' => 'events',
+                'label' => 'Événements',
                 'icon' => 'event',
+                'path' => '/events',
+                'action_type' => 'route',
+                'web_url' => null,
+                'is_active' => true,
                 'order' => 4,
-                'is_active' => true,
-                'description' => 'Événements culinaires à venir'
+                'description' => 'Événements et activités'
             ],
             [
-                'title' => 'Dinor TV',
-                'url' => '/dinor-tv',
+                'name' => 'dinor-tv',
+                'label' => 'Dinor TV',
                 'icon' => 'play_circle',
-                'order' => 5,
+                'path' => '/dinor-tv',
+                'action_type' => 'route',
+                'web_url' => null,
                 'is_active' => true,
-                'description' => 'Vidéos culinaires et émissions'
+                'order' => 5,
+                'description' => 'Contenu vidéo et médias'
             ],
             [
-                'title' => 'Pages',
-                'url' => '/pages',
-                'icon' => 'article',
-                'order' => 6,
+                'name' => 'web',
+                'label' => 'Web',
+                'icon' => 'public',
+                'path' => null,
+                'action_type' => 'web_embed',
+                'web_url' => 'https://www.google.com',
                 'is_active' => true,
-                'description' => 'Pages d\'information'
+                'order' => 6,
+                'description' => 'Accès au contenu web externe'
             ]
         ];
 
         foreach ($menuItems as $item) {
             PwaMenuItem::updateOrCreate(
-                ['url' => $item['url']],
+                ['name' => $item['name']],
                 $item
             );
         }
-
-        $this->command->info('Menu PWA créé avec succès !');
     }
-}
+} 

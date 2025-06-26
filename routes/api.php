@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\LikeController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\PWA\CacheController;
 
 /*
@@ -43,6 +44,10 @@ Route::prefix('v1')->group(function () {
     Route::get('/recipes/{id}', [RecipeController::class, 'show']);
     Route::get('/recipes/featured/list', [RecipeController::class, 'featured']);
     Route::get('/recipes/categories/list', [RecipeController::class, 'categories']);
+    
+    // Bannières
+    Route::get('/banners', [BannerController::class, 'index']);
+    Route::get('/banners/{id}', [BannerController::class, 'show']);
     
     // Catégories
     Route::get('/categories', [CategoryController::class, 'index']);

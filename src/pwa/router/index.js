@@ -7,6 +7,12 @@ const TipsList = () => import('@/views/TipsList.vue')
 const EventsList = () => import('@/views/EventsList.vue')
 const PagesList = () => import('@/views/PagesList.vue')
 const DinorTV = () => import('@/views/DinorTV.vue')
+const WebEmbed = () => import('@/views/WebEmbed.vue')
+
+// Detail components
+const RecipeDetail = () => import('@/views/RecipeDetail.vue')
+const TipDetail = () => import('@/views/TipDetail.vue')
+const EventDetail = () => import('@/views/EventDetail.vue')
 
 const routes = [
   {
@@ -26,16 +32,37 @@ const routes = [
     meta: { title: 'Recettes' }
   },
   {
+    path: '/recipe/:id',
+    name: 'recipe-detail',
+    component: RecipeDetail,
+    meta: { title: 'Détail Recette' },
+    props: true
+  },
+  {
     path: '/tips',
     name: 'tips',
     component: TipsList,
     meta: { title: 'Astuces' }
   },
   {
+    path: '/tip/:id',
+    name: 'tip-detail',
+    component: TipDetail,
+    meta: { title: 'Détail Astuce' },
+    props: true
+  },
+  {
     path: '/events',
     name: 'events',
     component: EventsList,
     meta: { title: 'Événements' }
+  },
+  {
+    path: '/event/:id',
+    name: 'event-detail',
+    component: EventDetail,
+    meta: { title: 'Détail Événement' },
+    props: true
   },
   {
     path: '/pages',
@@ -48,6 +75,16 @@ const routes = [
     name: 'dinor-tv',
     component: DinorTV,
     meta: { title: 'Dinor TV' }
+  },
+  {
+    path: '/video/:id',
+    redirect: to => '/dinor-tv'
+  },
+  {
+    path: '/web-embed',
+    name: 'web-embed',
+    component: WebEmbed,
+    meta: { title: 'Web Embed' }
   },
   {
     path: '/:pathMatch(.*)*',

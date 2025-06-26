@@ -1,0 +1,262 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* ==============================================
+   DINOR OPTIMIZED CSS - Version locale optimisée
+   ============================================== */
+
+/* Variables CSS pour cohérence */
+:root {
+  --dinor-red: #E1251B;
+  --dinor-gray: #818080;
+  --dinor-champagne: #E6D9D0;
+  --dinor-gold: #9E7C22;
+  --dinor-blood: #690E08;
+  
+  /* Material Design 3 Variables */
+  --md-sys-color-surface: #fefbff;
+  --md-sys-color-on-surface: #1c1b1f;
+  --md-sys-color-primary: #9E7C22;
+  --md-sys-color-on-primary: #ffffff;
+  --md-sys-color-secondary: #E1251B;
+  --md-sys-color-on-secondary: #ffffff;
+}
+
+/* Utilitaires personnalisés Dinor */
+@layer utilities {
+  .dinor-text-primary {
+    color: var(--dinor-gold);
+  }
+  
+  .dinor-text-secondary {
+    color: var(--dinor-red);
+  }
+  
+  .dinor-text-gray {
+    color: var(--dinor-gray);
+  }
+  
+  .dinor-bg-primary {
+    background-color: var(--dinor-gold);
+  }
+  
+  .dinor-bg-secondary {
+    background-color: var(--dinor-red);
+  }
+  
+  .dinor-gradient-primary {
+    background: linear-gradient(135deg, var(--dinor-red) 0%, var(--dinor-gold) 100%);
+  }
+  
+  .dinor-gradient-soft {
+    background: linear-gradient(135deg, var(--dinor-champagne) 0%, var(--dinor-gray) 100%);
+  }
+}
+
+/* Composants Material Design 3 */
+@layer components {
+  .md3-card {
+    @apply bg-white rounded-2xl shadow-md3 overflow-hidden;
+    transition: all 0.2s ease;
+  }
+  
+  .md3-card:hover {
+    @apply shadow-md3-lg;
+    transform: translateY(-2px);
+  }
+  
+  .md3-chip {
+    @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium;
+    @apply bg-gray-100 text-gray-700;
+  }
+  
+  .md3-chip-selected {
+    @apply dinor-bg-primary text-white;
+  }
+  
+  .md3-button {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full font-medium;
+    @apply transition-all duration-200 ease-in-out;
+  }
+  
+  .md3-button-primary {
+    @apply dinor-bg-primary text-white;
+  }
+  
+  .md3-button-primary:hover {
+    @apply shadow-lg transform -translate-y-0.5;
+  }
+  
+  .md3-icon-button {
+    @apply w-10 h-10 rounded-full flex items-center justify-center;
+    @apply transition-all duration-200 ease-in-out;
+    @apply hover:bg-gray-100;
+  }
+  
+  .md3-top-app-bar {
+    @apply sticky top-0 z-50 bg-white border-b border-gray-200;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+  
+  .md3-app-bar-container {
+    @apply flex items-center justify-between p-4 max-w-screen-xl mx-auto;
+  }
+  
+  .md3-app-bar-title {
+    @apply flex items-center gap-3 flex-1;
+  }
+  
+  .md3-app-bar-actions {
+    @apply flex items-center gap-2;
+  }
+  
+  .md3-main-content {
+    @apply min-h-screen pb-20 md:pb-0;
+  }
+  
+  .md3-loading-state {
+    @apply flex flex-col items-center justify-center min-h-96 text-center;
+  }
+  
+  .md3-circular-progress {
+    @apply w-10 h-10 border-4 border-gray-200 border-t-current rounded-full animate-spin;
+  }
+  
+  .md3-recipes-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4;
+  }
+  
+  .md3-card-elevated {
+    @apply md3-card shadow-lg;
+  }
+  
+  .md3-filter-container {
+    @apply p-4 bg-gray-50 border-b border-gray-200;
+  }
+  
+  .md3-filter-scroll {
+    @apply flex gap-2 overflow-x-auto pb-2;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .md3-filter-scroll::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .md3-search-container {
+    @apply p-4 bg-white border-b border-gray-200;
+  }
+  
+  .md3-search-bar {
+    @apply relative flex items-center max-w-md mx-auto;
+  }
+  
+  .md3-search-input {
+    @apply w-full pl-12 pr-10 py-3 border border-gray-300 rounded-full;
+    @apply focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent;
+  }
+  
+  .search-icon {
+    @apply absolute left-4 text-gray-400;
+  }
+}
+
+/* Animations personnalisées */
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-in-out;
+  }
+  
+  .animate-bounce-subtle {
+    animation: bounceSubtle 0.6s ease-in-out;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes bounceSubtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+/* Utilitaires de responsive design */
+@layer utilities {
+  .responsive-grid {
+    @apply grid gap-4;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+  
+  .responsive-flex {
+    @apply flex flex-col md:flex-row gap-4;
+  }
+}
+
+/* Support pour les écrans tactiles */
+@media (hover: none) and (pointer: coarse) {
+  .md3-card:hover {
+    transform: none;
+  }
+  
+  .md3-button-primary:hover {
+    transform: none;
+  }
+}
+
+/* Mode sombre (préparation future) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --md-sys-color-surface: #1c1b1f;
+    --md-sys-color-on-surface: #e6e1e5;
+  }
+}
+
+/* Accessibilité - mouvement réduit */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* PWA - Safe Area Support */
+@supports (padding: max(0px)) {
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top, 0);
+  }
+  
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  
+  .safe-area-left {
+    padding-left: env(safe-area-inset-left, 0);
+  }
+  
+  .safe-area-right {
+    padding-right: env(safe-area-inset-right, 0);
+  }
+} 

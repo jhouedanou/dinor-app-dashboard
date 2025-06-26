@@ -28,6 +28,10 @@ class AdminPanelProvider extends PanelProvider
             ->path('/admin')
             ->login(\App\Filament\Pages\Auth\Login::class)
             ->authGuard('admin')
+            ->brandName('Dinor Dashboard')
+            ->brandLogo('/images/dinor-logo.png')
+            ->brandLogoHeight('2rem')
+            ->favicon('/pwa/icons/icon-32x32.png')
             ->colors([
                 'primary' => [
                     50 => '#fefbf3',
@@ -70,6 +74,7 @@ class AdminPanelProvider extends PanelProvider
                 \App\Filament\Resources\MediaFileResource::class,
                 \App\Filament\Resources\LikeResource::class,
                 \App\Filament\Resources\CommentResource::class,
+                \App\Filament\Resources\BannerResource::class,
                 \App\Filament\Resources\PwaMenuItemResource::class,
             ])
             ->discoverResources(app_path('Filament/Resources'), 'App\\Filament\\Resources')

@@ -8,6 +8,19 @@
       </div>
     </header>
 
+    <!-- Search and Filters -->
+    <SearchAndFilters
+      v-model:searchQuery="searchQuery"
+      v-model:selectedCategory="selectedCategory"
+      search-placeholder="Rechercher un événement..."
+      :categories="categories"
+      :additional-filters="eventFilters"
+      :selected-filters="selectedFilters"
+      :results-count="filteredEvents.length"
+      item-type="événement"
+      @update:additionalFilter="updateAdditionalFilter"
+    />
+
     <!-- Loading State -->
     <div v-if="loading" class="loading-state">
       <div class="loading-spinner"></div>
@@ -28,18 +41,26 @@
     <!-- Content -->
     <div v-else class="content">
       <!-- Empty State -->
-      <div v-if="!events.length && !loading" class="empty-state">
+      <div v-if="!filteredEvents.length && !loading" class="empty-state">
         <div class="empty-icon">
           <span class="material-symbols-outlined">event</span>
         </div>
-        <h3>Aucun événement disponible</h3>
-        <p>Les événements culinaires seront bientôt disponibles.</p>
+        <h3>{{ searchQuery || selectedCategory || hasActiveFilters ? 'Aucun événement trouvé' : 'Aucun événement disponible' }}</h3>
+        <p v-if="searchQuery || selectedCategory || hasActiveFilters">
+          Essayez de modifier vos critères de recherche.
+        </p>
+        <p v-else>
+          Les événements culinaires seront bientôt disponibles.
+        </p>
+        <button v-if="searchQuery || selectedCategory || hasActiveFilters" @click="clearAllFilters" class="clear-filters-btn">
+          Effacer tous les filtres
+        </button>
       </div>
 
       <!-- Events List -->
       <div v-else class="events-container">
         <article
-          v-for="event in events"
+          v-for="event in filteredEvents"
           :key="event.id"
           @click="goToEvent(event.id)"
           class="event-card"
@@ -101,20 +122,136 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import apiService from '@/services/api'
+import SearchAndFilters from '@/components/common/SearchAndFilters.vue'
 
 export default {
   name: 'EventsList',
+  components: {
+    SearchAndFilters
+  },
   setup() {
     const router = useRouter()
     
     // State
     const events = ref([])
+    const categories = ref([])
     const loading = ref(false)
     const error = ref(null)
+    const searchQuery = ref('')
+    const selectedCategory = ref(null)
+    const selectedFilters = ref({
+      eventType: null,
+      eventFormat: null,
+      price: null,
+      status: null
+    })
     
+    // Computed
+    const filteredEvents = computed(() => {
+      let filtered = events.value
+
+      // Filtre par recherche textuelle
+      if (searchQuery.value.trim()) {
+        const query = searchQuery.value.toLowerCase()
+        filtered = filtered.filter(event => 
+          event.title?.toLowerCase().includes(query) ||
+          event.description?.toLowerCase().includes(query) ||
+          event.short_description?.toLowerCase().includes(query) ||
+          event.location?.toLowerCase().includes(query) ||
+          event.city?.toLowerCase().includes(query) ||
+          event.organizer_name?.toLowerCase().includes(query)
+        )
+      }
+
+      // Filtre par catégorie
+      if (selectedCategory.value) {
+        filtered = filtered.filter(event => event.category_id === selectedCategory.value)
+      }
+
+      // Filtres additionnels
+      if (selectedFilters.value.eventType) {
+        filtered = filtered.filter(event => event.event_type === selectedFilters.value.eventType)
+      }
+
+      if (selectedFilters.value.eventFormat) {
+        filtered = filtered.filter(event => event.event_format === selectedFilters.value.eventFormat)
+      }
+
+      if (selectedFilters.value.price) {
+        if (selectedFilters.value.price === 'free') {
+          filtered = filtered.filter(event => event.is_free)
+        } else if (selectedFilters.value.price === 'paid') {
+          filtered = filtered.filter(event => !event.is_free)
+        }
+      }
+
+      if (selectedFilters.value.status) {
+        filtered = filtered.filter(event => event.status === selectedFilters.value.status)
+      }
+
+      return filtered
+    })
+
+    const hasActiveFilters = computed(() => {
+      return Object.values(selectedFilters.value).some(value => value !== null)
+    })
+
+    const eventFilters = computed(() => [
+      {
+        key: 'eventType',
+        label: 'Type d\'événement',
+        icon: 'category',
+        allLabel: 'Tous les types',
+        options: [
+          { value: 'conference', label: 'Conférence' },
+          { value: 'workshop', label: 'Atelier' },
+          { value: 'seminar', label: 'Séminaire' },
+          { value: 'cooking_class', label: 'Cours de cuisine' },
+          { value: 'tasting', label: 'Dégustation' },
+          { value: 'festival', label: 'Festival' },
+          { value: 'competition', label: 'Concours' },
+          { value: 'networking', label: 'Networking' },
+          { value: 'exhibition', label: 'Exposition' },
+          { value: 'party', label: 'Fête' }
+        ]
+      },
+      {
+        key: 'eventFormat',
+        label: 'Format',
+        icon: 'computer',
+        allLabel: 'Tous les formats',
+        options: [
+          { value: 'in_person', label: 'En présentiel' },
+          { value: 'online', label: 'En ligne' },
+          { value: 'hybrid', label: 'Hybride' }
+        ]
+      },
+      {
+        key: 'price',
+        label: 'Tarif',
+        icon: 'payments',
+        allLabel: 'Tous les tarifs',
+        options: [
+          { value: 'free', label: 'Gratuit' },
+          { value: 'paid', label: 'Payant' }
+        ]
+      },
+      {
+        key: 'status',
+        label: 'Statut',
+        icon: 'info',
+        allLabel: 'Tous les statuts',
+        options: [
+          { value: 'active', label: 'Actif' },
+          { value: 'upcoming', label: 'À venir' },
+          { value: 'completed', label: 'Terminé' }
+        ]
+      }
+    ])
+
     // Methods
     const goToEvent = (id) => {
       router.push(`/event/${id}`)
@@ -123,6 +260,7 @@ export default {
     const retry = () => {
       error.value = null
       loadEvents()
+      loadCategories()
     }
     
     const loadEvents = async () => {
@@ -142,6 +280,32 @@ export default {
         console.error('Error fetching events:', err)
       } finally {
         loading.value = false
+      }
+    }
+
+    const loadCategories = async () => {
+      try {
+        const response = await apiService.getCategories()
+        if (response.success) {
+          categories.value = response.data
+        }
+      } catch (err) {
+        console.warn('Error fetching categories:', err)
+      }
+    }
+
+    const updateAdditionalFilter = ({ key, value }) => {
+      selectedFilters.value[key] = value
+    }
+
+    const clearAllFilters = () => {
+      searchQuery.value = ''
+      selectedCategory.value = null
+      selectedFilters.value = {
+        eventType: null,
+        eventFormat: null,
+        price: null,
+        status: null
       }
     }
     
@@ -203,14 +367,24 @@ export default {
     // Lifecycle
     onMounted(() => {
       loadEvents()
+      loadCategories()
     })
     
     return {
       events,
+      categories,
       loading,
       error,
+      searchQuery,
+      selectedCategory,
+      selectedFilters,
+      filteredEvents,
+      hasActiveFilters,
+      eventFilters,
       goToEvent,
       retry,
+      updateAdditionalFilter,
+      clearAllFilters,
       getStatusClass,
       getStatusLabel,
       getEventTypeLabel,

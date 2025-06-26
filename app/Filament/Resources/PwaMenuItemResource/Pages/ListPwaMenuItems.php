@@ -14,8 +14,7 @@ class ListPwaMenuItems extends ListRecords
     {
         return [
             Actions\CreateAction::make()
-                ->label('Nouvel élément de menu')
-                ->icon('heroicon-o-plus-circle'),
+                ->label('Nouvel élément'),
         ];
     }
 } 

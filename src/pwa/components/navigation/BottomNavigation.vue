@@ -7,6 +7,7 @@
         :to="item.path"
         class="nav-item"
         :class="{ 'active': isActive(item.path) }"
+        @click="item.action && item.action()"
       >
         <div class="nav-icon">
           <span class="material-symbols-outlined">{{ item.icon }}</span>
@@ -18,57 +19,105 @@
 </template>
 
 <script>
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useApi } from '@/composables/useApi'
 
 export default {
   name: 'BottomNavigation',
   setup() {
     const route = useRoute()
+    const router = useRouter()
+    const { request } = useApi()
     
-    const navItems = [
-      { 
-        name: 'home', 
-        path: '/', 
-        icon: 'home',
-        label: 'Accueil' 
-      },
-      { 
-        name: 'recipes', 
-        path: '/recipes', 
-        icon: 'restaurant',
-        label: 'Recettes' 
-      },
-      { 
-        name: 'tips', 
-        path: '/tips', 
-        icon: 'lightbulb',
-        label: 'Astuces' 
-      },
-      { 
-        name: 'events', 
-        path: '/events', 
-        icon: 'event',
-        label: 'Événements' 
-      },
-      { 
-        name: 'dinor-tv', 
-        path: '/dinor-tv', 
-        icon: 'play_circle',
-        label: 'Dinor TV' 
+    const webPageUrl = ref('')
+    
+    const loadWebPageSettings = async () => {
+      try {
+        // Chercher une page avec un slug spécial 'web-link' ou similaire
+        const data = await request('/api/v1/pages?slug=web-embed')
+        if (data.success && data.data.length > 0) {
+          const webPage = data.data[0]
+          webPageUrl.value = webPage.embed_url || webPage.content || ''
+        }
+      } catch (error) {
+        console.warn('Impossible de charger les paramètres de la page Web:', error)
+        // URL par défaut si aucune configuration trouvée
+        webPageUrl.value = 'https://www.google.com'
       }
-    ]
+    }
+    
+    const openWebEmbed = () => {
+      if (webPageUrl.value) {
+        router.push(`/web-embed?url=${encodeURIComponent(webPageUrl.value)}`)
+      }
+    }
+    
+    const navItems = ref([])
+    
+    const loadNavItems = async () => {
+      try {
+        const data = await request('/api/v1/pwa-menu-items')
+        if (data.success) {
+          navItems.value = data.data.map(item => {
+            const navItem = {
+              name: item.name,
+              path: item.action_type === 'route' ? item.path : '#',
+              icon: item.icon,
+              label: item.label,
+              action_type: item.action_type,
+              web_url: item.web_url
+            }
+            
+            // Ajouter l'action appropriée selon le type
+            if (item.action_type === 'web_embed') {
+              navItem.action = () => {
+                if (item.web_url) {
+                  router.push(`/web-embed?url=${encodeURIComponent(item.web_url)}`)
+                }
+              }
+            } else if (item.action_type === 'external_link') {
+              navItem.action = () => {
+                if (item.web_url) {
+                  window.open(item.web_url, '_blank')
+                }
+              }
+            }
+            
+            return navItem
+          })
+        }
+      } catch (error) {
+        console.warn('Impossible de charger les éléments de menu:', error)
+        // Menu par défaut en cas d'erreur
+        navItems.value = [
+          { name: 'home', path: '/', icon: 'home', label: 'Accueil' },
+          { name: 'recipes', path: '/recipes', icon: 'restaurant', label: 'Recettes' },
+          { name: 'tips', path: '/tips', icon: 'lightbulb', label: 'Astuces' },
+          { name: 'events', path: '/events', icon: 'event', label: 'Événements' },
+          { name: 'dinor-tv', path: '/dinor-tv', icon: 'play_circle', label: 'Dinor TV' },
+          { name: 'web', path: '#', icon: 'public', label: 'Web', action: openWebEmbed }
+        ]
+      }
+    }
     
     const isActive = (path) => {
+      if (path === '#') return false // L'item Web n'est jamais "actif"
       if (path === '/') {
         return route.path === '/'
       }
       return route.path.startsWith(path)
     }
     
+    onMounted(() => {
+      loadWebPageSettings()
+      loadNavItems()
+    })
+    
     return {
       navItems,
-      isActive
+      isActive,
+      loadNavItems
     }
   }
 }

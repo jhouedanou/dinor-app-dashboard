@@ -6,6 +6,7 @@ export default defineConfig({
         laravel({
             input: [
                 'resources/css/app.css',
+                'resources/css/dinor-optimized.css',
                 'resources/js/app.js',
                 'resources/css/filament/admin/theme.css',
                 // PWA assets
@@ -15,6 +16,9 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    css: {
+        postcss: './postcss.config.js',
+    },
     server: {
         host: '0.0.0.0',
         port: 5173,
@@ -27,6 +31,7 @@ export default defineConfig({
             // Watch PWA files
             include: [
                 'public/pwa/**/*',
+                'src/pwa/**/*',
                 'resources/**/*'
             ]
         },
@@ -42,14 +47,28 @@ export default defineConfig({
     // Configuration pour le build
     build: {
         rollupOptions: {
-            input: {
-                // Laravel assets
-                app: 'resources/js/app.js',
-                'filament-admin': 'resources/css/filament/admin/theme.css',
-                // PWA assets
-                main: 'public/pwa/index.html',
-                'pwa-app': 'public/pwa/app.js'
+            output: {
+                // Optimiser le chunking pour de meilleures performances
+                manualChunks: {
+                    vendor: ['alpinejs'],
+                    filament: ['@filament/forms', '@filament/tables']
+                }
             }
-        }
+        },
+        // Optimisations pour la production
+        minify: 'terser',
+        terserOptions: {
+            compress: {
+                drop_console: true, // Supprimer les console.log en production
+                drop_debugger: true,
+            },
+        },
+        cssMinify: true,
+        sourcemap: false, // Désactiver les sourcemaps en production
+    },
+    define: {
+        // Optimisations pour la performance
+        __VUE_OPTIONS_API__: false,
+        __VUE_PROD_DEVTOOLS__: false,
     }
 }); 

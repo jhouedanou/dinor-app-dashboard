@@ -24,15 +24,18 @@ Route::get('/dashboard', function () {
 
 // Route pour la PWA
 Route::get('/pwa', function () {
-    return redirect('/pwa/');
+    return response()->file(public_path('pwa/dist/index.html'), [
+        'Content-Type' => 'text/html; charset=utf-8',
+        'Cache-Control' => 'no-cache, no-store, must-revalidate'
+    ]);
 })->name('pwa');
 
-// Route API pour récupérer les éléments du menu PWA
-Route::get('/api/pwa-menu-items', function () {
-    $items = \App\Models\PwaMenuItem::active()->ordered()->get();
+// Route API pour récupérer les bannières
+Route::get('/api/banners', function () {
+    $banners = \App\Models\Banner::active()->forHome()->ordered()->get();
     return response()->json([
         'success' => true,
-        'data' => $items
+        'data' => $banners
     ]);
 });
 
@@ -125,7 +128,11 @@ Route::get('/pwa/{file}', function ($file) {
         };
         return response()->file($filePath, ['Content-Type' => $contentType]);
     }
-    return response()->file(public_path('pwa/index.html'));
+    // Rediriger vers la version buildée par défaut
+    return response()->file(public_path('pwa/dist/index.html'), [
+        'Content-Type' => 'text/html; charset=utf-8',
+        'Cache-Control' => 'no-cache, no-store, must-revalidate'
+    ]);
 })->where('file', '[^/]+');
 
 // Routes pour servir la PWA buildée
@@ -164,8 +171,8 @@ Route::get('/pwa/dist/{path?}', function ($path = null) {
 })->where('path', '.*');
 
 // Route catch-all pour la PWA SPA (doit être en dernier)
-Route::get('/pwa/{path?}', function () {
-    // Rediriger vers la version buildée
+Route::get('/pwa/{path?}', function ($path = null) {
+    // Servir uniquement la version buildée de la PWA
     return response()->file(public_path('pwa/dist/index.html'), [
         'Content-Type' => 'text/html; charset=utf-8',
         'Cache-Control' => 'no-cache, no-store, must-revalidate'

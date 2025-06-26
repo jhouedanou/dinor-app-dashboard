@@ -8,48 +8,78 @@ const TipsList = {
                         <i class="material-icons dinor-text-primary">lightbulb</i>
                         <span class="dinor-text-primary">Astuces</span>
                     </div>
-                    <div class="md3-app-bar-actions">
-                        <button @click="toggleSearch" class="md3-icon-button">
-                            <i class="material-icons">search</i>
-                        </button>
-                    </div>
                 </div>
             </nav>
 
-            <!-- Search Bar -->
-            <div v-if="showSearch" class="md3-search-container">
-                <div class="md3-search-bar">
-                    <i class="material-icons search-icon dinor-text-secondary">search</i>
-                    <input 
-                        v-model="searchQuery"
-                        @input="debouncedSearch"
-                        type="text" 
-                        placeholder="Rechercher une astuce..."
-                        class="md3-search-input">
-                    <button 
-                        v-if="searchQuery" 
-                        @click="clearSearch"
-                        class="md3-icon-button">
-                        <i class="material-icons">clear</i>
-                    </button>
+            <!-- Enhanced Search and Filters -->
+            <div class="enhanced-filters">
+                <!-- Search Bar -->
+                <div class="search-container">
+                    <div class="search-input-wrapper">
+                        <i class="material-icons search-icon dinor-text-secondary">search</i>
+                        <input 
+                            v-model="searchQuery"
+                            @input="debouncedSearch"
+                            type="text" 
+                            placeholder="Rechercher une astuce..."
+                            class="search-input">
+                        <button 
+                            v-if="searchQuery" 
+                            @click="clearSearch"
+                            class="clear-search-btn">
+                            <i class="material-icons">clear</i>
+                        </button>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Filtres par difficulté -->
-            <div class="md3-filter-container">
-                <div class="md3-filter-scroll">
-                    <button 
-                        @click="selectedDifficulty = null"
-                        :class="['md3-chip', { 'md3-chip-selected': selectedDifficulty === null }]">
-                        Toutes
-                    </button>
-                    <button 
-                        v-for="difficulty in difficulties"
-                        :key="difficulty.value"
-                        @click="selectedDifficulty = difficulty.value"
-                        :class="['md3-chip', { 'md3-chip-selected': selectedDifficulty === difficulty.value }]">
-                        {{ difficulty.label }}
-                    </button>
+                <!-- Categories Filter -->
+                <div v-if="categories?.length" class="filter-section">
+                    <div class="filter-header">
+                        <i class="material-icons">category</i>
+                        <span>Catégories</span>
+                    </div>
+                    <div class="filter-chips">
+                        <button 
+                            @click="selectedCategory = null"
+                            :class="['filter-chip', { 'active': selectedCategory === null }]">
+                            Toutes
+                        </button>
+                        <button 
+                            v-for="category in categories"
+                            :key="category.id"
+                            @click="selectedCategory = category.id"
+                            :class="['filter-chip', { 'active': selectedCategory === category.id }]">
+                            {{ category.name }}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Difficulty Filter -->
+                <div class="filter-section">
+                    <div class="filter-header">
+                        <i class="material-icons">psychology</i>
+                        <span>Niveau de difficulté</span>
+                    </div>
+                    <div class="filter-chips">
+                        <button 
+                            @click="selectedDifficulty = null"
+                            :class="['filter-chip', { 'active': selectedDifficulty === null }]">
+                            Tous
+                        </button>
+                        <button 
+                            v-for="difficulty in difficulties"
+                            :key="difficulty.value"
+                            @click="selectedDifficulty = difficulty.value"
+                            :class="['filter-chip', { 'active': selectedDifficulty === difficulty.value }]">
+                            {{ difficulty.label }}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Results Count -->
+                <div v-if="filteredTips.length !== tips.length || searchQuery" class="results-info">
+                    {{ filteredTips.length }} astuce{{ filteredTips.length > 1 ? 's' : '' }}
+                    <span v-if="searchQuery"> pour "{{ searchQuery }}"</span>
                 </div>
             </div>
 
@@ -136,11 +166,12 @@ const TipsList = {
         const router = VueRouter.useRouter();
         
         const tips = ref([]);
+        const categories = ref([]);
         const loading = ref(true);
         const isRefreshing = ref(false);
         const searchQuery = ref('');
         const selectedDifficulty = ref(null);
-        const showSearch = ref(false);
+        const selectedCategory = ref(null);
         
         const { request } = useApi();
         
@@ -162,6 +193,11 @@ const TipsList = {
                     (tip.category && tip.category.name.toLowerCase().includes(query)) ||
                     (tip.tags && tip.tags.some(tag => tag.toLowerCase().includes(query)))
                 );
+            }
+            
+            // Filtre par catégorie
+            if (selectedCategory.value) {
+                filtered = filtered.filter(tip => tip.category_id === selectedCategory.value);
             }
             
             // Filtre par difficulté
@@ -196,20 +232,25 @@ const TipsList = {
             }
         };
 
+        const loadCategories = async () => {
+            try {
+                const data = await request('/api/v1/categories');
+                if (data.success) {
+                    categories.value = data.data;
+                }
+            } catch (error) {
+                console.warn('Erreur lors du chargement des catégories:', error);
+            }
+        };
+
         const selectTip = (tip) => {
             router.push(`/tip/${tip.id}`);
         };
 
         const clearSearch = () => {
             searchQuery.value = '';
-            showSearch.value = false;
-        };
-
-        const toggleSearch = () => {
-            showSearch.value = !showSearch.value;
-            if (!showSearch.value) {
-                searchQuery.value = '';
-            }
+            selectedCategory.value = null;
+            selectedDifficulty.value = null;
         };
 
         const truncateText = (text, length) => {
@@ -242,21 +283,22 @@ const TipsList = {
 
         onMounted(() => {
             loadTips();
+            loadCategories();
         });
 
         return {
             tips,
+            categories,
             loading,
             isRefreshing,
             searchQuery,
             selectedDifficulty,
-            showSearch,
+            selectedCategory,
             difficulties,
             filteredTips,
             debouncedSearch,
             selectTip,
             clearSearch,
-            toggleSearch,
             truncateText,
             getDifficultyClass,
             getDifficultyLabel,
