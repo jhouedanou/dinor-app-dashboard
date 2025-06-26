@@ -10,6 +10,8 @@
         "pwa:dev": "vite --config vite.pwa.config.js",
         "pwa:build": "vite build --config vite.pwa.config.js --mode production",
         "pwa:preview": "vite preview --config vite.pwa.config.js",
+        "pwa:clear-cache": "rm -rf public/pwa/dist/* && rm -rf node_modules/.cache",
+        "pwa:rebuild": "npm run pwa:clear-cache && npm run pwa:build",
         "sw:generate": "workbox generateSW workbox-config.js"
     },
     "devDependencies": {

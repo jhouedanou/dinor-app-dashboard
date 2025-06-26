@@ -43,6 +43,7 @@ return [
         App\Providers\AuthServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
+        App\Providers\PwaServiceProvider::class,
         App\Providers\Filament\AdminPanelProvider::class,
     ],
     'aliases' => [

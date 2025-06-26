@@ -331,7 +331,10 @@ class RecipeResource extends Resource
                         $record->likes()->delete();
                         $record->comments()->delete();
                     })
-                    ->successNotificationTitle('Recette supprimée avec succès'),
+                    ->successNotificationTitle('Recette supprimée avec succès')
+                    ->after(function () {
+                        static::triggerPwaRebuild();
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

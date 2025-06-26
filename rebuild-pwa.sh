@@ -20,7 +20,7 @@ npm install
 
 # 4. Build complet de la PWA avec debug
 echo "🏗️ Build PWA avec informations de debug..."
-NODE_ENV=production npm run pwa:build -- --mode production
+npm run pwa:rebuild
 
 # 5. Vérifier que les fichiers ont été générés
 echo "🔍 Vérification des fichiers générés..."

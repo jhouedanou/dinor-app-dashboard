@@ -179,7 +179,7 @@ class PageResource extends Resource
                     ->modalSubmitActionLabel('Créer la page')
                     ->successNotificationTitle('Page créée avec succès')
                     ->after(function () {
-                        static::invalidateCache();
+                        static::triggerPwaRebuild();
                     }),
                     
                 Tables\Actions\Action::make('clear_cache')
