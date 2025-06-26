@@ -50,8 +50,7 @@ export default defineConfig({
             output: {
                 // Optimiser le chunking pour de meilleures performances
                 manualChunks: {
-                    vendor: ['alpinejs'],
-                    filament: ['@filament/forms', '@filament/tables']
+                    vendor: ['alpinejs']
                 }
             }
         },
