@@ -145,6 +145,43 @@ class PageResource extends Resource
                 ]),
             ])
             ->headerActions([
+                Tables\Actions\CreateAction::make()
+                    ->label('Créer une page')
+                    ->icon('heroicon-o-plus')
+                    ->color('primary')
+                    ->form([
+                        Forms\Components\TextInput::make('title')
+                            ->label('Nom du menu')
+                            ->required()
+                            ->maxLength(255)
+                            ->helperText('Nom qui apparaîtra dans le menu de navigation de la PWA')
+                            ->placeholder('Ex: À propos, Contact, Boutique...'),
+                        
+                        Forms\Components\TextInput::make('url')
+                            ->label('URL à afficher')
+                            ->required()
+                            ->url()
+                            ->helperText('Page web qui s\'ouvrira dans un iframe dans l\'application')
+                            ->placeholder('https://example.com'),
+
+                        Forms\Components\Toggle::make('is_published')
+                            ->label('Activer cette page')
+                            ->default(true)
+                            ->helperText('Afficher dans le menu de l\'application mobile'),
+
+                        Forms\Components\TextInput::make('order')
+                            ->label('Position dans le menu')
+                            ->numeric()
+                            ->default(0)
+                            ->helperText('Ordre d\'affichage (0 = en premier)'),
+                    ])
+                    ->modalHeading('Créer une nouvelle page')
+                    ->modalSubmitActionLabel('Créer la page')
+                    ->successNotificationTitle('Page créée avec succès')
+                    ->after(function () {
+                        static::invalidateCache();
+                    }),
+                    
                 Tables\Actions\Action::make('clear_cache')
                     ->label('Vider le cache PWA')
                     ->icon('heroicon-o-arrow-path')
@@ -175,7 +212,6 @@ class PageResource extends Resource
     {
         return [
             'index' => Pages\ListPages::route('/'),
-            'create' => Pages\CreatePage::route('/create'),
             'view' => Pages\ViewPage::route('/{record}'),
             'edit' => Pages\EditPage::route('/{record}/edit'),
         ];

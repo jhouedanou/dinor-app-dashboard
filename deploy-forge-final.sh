@@ -19,29 +19,14 @@ log_error() {
     echo "❌ $1"
 }
 
-echo "🚀 === DÉPLOIEMENT DINOR DASHBOARD FORGE (VERSION FINALE) ==="
+echo "🚀 === DÉPLOIEMENT DINOR DASHBOARD FORGE ==="
 echo ""
 
 # 1. Mise en mode maintenance
 log_info "🔄 Mise en mode maintenance..."
 $FORGE_PHP artisan down --retry=60 --render="errors::503" --secret="dinor-maintenance-secret" || log_warning "Impossible de mettre en mode maintenance"
 
-# 2. CORRECTION RAPIDE DES PERMISSIONS (INTÉGRÉE)
-log_info "🔧 Correction rapide des permissions problématiques..."
-
-# Supprimer avec sudo pour forcer les permissions
-sudo rm -rf bootstrap/cache/filament 2>/dev/null || true
-sudo rm -rf bootstrap/cache/*.php 2>/dev/null || true
-sudo rm -rf bootstrap/cache/panels 2>/dev/null || true
-
-# Recréer le dossier cache avec les bonnes permissions (utiliser sudo)
-sudo mkdir -p bootstrap/cache
-sudo chmod -R 755 bootstrap/cache
-sudo chown -R forge:forge bootstrap/cache
-
-log_success "Permissions corrigées"
-
-# 3. Nettoyage préalable des conflits Git
+# 2. Nettoyage préalable des conflits Git
 log_info "🧹 Nettoyage des conflits Git potentiels..."
 
 # Supprimer les fichiers de logs qui causent des conflits
@@ -52,6 +37,7 @@ rm -rf storage/logs/laravel.log 2>/dev/null || true
 rm -rf storage/framework/cache/data/* 2>/dev/null || true
 rm -rf storage/framework/sessions/* 2>/dev/null || true
 rm -rf storage/framework/views/*.php 2>/dev/null || true
+rm -rf bootstrap/cache/*.php 2>/dev/null || true
 
 # Nettoyer le cache Git
 git rm --cached storage/logs/*.log 2>/dev/null || true
@@ -65,60 +51,19 @@ fi
 
 log_success "Conflits Git nettoyés"
 
-# 4. Mise à jour du code source avec gestion d'erreur
+# 3. Mise à jour du code source
 log_info "📥 Mise à jour du code source..."
 git fetch origin $FORGE_SITE_BRANCH
+git reset --hard origin/$FORGE_SITE_BRANCH
+log_success "Code source mis à jour"
 
-# Tentative de reset avec gestion d'erreur
-if git reset --hard origin/$FORGE_SITE_BRANCH; then
-    log_success "Code source mis à jour"
-else
-    log_warning "Problème avec git reset, tentative de nettoyage forcé..."
-    
-    # Nettoyage forcé si le reset échoue
-    git clean -fdx
-    git reset --hard origin/$FORGE_SITE_BRANCH
-    
-    if [ $? -eq 0 ]; then
-        log_success "Code source mis à jour après nettoyage forcé"
-    else
-        log_error "Impossible de mettre à jour le code source"
-        exit 1
-    fi
-fi
-
-# 5. CORRECTION PRÉVENTIVE DU PROBLÈME IGNITION (INTÉGRÉE)
-log_info "🔧 Correction préventive du problème Ignition..."
-
-# Forcer l'environnement de production
-export APP_ENV=production
-export APP_DEBUG=false
-
-# S'assurer que le dossier cache existe et a les bonnes permissions (utiliser sudo)
-sudo mkdir -p bootstrap/cache
-sudo chmod -R 755 bootstrap/cache
-sudo chown -R forge:forge bootstrap/cache
-
-# Supprimer TOUS les caches de découverte de packages
-sudo rm -f bootstrap/cache/packages.php 2>/dev/null || true
-sudo rm -f bootstrap/cache/services.php 2>/dev/null || true
-sudo rm -f bootstrap/cache/config.php 2>/dev/null || true
-sudo rm -f bootstrap/cache/routes-v7.php 2>/dev/null || true
-
-# Créer un cache de packages vide pour éviter le chargement d'Ignition
-sudo tee bootstrap/cache/packages.php > /dev/null << 'EOF'
-<?php return array ();
-EOF
-
-log_success "Problème Ignition prévenu"
-
-# 6. Nettoyage préalable des dépendances
+# 4. Nettoyage préalable des dépendances
 log_info "🧹 Nettoyage des anciennes dépendances..."
 rm -rf vendor/ 2>/dev/null || true
 rm -f composer.lock 2>/dev/null || true
 log_success "Anciennes dépendances supprimées"
 
-# 7. Installation des dépendances Composer
+# 5. Installation des dépendances Composer avec nunomaduro/collision
 log_info "📦 Installation des dépendances Composer..."
 $FORGE_COMPOSER install --no-dev --no-interaction --prefer-dist --optimize-autoloader
 if [ $? -ne 0 ]; then
@@ -127,7 +72,7 @@ if [ $? -ne 0 ]; then
 fi
 log_success "Dépendances Composer installées"
 
-# 8. Vérification que les dépendances critiques sont installées
+# 6. Vérification que les dépendances critiques sont installées
 log_info "🔍 Vérification des dépendances critiques..."
 if [ ! -d "vendor/nunomaduro/collision" ]; then
     log_warning "Tentative d'installation manuelle de nunomaduro/collision..."
@@ -135,7 +80,7 @@ if [ ! -d "vendor/nunomaduro/collision" ]; then
 fi
 log_success "Dépendances critiques vérifiées"
 
-# 9. Génération de la clé d'application si nécessaire
+# 7. Génération de la clé d'application si nécessaire
 log_info "🔑 Vérification de la clé d'application..."
 if ! grep -q "APP_KEY=base64:" .env 2>/dev/null; then
     log_warning "Génération d'une nouvelle clé d'application..."
@@ -145,7 +90,7 @@ else
     log_info "Clé d'application déjà présente"
 fi
 
-# 10. Configuration des variables d'environnement admin
+# 8. Configuration des variables d'environnement admin
 log_info "⚙️ Configuration des variables admin..."
 
 # Fonction pour mettre à jour les variables d'environnement
@@ -188,14 +133,14 @@ update_env_var "LOG_LEVEL" "debug"
 
 log_success "Variables d'environnement configurées"
 
-# 11. Nettoyage des caches avant NPM  
+# 9. Nettoyage des caches avant NPM  
 log_info "🧹 Nettoyage des caches Laravel..."
 $FORGE_PHP artisan optimize:clear || log_warning "Problème avec optimize:clear, mais continue..."
 # Nettoyage manuel des caches en cas d'échec
 rm -rf bootstrap/cache/*.php storage/framework/cache/data/* storage/framework/views/*.php 2>/dev/null || true
 log_success "Caches Laravel nettoyés"
 
-# 12. Installation complète des dépendances NPM
+# 10. Installation complète des dépendances NPM
 log_info "📦 Installation des dépendances NPM..."
 rm -rf node_modules/ package-lock.json 2>/dev/null || true
 npm install
@@ -205,7 +150,7 @@ if [ $? -ne 0 ]; then
 fi
 log_success "Dépendances NPM installées"
 
-# 13. Build des assets de production
+# 11. Build des assets de production
 log_info "🏗️ Build des assets de production..."
 # Build Laravel assets
 npx vite build || npm run build || npm run production
@@ -213,30 +158,56 @@ if [ $? -ne 0 ]; then
     log_warning "Build Laravel assets échoué, mais continue..."
 fi
 
-# Build PWA Vue.js
-log_info "🏗️ Build PWA Vue.js..."
+# Build PWA Vue.js avec génération de fichiers statiques
+log_info "🏗️ Build PWA Vue.js avec optimisations..."
+
+# Générer les fichiers statiques PWA optimisés
 npm run pwa:build
-if [ $? -ne 0 ]; then
+if [ $? -eq 0 ]; then
+    log_success "PWA buildée avec succès"
+    
+    # Vérifier que les fichiers ont été générés
+    if [ -d "public/pwa/dist" ]; then
+        log_info "📁 Fichiers PWA générés dans public/pwa/dist/"
+        
+        # Créer les dossiers de cache si nécessaires
+        mkdir -p public/pwa/cache
+        mkdir -p public/pwa/offline
+        
+        # Copier les assets critiques pour le cache
+        if [ -d "public/pwa/dist/assets" ]; then
+            cp -r public/pwa/dist/assets/* public/pwa/cache/ 2>/dev/null || true
+        fi
+        
+        # Créer un fichier de version pour le cache busting
+        echo "$(date +%s)" > public/pwa/version.txt
+        
+        log_success "Cache PWA configuré"
+    else
+        log_warning "Dossier PWA dist non trouvé"
+    fi
+else
     log_warning "Build PWA échoué, mais continue..."
 fi
+
 log_success "Assets buildés"
 
-# 14. Recréation des dossiers nécessaires avec permissions
+# 12. Recréation des dossiers nécessaires avec permissions
 log_info "📁 Création des dossiers de storage..."
-sudo mkdir -p storage/logs
-sudo mkdir -p storage/framework/cache/data
-sudo mkdir -p storage/framework/sessions
-sudo mkdir -p storage/framework/views
-sudo mkdir -p storage/app/public
-sudo mkdir -p bootstrap/cache
+mkdir -p storage/logs
+mkdir -p storage/framework/cache/data
+mkdir -p storage/framework/sessions
+mkdir -p storage/framework/views
+mkdir -p storage/app/public
+mkdir -p bootstrap/cache
 
-# Configuration des permissions de base (utiliser sudo)
-sudo chmod -R 775 storage bootstrap/cache 2>/dev/null || true
-sudo chown -R forge:www-data storage bootstrap/cache 2>/dev/null || true
+# Configuration des permissions de base
+chmod -R 775 storage bootstrap/cache 2>/dev/null || true
+chown -R forge:www-data storage bootstrap/cache 2>/dev/null || true
 
 log_success "Dossiers de storage créés avec permissions"
 
-# 15. Migration de la base de données
+# 13. Migration de la base de données
 log_info "🗄️ Migration de la base de données..."
 if [ -f artisan ]; then
     $FORGE_PHP artisan migrate --force
@@ -249,7 +220,7 @@ else
     log_warning "Fichier artisan non trouvé"
 fi
 
-# 16. Configuration de l'utilisateur admin (amélioré)
+# 14. Configuration de l'utilisateur admin (amélioré)
 log_info "👤 Configuration de l'utilisateur admin..."
 
 # Essayer d'abord le seeder spécialisé pour la production
@@ -261,8 +232,15 @@ else
     log_success "✅ Admin configuré avec le seeder standard"
 fi
 
-# Exécuter les seeders manquants pour les panels
-log_info "📋 Exécution des seeders manquants pour les panels..."
+# Exécuter les seeders manquants pour les panels Filament
+log_info "📋 Exécution des seeders manquants pour les panels Filament..."
+
+# CategorySeeder - crucial pour toutes les ressources qui dépendent des catégories
+if $FORGE_PHP artisan db:seed --class=CategorySeeder --force 2>/dev/null; then
+    log_success "✅ CategorySeeder exécuté (catégories dans Filament)"
+else
+    log_warning "CategorySeeder non trouvé ou erreur"
+fi
 
 # EventCategoriesSeeder - crucial pour les panels d'événements
 if $FORGE_PHP artisan db:seed --class=EventCategoriesSeeder --force 2>/dev/null; then
@@ -278,14 +256,28 @@ else
     log_warning "IngredientsSeeder non trouvé ou erreur"
 fi
 
-# DemoContentSeeder - pour le contenu de démonstration (bannières, recettes, etc.)
-if $FORGE_PHP artisan db:seed --class=DemoContentSeeder --force 2>/dev/null; then
-    log_success "✅ DemoContentSeeder exécuté - contenu de démonstration créé"
+# PwaMenuItemSeeder - pour le panel Menu PWA
+if $FORGE_PHP artisan db:seed --class=PwaMenuItemSeeder --force 2>/dev/null; then
+    log_success "✅ PwaMenuItemSeeder exécuté (Menu PWA dans Filament)"
 else
-    log_warning "DemoContentSeeder non trouvé ou erreur"
+    log_warning "PwaMenuItemSeeder non trouvé ou erreur"
 fi
 
-log_success "✅ Seeders manquants traités"
+# UserSeeder - pour créer des utilisateurs test (panel Utilisateurs)
+if $FORGE_PHP artisan db:seed --class=UserSeeder --force 2>/dev/null; then
+    log_success "✅ UserSeeder exécuté (Utilisateurs dans Filament)"
+else
+    log_warning "UserSeeder non trouvé ou erreur"
+fi
+
+# ProductionDataSeeder - pour créer du contenu Dinor TV, etc.
+if $FORGE_PHP artisan db:seed --class=ProductionDataSeeder --force 2>/dev/null; then
+    log_success "✅ ProductionDataSeeder exécuté (contenu Dinor TV, etc.)"
+else
+    log_warning "ProductionDataSeeder non trouvé ou erreur"
+fi
+
+log_success "✅ Tous les seeders Filament exécutés"
 
 # Vérification que l'admin est bien créé
 ADMIN_CHECK=$($FORGE_PHP artisan tinker --execute="
@@ -309,7 +301,7 @@ else
         \$admin = App\\Models\\AdminUser::updateOrCreate(
             ['email' => 'admin@dinor.app'],
             [
-                'name' => 'AdministrateurDinor',
+                                 'name' => 'AdministrateurDinor',
                 'password' => bcrypt('Dinor2024!Admin'),
                 'email_verified_at' => now(),
                 'is_active' => true
@@ -322,25 +314,74 @@ else
     " 2>/dev/null || log_error "Création manuelle échouée"
 fi
 
-# 17. Lien symbolique de stockage
+# 15. Lien symbolique de stockage
 log_info "🔗 Création du lien symbolique de stockage..."
 $FORGE_PHP artisan storage:link || log_warning "Lien symbolique déjà existant"
 log_success "Lien symbolique vérifié"
 
-# 18. Optimisation Laravel pour la production
+# 16. Optimisation Laravel pour la production
 log_info "⚡ Optimisation Laravel..."
 $FORGE_PHP artisan config:cache
 $FORGE_PHP artisan route:cache
 $FORGE_PHP artisan view:cache
 log_success "Optimisations appliquées"
 
-# 19. Configuration des permissions (sécurisé pour Forge)
+# 16.5. Vérification conditionnelle des caches Filament/Livewire
+log_info "🔍 Vérification des changements nécessitant un vidage de cache..."
+
+# Vérifier si des fichiers critiques ont changé dans le dernier commit
+CACHE_CRITICAL_CHANGES=$(git diff HEAD~1 --name-only 2>/dev/null | grep -E "(config/|routes/|app/Filament.*\.php|app/Livewire.*\.php|app/.*Resource.*\.php)" | wc -l)
+
+if [ "$CACHE_CRITICAL_CHANGES" -gt 0 ]; then
+    log_warning "🔄 Changements détectés dans les composants Filament/Livewire ($CACHE_CRITICAL_CHANGES fichiers)"
+    log_info "📂 Fichiers modifiés:"
+    git diff HEAD~1 --name-only 2>/dev/null | grep -E "(config/|routes/|app/Filament.*\.php|app/Livewire.*\.php|app/.*Resource.*\.php)" | sed 's/^/   - /'
+    
+    log_info "🧹 Vidage des caches Filament et redécouverte des composants..."
+    
+    # Vider les caches Laravel spécifiques
+    $FORGE_PHP artisan cache:clear || log_warning "Problème avec cache:clear"
+    $FORGE_PHP artisan config:clear || log_warning "Problème avec config:clear"
+    $FORGE_PHP artisan view:clear || log_warning "Problème avec view:clear"
+    $FORGE_PHP artisan route:clear || log_warning "Problème avec route:clear"
+    
+    # Redécouverte des composants Livewire
+    if $FORGE_PHP artisan livewire:discover 2>/dev/null; then
+        log_success "✅ Composants Livewire redécouverts"
+    else
+        log_warning "⚠️ Commande livewire:discover non disponible ou échouée"
+    fi
+    
+    # Vider les caches PWA
+    $FORGE_PHP artisan tinker --execute="
+    try {
+        \Illuminate\Support\Facades\Cache::tags(['pwa', 'recipes', 'events', 'tips', 'dinor-tv', 'pages'])->flush();
+        echo 'PWA_CACHE_CLEARED';
+    } catch (Exception \$e) {
+        echo 'PWA_CACHE_ERROR:' . \$e->getMessage();
+    }
+    " 2>/dev/null | grep -q "PWA_CACHE_CLEARED" && log_success "✅ Caches PWA vidés" || log_warning "⚠️ Problème avec les caches PWA"
+    
+    # Optimiser l'autoloader
+    $FORGE_COMPOSER dump-autoload --optimize || log_warning "Problème avec dump-autoload"
+    
+    # Reconstruire les caches optimisés
+    $FORGE_PHP artisan config:cache
+    $FORGE_PHP artisan route:cache
+    $FORGE_PHP artisan view:cache
+    
+    log_success "✅ Caches Filament/Livewire mis à jour"
+else
+    log_info "✅ Aucun changement critique détecté - pas de vidage de cache nécessaire"
+fi
+
+# 17. Configuration des permissions (sécurisé pour Forge)
 log_info "🔧 Configuration des permissions..."
-sudo chmod -R 755 storage bootstrap/cache 2>/dev/null || true
-sudo chown -R forge:forge storage bootstrap/cache 2>/dev/null || true
+chmod -R 755 storage bootstrap/cache 2>/dev/null || true
+chown -R forge:forge storage bootstrap/cache 2>/dev/null || true
 log_success "Permissions configurées"
 
-# 20. Vérification finale de l'état de l'application
+# 18. Vérification finale de l'état de l'application
 log_info "🔍 Vérification finale..."
 
 # Test rapide de la connexion à la base de données
@@ -362,13 +403,13 @@ else
     log_warning "Vérification finale admin: ⚠️ Problème potentiel"
 fi
 
-# 21. Rechargement PHP-FPM
+# 19. Rechargement PHP-FPM (comme dans le script original)
 log_info "🔄 Rechargement PHP-FPM..."
 touch /tmp/fpmlock 2>/dev/null || true
 ( flock -w 10 9 || exit 1
     echo 'Rechargement PHP FPM...'; sudo -S service $FORGE_PHP_FPM reload ) 9</tmp/fpmlock 2>/dev/null || log_warning "Rechargement PHP-FPM échoué"
 
-# 22. Sortie du mode maintenance
+# 20. Sortie du mode maintenance
 log_info "🟢 Sortie du mode maintenance..."
 $FORGE_PHP artisan up
 log_success "Application remise en ligne"
@@ -381,15 +422,8 @@ echo "   🌐 Dashboard: https://new.dinorapp.com/admin/login"
 echo "   📧 Email: admin@dinor.app"
 echo "   🔑 Mot de passe: Dinor2024!Admin"
 echo ""
-echo "📋 Contenu de démonstration créé par DemoContentSeeder:"
-echo "   - 4 recettes traditionnelles ivoiriennes"
-echo "   - 4 astuces culinaires"
-echo "   - 4 événements gastronomiques"
-echo "   - Bannières pour la page d'accueil"
-echo ""
 echo "📋 Vérifications recommandées:"
 echo "   - API Test: https://new.dinorapp.com/api/test/database-check"
-echo "   - API Bannières: https://new.dinorapp.com/api/v1/banners"
 echo "   - Logs: storage/logs/laravel.log"
 echo ""
 echo "💡 Note: Identifiants admin identiques au développement local"
