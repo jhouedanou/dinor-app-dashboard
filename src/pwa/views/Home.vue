@@ -220,86 +220,53 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import apiService from '@/services/api'
+import { useRecipes } from '@/composables/useRecipes'
+import { useTips } from '@/composables/useTips'
+import { useEvents } from '@/composables/useEvents'
+import { useDinorTV } from '@/composables/useDinorTV'
 
 export default {
   name: 'Home',
   setup() {
     const router = useRouter()
     
-    // State
-    const recipes = ref([])
-    const tips = ref([])
-    const events = ref([])
-    const featuredVideo = ref(null)
-    const stats = ref({
-      recipes: 0,
-      tips: 0,
-      events: 0
-    })
+    // Composables avec cache
+    const { 
+      recipes: recipesData, 
+      featuredRecipes,
+      loading: loadingRecipes 
+    } = useRecipes({ limit: 6, featured: true })
     
-    const loadingRecipes = ref(false)
-    const loadingTips = ref(false)
-    const loadingEvents = ref(false)
+    const { 
+      tips: tipsData, 
+      featuredTips,
+      loading: loadingTips 
+    } = useTips({ limit: 6, featured: true })
     
-    // Methods
-    const loadRecipes = async () => {
-      loadingRecipes.value = true
-      try {
-        const response = await apiService.getRecipes({ limit: 6, featured: true })
-        if (response.success) {
-          recipes.value = response.data
-          stats.value.recipes = response.meta?.total || response.data.length
-        }
-      } catch (error) {
-        console.error('Error loading recipes:', error)
-      } finally {
-        loadingRecipes.value = false
-      }
-    }
+    const { 
+      events: eventsData, 
+      activeEvents,
+      loading: loadingEvents 
+    } = useEvents({ limit: 6, status: 'active' })
     
-    const loadTips = async () => {
-      loadingTips.value = true
-      try {
-        const response = await apiService.getTips({ limit: 6, featured: true })
-        if (response.success) {
-          tips.value = response.data
-          stats.value.tips = response.meta?.total || response.data.length
-        }
-      } catch (error) {
-        console.error('Error loading tips:', error)
-      } finally {
-        loadingTips.value = false
-      }
-    }
+    const { 
+      videos: videosData, 
+      featuredVideos 
+    } = useDinorTV({ limit: 1, featured: true })
     
-    const loadEvents = async () => {
-      loadingEvents.value = true
-      try {
-        const response = await apiService.getEvents({ limit: 6, status: 'active' })
-        if (response.success) {
-          events.value = response.data
-          stats.value.events = response.meta?.total || response.data.length
-        }
-      } catch (error) {
-        console.error('Error loading events:', error)
-      } finally {
-        loadingEvents.value = false
-      }
-    }
+    // Computed pour les données
+    const recipes = computed(() => featuredRecipes.value.slice(0, 6))
+    const tips = computed(() => featuredTips.value.slice(0, 6))
+    const events = computed(() => activeEvents.value.slice(0, 6))
+    const featuredVideo = computed(() => featuredVideos.value[0] || null)
     
-    const loadFeaturedVideo = async () => {
-      try {
-        const response = await apiService.getVideos({ limit: 1, featured: true })
-        if (response.success && response.data.length > 0) {
-          featuredVideo.value = response.data[0]
-        }
-      } catch (error) {
-        console.error('Error loading featured video:', error)
-      }
-    }
+    const stats = computed(() => ({
+      recipes: recipesData.value?.meta?.total || recipes.value.length,
+      tips: tipsData.value?.meta?.total || tips.value.length,
+      events: eventsData.value?.meta?.total || events.value.length
+    }))
     
     const scrollCarousel = (type, direction) => {
       const carousel = {
@@ -383,14 +350,6 @@ export default {
       
       return '/images/default-video.jpg'
     }
-    
-    // Lifecycle
-    onMounted(() => {
-      loadRecipes()
-      loadTips()
-      loadEvents()
-      loadFeaturedVideo()
-    })
     
     return {
       recipes,

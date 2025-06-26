@@ -60,6 +60,9 @@ export default {
     ]
     
     const isActive = (path) => {
+      if (path === '/') {
+        return route.path === '/'
+      }
       return route.path.startsWith(path)
     }
     

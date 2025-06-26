@@ -158,12 +158,38 @@ if [ $? -ne 0 ]; then
     log_warning "Build Laravel assets échoué, mais continue..."
 fi
 
-# Build PWA Vue.js
-log_info "🏗️ Build PWA Vue.js..."
+# Build PWA Vue.js avec génération de fichiers statiques
+log_info "🏗️ Build PWA Vue.js avec optimisations..."
+
+# Générer les fichiers statiques PWA optimisés
 npm run pwa:build
-if [ $? -ne 0 ]; then
+if [ $? -eq 0 ]; then
+    log_success "PWA buildée avec succès"
+    
+    # Vérifier que les fichiers ont été générés
+    if [ -d "public/pwa/dist" ]; then
+        log_info "📁 Fichiers PWA générés dans public/pwa/dist/"
+        
+        # Créer les dossiers de cache si nécessaires
+        mkdir -p public/pwa/cache
+        mkdir -p public/pwa/offline
+        
+        # Copier les assets critiques pour le cache
+        if [ -d "public/pwa/dist/assets" ]; then
+            cp -r public/pwa/dist/assets/* public/pwa/cache/ 2>/dev/null || true
+        fi
+        
+        # Créer un fichier de version pour le cache busting
+        echo "$(date +%s)" > public/pwa/version.txt
+        
+        log_success "Cache PWA configuré"
+    else
+        log_warning "Dossier PWA dist non trouvé"
+    fi
+else
     log_warning "Build PWA échoué, mais continue..."
 fi
+
 log_success "Assets buildés"
 
 # 12. Recréation des dossiers nécessaires avec permissions
