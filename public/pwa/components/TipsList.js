@@ -153,9 +153,17 @@ const TipsList = {
         const loadTips = async () => {
             try {
                 loading.value = true;
-                const response = await fetch('/api/tips');
+                const response = await fetch('/api/v1/tips', {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Cache-Control': 'no-cache'
+                    }
+                });
                 if (response.ok) {
-                    tips.value = await response.json();
+                    const result = await response.json();
+                    if (result.success && result.data) {
+                        tips.value = result.data;
+                    }
                 } else {
                     console.error('Erreur lors du chargement des astuces');
                 }
@@ -167,8 +175,8 @@ const TipsList = {
         };
 
         const selectTip = (tip) => {
-            // Navigation vers la page détail de l'astuce
-            window.location.href = `/pwa/tip.html?id=${tip.id}`;
+            // Navigation vers la page détail de l'astuce avec Vue Router
+            VueRouter.useRouter().push(`/tip/${tip.id}`);
         };
 
         const getDifficultyClass = (difficulty) => {

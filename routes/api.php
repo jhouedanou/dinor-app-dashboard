@@ -149,6 +149,10 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     Route::post('/comments', [CommentController::class, 'store']);
     Route::put('/comments/{comment}', [CommentController::class, 'update']);
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy']);
+    
+    // Routes de suppression pour l'administration
+    Route::delete('/recipes/{recipe}', [RecipeController::class, 'destroy']);
+    Route::delete('/tips/{tip}', [TipController::class, 'destroy']);
 });
 
 // Routes de test pour diagnostiquer le problème des données vides

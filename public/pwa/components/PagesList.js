@@ -231,6 +231,10 @@ const PagesList = {
                 if (page) {
                     currentPage.value = page;
                 }
+            } else if (pages.value.length > 0) {
+                // Ouvrir automatiquement la première page si aucune page spécifique n'est demandée
+                currentPage.value = pages.value[0];
+                router.push(`/pages/${pages.value[0].id}`);
             }
         });
         

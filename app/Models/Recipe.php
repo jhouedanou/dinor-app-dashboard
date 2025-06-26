@@ -6,12 +6,11 @@ use App\Traits\Likeable;
 use App\Traits\Commentable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Recipe extends Model
 {
-    use HasFactory, SoftDeletes, Likeable, Commentable;
+    use HasFactory, Likeable, Commentable;
 
     protected $fillable = [
         'title',

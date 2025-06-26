@@ -10,11 +10,19 @@ class RecipeController extends Controller
 {
     public function index(Request $request)
     {
-        // Version de diagnostic sans filtres restrictifs
+        // Par défaut, ne retourner que les recettes publiées et non supprimées
         $query = Recipe::with('category')
+            ->where('is_published', true)
             ->orderBy('created_at', 'desc');
 
-        // Filtres optionnels seulement
+        // Permettre d'inclure les non publiées pour l'admin
+        if ($request->has('include_unpublished') && $request->boolean('include_unpublished')) {
+            $query = Recipe::with('category')->orderBy('created_at', 'desc');
+        }
+
+
+
+        // Filtres optionnels
         if ($request->has('category_id')) {
             $query->where('category_id', $request->category_id);
         }
@@ -25,10 +33,6 @@ class RecipeController extends Controller
 
         if ($request->has('featured')) {
             $query->where('is_featured', true);
-        }
-
-        if ($request->has('published_only')) {
-            $query->where('is_published', true);
         }
 
         if ($request->has('search')) {
@@ -55,7 +59,9 @@ class RecipeController extends Controller
                 'published_recipes' => Recipe::where('is_published', true)->count(),
                 'featured_recipes' => Recipe::where('is_featured', true)->count(),
             ]
-        ]);
+        ])->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+          ->header('Pragma', 'no-cache')
+          ->header('Expires', '0');
     }
 
     public function show($id)
@@ -111,5 +117,30 @@ class RecipeController extends Controller
             'success' => true,
             'data' => $categories
         ]);
+    }
+    
+    /**
+     * Supprimer une recette
+     */
+    public function destroy(Request $request, Recipe $recipe)
+    {
+        try {
+            // Vérifier les permissions si nécessaire
+            // if (!$request->user()->can('delete', $recipe)) {
+            //     return response()->json(['success' => false, 'message' => 'Non autorisé'], 403);
+            // }
+            
+            $recipe->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Recette supprimée avec succès'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la suppression: ' . $e->getMessage()
+            ], 500);
+        }
     }
 } 

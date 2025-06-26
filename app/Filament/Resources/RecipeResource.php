@@ -34,9 +34,9 @@ class RecipeResource extends Resource
                             ->label('Titre')
                             ->required()
                             ->maxLength(255)
-                            ->live()
-                            ->afterStateUpdated(function ($context, $state, $set) {
-                                if ($context === 'create') {
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function ($context, $state, $set, $get) {
+                                if ($context === 'create' && empty($get('slug'))) {
                                     $set('slug', \Str::slug($state));
                                 }
                             }),
@@ -45,7 +45,8 @@ class RecipeResource extends Resource
                             ->label('Slug URL')
                             ->required()
                             ->maxLength(255)
-                            ->unique(Recipe::class, 'slug', ignoreRecord: true),
+                            ->unique(Recipe::class, 'slug', ignoreRecord: true)
+                            ->helperText('Se génère automatiquement à partir du titre. Modifiable manuellement.'),
                         
                         CategorySelect::make('category_id'),
                             
@@ -316,19 +317,32 @@ class RecipeResource extends Resource
                     ->query(function (Builder $query) {
                         return $query->where('is_published', true);
                     }),
-                Tables\Filters\TrashedFilter::make(),
+
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make()
                     ->url(fn (Recipe $record): string => static::getUrl('edit', ['record' => $record])),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->before(function ($record) {
+                        // Supprimer les relations polymorphes avant la suppression principale
+                        $record->likes()->delete();
+                        $record->comments()->delete();
+                    })
+                    ->successNotificationTitle('Recette supprimée avec succès'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->label('Supprimer sélectionnées')
+                        ->before(function ($records) {
+                            // Supprimer les relations polymorphes pour chaque enregistrement
+                            foreach ($records as $record) {
+                                $record->likes()->delete();
+                                $record->comments()->delete();
+                            }
+                        })
+                        ->successNotificationTitle('Recettes supprimées avec succès'),
                 ]),
             ]);
     }
@@ -352,9 +366,7 @@ class RecipeResource extends Resource
     
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]);
+        // Suppression directe, pas de soft delete
+        return parent::getEloquentQuery();
     }
 } 

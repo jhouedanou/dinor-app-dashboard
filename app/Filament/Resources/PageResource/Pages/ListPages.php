@@ -10,6 +10,16 @@ class ListPages extends ListRecords
 {
     protected static string $resource = PageResource::class;
 
+    public function mount(): void
+    {
+        // Rediriger directement vers la création d'une page si aucune page n'existe
+        $pagesCount = PageResource::getModel()::count();
+        
+        if ($pagesCount === 0) {
+            redirect()->to(PageResource::getUrl('create'));
+        }
+    }
+
     protected function getHeaderActions(): array
     {
         return [

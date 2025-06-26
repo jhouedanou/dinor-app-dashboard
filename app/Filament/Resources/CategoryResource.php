@@ -172,11 +172,55 @@ class CategoryResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->requiresConfirmation()
+                    ->modalHeading('Supprimer la catégorie')
+                    ->modalDescription(function ($record) {
+                        $recipesCount = $record->recipes()->count();
+                        $tipsCount = $record->tips()->count();
+                        $eventsCount = $record->events()->count();
+                        
+                        $message = 'Êtes-vous sûr de vouloir supprimer cette catégorie ?';
+                        
+                        if ($recipesCount + $tipsCount + $eventsCount > 0) {
+                            $message .= "\n\nCela supprimera également :";
+                            if ($recipesCount > 0) $message .= "\n• {$recipesCount} recette(s)";
+                            if ($tipsCount > 0) $message .= "\n• {$tipsCount} astuce(s)";
+                            if ($eventsCount > 0) $message .= "\n• {$eventsCount} événement(s)";
+                        }
+                        
+                        return $message;
+                    })
+                    ->modalSubmitActionLabel('Oui, supprimer'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->requiresConfirmation()
+                        ->modalHeading('Supprimer les catégories sélectionnées')
+                        ->modalDescription(function ($records) {
+                            $totalRecipes = 0;
+                            $totalTips = 0;
+                            $totalEvents = 0;
+                            
+                            foreach ($records as $record) {
+                                $totalRecipes += $record->recipes()->count();
+                                $totalTips += $record->tips()->count(); 
+                                $totalEvents += $record->events()->count();
+                            }
+                            
+                            $message = 'Êtes-vous sûr de vouloir supprimer ces catégories ?';
+                            
+                            if ($totalRecipes + $totalTips + $totalEvents > 0) {
+                                $message .= "\n\nCela supprimera également :";
+                                if ($totalRecipes > 0) $message .= "\n• {$totalRecipes} recette(s)";
+                                if ($totalTips > 0) $message .= "\n• {$totalTips} astuce(s)";
+                                if ($totalEvents > 0) $message .= "\n• {$totalEvents} événement(s)";
+                            }
+                            
+                            return $message;
+                        })
+                        ->modalSubmitActionLabel('Oui, supprimer tout'),
                     Tables\Actions\BulkAction::make('activate')
                         ->label('Activer')
                         ->icon('heroicon-o-check-circle')

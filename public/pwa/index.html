@@ -59,6 +59,14 @@
                 padding-bottom: calc(80px + env(safe-area-inset-bottom, 0));
             }
         }
+        
+        /* Styles pour desktop - navigation en haut */
+        @media (min-width: 768px) {
+            .md3-main-content.with-bottom-nav {
+                padding-top: 80px; /* Hauteur de la navigation en haut */
+                padding-bottom: 0; /* Supprimer le padding du bas */
+            }
+        }
         .loading-spinner {
             display: flex;
             justify-content: center;
@@ -100,46 +108,38 @@
     <script src="https://unpkg.com/vue-router@4/dist/vue-router.global.prod.js"></script>
     
     <!-- Auth & API managers (réutilisés des pages existantes) -->
-    <script src="/js/auth-manager.js"></script>
-    <script src="/js/likes-manager.js"></script>
-    <script src="/js/comments-manager.js"></script>
+    <script src="/js/auth-manager.js?v=1.1"></script>
+    <script src="/js/likes-manager.js?v=1.1"></script>
+    <script src="/js/comments-manager.js?v=1.1"></script>
     
     <!-- Bottom Navigation Component -->
-    <script src="components/navigation/BottomNavigation.js"></script>
+    <script src="components/navigation/BottomNavigation.js?v=1.1"></script>
     
     <!-- DinorTV Component -->
-    <script src="components/DinorTV.js"></script>
+    <script src="components/DinorTV.js?v=1.1"></script>
     
     <!-- Recipe Component -->
-    <script src="components/Recipe.js"></script>
+    <script src="components/Recipe.js?v=1.1"></script>
     
     <!-- Event Component -->
-    <script src="components/Event.js"></script>
+    <script src="components/Event.js?v=1.1"></script>
     
     <!-- List Components -->
-    <script src="components/RecipesList.js"></script>
-    <script src="components/EventsList.js"></script>
-    <script src="components/PagesList.js"></script>
+    <script src="components/RecipesList.js?v=1.1"></script>
+    <script src="components/EventsList.js?v=1.1"></script>
+    <script src="components/PagesList.js?v=1.1"></script>
     
     <!-- Tip Component -->
-    <script src="components/Tip.js"></script>
+    <script src="components/Tip.js?v=1.1"></script>
+    <script src="components/TipsList.js?v=1.1"></script>
     
     <!-- App principal -->
-    <script src="app.js"></script>
+    <script src="app.js?v=1.1"></script>
     
     <!-- Service Worker -->
     <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(registration => {
-                        console.log('SW registered: ', registration);
-                    })
-                    .catch(registrationError => {
-                        console.log('SW registration failed: ', registrationError);
-                    });
-            });
-        }
+        // Service worker supprimé pour éviter les conflits avec Filament/Livewire
+        console.log('PWA démarrée sans service worker');
     </script>
     
     <!-- Installation PWA -->

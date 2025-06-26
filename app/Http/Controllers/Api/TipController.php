@@ -46,7 +46,9 @@ class TipController extends Controller
                 'per_page' => $tips->perPage(),
                 'total' => $tips->total(),
             ]
-        ]);
+        ])->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+          ->header('Pragma', 'no-cache')
+          ->header('Expires', '0');
     }
 
     public function show($id)
@@ -73,5 +75,30 @@ class TipController extends Controller
             'success' => true,
             'data' => $tips
         ]);
+    }
+    
+    /**
+     * Supprimer une astuce
+     */
+    public function destroy(Request $request, Tip $tip)
+    {
+        try {
+            // Vérifier les permissions si nécessaire
+            // if (!$request->user()->can('delete', $tip)) {
+            //     return response()->json(['success' => false, 'message' => 'Non autorisé'], 403);
+            // }
+            
+            $tip->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Astuce supprimée avec succès'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la suppression: ' . $e->getMessage()
+            ], 500);
+        }
     }
 } 

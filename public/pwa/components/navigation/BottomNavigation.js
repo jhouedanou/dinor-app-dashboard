@@ -4,7 +4,7 @@ const BottomNavigation = {
         <nav class="md3-bottom-navigation" role="navigation" aria-label="Navigation principale">
             <div class="md3-nav-container">
                 <router-link 
-                    v-for="tab in tabs" 
+                    v-for="tab in dynamicTabs" 
                     :key="tab.name"
                     :to="tab.path"
                     class="md3-nav-item"
@@ -13,7 +13,7 @@ const BottomNavigation = {
                     @click="handleTabClick(tab)">
                     <div class="md3-nav-item__indicator" v-if="isActive(tab.path)"></div>
                     <div class="md3-nav-item__icon-container">
-                        <div class="md3-nav-item__icon">
+                        <div class="md3-nav-item__icon" :style="{ color: isActive(tab.path) ? tab.color : '' }">
                             <i :class="getIconClass(tab, isActive(tab.path))"></i>
                         </div>
                         <div v-if="tab.badge" class="md3-nav-item__badge">{{ tab.badge }}</div>
@@ -24,11 +24,15 @@ const BottomNavigation = {
         </nav>
     `,
     setup() {
-        const { computed } = Vue;
+        const { computed, ref, onMounted } = Vue;
         const route = VueRouter.useRoute();
         const router = VueRouter.useRouter();
         
-        const tabs = [
+        const apiTabs = ref([]);
+        const loading = ref(false);
+        
+        // Éléments par défaut en fallback
+        const defaultTabs = [
             {
                 name: 'recipes',
                 label: 'Recettes',
@@ -76,6 +80,45 @@ const BottomNavigation = {
             }
         ];
         
+        const loadMenuItems = async () => {
+            loading.value = true;
+            try {
+                const response = await fetch('/api/pwa-menu-items', {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Cache-Control': 'no-cache'
+                    }
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success && result.data && result.data.length > 0) {
+                        // Transformer les données API en format attendu
+                        apiTabs.value = result.data.map(item => ({
+                            name: item.route,
+                            label: item.label,
+                            icon: item.icon,
+                            iconFilled: item.icon,
+                            path: `/${item.route}`,
+                            badge: null,
+                            color: item.color || '#E1251B'
+                        }));
+                    }
+                } else {
+                    console.warn('Impossible de charger les éléments du menu, utilisation du menu par défaut');
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement du menu:', error);
+            } finally {
+                loading.value = false;
+            }
+        };
+        
+        // Tabs dynamiques : utilise l'API si disponible, sinon les éléments par défaut
+        const dynamicTabs = computed(() => {
+            return apiTabs.value.length > 0 ? apiTabs.value : defaultTabs;
+        });
+        
         const isActive = (path) => {
             return route.path.startsWith(path);
         };
@@ -100,8 +143,13 @@ const BottomNavigation = {
             }
         };
         
+        onMounted(() => {
+            loadMenuItems();
+        });
+        
         return {
-            tabs,
+            dynamicTabs,
+            loading,
             isActive,
             getIconClass,
             handleTabClick

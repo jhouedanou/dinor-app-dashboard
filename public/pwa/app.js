@@ -27,8 +27,12 @@ const useApi = () => {
             const response = await fetch(url, {
                 headers: {
                     'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0',
                     ...options.headers
                 },
+                cache: 'no-store',
                 ...options
             });
             
@@ -392,6 +396,7 @@ const lazyLoad = (componentName) => {
     // Les composants sont déjà chargés via les scripts dans index.html
     const components = {
         'RecipesList': RecipesList,
+        'TipsList': TipsList,
         'EventsList': EventsList,
         'PagesList': PagesList,
         'DinorTV': DinorTV,
@@ -416,6 +421,7 @@ const routes = [
     
     // Routes principales (bottom navigation)
     { path: '/recipes', component: lazyLoad('RecipesList'), name: 'recipes' },
+    { path: '/tips', component: lazyLoad('TipsList'), name: 'tips' },
     { path: '/events', component: lazyLoad('EventsList'), name: 'events' },
     { path: '/pages', component: lazyLoad('PagesList'), name: 'pages' },
     { path: '/pages/:id', component: lazyLoad('PagesList'), name: 'page-detail' },
@@ -454,7 +460,7 @@ const App = {
         
         // Afficher la bottom nav seulement sur les pages principales
         const showBottomNav = computed(() => {
-            const mainRoutes = ['/recipes', '/events', '/pages', '/dinor-tv'];
+            const mainRoutes = ['/recipes', '/tips', '/events', '/pages', '/dinor-tv'];
             return mainRoutes.some(route_path => route.path.startsWith(route_path));
         });
         

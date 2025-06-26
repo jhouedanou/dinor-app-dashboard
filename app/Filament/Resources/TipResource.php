@@ -39,9 +39,9 @@ class TipResource extends Resource
                             ->label('Titre')
                             ->required()
                             ->maxLength(255)
-                            ->live()
-                            ->afterStateUpdated(function ($context, $state, $set) {
-                                if ($context === 'create') {
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function ($context, $state, $set, $get) {
+                                if ($context === 'create' && empty($get('slug'))) {
                                     $set('slug', \Str::slug($state));
                                 }
                             }),
@@ -50,7 +50,8 @@ class TipResource extends Resource
                             ->label('Slug URL')
                             ->required()
                             ->maxLength(255)
-                            ->unique(Tip::class, 'slug', ignoreRecord: true),
+                            ->unique(Tip::class, 'slug', ignoreRecord: true)
+                            ->helperText('Se génère automatiquement à partir du titre. Modifiable manuellement.'),
 
                         Forms\Components\Select::make('category_id')
                             ->label('Catégorie')
@@ -223,12 +224,24 @@ class TipResource extends Resource
                 Tables\Actions\DeleteAction::make()
                     ->label('Supprimer')
                     ->icon('heroicon-o-trash')
+                    ->before(function ($record) {
+                        // Supprimer les relations polymorphes avant la suppression principale
+                        $record->likes()->delete();
+                        $record->comments()->delete();
+                    })
                     ->successNotificationTitle('Astuce supprimée avec succès'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
                         ->label('Supprimer sélectionnées')
+                        ->before(function ($records) {
+                            // Supprimer les relations polymorphes pour chaque enregistrement
+                            foreach ($records as $record) {
+                                $record->likes()->delete();
+                                $record->comments()->delete();
+                            }
+                        })
                         ->successNotificationTitle('Astuces supprimées avec succès'),
 
                     Tables\Actions\BulkAction::make('publish')
@@ -284,6 +297,8 @@ class TipResource extends Resource
                         'advanced' => 'Avancé',
                     ])
                     ->native(false),
+
+
             ])
             ->emptyStateHeading('Aucune astuce créée')
             ->emptyStateDescription('Créez votre première astuce pour commencer.')
@@ -310,10 +325,8 @@ class TipResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]);
+        // Suppression directe, pas de soft delete
+        return parent::getEloquentQuery();
     }
 
     public static function getNavigationBadge(): ?string
