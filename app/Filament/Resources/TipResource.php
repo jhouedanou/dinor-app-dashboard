@@ -12,9 +12,11 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Traits\HasCacheInvalidation;
 
 class TipResource extends Resource
 {
+    use HasCacheInvalidation;
     protected static ?string $model = Tip::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-light-bulb';
@@ -268,6 +270,19 @@ class TipResource extends Resource
                         ->deselectRecordsAfterCompletion()
                         ->successNotificationTitle('Astuces marquées en vedette'),
                 ]),
+            ])
+            ->headerActions([
+                Tables\Actions\Action::make('clear_cache')
+                    ->label('Vider le cache PWA')
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('info')
+                    ->action(function () {
+                        static::invalidateCache();
+                    })
+                    ->requiresConfirmation()
+                    ->modalHeading('Vider le cache PWA')
+                    ->modalDescription('Cette action va forcer la mise à jour du contenu dans l\'application mobile. Continuer ?')
+                    ->modalSubmitActionLabel('Vider le cache'),
             ])
             ->filters([
                 Tables\Filters\TernaryFilter::make('is_published')

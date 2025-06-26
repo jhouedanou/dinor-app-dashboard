@@ -15,9 +15,11 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Traits\HasCacheInvalidation;
 
 class RecipeResource extends Resource
 {
+    use HasCacheInvalidation;
     public static ?string $model = Recipe::class;
     public static ?string $navigationIcon = 'heroicon-o-cake';
     public static ?string $navigationLabel = 'Recettes';
@@ -344,6 +346,19 @@ class RecipeResource extends Resource
                         })
                         ->successNotificationTitle('Recettes supprimées avec succès'),
                 ]),
+            ])
+            ->headerActions([
+                Tables\Actions\Action::make('clear_cache')
+                    ->label('Vider le cache PWA')
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('info')
+                    ->action(function () {
+                        static::invalidateCache();
+                    })
+                    ->requiresConfirmation()
+                    ->modalHeading('Vider le cache PWA')
+                    ->modalDescription('Cette action va forcer la mise à jour du contenu dans l\'application mobile. Continuer ?')
+                    ->modalSubmitActionLabel('Vider le cache'),
             ]);
     }
 

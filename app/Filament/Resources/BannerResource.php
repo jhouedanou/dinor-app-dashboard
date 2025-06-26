@@ -12,9 +12,11 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Traits\HasCacheInvalidation;
 
 class BannerResource extends Resource
 {
+    use HasCacheInvalidation;
     protected static ?string $model = Banner::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-megaphone';
@@ -212,6 +214,19 @@ class BannerResource extends Resource
                         ->action(fn ($records) => $records->each->update(['is_active' => false]))
                         ->deselectRecordsAfterCompletion(),
                 ]),
+            ])
+            ->headerActions([
+                Tables\Actions\Action::make('clear_cache')
+                    ->label('Vider le cache PWA')
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('info')
+                    ->action(function () {
+                        static::invalidateCache();
+                    })
+                    ->requiresConfirmation()
+                    ->modalHeading('Vider le cache PWA')
+                    ->modalDescription('Cette action va forcer la mise à jour du contenu dans l\'application mobile. Continuer ?')
+                    ->modalSubmitActionLabel('Vider le cache'),
             ])
             ->defaultSort('order', 'asc')
             ->reorderable('order')
