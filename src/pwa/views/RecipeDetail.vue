@@ -144,7 +144,7 @@
 <script>
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useApi } from '@/composables/useApi'
+import { useApiStore } from '@/stores/api'
 
 export default {
   name: 'RecipeDetail',
@@ -157,7 +157,7 @@ export default {
   setup(props) {
     const router = useRouter()
     const route = useRoute()
-    const { request } = useApi()
+    const apiStore = useApiStore()
     
     const recipe = ref(null)
     const comments = ref([])
@@ -167,7 +167,7 @@ export default {
 
     const loadRecipe = async () => {
       try {
-        const data = await request(`/api/v1/recipes/${props.id}`)
+        const data = await apiStore.get(`/recipes/${props.id}`)
         if (data.success) {
           recipe.value = data.data
           await loadComments()
@@ -182,7 +182,7 @@ export default {
 
     const loadComments = async () => {
       try {
-        const data = await request(`/api/v1/comments?type=recipe&id=${props.id}`)
+        const data = await apiStore.get(`/comments`, { type: 'recipe', id: props.id })
         if (data.success) {
           comments.value = data.data
         }
@@ -193,7 +193,7 @@ export default {
 
     const checkUserLike = async () => {
       try {
-        const data = await request(`/api/v1/likes/check?type=recipe&id=${props.id}`)
+        const data = await apiStore.get(`/likes/check`, { type: 'recipe', id: props.id })
         userLiked.value = data.success && data.data.liked
       } catch (error) {
         console.error('Erreur lors de la vérification du like:', error)

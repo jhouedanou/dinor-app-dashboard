@@ -4,6 +4,10 @@ echo "🔧 === CORRECTION RAPIDE DES PERMISSIONS ==="
 
 cd /home/forge/new.dinorapp.com
 
+echo "🔧 Configuration Git safe directory..."
+sudo chown -R forge:forge /home/forge/new.dinorapp.com
+git config --global --add safe.directory /home/forge/new.dinorapp.com
+
 echo "🔐 Suppression forcée des fichiers de cache problématiques..."
 
 # Supprimer avec sudo pour forcer les permissions
