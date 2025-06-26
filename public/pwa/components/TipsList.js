@@ -105,8 +105,8 @@ const TipsList = {
                 <div class="empty-icon">
                     <i class="material-icons">lightbulb_outline</i>
                 </div>
-                <h3>{{ searchQuery ? 'Aucune astuce trouvée' : 'Aucune astuce disponible' }}</h3>
-                <p>{{ searchQuery ? 'Essayez avec d\'autres mots-clés' : 'Les astuces seront ajoutées prochainement' }}</p>
+                <h3>{{ searchQuery ? "Aucune astuce trouvée" : "Aucune astuce disponible" }}</h3>
+                <p>{{ searchQuery ? "Essayez avec d'autres mots-clés" : "Les astuces seront ajoutées prochainement" }}</p>
                 <button v-if="searchQuery" @click="clearSearch" class="retry-btn">
                     Voir toutes les astuces
                 </button>
