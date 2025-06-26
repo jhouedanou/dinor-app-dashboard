@@ -33,8 +33,8 @@ export default {
     
     // Show bottom nav only on main pages
     const showBottomNav = computed(() => {
-      const mainRoutes = ['/recipes', '/tips', '/events', '/pages', '/dinor-tv']
-      return mainRoutes.some(routePath => route.path.startsWith(routePath))
+      const mainRoutes = ['/', '/recipes', '/tips', '/events', '/pages', '/dinor-tv']
+      return mainRoutes.some(routePath => route.path === routePath || (routePath !== '/' && route.path.startsWith(routePath)))
     })
     
     return {

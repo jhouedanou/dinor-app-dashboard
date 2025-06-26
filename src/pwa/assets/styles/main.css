@@ -1,7 +1,7 @@
 /* Main Vue.js PWA Styles */
 
 /* Import existing styles */
-@import url('/pwa/styles/dinor-color-palette.css');
+@import './dinor-color-palette.css';
 
 /* CSS Reset & Base Styles */
 *,

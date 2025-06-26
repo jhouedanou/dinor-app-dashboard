@@ -28,6 +28,12 @@ export default {
     
     const navItems = [
       { 
+        name: 'home', 
+        path: '/', 
+        icon: 'home',
+        label: 'Accueil' 
+      },
+      { 
         name: 'recipes', 
         path: '/recipes', 
         icon: 'restaurant',
@@ -50,12 +56,6 @@ export default {
         path: '/dinor-tv', 
         icon: 'play_circle',
         label: 'Dinor TV' 
-      },
-      { 
-        name: 'pages', 
-        path: '/pages', 
-        icon: 'menu_book',
-        label: 'Pages' 
       }
     ]
     

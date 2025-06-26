@@ -39,17 +39,16 @@ export default defineConfig({
             }
         }
     },
-    // Configuration pour le build PWA
+    // Configuration pour le build
     build: {
         rollupOptions: {
             input: {
+                // Laravel assets
+                app: 'resources/js/app.js',
+                'filament-admin': 'resources/css/filament/admin/theme.css',
+                // PWA assets
                 main: 'public/pwa/index.html',
-                app: 'public/pwa/app.js'
-            },
-            output: {
-                entryFileNames: 'pwa/[name]-[hash].js',
-                chunkFileNames: 'pwa/[name]-[hash].js',
-                assetFileNames: 'pwa/[name]-[hash].[ext]'
+                'pwa-app': 'public/pwa/app.js'
             }
         }
     }

@@ -1,20 +1,19 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 // Lazy load components
+const Home = () => import('@/views/Home.vue')
 const RecipesList = () => import('@/views/RecipesList.vue')
-const RecipeDetail = () => import('@/views/RecipeDetail.vue')
 const TipsList = () => import('@/views/TipsList.vue')
-const TipDetail = () => import('@/views/TipDetail.vue')
 const EventsList = () => import('@/views/EventsList.vue')
-const EventDetail = () => import('@/views/EventDetail.vue')
 const PagesList = () => import('@/views/PagesList.vue')
-const PageDetail = () => import('@/views/PageDetail.vue')
 const DinorTV = () => import('@/views/DinorTV.vue')
 
 const routes = [
   {
     path: '/',
-    redirect: '/recipes'
+    name: 'home',
+    component: Home,
+    meta: { title: 'Accueil' }
   },
   {
     path: '/recipes',
@@ -23,22 +22,10 @@ const routes = [
     meta: { title: 'Recettes' }
   },
   {
-    path: '/recipe/:id',
-    name: 'recipe-detail',
-    component: RecipeDetail,
-    meta: { title: 'Recette' }
-  },
-  {
     path: '/tips',
     name: 'tips',
     component: TipsList,
     meta: { title: 'Astuces' }
-  },
-  {
-    path: '/tip/:id',
-    name: 'tip-detail',
-    component: TipDetail,
-    meta: { title: 'Astuce' }
   },
   {
     path: '/events',
@@ -47,22 +34,10 @@ const routes = [
     meta: { title: 'Événements' }
   },
   {
-    path: '/event/:id',
-    name: 'event-detail',
-    component: EventDetail,
-    meta: { title: 'Événement' }
-  },
-  {
     path: '/pages',
     name: 'pages',
     component: PagesList,
     meta: { title: 'Pages' }
-  },
-  {
-    path: '/page/:id',
-    name: 'page-detail',
-    component: PageDetail,
-    meta: { title: 'Page' }
   },
   {
     path: '/dinor-tv',
@@ -72,7 +47,7 @@ const routes = [
   },
   {
     path: '/:pathMatch(.*)*',
-    redirect: '/recipes'
+    redirect: '/'
   }
 ]
 
