@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::table('pwa_menu_items', function (Blueprint $table) {
             // Ajouter les colonnes manquantes si elles n'existent pas
+            if (!Schema::hasColumn('pwa_menu_items', 'route')) {
+                $table->string('route')->default('')->after('icon');
+            }
             if (!Schema::hasColumn('pwa_menu_items', 'name')) {
                 $table->string('name')->nullable()->after('id');
             }
@@ -56,7 +59,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('pwa_menu_items', function (Blueprint $table) {
-            $table->dropColumn(['name', 'path', 'action_type', 'web_url', 'description']);
+            $table->dropColumn(['route', 'name', 'path', 'action_type', 'web_url', 'description']);
         });
     }
 }; 
