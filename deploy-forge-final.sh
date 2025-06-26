@@ -149,22 +149,38 @@ log_success "Caches Laravel nettoyés"
 # 10. Installation complète des dépendances NPM
 log_info "📦 Installation des dépendances NPM..."
 
-# Correction complète des permissions NPM (y compris fichiers cachés)
-log_info "🔐 Correction des permissions NPM (fichiers cachés inclus)..."
+# Nettoyage complet et agressif des permissions NPM
+log_info "🔐 Correction agressive des permissions NPM..."
+
+# Première tentative: permissions standards
 chown -R forge:forge node_modules/ 2>/dev/null || true
 chown -R forge:forge package-lock.json 2>/dev/null || true
 chown -R forge:forge .npm/ 2>/dev/null || true
-# Correction spécifique pour les fichiers cachés dans node_modules
-find node_modules/ -name ".*" -exec chown forge:forge {} \; 2>/dev/null || true
-find node_modules/ -name ".*" -exec chmod 755 {} \; 2>/dev/null || true
 chmod -R 755 node_modules/ 2>/dev/null || true
 
-# Suppression complète avec permissions corrigées (y compris fichiers cachés)
-log_info "🗑️ Suppression complète node_modules et lock files..."
-rm -rf node_modules/ 2>/dev/null || true
-rm -f package-lock.json 2>/dev/null || true
+# Correction spécifique pour tous les fichiers cachés problématiques
+if [ -d "node_modules" ]; then
+    log_info "🔧 Correction des fichiers cachés dans node_modules..."
+    find node_modules/ -name ".*" -type f -exec chown forge:forge {} \; 2>/dev/null || true
+    find node_modules/ -name ".*" -type f -exec chmod 644 {} \; 2>/dev/null || true
+    find node_modules/ -name ".*" -type d -exec chown forge:forge {} \; 2>/dev/null || true
+    find node_modules/ -name ".*" -type d -exec chmod 755 {} \; 2>/dev/null || true
+fi
+
+# Suppression forcée des fichiers problématiques spécifiques
+log_info "🗑️ Suppression forcée des fichiers problématiques..."
+rm -f node_modules/.package-lock.json 2>/dev/null || true
 rm -f .package-lock.json 2>/dev/null || true
+rm -f package-lock.json 2>/dev/null || true
+
+# Nettoyage total avec plusieurs méthodes
+rm -rf node_modules/ 2>/dev/null || true
+[ -d "node_modules" ] && find node_modules/ -delete 2>/dev/null || true
 rm -rf .npm/ 2>/dev/null || true
+
+# Nettoyage du cache NPM utilisateur
+rm -rf ~/.npm/_cacache 2>/dev/null || true
+rm -rf /home/forge/.npm/_cacache 2>/dev/null || true
 
 # Installation NPM avec gestion d'erreurs améliorée
 log_info "🚀 Tentative d'installation NPM..."
@@ -175,15 +191,35 @@ elif npm ci --no-fund --no-audit 2>/dev/null; then
 elif npm install --force --no-fund --no-audit; then
     log_warning "Dépendances NPM installées avec --force"
 else
-    log_warning "Échec NPM standard, tentative avec sudo..."
-    # Méthode de dernier recours avec sudo
-    sudo rm -rf node_modules/ package-lock.json .package-lock.json 2>/dev/null || true
-    if sudo npm install --no-fund --no-audit; then
-        log_warning "Dépendances NPM installées avec sudo (permissions corrigées ensuite)"
-        # Corriger les permissions après installation sudo
-        sudo chown -R forge:forge node_modules/ package-lock.json 2>/dev/null || true
+    log_warning "Échec NPM standard, nettoyage agressif et nouvelle tentative..."
+    
+    # Nettoyage agressif alternatif sans sudo
+    log_info "🧹 Nettoyage agressif du répertoire NPM..."
+    
+    # Changer vers le répertoire parent et recréer complètement
+    cd /home/forge/new.dinorapp.com
+    
+    # Suppression récursive alternative
+    [ -d "node_modules" ] && rm -rf node_modules/* 2>/dev/null || true
+    [ -d "node_modules" ] && rmdir node_modules/ 2>/dev/null || true
+    
+    # Nettoyer tous les lock files
+    rm -f package-lock.json npm-shrinkwrap.json yarn.lock 2>/dev/null || true
+    
+    # Vider complètement le cache NPM
+    npm cache clean --force 2>/dev/null || true
+    
+    # Dernière tentative avec cache désactivé
+    if npm install --no-fund --no-audit --no-optional --prefer-offline=false --cache=/tmp/npm-cache-temp; then
+        log_success "✅ NPM installé avec cache temporaire"
+        # Nettoyer le cache temporaire
+        rm -rf /tmp/npm-cache-temp 2>/dev/null || true
     else
-        log_error "Échec complet de l'installation NPM - continue sans node_modules"
+        log_error "❌ Échec complet NPM - continue avec build Vite uniquement"
+        # Créer un node_modules vide pour éviter les erreurs
+        mkdir -p node_modules/.bin
+        touch node_modules/.package-lock.json
+        chown -R forge:forge node_modules/ 2>/dev/null || true
     fi
 fi
 
