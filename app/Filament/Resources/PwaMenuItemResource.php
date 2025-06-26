@@ -187,10 +187,118 @@ class PwaMenuItemResource extends Resource
                                 'handyman' => '🔨 handyman - Bricoleur',
                                 'construction' => '🚧 construction - Construction',
                                 'electrical_services' => '⚡ electrical_services - Électricité',
+                                
+                                // ========== FONT AWESOME ICONS ==========
+                                
+                                // Navigation Font Awesome
+                                'fas fa-home' => '🏠 fa-home - Accueil (FA)',
+                                'fas fa-bars' => '☰ fa-bars - Menu (FA)',
+                                'fas fa-arrow-left' => '← fa-arrow-left - Retour (FA)',
+                                'fas fa-arrow-right' => '→ fa-arrow-right - Suivant (FA)',
+                                'fas fa-search' => '🔍 fa-search - Recherche (FA)',
+                                'fas fa-sync-alt' => '🔄 fa-sync-alt - Actualiser (FA)',
+                                'fas fa-times' => '✕ fa-times - Fermer (FA)',
+                                
+                                // Actions CRUD Font Awesome
+                                'fas fa-plus' => '+ fa-plus - Ajouter (FA)',
+                                'fas fa-plus-circle' => '⊕ fa-plus-circle - Ajouter cercle (FA)',
+                                'fas fa-minus' => '- fa-minus - Retirer (FA)',
+                                'fas fa-edit' => '✏️ fa-edit - Modifier (FA)',
+                                'fas fa-trash' => '🗑️ fa-trash - Supprimer (FA)',
+                                'fas fa-save' => '💾 fa-save - Sauvegarder (FA)',
+                                
+                                // Cuisine Font Awesome
+                                'fas fa-utensils' => '🍽️ fa-utensils - Restaurant (FA)',
+                                'fas fa-coffee' => '☕ fa-coffee - Café (FA)',
+                                'fas fa-wine-glass' => '🍷 fa-wine-glass - Vin (FA)',
+                                'fas fa-birthday-cake' => '🎂 fa-birthday-cake - Gâteau (FA)',
+                                'fas fa-apple-alt' => '🍎 fa-apple-alt - Pomme (FA)',
+                                'fas fa-pepper-hot' => '🌶️ fa-pepper-hot - Piment (FA)',
+                                'fas fa-cookie-bite' => '🍪 fa-cookie-bite - Cookie (FA)',
+                                'fas fa-hamburger' => '🍔 fa-hamburger - Hamburger (FA)',
+                                'fas fa-pizza-slice' => '🍕 fa-pizza-slice - Pizza (FA)',
+                                
+                                // Astuces Font Awesome
+                                'fas fa-lightbulb' => '💡 fa-lightbulb - Ampoule (FA)',
+                                'fas fa-question-circle' => '❓ fa-question-circle - Aide (FA)',
+                                'fas fa-info-circle' => 'ℹ️ fa-info-circle - Info (FA)',
+                                'fas fa-magic' => '✨ fa-magic - Magie (FA)',
+                                'fas fa-star' => '⭐ fa-star - Étoile (FA)',
+                                'fas fa-award' => '🏆 fa-award - Récompense (FA)',
+                                'fas fa-medal' => '🏅 fa-medal - Médaille (FA)',
+                                'fas fa-trophy' => '🏆 fa-trophy - Trophée (FA)',
+                                
+                                // Événements Font Awesome
+                                'fas fa-calendar' => '📅 fa-calendar - Calendrier (FA)',
+                                'fas fa-calendar-day' => '📅 fa-calendar-day - Jour (FA)',
+                                'fas fa-calendar-week' => '📅 fa-calendar-week - Semaine (FA)',
+                                'fas fa-clock' => '🕐 fa-clock - Horloge (FA)',
+                                'fas fa-bell' => '🔔 fa-bell - Cloche (FA)',
+                                'fas fa-gift' => '🎁 fa-gift - Cadeau (FA)',
+                                'far fa-calendar' => '📅 far fa-calendar - Calendrier outline (FA)',
+                                'far fa-clock' => '🕐 far fa-clock - Horloge outline (FA)',
+                                
+                                // Médias Font Awesome
+                                'fas fa-play' => '▶️ fa-play - Play (FA)',
+                                'fas fa-pause' => '⏸️ fa-pause - Pause (FA)',
+                                'fas fa-stop' => '⏹️ fa-stop - Stop (FA)',
+                                'fas fa-video' => '🎬 fa-video - Vidéo (FA)',
+                                'fas fa-tv' => '📺 fa-tv - TV (FA)',
+                                'fas fa-film' => '🎬 fa-film - Film (FA)',
+                                'fas fa-camera' => '📸 fa-camera - Caméra (FA)',
+                                'fas fa-play-circle' => '▶️ fa-play-circle - Play cercle (FA)',
+                                'far fa-play-circle' => '▶️ far fa-play-circle - Play cercle outline (FA)',
+                                
+                                // Communication Font Awesome
+                                'fas fa-comment' => '💬 fa-comment - Commentaire (FA)',
+                                'fas fa-comments' => '💬 fa-comments - Commentaires (FA)',
+                                'fas fa-envelope' => '✉️ fa-envelope - Email (FA)',
+                                'fas fa-phone' => '📞 fa-phone - Téléphone (FA)',
+                                'fas fa-share' => '📤 fa-share - Partager (FA)',
+                                'fas fa-heart' => '❤️ fa-heart - Cœur (FA)',
+                                'far fa-heart' => '🤍 far fa-heart - Cœur outline (FA)',
+                                'far fa-comment' => '💬 far fa-comment - Commentaire outline (FA)',
+                                'far fa-envelope' => '✉️ far fa-envelope - Email outline (FA)',
+                                
+                                // Utilisateurs Font Awesome
+                                'fas fa-user' => '👤 fa-user - Utilisateur (FA)',
+                                'fas fa-users' => '👥 fa-users - Utilisateurs (FA)',
+                                'fas fa-user-circle' => '👤 fa-user-circle - Profil (FA)',
+                                'fas fa-user-friends' => '👥 fa-user-friends - Amis (FA)',
+                                'far fa-user' => '👤 far fa-user - Utilisateur outline (FA)',
+                                'far fa-user-circle' => '👤 far fa-user-circle - Profil outline (FA)',
+                                
+                                // Favoris Font Awesome
+                                'fas fa-thumbs-up' => '👍 fa-thumbs-up - Pouce levé (FA)',
+                                'fas fa-thumbs-down' => '👎 fa-thumbs-down - Pouce baissé (FA)',
+                                'far fa-thumbs-up' => '👍 far fa-thumbs-up - Pouce levé outline (FA)',
+                                'far fa-thumbs-down' => '👎 far fa-thumbs-down - Pouce baissé outline (FA)',
+                                'far fa-star' => '⭐ far fa-star - Étoile outline (FA)',
+                                
+                                // Paramètres Font Awesome
+                                'fas fa-cog' => '⚙️ fa-cog - Paramètres (FA)',
+                                'fas fa-cogs' => '⚙️ fa-cogs - Paramètres multiples (FA)',
+                                'fas fa-wrench' => '🔧 fa-wrench - Clé (FA)',
+                                'fas fa-tools' => '🔧 fa-tools - Outils (FA)',
+                                'fas fa-hammer' => '🔨 fa-hammer - Marteau (FA)',
+                                
+                                // Statuts Font Awesome
+                                'fas fa-check' => '✅ fa-check - Validé (FA)',
+                                'fas fa-check-circle' => '✅ fa-check-circle - Validé cercle (FA)',
+                                'fas fa-times-circle' => '❌ fa-times-circle - Erreur cercle (FA)',
+                                'fas fa-exclamation-triangle' => '⚠️ fa-exclamation-triangle - Attention (FA)',
+                                'far fa-check-circle' => '✅ far fa-check-circle - Validé cercle outline (FA)',
+                                
+                                // Divers Font Awesome populaires
+                                'fas fa-fire' => '🔥 fa-fire - Feu (FA)',
+                                'fas fa-bolt' => '⚡ fa-bolt - Éclair (FA)',
+                                'fas fa-gem' => '💎 fa-gem - Gemme (FA)',
+                                'fas fa-crown' => '👑 fa-crown - Couronne (FA)',
+                                'fas fa-shield-alt' => '🛡️ fa-shield-alt - Bouclier (FA)',
                             ])
                             ->searchable()
-                            ->helperText('Icône Material Design affichée dans le menu de navigation')
-                            ->placeholder('Recherchez une icône...'),
+                            ->helperText('Icônes disponibles : Material Icons et Font Awesome. Recherchez par nom ou emoji.')
+                            ->placeholder('Recherchez une icône... (ex: lightbulb, fa-home)'),
 
                         Forms\Components\Select::make('route')
                             ->label('Route/Section')

@@ -1,162 +1,234 @@
-// Composant Tip optimisé pour PWA
+// Composant Tip avec Material Design 3 Dinor
 const Tip = {
     template: `
-        <div class="min-h-screen bg-gray-50">
-            <!-- Navigation -->
-            <nav class="nav-bar px-4 py-3">
-                <div class="max-w-7xl mx-auto flex items-center">
-                    <button @click="goBack" class="text-yellow-600 hover:text-yellow-700 mr-4">
-                        <i class="fas fa-arrow-left"></i>
+        <div class="recipe-page tip-page">
+            <!-- Navigation Material Design -->
+            <nav class="md3-top-app-bar">
+                <div class="md3-app-bar-container">
+                    <button @click="goBack" class="md3-icon-button">
+                        <i class="material-icons">arrow_back</i>
                     </button>
-                    <h1 class="text-xl font-bold text-yellow-600">Dinor</h1>
-                    <span class="ml-2 text-gray-500">/ Astuce</span>
+                    <div class="md3-app-bar-title">
+                        <span class="dinor-text-primary">Dinor</span>
+                        <span class="md3-breadcrumb">/ Astuce</span>
+                    </div>
+                    <div class="md3-app-bar-actions">
+                        <button @click="shareTip" class="md3-icon-button">
+                            <i class="material-icons">share</i>
+                        </button>
+                    </div>
                 </div>
             </nav>
 
-            <!-- Contenu -->
-            <main class="max-w-4xl mx-auto px-4 py-6">
-                <div v-if="loading" class="text-center py-12">
-                    <div class="spinner mx-auto"></div>
-                    <p class="mt-4 text-gray-600">Chargement de l'astuce...</p>
+            <!-- Contenu Material Design -->
+            <main class="md3-main-content">
+                <div v-if="loading" class="md3-loading-state">
+                    <div class="md3-circular-progress"></div>
+                    <p class="md3-body-large dinor-text-gray">Chargement de l'astuce...</p>
                 </div>
 
-                <div v-else-if="tip" class="space-y-6">
-                    <!-- En-tête -->
-                    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-                        <div v-if="tip.image_url" class="relative h-64 md:h-96">
+                <div v-else-if="tip" class="recipe-content">
+                    <!-- Hero Image Card -->
+                    <div class="md3-card md3-card-filled recipe-hero">
+                        <div class="recipe-hero-image">
                             <img 
-                                :src="tip.image_url" 
+                                :src="tip.image_url || '/images/default-recipe.jpg'" 
                                 :alt="tip.title"
-                                class="w-full h-full object-cover"
+                                class="hero-image"
                                 loading="eager">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                            <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
-                                <h1 class="text-2xl md:text-4xl font-bold">{{ tip.title }}</h1>
+                            <div class="hero-overlay dinor-gradient-primary"></div>
+                            <div class="hero-content">
+                                <h1 class="md3-display-small hero-title">{{ tip.title }}</h1>
+                                <p v-if="tip.short_description" class="md3-body-large hero-subtitle">{{ tip.short_description }}</p>
+                                <div class="hero-badges">
+                                    <div v-if="tip.difficulty_level" class="md3-chip tip-difficulty" :class="getDifficultyClass(tip.difficulty_level)">
+                                        <i class="material-icons">lightbulb</i>
+                                        <span>{{ getDifficultyLabel(tip.difficulty_level) }}</span>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div v-else class="p-8 text-center">
-                            <div class="inline-flex items-center justify-center w-20 h-20 bg-yellow-100 rounded-full mb-4">
-                                <i class="fas fa-lightbulb text-3xl text-yellow-600"></i>
-                            </div>
-                            <h1 class="text-2xl md:text-4xl font-bold text-gray-900">{{ tip.title }}</h1>
                         </div>
                     </div>
 
-                    <!-- Informations et contenu -->
-                    <div class="bg-white rounded-lg shadow-lg p-6">
-                        <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
-                            <div class="flex items-center space-x-6">
-                                <div v-if="tip.estimated_time" class="text-center">
-                                    <div class="text-xl font-bold text-yellow-600">{{ tip.estimated_time }}min</div>
-                                    <div class="text-sm text-gray-500">Temps estimé</div>
-                                </div>
-                                <div v-if="tip.difficulty_level">
-                                    <div class="text-sm text-gray-500 mb-1">Difficulté</div>
-                                    <span :class="getDifficultyClass(tip.difficulty_level)" class="px-3 py-1 rounded-full text-sm font-medium">
-                                        {{ getDifficultyLabel(tip.difficulty_level) }}
-                                    </span>
-                                </div>
-                                <div v-if="tip.category">
-                                    <div class="text-sm text-gray-500 mb-1">Catégorie</div>
-                                    <span class="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-medium">
-                                        {{ tip.category.name }}
-                                    </span>
+                    <!-- Stats Section -->
+                    <div class="md3-card md3-card-filled recipe-stats">
+                        <div v-if="tip.estimated_time" class="stat-item">
+                            <i class="material-icons stat-icon">schedule</i>
+                            <div class="stat-value">{{ tip.estimated_time }}min</div>
+                            <div class="stat-label">Temps estimé</div>
+                        </div>
+                        <div v-if="tip.category" class="stat-item">
+                            <i class="material-icons stat-icon">category</i>
+                            <div class="stat-value">{{ tip.category.name }}</div>
+                            <div class="stat-label">Catégorie</div>
+                        </div>
+                        <div v-if="tip.difficulty_level" class="stat-item">
+                            <i class="material-icons stat-icon">trending_up</i>
+                            <div class="stat-value">{{ getDifficultyLabel(tip.difficulty_level) }}</div>
+                            <div class="stat-label">Difficulté</div>
+                        </div>
+                        <div class="stat-item">
+                            <button 
+                                @click="toggleLike" 
+                                :class="[
+                                    'md3-button',
+                                    userLiked ? 'md3-button-filled' : 'md3-button-outlined'
+                                ]">
+                                <i class="material-icons">{{ userLiked ? 'favorite' : 'favorite_border' }}</i>
+                                <span>{{ likesCount }}</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tags -->
+                    <div v-if="tip.tags && tip.tags.length > 0" class="content-section">
+                        <h2 class="section-title">
+                            <i class="material-icons">tag</i>
+                            Tags
+                        </h2>
+                        <div class="tags-container">
+                            <span v-for="tag in tip.tags" :key="tag" class="md3-chip tag-chip">
+                                <span>#{{ tag }}</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Contenu principal -->
+                    <div class="content-section">
+                        <h2 class="section-title">
+                            <i class="material-icons">description</i>
+                            Contenu de l'astuce
+                        </h2>
+                        <div class="tip-content md3-body-large" v-html="tip.content"></div>
+                    </div>
+
+                    <!-- Vidéo principale -->
+                    <div v-if="tip.video_url" class="content-section">
+                        <h2 class="section-title">
+                            <i class="material-icons">play_circle</i>
+                            Vidéo explicative
+                        </h2>
+                        <div class="video-player-container">
+                            <div v-if="!videoPlayerActive" class="video-poster" @click="toggleVideoPlayer">
+                                <img 
+                                    :src="getVideoThumbnail(tip.video_url)" 
+                                    :alt="tip.title"
+                                    class="poster-image">
+                                <div class="play-button-overlay">
+                                    <div class="play-button">
+                                        <i class="material-icons">play_arrow</i>
+                                    </div>
+                                    <div class="play-text">Cliquer pour regarder</div>
                                 </div>
                             </div>
-                            <div class="flex items-center space-x-4">
-                                <button 
-                                    @click="toggleLike" 
-                                    :class="[
-                                        'flex items-center space-x-2 px-4 py-2 rounded-lg border transition-all',
-                                        userLiked ? 'bg-red-50 border-red-200 text-red-600' : 'bg-gray-50 border-gray-200 text-gray-600'
-                                    ]">
-                                    <i class="fas fa-heart"></i>
-                                    <span>{{ likesCount }}</span>
+                            <iframe 
+                                v-if="videoPlayerActive"
+                                :src="getEmbedUrl(tip.video_url)"
+                                class="video-iframe"
+                                frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen>
+                            </iframe>
+                        </div>
+                    </div>
+
+                    <!-- Carousel d'autres vidéos similaires -->
+                    <div v-if="relatedVideos.length > 0" class="content-section">
+                        <h2 class="section-title">
+                            <i class="material-icons">video_library</i>
+                            Autres astuces vidéo
+                        </h2>
+                        <div class="video-carousel">
+                            <div class="carousel-container">
+                                <button @click="scrollCarousel('left')" class="carousel-nav left" :disabled="!canScrollLeft">
+                                    <i class="material-icons">chevron_left</i>
                                 </button>
-                            </div>
-                        </div>
-
-                        <!-- Tags -->
-                        <div v-if="tip.tags && tip.tags.length > 0" class="mb-6">
-                            <div class="flex flex-wrap gap-2">
-                                <span v-for="tag in tip.tags" :key="tag" class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm">
-                                    #{{ tag }}
-                                </span>
-                            </div>
-                        </div>
-
-                        <!-- Contenu -->
-                        <div class="prose max-w-none mb-8" v-html="tip.content"></div>
-
-                        <!-- Vidéo -->
-                        <div v-if="tip.video_url" class="mt-8">
-                            <h3 class="text-xl font-bold mb-4">Vidéo explicative</h3>
-                            <div class="aspect-video">
-                                <iframe 
-                                    :src="tip.video_url" 
-                                    frameborder="0" 
-                                    allowfullscreen
-                                    class="w-full h-full rounded-lg"
-                                    loading="lazy"></iframe>
+                                <div class="carousel-track" ref="carouselTrack">
+                                    <div 
+                                        v-for="video in relatedVideos" 
+                                        :key="video.id"
+                                        @click="playRelatedVideo(video)"
+                                        class="carousel-item">
+                                        <div class="video-thumbnail">
+                                            <img 
+                                                :src="video.image_url || getVideoThumbnail(video.video_url)" 
+                                                :alt="video.title"
+                                                class="thumbnail-image">
+                                            <div class="play-overlay">
+                                                <i class="material-icons">play_arrow</i>
+                                            </div>
+                                        </div>
+                                        <div class="video-details">
+                                            <h4 class="video-title">{{ truncateText(video.title, 50) }}</h4>
+                                            <p class="video-meta">{{ getDifficultyLabel(video.difficulty_level) }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button @click="scrollCarousel('right')" class="carousel-nav right" :disabled="!canScrollRight">
+                                    <i class="material-icons">chevron_right</i>
+                                </button>
                             </div>
                         </div>
                     </div>
 
                     <!-- Commentaires -->
-                    <div class="bg-white rounded-lg shadow-lg p-6">
-                        <h2 class="text-2xl font-bold mb-6">Commentaires ({{ comments.length }})</h2>
+                    <div class="content-section">
+                        <h2 class="section-title">
+                            <i class="material-icons">comment</i>
+                            Commentaires ({{ comments.length }})
+                        </h2>
                         
                         <!-- Formulaire -->
-                        <div class="border border-gray-200 rounded-lg p-4 bg-gray-50 mb-6">
+                        <div class="comment-form">
                             <form @submit.prevent="submitComment">
                                 <textarea 
                                     v-model="newComment"
                                     rows="3" 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 mb-3"
+                                    class="md3-text-field"
                                     placeholder="Partagez votre avis sur cette astuce..."
                                     required></textarea>
                                 <button 
                                     type="submit" 
                                     :disabled="submittingComment"
-                                    class="bg-yellow-500 text-white px-6 py-2 rounded-lg hover:bg-yellow-600 transition-colors disabled:opacity-50">
+                                    class="md3-button md3-button-filled">
+                                    <i class="material-icons">send</i>
                                     {{ submittingComment ? 'Publication...' : 'Publier' }}
                                 </button>
                             </form>
                         </div>
 
                         <!-- Liste des commentaires -->
-                        <div v-if="loadingComments" class="text-center py-4">
-                            <div class="spinner mx-auto"></div>
+                        <div v-if="loadingComments" class="md3-loading-state">
+                            <div class="md3-circular-progress"></div>
                         </div>
-                        <div v-else class="space-y-4">
-                            <div v-for="comment in comments" :key="comment.id" class="border-l-3 border-yellow-400 pl-4">
-                                <div class="flex items-start justify-between mb-2">
-                                    <div>
-                                        <h4 class="font-medium text-gray-900">{{ comment.author_name || comment.user?.name }}</h4>
-                                        <p class="text-sm text-gray-500">{{ formatDate(comment.created_at) }}</p>
-                                    </div>
+                        <div v-else class="comments-list">
+                            <div v-for="comment in comments" :key="comment.id" class="comment-item">
+                                <div class="comment-header">
+                                    <h4 class="md3-title-medium">{{ comment.author_name || comment.user?.name }}</h4>
+                                    <p class="md3-body-medium dinor-text-gray">{{ formatDate(comment.created_at) }}</p>
                                 </div>
-                                <p class="text-gray-700">{{ comment.content }}</p>
+                                <p class="md3-body-large comment-content">{{ comment.content }}</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div v-else class="text-center py-12">
-                    <div class="text-gray-500">
-                        <i class="fas fa-exclamation-circle text-4xl mb-4"></i>
-                        <h2 class="text-2xl font-bold mb-2">Astuce non trouvée</h2>
-                        <p>L'astuce que vous recherchez n'existe pas.</p>
-                        <button @click="goBack" class="inline-block mt-4 bg-yellow-500 text-white px-6 py-2 rounded-lg hover:bg-yellow-600">
-                            Retour
-                        </button>
+                <div v-else class="empty-state">
+                    <div class="empty-icon">
+                        <i class="material-icons">lightbulb</i>
                     </div>
+                    <h2 class="empty-title">Astuce non trouvée</h2>
+                    <p class="empty-description">L'astuce que vous recherchez n'existe pas.</p>
+                    <button @click="goBack" class="md3-button md3-button-filled">
+                        <i class="material-icons">arrow_back</i>
+                        Retour
+                    </button>
                 </div>
             </main>
         </div>
     `,
     setup() {
-        const { ref, onMounted } = Vue;
+        const { ref, computed, onMounted, nextTick } = Vue;
         const route = VueRouter.useRoute();
         const router = VueRouter.useRouter();
         
@@ -168,6 +240,11 @@ const Tip = {
         const likesCount = ref(0);
         const userLiked = ref(false);
         const newComment = ref('');
+        const videoPlayerActive = ref(false);
+        const relatedVideos = ref([]);
+        const carouselTrack = ref(null);
+        const canScrollLeft = ref(false);
+        const canScrollRight = ref(false);
         
         const { request } = useApi();
         const { toggleLike: toggleLikeApi } = useLikes();
@@ -181,6 +258,7 @@ const Tip = {
                     likesCount.value = data.data.likes_count || 0;
                     loadComments();
                     checkUserLike();
+                    loadRelatedVideos();
                 }
             } catch (error) {
                 console.error('Erreur lors du chargement de l\'astuce:', error);
@@ -202,11 +280,25 @@ const Tip = {
                 loadingComments.value = false;
             }
         };
+
+        const loadRelatedVideos = async () => {
+            try {
+                const data = await request(`/api/v1/tips?has_video=1&limit=10`);
+                if (data.success) {
+                    // Exclure l'astuce actuelle
+                    relatedVideos.value = data.data.filter(v => v.id !== parseInt(route.params.id));
+                    await nextTick();
+                    updateCarouselButtons();
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement des vidéos liées:', error);
+            }
+        };
         
         const checkUserLike = async () => {
             try {
                 const data = await request(`/api/v1/likes/check?type=tip&id=${route.params.id}`);
-                userLiked.value = data.success && data.data.liked;
+                userLiked.value = data.success && data.is_liked;
             } catch (error) {
                 console.error('Erreur lors de la vérification du like:', error);
             }
@@ -232,14 +324,82 @@ const Tip = {
             }
             submittingComment.value = false;
         };
+
+        const toggleVideoPlayer = () => {
+            videoPlayerActive.value = !videoPlayerActive.value;
+        };
+
+        const getEmbedUrl = (youtubeUrl) => {
+            if (!youtubeUrl) return '';
+            
+            const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+            const match = youtubeUrl.match(regex);
+            
+            if (match && match[1]) {
+                return `https://www.youtube.com/embed/${match[1]}?autoplay=1&rel=0`;
+            }
+            
+            return youtubeUrl;
+        };
+
+        const getVideoThumbnail = (youtubeUrl) => {
+            if (!youtubeUrl) return '/images/default-video-thumbnail.jpg';
+            
+            const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+            const match = youtubeUrl.match(regex);
+            
+            if (match && match[1]) {
+                return `https://img.youtube.com/vi/${match[1]}/maxresdefault.jpg`;
+            }
+            
+            return '/images/default-video-thumbnail.jpg';
+        };
+
+        const playRelatedVideo = (video) => {
+            router.push(`/tips/${video.id}`);
+        };
+
+        const scrollCarousel = (direction) => {
+            if (!carouselTrack.value) return;
+            
+            const scrollAmount = 320; // Largeur d'un item + margin
+            const currentScroll = carouselTrack.value.scrollLeft;
+            
+            if (direction === 'left') {
+                carouselTrack.value.scrollTo({
+                    left: currentScroll - scrollAmount,
+                    behavior: 'smooth'
+                });
+            } else {
+                carouselTrack.value.scrollTo({
+                    left: currentScroll + scrollAmount,
+                    behavior: 'smooth'
+                });
+            }
+            
+            setTimeout(updateCarouselButtons, 300);
+        };
+
+        const updateCarouselButtons = () => {
+            if (!carouselTrack.value) return;
+            
+            const track = carouselTrack.value;
+            canScrollLeft.value = track.scrollLeft > 0;
+            canScrollRight.value = track.scrollLeft < track.scrollWidth - track.clientWidth;
+        };
+
+        const truncateText = (text, length) => {
+            if (!text) return '';
+            return text.length > length ? text.slice(0, length) + '...' : text;
+        };
         
         const getDifficultyClass = (level) => {
             const classes = {
-                'easy': 'bg-green-100 text-green-800',
-                'medium': 'bg-yellow-100 text-yellow-800',
-                'hard': 'bg-red-100 text-red-800'
+                'easy': 'difficulty-easy',
+                'medium': 'difficulty-medium', 
+                'hard': 'difficulty-hard'
             };
-            return classes[level] || 'bg-green-100 text-green-800';
+            return classes[level] || 'difficulty-medium';
         };
         
         const getDifficultyLabel = (level) => {
@@ -248,7 +408,7 @@ const Tip = {
                 'medium': 'Moyen',
                 'hard': 'Difficile'
             };
-            return labels[level] || 'Non défini';
+            return labels[level] || 'Moyen';
         };
         
         const formatDate = (dateString) => {
@@ -262,11 +422,26 @@ const Tip = {
         };
         
         const goBack = () => {
-            router.push('/');
+            router.push('/tips');
+        };
+        
+        const shareTip = () => {
+            if (navigator.share && tip.value) {
+                navigator.share({
+                    title: tip.value.title,
+                    text: tip.value.short_description || tip.value.title,
+                    url: window.location.href
+                });
+            }
         };
         
         onMounted(() => {
             loadTip();
+            
+            // Écouter les événements de scroll pour les boutons carousel
+            if (carouselTrack.value) {
+                carouselTrack.value.addEventListener('scroll', updateCarouselButtons);
+            }
         });
         
         return {
@@ -278,12 +453,24 @@ const Tip = {
             likesCount,
             userLiked,
             newComment,
+            videoPlayerActive,
+            relatedVideos,
+            carouselTrack,
+            canScrollLeft,
+            canScrollRight,
             toggleLike,
             submitComment,
+            toggleVideoPlayer,
+            getEmbedUrl,
+            getVideoThumbnail,
+            playRelatedVideo,
+            scrollCarousel,
+            truncateText,
             getDifficultyClass,
             getDifficultyLabel,
             formatDate,
-            goBack
+            goBack,
+            shareTip
         };
     }
 };

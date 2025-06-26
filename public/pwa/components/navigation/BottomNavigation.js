@@ -14,7 +14,7 @@ const BottomNavigation = {
                     <div class="md3-nav-item__indicator" v-if="isActive(tab.path)"></div>
                     <div class="md3-nav-item__icon-container">
                         <div class="md3-nav-item__icon" :style="{ color: isActive(tab.path) ? tab.color : '' }">
-                            <i :class="getIconClass(tab, isActive(tab.path))"></i>
+                            <i :class="getIconClass(tab, isActive(tab.path))">{{ getIconContent(tab) }}</i>
                         </div>
                         <div v-if="tab.badge" class="md3-nav-item__badge">{{ tab.badge }}</div>
                     </div>
@@ -124,8 +124,24 @@ const BottomNavigation = {
         };
         
         const getIconClass = (tab, isActive) => {
-            const baseClass = 'material-icons';
-            return isActive ? `${baseClass} material-icons-filled` : baseClass;
+            // Détecter le type d'icône et retourner la classe appropriée
+            if (tab.icon && (tab.icon.includes('fas ') || tab.icon.includes('far ') || tab.icon.includes('fab '))) {
+                // Font Awesome icons - retourner la classe complète
+                return tab.icon;
+            } else {
+                // Material Icons par défaut
+                return 'material-icons';
+            }
+        };
+        
+        const getIconContent = (tab) => {
+            // Pour Font Awesome, pas de contenu texte (l'icône est dans la classe)
+            if (tab.icon && (tab.icon.includes('fas ') || tab.icon.includes('far ') || tab.icon.includes('fab '))) {
+                return '';
+            } else {
+                // Pour Material Icons, retourner le nom de l'icône
+                return tab.icon;
+            }
         };
         
         const handleTabClick = (tab) => {
@@ -152,6 +168,7 @@ const BottomNavigation = {
             loading,
             isActive,
             getIconClass,
+            getIconContent,
             handleTabClick
         };
     }

@@ -1,126 +1,148 @@
 const TipsList = {
     template: `
-        <div class="tips-container">
-            <!-- Header avec titre et recherche -->
-            <div class="tips-header">
-                <div class="header-content">
-                    <h1 class="tips-title">
-                        <i class="material-icons">lightbulb</i>
-                        Astuces Dinor
-                    </h1>
-                    <p class="tips-subtitle">Découvrez nos conseils et astuces culinaires</p>
-                </div>
-                
-                <!-- Barre de recherche -->
-                <div class="search-container">
-                    <div class="search-bar">
-                        <i class="material-icons search-icon">search</i>
-                        <input 
-                            type="text" 
-                            v-model="searchQuery" 
-                            placeholder="Rechercher une astuce..."
-                            class="search-input"
-                        >
-                        <button v-if="searchQuery" @click="clearSearch" class="clear-search">
-                            <i class="material-icons">close</i>
+        <div class="tips-page recipe-page">
+            <!-- Top App Bar Material Design 3 -->
+            <nav class="md3-top-app-bar">
+                <div class="md3-app-bar-container">
+                    <div class="md3-app-bar-title">
+                        <i class="material-icons dinor-text-primary">lightbulb</i>
+                        <span class="dinor-text-primary">Astuces</span>
+                    </div>
+                    <div class="md3-app-bar-actions">
+                        <button @click="toggleSearch" class="md3-icon-button">
+                            <i class="material-icons">search</i>
                         </button>
                     </div>
+                </div>
+            </nav>
+
+            <!-- Search Bar -->
+            <div v-if="showSearch" class="md3-search-container">
+                <div class="md3-search-bar">
+                    <i class="material-icons search-icon dinor-text-secondary">search</i>
+                    <input 
+                        v-model="searchQuery"
+                        @input="debouncedSearch"
+                        type="text" 
+                        placeholder="Rechercher une astuce..."
+                        class="md3-search-input">
+                    <button 
+                        v-if="searchQuery" 
+                        @click="clearSearch"
+                        class="md3-icon-button">
+                        <i class="material-icons">clear</i>
+                    </button>
                 </div>
             </div>
 
             <!-- Filtres par difficulté -->
-            <div class="filter-chips">
-                <button 
-                    @click="selectedDifficulty = null"
-                    :class="['filter-chip', { active: selectedDifficulty === null }]"
-                >
-                    Toutes
-                </button>
-                <button 
-                    v-for="difficulty in difficulties"
-                    :key="difficulty.value"
-                    @click="selectedDifficulty = difficulty.value"
-                    :class="['filter-chip', { active: selectedDifficulty === difficulty.value }]"
-                >
-                    {{ difficulty.label }}
-                </button>
+            <div class="md3-filter-container">
+                <div class="md3-filter-scroll">
+                    <button 
+                        @click="selectedDifficulty = null"
+                        :class="['md3-chip', { 'md3-chip-selected': selectedDifficulty === null }]">
+                        Toutes
+                    </button>
+                    <button 
+                        v-for="difficulty in difficulties"
+                        :key="difficulty.value"
+                        @click="selectedDifficulty = difficulty.value"
+                        :class="['md3-chip', { 'md3-chip-selected': selectedDifficulty === difficulty.value }]">
+                        {{ difficulty.label }}
+                    </button>
+                </div>
             </div>
 
-            <!-- Loading state -->
-            <div v-if="loading" class="loading-container">
-                <div class="loading-spinner">
+            <!-- Main Content -->
+            <main class="md3-main-content">
+                <!-- Loading -->
+                <div v-if="loading" class="md3-loading-state">
+                    <div class="md3-circular-progress"></div>
+                    <p class="md3-body-large dinor-text-gray">Chargement des astuces...</p>
+                </div>
+
+                <!-- Liste des astuces Material Design 3 -->
+                <div v-else-if="filteredTips.length > 0" class="md3-recipes-grid">
+                    <div 
+                        v-for="tip in filteredTips" 
+                        :key="tip.id"
+                        @click="selectTip(tip)"
+                        class="md3-card md3-card-elevated recipe-card-md3">
+                        <div class="recipe-image-container">
+                            <img 
+                                :src="tip.image || '/images/tip-placeholder.jpg'" 
+                                :alt="tip.title"
+                                class="recipe-image"
+                                loading="lazy"
+                                @error="handleImageError">
+                            <div class="recipe-overlay dinor-gradient-primary">
+                                <div class="recipe-badges">
+                                    <div v-if="tip.difficulty_level" class="md3-chip recipe-difficulty" :class="getDifficultyClass(tip.difficulty_level)">
+                                        <i class="material-icons">lightbulb</i>
+                                        <span>{{ getDifficultyLabel(tip.difficulty_level) }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="recipe-content">
+                            <h3 class="md3-title-large recipe-title dinor-text-primary">{{ tip.title }}</h3>
+                            <p class="md3-body-medium recipe-description dinor-text-gray">{{ truncateText(tip.content, 80) }}</p>
+                            <div class="recipe-stats">
+                                <div class="stat-item">
+                                    <i class="material-icons dinor-text-secondary">schedule</i>
+                                    <span class="md3-body-small">{{ tip.estimated_time }}min</span>
+                                </div>
+                                <div class="stat-item" v-if="tip.category">
+                                    <i class="material-icons dinor-text-secondary">tag</i>
+                                    <span class="md3-body-small">{{ tip.category.name }}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="material-icons dinor-text-secondary">favorite</i>
+                                    <span class="md3-body-small">{{ tip.likes_count || 0 }}</span>
+                                </div>
+                            </div>
+                            <div v-if="tip.tags && tip.tags.length > 0" class="recipe-category">
+                                <span v-for="tag in tip.tags.slice(0, 2)" :key="tag" class="md3-chip">{{ tag }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- État vide -->
+                <div v-else class="empty-state">
+                    <div class="empty-icon">
+                        <i class="material-icons">lightbulb_outline</i>
+                    </div>
+                    <h3 class="empty-title">{{ searchQuery ? "Aucune astuce trouvée" : "Aucune astuce disponible" }}</h3>
+                    <p class="empty-description">
+                        {{ searchQuery ? "Essayez avec d'autres mots-clés" : "Les astuces seront ajoutées prochainement" }}
+                    </p>
+                    <button v-if="searchQuery" @click="clearSearch" class="btn-primary">
+                        Voir toutes les astuces
+                    </button>
+                </div>
+
+                <!-- Pull to refresh indicator -->
+                <div v-if="isRefreshing" class="refresh-indicator">
                     <div class="spinner"></div>
-                    <p>Chargement des astuces...</p>
+                    <span>Actualisation...</span>
                 </div>
-            </div>
-
-            <!-- Liste des astuces -->
-            <div v-else-if="filteredTips.length > 0" class="tips-grid">
-                <div 
-                    v-for="tip in filteredTips" 
-                    :key="tip.id"
-                    class="tip-card"
-                    @click="selectTip(tip)"
-                >
-                    <div class="tip-image-container">
-                        <img 
-                            :src="tip.image || '/images/tip-placeholder.jpg'" 
-                            :alt="tip.title"
-                            class="tip-image"
-                            loading="lazy"
-                        >
-                        <div class="tip-difficulty-badge" :class="getDifficultyClass(tip.difficulty_level)">
-                            {{ getDifficultyLabel(tip.difficulty_level) }}
-                        </div>
-                    </div>
-                    
-                    <div class="tip-content">
-                        <h3 class="tip-title">{{ tip.title }}</h3>
-                        <p class="tip-excerpt" v-if="tip.content">
-                            {{ getExcerpt(tip.content) }}
-                        </p>
-                        
-                        <div class="tip-meta">
-                            <div class="tip-time" v-if="tip.estimated_time">
-                                <i class="material-icons">schedule</i>
-                                {{ tip.estimated_time }} min
-                            </div>
-                            <div class="tip-category" v-if="tip.category">
-                                <i class="material-icons">tag</i>
-                                {{ tip.category.name }}
-                            </div>
-                        </div>
-                        
-                        <div class="tip-tags" v-if="tip.tags && tip.tags.length > 0">
-                            <span v-for="tag in tip.tags.slice(0, 3)" :key="tag" class="tip-tag">
-                                {{ tag }}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- État vide -->
-            <div v-else class="empty-state">
-                <div class="empty-icon">
-                    <i class="material-icons">lightbulb_outline</i>
-                </div>
-                <h3>{{ searchQuery ? "Aucune astuce trouvée" : "Aucune astuce disponible" }}</h3>
-                <p>{{ searchQuery ? "Essayez avec d'autres mots-clés" : "Les astuces seront ajoutées prochainement" }}</p>
-                <button v-if="searchQuery" @click="clearSearch" class="retry-btn">
-                    Voir toutes les astuces
-                </button>
-            </div>
+            </main>
         </div>
     `,
     
     setup() {
         const { ref, computed, onMounted } = Vue;
+        const router = VueRouter.useRouter();
         
         const tips = ref([]);
         const loading = ref(true);
+        const isRefreshing = ref(false);
         const searchQuery = ref('');
         const selectedDifficulty = ref(null);
+        const showSearch = ref(false);
+        
+        const { request } = useApi();
         
         const difficulties = [
             { value: 'beginner', label: 'Débutant' },
@@ -150,33 +172,50 @@ const TipsList = {
             return filtered;
         });
 
-        const loadTips = async () => {
-            try {
+        const debouncedSearch = debounce(() => {
+            // La recherche est automatique grâce au computed
+        }, 300);
+        
+        const loadTips = async (refresh = false) => {
+            if (refresh) {
+                isRefreshing.value = true;
+            } else {
                 loading.value = true;
-                const response = await fetch('/api/v1/tips', {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Cache-Control': 'no-cache'
-                    }
-                });
-                if (response.ok) {
-                    const result = await response.json();
-                    if (result.success && result.data) {
-                        tips.value = result.data;
-                    }
-                } else {
-                    console.error('Erreur lors du chargement des astuces');
+            }
+            
+            try {
+                const data = await request('/api/v1/tips');
+                if (data.success) {
+                    tips.value = data.data;
                 }
             } catch (error) {
-                console.error('Erreur:', error);
+                console.error('Erreur lors du chargement des astuces:', error);
             } finally {
                 loading.value = false;
+                isRefreshing.value = false;
             }
         };
 
         const selectTip = (tip) => {
-            // Navigation vers la page détail de l'astuce avec Vue Router
-            VueRouter.useRouter().push(`/tip/${tip.id}`);
+            router.push(`/tip/${tip.id}`);
+        };
+
+        const clearSearch = () => {
+            searchQuery.value = '';
+            showSearch.value = false;
+        };
+
+        const toggleSearch = () => {
+            showSearch.value = !showSearch.value;
+            if (!showSearch.value) {
+                searchQuery.value = '';
+            }
+        };
+
+        const truncateText = (text, length) => {
+            if (!text) return '';
+            const plainText = text.replace(/<[^>]*>/g, '');
+            return plainText.length > length ? plainText.substring(0, length) + '...' : plainText;
         };
 
         const getDifficultyClass = (difficulty) => {
@@ -197,14 +236,8 @@ const TipsList = {
             return labels[difficulty] || 'Débutant';
         };
 
-        const getExcerpt = (content) => {
-            if (!content) return '';
-            const plainText = content.replace(/<[^>]*>/g, '');
-            return plainText.length > 120 ? plainText.substring(0, 120) + '...' : plainText;
-        };
-
-        const clearSearch = () => {
-            searchQuery.value = '';
+        const handleImageError = (event) => {
+            event.target.src = '/images/default-recipe.jpg';
         };
 
         onMounted(() => {
@@ -214,15 +247,20 @@ const TipsList = {
         return {
             tips,
             loading,
+            isRefreshing,
             searchQuery,
             selectedDifficulty,
+            showSearch,
             difficulties,
             filteredTips,
+            debouncedSearch,
             selectTip,
+            clearSearch,
+            toggleSearch,
+            truncateText,
             getDifficultyClass,
             getDifficultyLabel,
-            getExcerpt,
-            clearSearch
+            handleImageError
         };
     }
 }; 

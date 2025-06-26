@@ -1,31 +1,35 @@
 // Composant Pages (WebView intégré)
 const PagesList = {
     template: `
-        <div class="pages-page">
-            <!-- Header -->
-            <div class="page-header">
-                <h1 class="page-title">
-                    <i class="fas fa-file-alt mr-2"></i>
-                    Pages
-                </h1>
-                <button v-if="currentPage" @click="refreshPage" class="refresh-btn">
-                    <i class="fas fa-refresh" :class="{ 'fa-spin': isRefreshing }"></i>
-                </button>
-            </div>
+        <div class="pages-page recipe-page">
+            <!-- Top App Bar Material Design 3 -->
+            <nav class="md3-top-app-bar">
+                <div class="md3-app-bar-container">
+                    <div class="md3-app-bar-title">
+                        <button v-if="currentPage" @click="goBack" class="md3-icon-button">
+                            <i class="material-icons">arrow_back</i>
+                        </button>
+                        <i v-else class="material-icons dinor-text-primary">description</i>
+                        <span class="dinor-text-primary">{{ currentPage ? currentPage.title : 'Pages' }}</span>
+                    </div>
+                    <div class="md3-app-bar-actions">
+                        <button v-if="currentPage" @click="refreshPage" class="md3-icon-button" :disabled="isRefreshing">
+                            <i class="material-icons" :class="{ 'rotating': isRefreshing }">refresh</i>
+                        </button>
+                        <button v-if="currentPage" @click="openExternal" class="md3-icon-button">
+                            <i class="material-icons">open_in_new</i>
+                        </button>
+                    </div>
+                </div>
+            </nav>
 
-            <!-- Navigation breadcrumb -->
-            <div v-if="currentPage" class="page-breadcrumb">
-                <button @click="goBack" class="breadcrumb-back">
-                    <i class="fas fa-arrow-left"></i>
-                </button>
-                <div class="breadcrumb-title">{{ currentPage.title }}</div>
-            </div>
-
-            <!-- Loading -->
-            <div v-if="loading && !currentPage" class="loading-container">
-                <div class="spinner"></div>
-                <p class="loading-text">Chargement des pages...</p>
-            </div>
+            <!-- Main Content -->
+            <main class="md3-main-content">
+                <!-- Loading -->
+                <div v-if="loading && !currentPage" class="md3-loading-state">
+                    <div class="md3-circular-progress"></div>
+                    <p class="md3-body-large dinor-text-gray">Chargement des pages...</p>
+                </div>
 
             <!-- WebView iframe pour page unique -->
             <div v-else-if="currentPage" class="webview-container">
@@ -62,42 +66,51 @@ const PagesList = {
                 </div>
             </div>
 
-            <!-- Liste des pages -->
-            <div v-else-if="pages.length > 0" class="pages-list">
-                <div 
-                    v-for="page in pages" 
-                    :key="page.id"
-                    @click="openPage(page)"
-                    class="page-card card-hover">
-                    <div class="page-icon">
-                        <i class="fas fa-file-alt"></i>
-                    </div>
-                    <div class="page-content">
-                        <h3 class="page-title">{{ page.title }}</h3>
-                        <p v-if="page.description" class="page-description">
-                            {{ truncateText(page.description, 120) }}
-                        </p>
-                        <div class="page-url">
-                            <i class="fas fa-link"></i>
-                            <span>{{ formatURL(page.url) }}</span>
+                <!-- Liste des pages Material Design 3 -->
+                <div v-else-if="pages.length > 0" class="md3-pages-list">
+                    <div 
+                        v-for="page in pages" 
+                        :key="page.id"
+                        @click="openPage(page)"
+                        class="md3-card md3-card-elevated page-card-md3">
+                        <div class="page-icon-container">
+                            <div class="page-icon dinor-bg-primary">
+                                <i class="material-icons">description</i>
+                            </div>
+                        </div>
+                        <div class="page-content">
+                            <h3 class="md3-title-large page-title dinor-text-primary">{{ page.title }}</h3>
+                            <p v-if="page.description" class="md3-body-medium page-description dinor-text-gray">
+                                {{ truncateText(page.description, 120) }}
+                            </p>
+                            <div class="page-url-info">
+                                <i class="material-icons dinor-text-secondary">link</i>
+                                <span class="md3-body-small dinor-text-secondary">{{ formatURL(page.url) }}</span>
+                            </div>
+                        </div>
+                        <div class="page-actions">
+                            <i class="material-icons dinor-text-secondary">chevron_right</i>
                         </div>
                     </div>
-                    <div class="page-arrow">
-                        <i class="fas fa-chevron-right"></i>
-                    </div>
                 </div>
-            </div>
 
-            <!-- État vide -->
-            <div v-else class="empty-state">
-                <div class="empty-icon">
-                    <i class="fas fa-file-alt"></i>
+                <!-- État vide -->
+                <div v-else class="empty-state">
+                    <div class="empty-icon">
+                        <i class="material-icons">description</i>
+                    </div>
+                    <h3 class="empty-title">Aucune page disponible</h3>
+                    <p class="empty-description">
+                        Les pages apparaîtront ici bientôt
+                    </p>
                 </div>
-                <h3 class="empty-title">Aucune page disponible</h3>
-                <p class="empty-description">
-                    Les pages apparaîtront ici bientôt
-                </p>
-            </div>
+
+                <!-- Pull to refresh indicator -->
+                <div v-if="isRefreshing && !currentPage" class="refresh-indicator">
+                    <div class="spinner"></div>
+                    <span>Actualisation...</span>
+                </div>
+            </main>
 
             <!-- Erreur iframe -->
             <div v-if="iframeError" class="iframe-error">
