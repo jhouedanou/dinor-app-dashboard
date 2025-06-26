@@ -18,204 +18,173 @@
             <span class="stat-number">{{ stats.events }}</span>
             <span class="stat-label">Événements</span>
           </div>
+          <div class="stat">
+            <span class="stat-number">{{ stats.videos }}</span>
+            <span class="stat-label">Vidéos</span>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- Recipes Carousel -->
-    <section class="content-section">
-      <div class="section-header">
-        <h2>Recettes Populaires</h2>
-        <router-link to="/recipes" class="see-all-btn">
-          Voir tout
-          <span class="material-symbols-outlined">arrow_forward</span>
-        </router-link>
-      </div>
-      
-      <div class="carousel-container">
-        <div v-if="loadingRecipes" class="carousel-loading">
-          <div class="loading-spinner"></div>
-        </div>
-        <div v-else class="carousel" ref="recipesCarousel">
-          <div 
-            v-for="recipe in recipes" 
-            :key="recipe.id"
-            @click="goToRecipe(recipe.id)"
-            class="carousel-item recipe-card"
-          >
-            <div class="card-image">
-              <img 
-                :src="recipe.featured_image_url || '/images/default-recipe.jpg'" 
-                :alt="recipe.title"
-                loading="lazy"
-              />
-              <div class="card-overlay">
-                <span v-if="recipe.preparation_time" class="time-badge">
-                  {{ recipe.preparation_time }}min
-                </span>
-              </div>
+    <!-- Recettes - 4 dernières -->
+    <ContentCarousel
+      title="Dernières Recettes"
+      :items="latestRecipes"
+      :loading="loadingRecipes"
+      :error="errorRecipes"
+      content-type="recipes"
+      view-all-link="/recipes"
+      @item-click="handleRecipeClick"
+    >
+      <template #item="{ item }">
+        <div class="recipe-card">
+          <div class="card-image">
+            <img 
+              :src="item.featured_image_url || '/images/default-recipe.jpg'" 
+              :alt="item.title"
+              loading="lazy"
+            />
+            <div class="card-overlay">
+              <span v-if="item.preparation_time" class="time-badge">
+                {{ item.preparation_time }}min
+              </span>
+              <span v-if="item.difficulty" class="difficulty-badge">
+                {{ getDifficultyLabel(item.difficulty) }}
+              </span>
             </div>
-            <div class="card-content">
-              <h3>{{ recipe.title }}</h3>
-              <p>{{ getShortDescription(recipe.short_description) }}</p>
-              <div class="card-meta">
-                <span class="likes">
-                  <span class="material-symbols-outlined">favorite</span>
-                  {{ recipe.likes_count || 0 }}
-                </span>
-              </div>
+          </div>
+          <div class="card-content">
+            <h3>{{ item.title }}</h3>
+            <p>{{ getShortDescription(item.short_description) }}</p>
+            <div class="card-meta">
+              <span class="likes">
+                <span class="material-symbols-outlined">favorite</span>
+                {{ item.likes_count || 0 }}
+              </span>
+              <span class="date">{{ formatDate(item.created_at) }}</span>
             </div>
           </div>
         </div>
-        <div class="carousel-controls">
-          <button @click="scrollCarousel('recipes', -1)" class="carousel-btn prev">
-            <span class="material-symbols-outlined">chevron_left</span>
-          </button>
-          <button @click="scrollCarousel('recipes', 1)" class="carousel-btn next">
-            <span class="material-symbols-outlined">chevron_right</span>
-          </button>
-        </div>
-      </div>
-    </section>
+      </template>
+    </ContentCarousel>
 
-    <!-- Tips Carousel -->
-    <section class="content-section">
-      <div class="section-header">
-        <h2>Astuces Culinaires</h2>
-        <router-link to="/tips" class="see-all-btn">
-          Voir tout
-          <span class="material-symbols-outlined">arrow_forward</span>
-        </router-link>
-      </div>
-      
-      <div class="carousel-container">
-        <div v-if="loadingTips" class="carousel-loading">
-          <div class="loading-spinner"></div>
-        </div>
-        <div v-else class="carousel" ref="tipsCarousel">
-          <div 
-            v-for="tip in tips" 
-            :key="tip.id"
-            @click="goToTip(tip.id)"
-            class="carousel-item tip-card"
-          >
-            <div class="tip-icon">
-              <span class="material-symbols-outlined">lightbulb</span>
-            </div>
-            <div class="card-content">
-              <h3>{{ tip.title }}</h3>
-              <p>{{ getShortDescription(tip.content) }}</p>
-              <div class="card-meta">
-                <span v-if="tip.estimated_time" class="time">
-                  {{ tip.estimated_time }}min
-                </span>
-                <span class="difficulty">
-                  {{ getDifficultyLabel(tip.difficulty_level) }}
-                </span>
-              </div>
+    <!-- Astuces - 4 dernières -->
+    <ContentCarousel
+      title="Dernières Astuces"
+      :items="latestTips"
+      :loading="loadingTips"
+      :error="errorTips"
+      content-type="tips"
+      view-all-link="/tips"
+      @item-click="handleTipClick"
+    >
+      <template #item="{ item }">
+        <div class="tip-card">
+          <div class="tip-icon">
+            <span class="material-symbols-outlined">lightbulb</span>
+          </div>
+          <div class="card-content">
+            <h3>{{ item.title }}</h3>
+            <p>{{ getShortDescription(item.content) }}</p>
+            <div class="card-meta">
+              <span v-if="item.estimated_time" class="time">
+                {{ item.estimated_time }}min
+              </span>
+              <span class="difficulty">
+                {{ getDifficultyLabel(item.difficulty_level) }}
+              </span>
+              <span class="date">{{ formatDate(item.created_at) }}</span>
             </div>
           </div>
         </div>
-        <div class="carousel-controls">
-          <button @click="scrollCarousel('tips', -1)" class="carousel-btn prev">
-            <span class="material-symbols-outlined">chevron_left</span>
-          </button>
-          <button @click="scrollCarousel('tips', 1)" class="carousel-btn next">
-            <span class="material-symbols-outlined">chevron_right</span>
-          </button>
-        </div>
-      </div>
-    </section>
+      </template>
+    </ContentCarousel>
 
-    <!-- Events Carousel -->
-    <section class="content-section">
-      <div class="section-header">
-        <h2>Événements à Venir</h2>
-        <router-link to="/events" class="see-all-btn">
-          Voir tout
-          <span class="material-symbols-outlined">arrow_forward</span>
-        </router-link>
-      </div>
-      
-      <div class="carousel-container">
-        <div v-if="loadingEvents" class="carousel-loading">
-          <div class="loading-spinner"></div>
-        </div>
-        <div v-else class="carousel" ref="eventsCarousel">
-          <div 
-            v-for="event in events" 
-            :key="event.id"
-            @click="goToEvent(event.id)"
-            class="carousel-item event-card"
-          >
-            <div class="card-image">
-              <img 
-                :src="event.featured_image_url || '/images/default-event.jpg'" 
-                :alt="event.title"
-                loading="lazy"
-              />
-              <div class="card-overlay">
-                <span :class="getStatusClass(event.status)" class="status-badge">
-                  {{ getStatusLabel(event.status) }}
-                </span>
-              </div>
+    <!-- Événements - 4 derniers -->
+    <ContentCarousel
+      title="Derniers Événements"
+      :items="latestEvents"
+      :loading="loadingEvents"
+      :error="errorEvents"
+      content-type="events"
+      view-all-link="/events"
+      @item-click="handleEventClick"
+    >
+      <template #item="{ item }">
+        <div class="event-card">
+          <div class="card-image">
+            <img 
+              :src="item.featured_image_url || '/images/default-event.jpg'" 
+              :alt="item.title"
+              loading="lazy"
+            />
+            <div class="card-overlay">
+              <span :class="getStatusClass(item.status)" class="status-badge">
+                {{ getStatusLabel(item.status) }}
+              </span>
             </div>
-            <div class="card-content">
-              <h3>{{ event.title }}</h3>
-              <p>{{ getShortDescription(event.short_description) }}</p>
-              <div class="card-meta">
-                <span class="date">
-                  <span class="material-symbols-outlined">calendar_today</span>
-                  {{ formatDate(event.start_date) }}
-                </span>
-              </div>
+          </div>
+          <div class="card-content">
+            <h3>{{ item.title }}</h3>
+            <p>{{ getShortDescription(item.short_description) }}</p>
+            <div class="card-meta">
+              <span class="date">
+                <span class="material-symbols-outlined">calendar_today</span>
+                {{ formatDate(item.start_date) }}
+              </span>
+              <span class="created">{{ formatDate(item.created_at) }}</span>
             </div>
           </div>
         </div>
-        <div class="carousel-controls">
-          <button @click="scrollCarousel('events', -1)" class="carousel-btn prev">
-            <span class="material-symbols-outlined">chevron_left</span>
-          </button>
-          <button @click="scrollCarousel('events', 1)" class="carousel-btn next">
-            <span class="material-symbols-outlined">chevron_right</span>
-          </button>
-        </div>
-      </div>
-    </section>
+      </template>
+    </ContentCarousel>
 
-    <!-- Dinor TV Section -->
-    <section class="content-section dinor-tv-section">
-      <div class="section-header">
-        <h2>Dinor TV</h2>
-        <router-link to="/dinor-tv" class="see-all-btn">
-          Voir tout
-          <span class="material-symbols-outlined">arrow_forward</span>
-        </router-link>
-      </div>
-      
-      <div v-if="featuredVideo" class="featured-video" @click="goToVideo">
-        <div class="video-thumbnail">
-          <img 
-            :src="featuredVideo.thumbnail_url || getVideoThumbnail(featuredVideo.video_url)"
-            :alt="featuredVideo.title"
-            loading="lazy"
-          />
-          <div class="video-overlay">
-            <div class="play-button">
-              <span class="material-symbols-outlined">play_circle</span>
+    <!-- Dinor TV - 4 dernières vidéos -->
+    <ContentCarousel
+      title="Dernières Vidéos Dinor TV"
+      :items="latestVideos"
+      :loading="loadingVideos"
+      :error="errorVideos"
+      content-type="videos"
+      view-all-link="/dinor-tv"
+      @item-click="handleVideoClick"
+      class="dinor-tv-section"
+    >
+      <template #item="{ item }">
+        <div class="video-card">
+          <div class="video-thumbnail">
+            <img 
+              :src="item.thumbnail_url || getVideoThumbnail(item.video_url)"
+              :alt="item.title"
+              loading="lazy"
+            />
+            <div class="video-overlay">
+              <div class="play-button">
+                <span class="material-symbols-outlined">play_circle</span>
+              </div>
+              <div v-if="item.is_live" class="live-badge">
+                <span class="live-dot"></span>
+                LIVE
+              </div>
+              <div v-if="item.duration" class="duration-badge">
+                {{ formatDuration(item.duration) }}
+              </div>
             </div>
-            <div v-if="featuredVideo.is_live" class="live-badge">
-              <span class="live-dot"></span>
-              LIVE
+          </div>
+          <div class="card-content">
+            <h3>{{ item.title }}</h3>
+            <p>{{ getShortDescription(item.description) }}</p>
+            <div class="card-meta">
+              <span class="views">
+                <span class="material-symbols-outlined">visibility</span>
+                {{ item.views_count || 0 }}
+              </span>
+              <span class="date">{{ formatDate(item.created_at) }}</span>
             </div>
           </div>
         </div>
-        <div class="video-info">
-          <h3>{{ featuredVideo.title }}</h3>
-          <p>{{ getShortDescription(featuredVideo.description) }}</p>
-        </div>
-      </div>
-    </section>
+      </template>
+    </ContentCarousel>
   </div>
 </template>
 
@@ -226,81 +195,86 @@ import { useRecipes } from '@/composables/useRecipes'
 import { useTips } from '@/composables/useTips'
 import { useEvents } from '@/composables/useEvents'
 import { useDinorTV } from '@/composables/useDinorTV'
+import ContentCarousel from '@/components/common/ContentCarousel.vue'
 
 export default {
   name: 'Home',
+  components: {
+    ContentCarousel
+  },
   setup() {
     const router = useRouter()
     
-    // Composables avec cache
+    // Composables optimisés pour récupérer les 4 derniers items de chaque type
     const { 
       recipes: recipesData, 
-      featuredRecipes,
+      error: errorRecipes,
       loading: loadingRecipes 
-    } = useRecipes({ limit: 6, featured: true })
+    } = useRecipes({ 
+      limit: 4, 
+      sort_by: 'created_at', 
+      sort_order: 'desc' 
+    })
     
     const { 
       tips: tipsData, 
-      featuredTips,
+      error: errorTips,
       loading: loadingTips 
-    } = useTips({ limit: 6, featured: true })
+    } = useTips({ 
+      limit: 4, 
+      sort_by: 'created_at', 
+      sort_order: 'desc' 
+    })
     
     const { 
       events: eventsData, 
-      activeEvents,
+      error: errorEvents,
       loading: loadingEvents 
-    } = useEvents({ limit: 6, status: 'active' })
+    } = useEvents({ 
+      limit: 4, 
+      sort_by: 'created_at', 
+      sort_order: 'desc' 
+    })
     
     const { 
       videos: videosData, 
-      featuredVideos 
-    } = useDinorTV({ limit: 1, featured: true })
+      error: errorVideos,
+      loading: loadingVideos 
+    } = useDinorTV({ 
+      limit: 4, 
+      sort_by: 'created_at', 
+      sort_order: 'desc' 
+    })
     
-    // Computed pour les données
-    const recipes = computed(() => featuredRecipes.value.slice(0, 6))
-    const tips = computed(() => featuredTips.value.slice(0, 6))
-    const events = computed(() => activeEvents.value.slice(0, 6))
-    const featuredVideo = computed(() => featuredVideos.value[0] || null)
+    // Computed pour les derniers items
+    const latestRecipes = computed(() => recipesData.value?.data?.slice(0, 4) || [])
+    const latestTips = computed(() => tipsData.value?.data?.slice(0, 4) || [])
+    const latestEvents = computed(() => eventsData.value?.data?.slice(0, 4) || [])
+    const latestVideos = computed(() => videosData.value?.data?.slice(0, 4) || [])
     
+    // Stats pour le hero
     const stats = computed(() => ({
-      recipes: recipesData.value?.meta?.total || recipes.value.length,
-      tips: tipsData.value?.meta?.total || tips.value.length,
-      events: eventsData.value?.meta?.total || events.value.length
+      recipes: recipesData.value?.meta?.total || latestRecipes.value.length,
+      tips: tipsData.value?.meta?.total || latestTips.value.length,
+      events: eventsData.value?.meta?.total || latestEvents.value.length,
+      videos: videosData.value?.meta?.total || latestVideos.value.length
     }))
     
-    const scrollCarousel = (type, direction) => {
-      const carousel = {
-        recipes: 'recipesCarousel',
-        tips: 'tipsCarousel',
-        events: 'eventsCarousel'
-      }[type]
-      
-      if (carousel) {
-        const element = document.querySelector(`[ref="${carousel}"]`)
-        if (element) {
-          const scrollAmount = 300
-          element.scrollBy({
-            left: direction * scrollAmount,
-            behavior: 'smooth'
-          })
-        }
-      }
+    // Handlers pour les clics sur les items
+    const handleRecipeClick = (recipe) => {
+      router.push(`/recipe/${recipe.id}`)
     }
     
-    const goToRecipe = (id) => {
-      router.push(`/recipe/${id}`)
+    const handleTipClick = (tip) => {
+      router.push(`/tip/${tip.id}`)
     }
     
-    const goToTip = (id) => {
-      router.push(`/tip/${id}`)
+    const handleEventClick = (event) => {
+      router.push(`/event/${event.id}`)
     }
     
-    const goToEvent = (id) => {
-      router.push(`/event/${id}`)
-    }
-    
-    const goToVideo = () => {
-      router.push('/dinor-tv')
+    const handleVideoClick = (video) => {
+      router.push(`/video/${video.id}`)
     }
     
     const getShortDescription = (text) => {
@@ -351,26 +325,47 @@ export default {
       return '/images/default-video.jpg'
     }
     
+    const formatDuration = (seconds) => {
+      if (!seconds) return ''
+      const minutes = Math.floor(seconds / 60)
+      const remainingSeconds = seconds % 60
+      return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
+    }
+    
     return {
-      recipes,
-      tips,
-      events,
-      featuredVideo,
+      // Données
+      latestRecipes,
+      latestTips,
+      latestEvents,
+      latestVideos,
       stats,
+      
+      // États de chargement
       loadingRecipes,
       loadingTips,
       loadingEvents,
-      scrollCarousel,
-      goToRecipe,
-      goToTip,
-      goToEvent,
-      goToVideo,
+      loadingVideos,
+      
+      // Erreurs
+      errorRecipes,
+      errorTips,
+      errorEvents,
+      errorVideos,
+      
+      // Handlers
+      handleRecipeClick,
+      handleTipClick,
+      handleEventClick,
+      handleVideoClick,
+      
+      // Utilitaires
       getShortDescription,
       getDifficultyLabel,
       getStatusClass,
       getStatusLabel,
       formatDate,
-      getVideoThumbnail
+      getVideoThumbnail,
+      formatDuration
     }
   }
 }
@@ -406,7 +401,7 @@ export default {
 .hero-stats {
   display: flex;
   justify-content: center;
-  gap: 32px;
+  gap: 24px;
   flex-wrap: wrap;
 }
 
@@ -428,9 +423,239 @@ export default {
   opacity: 0.7;
 }
 
-/* Content Sections */
-.content-section {
-  padding: 32px 16px;
+/* Cartes spécifiques */
+.recipe-card,
+.tip-card,
+.event-card,
+.video-card {
+  background: var(--md-sys-color-surface-container, #f7f2fa);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--md-sys-color-outline-variant, #cac4d0);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s ease;
+}
+
+.recipe-card:hover,
+.tip-card:hover,
+.event-card:hover,
+.video-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+/* Images et overlays */
+.card-image,
+.video-thumbnail {
+  position: relative;
+  height: 160px;
+  overflow: hidden;
+}
+
+.card-image img,
+.video-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tip-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 120px;
+  background: var(--md-sys-color-tertiary-container, #ffd8e4);
+}
+
+.tip-icon .material-symbols-outlined {
+  font-size: 48px;
+  color: var(--md-sys-color-on-tertiary-container, #31111d);
+}
+
+.card-overlay,
+.video-overlay {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 8px;
+}
+
+.video-overlay {
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.7) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Badges */
+.time-badge,
+.difficulty-badge,
+.status-badge,
+.duration-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+}
+
+.status-active {
+  background: var(--md-sys-color-primary-container, #eaddff);
+  color: var(--md-sys-color-on-primary-container, #21005d);
+}
+
+.status-upcoming {
+  background: var(--md-sys-color-tertiary-container, #ffd8e4);
+  color: var(--md-sys-color-on-tertiary-container, #31111d);
+}
+
+/* Play button et live badge pour vidéos */
+.play-button {
+  color: white;
+  font-size: 48px;
+  opacity: 0.8;
+  transition: all 0.2s ease;
+}
+
+.video-card:hover .play-button {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.live-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: #ff4444;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.live-dot {
+  width: 6px;
+  height: 6px;
+  background: white;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+/* Contenu des cartes */
+.card-content {
+  padding: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-content h3 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--md-sys-color-on-surface, #1c1b1f);
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-content p {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: var(--md-sys-color-on-surface-variant, #49454f);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex: 1;
+}
+
+.card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--md-sys-color-on-surface-variant, #49454f);
+  margin-top: auto;
+}
+
+.likes,
+.views,
+.date,
+.time,
+.difficulty,
+.created {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.likes .material-symbols-outlined,
+.views .material-symbols-outlined,
+.date .material-symbols-outlined {
+  font-size: 14px;
+}
+
+/* Section Dinor TV */
+.dinor-tv-section {
+  background: linear-gradient(135deg, #1a1a1a 0%, #333333 100%);
+  color: white;
+}
+
+.dinor-tv-section :deep(.section-header h2),
+.dinor-tv-section :deep(.see-all-btn) {
+  color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hero-content h1 {
+    font-size: 28px;
+  }
+  
+  .hero-stats {
+    gap: 16px;
+  }
+  
+  .stat-number {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    padding: 32px 16px;
+  }
+  
+  .hero-content h1 {
+    font-size: 24px;
+  }
+  
+  .card-image,
+  .video-thumbnail {
+    height: 120px;
+  }
 }
 
 .section-header {
