@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\LikeController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\PWA\CacheController;
 
 /*
 |--------------------------------------------------------------------------
@@ -196,4 +197,14 @@ Route::prefix('test')->group(function () {
             'users_count' => \App\Models\User::count(),
         ]);
     });
+});
+
+// Routes pour le cache PWA uniquement (pas pour Filament)
+Route::prefix('pwa/cache')->group(function () {
+    Route::post('set', [CacheController::class, 'set']);
+    Route::post('get', [CacheController::class, 'get']);
+    Route::post('invalidate', [CacheController::class, 'invalidate']);
+    Route::post('clear', [CacheController::class, 'clear']);
+    Route::get('stats', [CacheController::class, 'stats']);
+    Route::post('warmup', [CacheController::class, 'warmup']);
 }); 

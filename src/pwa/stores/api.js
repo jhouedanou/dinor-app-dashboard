@@ -50,9 +50,9 @@ export const useApiStore = defineStore('api', () => {
   async function request(endpoint, options = {}) {
     const cacheKey = `${endpoint}_${JSON.stringify(options)}`
     
-    // Vérifier le cache d'abord (sauf pour POST/PUT/DELETE)
+    // Vérifier le cache PWA d'abord (sauf pour POST/PUT/DELETE)
     if (!options.method || options.method === 'GET') {
-      const cached = cacheStore.get(cacheKey)
+      const cached = await checkPWACache(endpoint, options)
       if (cached) {
         return cached
       }
@@ -81,10 +81,9 @@ export const useApiStore = defineStore('api', () => {
 
       const data = await response.json()
       
-      // Mettre en cache les requêtes GET réussies
+      // Mettre en cache les requêtes GET réussies dans le cache PWA
       if (!options.method || options.method === 'GET') {
-        const ttl = options.cacheTTL || 5 * 60 * 1000 // 5 minutes par défaut
-        cacheStore.set(cacheKey, data, ttl)
+        await setPWACache(endpoint, data, options)
       }
 
       return data
@@ -94,6 +93,78 @@ export const useApiStore = defineStore('api', () => {
     } finally {
       setLoading(cacheKey, false)
     }
+  }
+
+  // Fonction pour vérifier le cache PWA
+  async function checkPWACache(endpoint, options = {}) {
+    try {
+      const type = getContentType(endpoint)
+      if (!type) return null
+
+      const params = extractParams(options)
+      
+      const response = await fetch('/api/pwa/cache/get', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ type, params })
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        if (result.success) {
+          return result.data
+        }
+      }
+    } catch (error) {
+      console.warn('Erreur cache PWA get:', error)
+    }
+    return null
+  }
+
+  // Fonction pour mettre en cache dans la PWA
+  async function setPWACache(endpoint, data, options = {}) {
+    try {
+      const type = getContentType(endpoint)
+      if (!type) return
+
+      const params = extractParams(options)
+      
+      await fetch('/api/pwa/cache/set', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ type, data, params })
+      })
+    } catch (error) {
+      console.warn('Erreur cache PWA set:', error)
+    }
+  }
+
+  // Déterminer le type de contenu depuis l'endpoint
+  function getContentType(endpoint) {
+    if (endpoint.includes('/recipes')) return 'recipes'
+    if (endpoint.includes('/tips')) return 'tips'
+    if (endpoint.includes('/events')) return 'events'
+    if (endpoint.includes('/dinor-tv')) return 'videos'
+    if (endpoint.includes('/categories')) return 'categories'
+    return null
+  }
+
+  // Extraire les paramètres pertinents pour le cache
+  function extractParams(options) {
+    const url = new URL(`http://example.com${options.url || ''}`)
+    const params = {}
+    
+    for (const [key, value] of url.searchParams) {
+      params[key] = value
+    }
+    
+    return params
   }
 
   // Méthodes spécifiques

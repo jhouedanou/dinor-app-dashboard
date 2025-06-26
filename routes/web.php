@@ -128,9 +128,48 @@ Route::get('/pwa/{file}', function ($file) {
     return response()->file(public_path('pwa/index.html'));
 })->where('file', '[^/]+');
 
+// Routes pour servir la PWA buildée
+Route::get('/pwa/dist/{path?}', function ($path = null) {
+    $filePath = public_path("pwa/dist/{$path}");
+    
+    // Si c'est un fichier et qu'il existe
+    if ($path && file_exists($filePath) && !is_dir($filePath)) {
+        $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+        $contentType = match($extension) {
+            'js' => 'application/javascript; charset=utf-8',
+            'css' => 'text/css; charset=utf-8',
+            'json' => 'application/json; charset=utf-8',
+            'ico' => 'image/x-icon',
+            'png' => 'image/png',
+            'jpg', 'jpeg' => 'image/jpeg',
+            'svg' => 'image/svg+xml',
+            'webmanifest' => 'application/manifest+json',
+            default => 'text/plain; charset=utf-8'
+        };
+        
+        $headers = [
+            'Content-Type' => $contentType,
+            'Cache-Control' => 'public, max-age=31536000', // 1 an pour les assets hashés
+            'X-Content-Type-Options' => 'nosniff'
+        ];
+        
+        return response()->file($filePath, $headers);
+    }
+    
+    // Sinon, servir l'index.html de la PWA
+    return response()->file(public_path('pwa/dist/index.html'), [
+        'Content-Type' => 'text/html; charset=utf-8',
+        'Cache-Control' => 'no-cache, no-store, must-revalidate'
+    ]);
+})->where('path', '.*');
+
 // Route catch-all pour la PWA SPA (doit être en dernier)
 Route::get('/pwa/{path?}', function () {
-    return response()->file(public_path('pwa/index.html'));
+    // Rediriger vers la version buildée
+    return response()->file(public_path('pwa/dist/index.html'), [
+        'Content-Type' => 'text/html; charset=utf-8',
+        'Cache-Control' => 'no-cache, no-store, must-revalidate'
+    ]);
 })->where('path', '.*');
 
 // Route pour la page d'erreur de connexion admin
