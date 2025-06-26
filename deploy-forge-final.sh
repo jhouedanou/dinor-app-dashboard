@@ -43,6 +43,12 @@ rm -rf bootstrap/cache/*.php 2>/dev/null || true
 git rm --cached storage/logs/*.log 2>/dev/null || true
 git rm --cached storage/logs/laravel.log 2>/dev/null || true
 
+# Corriger les permissions PWA avant git pull
+log_info "🔐 Correction des permissions PWA..."
+chown -R forge:forge public/pwa/ 2>/dev/null || true
+chmod -R 755 public/pwa/ 2>/dev/null || true
+rm -rf public/pwa/dist/* 2>/dev/null || true
+
 # Stash les changements locaux s'il y en a (sécurité)
 if ! git diff-index --quiet HEAD -- 2>/dev/null; then
     log_warning "Changements locaux détectés, sauvegarde temporaire..."
