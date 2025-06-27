@@ -7,13 +7,7 @@
       :banners="bannersByType"
     />
 
-    <!-- Header -->
-    <header class="page-header">
-      <div class="header-content">
-        <h1>Recettes</h1>
-        <p class="subtitle">Découvrez nos délicieuses recettes</p>
-      </div>
-    </header>
+
 
     <!-- Search and Filters -->
     <SearchAndFilters
@@ -38,6 +32,7 @@
     <div v-else-if="error" class="error-state">
       <div class="error-icon">
         <span class="material-symbols-outlined">error</span>
+        <span class="emoji-fallback">❌</span>
       </div>
       <p>{{ error }}</p>
       <button @click="retry" class="retry-btn">
@@ -58,6 +53,7 @@
       <div v-if="!filteredRecipes.length && !loading" class="empty-state">
         <div class="empty-icon">
           <span class="material-symbols-outlined">restaurant</span>
+          <span class="emoji-fallback">🍽️</span>
         </div>
         <h3>{{ searchQuery || selectedCategory || hasActiveFilters ? 'Aucune recette trouvée' : 'Aucune recette disponible' }}</h3>
         <p v-if="searchQuery || selectedCategory || hasActiveFilters">
@@ -87,9 +83,10 @@
             />
             <div class="recipe-overlay">
               <div class="recipe-meta">
-                <span v-if="recipe.preparation_time" class="time">
+                <span v-if="getTotalTime(recipe)" class="time">
                   <span class="material-symbols-outlined">schedule</span>
-                  {{ recipe.preparation_time }}min
+                  <span class="emoji-fallback">⏱️</span>
+                  {{ getTotalTime(recipe) }}min
                 </span>
                 <span v-if="recipe.difficulty" class="difficulty">
                   {{ getDifficultyLabel(recipe.difficulty) }}
@@ -107,11 +104,18 @@
             <div class="recipe-stats">
               <div class="stat">
                 <span class="material-symbols-outlined">favorite</span>
+                <span class="emoji-fallback">❤️</span>
                 <span>{{ recipe.likes_count || 0 }}</span>
               </div>
               <div v-if="recipe.servings" class="stat">
                 <span class="material-symbols-outlined">group</span>
+                <span class="emoji-fallback">👥</span>
                 <span>{{ recipe.servings }}</span>
+              </div>
+              <div v-if="recipe.required_equipment?.length" class="stat equipment">
+                <span class="material-symbols-outlined">kitchen</span>
+                <span class="emoji-fallback">🍳</span>
+                <span>{{ recipe.required_equipment.length }} équipement{{ recipe.required_equipment.length > 1 ? 's' : '' }}</span>
               </div>
             </div>
           </div>
@@ -127,6 +131,7 @@ import { useRouter } from 'vue-router'
 import { useRecipesStore } from '@/stores/recipes'
 import { useAppStore } from '@/stores/app'
 import { useBanners } from '@/composables/useBanners'
+import apiService from '@/services/api'
 import BannerSection from '@/components/common/BannerSection.vue'
 import SearchAndFilters from '@/components/common/SearchAndFilters.vue'
 
@@ -154,6 +159,20 @@ export default {
       }
     }
     
+    // Categories management
+    const categories = ref([])
+    
+    const loadCategories = async () => {
+      try {
+        const response = await apiService.getRecipeCategories()
+        if (response.success) {
+          categories.value = response.data
+        }
+      } catch (error) {
+        console.error('Error loading categories:', error)
+      }
+    }
+    
     // Computed properties
     const searchQuery = computed({
       get: () => recipesStore.searchQuery,
@@ -167,8 +186,6 @@ export default {
     
     const loading = computed(() => recipesStore.loading)
     const error = computed(() => recipesStore.error)
-    const filteredRecipes = computed(() => recipesStore.filteredRecipes)
-    const categories = computed(() => []) // TODO: Add categories store
     
     // Additional filters for recipes
     const selectedFilters = ref({})
@@ -196,6 +213,44 @@ export default {
         ]
       }
     ]
+    
+    // Computed avec tous les filtres
+    const filteredRecipes = computed(() => {
+      let filtered = recipesStore.recipes
+
+      // Filtre par recherche textuelle
+      if (searchQuery.value?.trim()) {
+        const query = searchQuery.value.toLowerCase()
+        filtered = filtered.filter(recipe =>
+          recipe.title?.toLowerCase().includes(query) ||
+          recipe.short_description?.toLowerCase().includes(query) ||
+          recipe.tags?.some(tag => tag.toLowerCase().includes(query))
+        )
+      }
+
+      // Filtre par catégorie
+      if (selectedCategory.value) {
+        filtered = filtered.filter(recipe => recipe.category_id === selectedCategory.value)
+      }
+
+      // Filtres additionnels
+      if (selectedFilters.value.difficulty) {
+        filtered = filtered.filter(recipe => recipe.difficulty === selectedFilters.value.difficulty)
+      }
+
+      if (selectedFilters.value.prep_time) {
+        const prepTime = selectedFilters.value.prep_time
+        filtered = filtered.filter(recipe => {
+          const time = recipe.preparation_time || 0
+          if (prepTime === 'quick') return time < 30
+          if (prepTime === 'medium') return time >= 30 && time <= 60
+          if (prepTime === 'long') return time > 60
+          return true
+        })
+      }
+
+      return filtered
+    })
     
     const hasActiveFilters = computed(() => {
       return Object.values(selectedFilters.value).some(filter => filter !== null)
@@ -242,10 +297,18 @@ export default {
       return labels[difficulty] || difficulty
     }
     
+    const getTotalTime = (recipe) => {
+      const prepTime = recipe.preparation_time || 0
+      const cookTime = recipe.cooking_time || 0
+      const restTime = recipe.resting_time || 0
+      return prepTime + cookTime + restTime
+    }
+    
     // Lifecycle
     onMounted(() => {
       loadRecipes()
       loadBanners()
+      loadCategories()
       appStore.initializePWAListeners()
       appStore.initializeNetworkListeners()
     })
@@ -272,7 +335,8 @@ export default {
       updateAdditionalFilter,
       clearAllFilters,
       retry,
-      getDifficultyLabel
+      getDifficultyLabel,
+      getTotalTime
     }
   }
 }
@@ -285,18 +349,7 @@ export default {
   font-family: 'Roboto', sans-serif;
 }
 
-.page-header {
-  background: var(--md-sys-color-surface-container, #f7f2fa);
-  border-bottom: 1px solid var(--md-sys-color-outline-variant, #cac4d0);
-  padding: 24px 16px;
-}
 
-.header-content h1 {
-  margin: 0 0 16px 0;
-  font-size: 28px;
-  font-weight: 600;
-  color: var(--md-sys-color-on-surface, #1c1b1f);
-}
 
 .search-container {
   max-width: 400px;
@@ -546,6 +599,40 @@ export default {
 
 .stat .material-symbols-outlined {
   font-size: 18px;
+  margin-right: 6px;
+  color: #8B7000; /* Couleur dorée pour les icônes */
+  font-weight: 500;
+  vertical-align: middle;
+}
+
+.stat.equipment .material-symbols-outlined {
+  color: #FF6B35; /* Orange pour les équipements */
+}
+
+.recipe-meta .material-symbols-outlined {
+  font-size: 18px;
+  margin-right: 4px;
+  color: #FFFFFF; /* Blanc pour contraster sur l'overlay */
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Système de fallback pour les icônes - logique simplifiée */
+.emoji-fallback {
+  display: none; /* Masqué par défaut */
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* UNIQUEMENT quand .force-emoji est présent sur html, afficher les emoji */
+html.force-emoji .material-symbols-outlined {
+  display: none !important;
+}
+
+html.force-emoji .emoji-fallback {
+  display: inline-block !important;
 }
 
 .retry-btn,

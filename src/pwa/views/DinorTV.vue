@@ -1,13 +1,5 @@
 <template>
   <div class="dinor-tv">
-    <!-- Header -->
-    <header class="page-header">
-      <div class="header-content">
-        <h1>Dinor TV</h1>
-        <p class="subtitle">Vidéos culinaires et émissions en direct</p>
-      </div>
-    </header>
-
     <!-- Loading State -->
     <div v-if="loading" class="loading-state">
       <div class="loading-spinner"></div>
@@ -18,11 +10,11 @@
     <div v-else-if="error" class="error-state">
       <div class="error-icon">
         <span class="material-symbols-outlined">error</span>
+        <span class="emoji-fallback">⚠️</span>
       </div>
-      <p>{{ error }}</p>
-      <button @click="retry" class="retry-btn">
-        Réessayer
-      </button>
+      <h2 class="md3-title-large">Erreur de chargement</h2>
+      <p class="md3-body-large dinor-text-gray">{{ error }}</p>
+      <button @click="retry" class="btn-secondary">Réessayer</button>
     </div>
 
     <!-- Content -->
@@ -49,6 +41,7 @@
               <div class="video-overlay">
                 <div class="play-button">
                   <span class="material-symbols-outlined">play_circle</span>
+                  <span class="emoji-fallback">▶️</span>
                 </div>
                 <div class="live-badge">
                   <span class="live-dot"></span>
@@ -65,6 +58,7 @@
               <div class="video-meta">
                 <span v-if="video.viewers_count" class="viewers">
                   <span class="material-symbols-outlined">visibility</span>
+                  <span class="emoji-fallback">👁️</span>
                   {{ video.viewers_count }} spectateurs
                 </span>
                 <span v-if="video.scheduled_at" class="scheduled">
@@ -91,44 +85,79 @@
 
         <!-- Videos Grid -->
         <div v-else class="videos-grid">
-          <article
-            v-for="video in videos"
-            :key="video.id"
-            @click="playVideo(video)"
-            class="video-card"
-          >
-            <div class="video-thumbnail">
-              <img
-                :src="video.thumbnail_url || getVideoThumbnail(video.video_url)"
-                :alt="video.title"
-                loading="lazy"
-              />
-              <div class="video-overlay">
+          <!-- Featured Video -->
+          <div v-if="featuredVideo" class="featured-video md3-card">
+            <div class="video-thumbnail" @click="playVideo(featuredVideo)">
+              <img 
+                :src="featuredVideo.thumbnail || '/images/default-video-thumbnail.jpg'" 
+                :alt="featuredVideo.title"
+                @error="handleImageError">
+              <div class="play-overlay">
                 <div class="play-button">
                   <span class="material-symbols-outlined">play_circle</span>
+                  <span class="emoji-fallback">▶️</span>
                 </div>
-                <div v-if="video.duration" class="duration">
+              </div>
+              <div class="video-badge featured-badge">
+                <span>À la une</span>
+              </div>
+            </div>
+            <div class="video-info">
+              <h2 class="video-title md3-title-medium">{{ featuredVideo.title }}</h2>
+              <p v-if="featuredVideo.description" class="video-description md3-body-medium dinor-text-gray">
+                {{ featuredVideo.description }}
+              </p>
+              <div class="video-meta">
+                <div class="views-count">
+                  <span class="material-symbols-outlined">visibility</span>
+                  <span class="emoji-fallback">👁️</span>
+                  <span>{{ formatViews(featuredVideo.views_count) }}</span>
+                </div>
+                <div class="video-date">
+                  <span>{{ formatDate(featuredVideo.created_at) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Regular Videos -->
+          <div class="regular-videos">
+            <div 
+              v-for="video in regularVideos" 
+              :key="video.id" 
+              class="video-card md3-card md3-ripple"
+              @click="playVideo(video)"
+            >
+              <div class="video-thumbnail">
+                <img 
+                  :src="video.thumbnail || '/images/default-video-thumbnail.jpg'" 
+                  :alt="video.title"
+                  @error="handleImageError">
+                <div class="play-overlay">
+                  <div class="play-button">
+                    <span class="material-symbols-outlined">play_circle</span>
+                    <span class="emoji-fallback">▶️</span>
+                  </div>
+                </div>
+                <div class="video-duration" v-if="video.duration">
                   {{ formatDuration(video.duration) }}
                 </div>
               </div>
-            </div>
-            
-            <div class="video-info">
-              <h3 class="video-title">{{ video.title }}</h3>
-              <p v-if="video.description" class="video-description">
-                {{ getShortDescription(video.description) }}
-              </p>
-              <div class="video-meta">
-                <span v-if="video.views_count" class="views">
-                  <span class="material-symbols-outlined">visibility</span>
-                  {{ video.views_count }} vues
-                </span>
-                <span v-if="video.created_at" class="date">
-                  {{ formatDate(video.created_at) }}
-                </span>
+              <div class="video-info">
+                <h3 class="video-title md3-title-small">{{ video.title }}</h3>
+                <div class="video-meta">
+                  <div class="views-count">
+                    <span class="material-symbols-outlined">visibility</span>
+                    <span class="emoji-fallback">👁️</span>
+                    <span>{{ formatViews(video.views_count) }}</span>
+                  </div>
+                  <div class="video-date">
+                    <span>{{ formatDate(video.created_at) }}</span>
+                  </div>
+                </div>
               </div>
             </div>
-          </article>
+          </div>
         </div>
       </section>
     </div>
@@ -138,6 +167,7 @@
       <div class="modal-content" @click.stop>
         <button @click="closeVideo" class="close-button">
           <span class="material-symbols-outlined">close</span>
+          <span class="emoji-fallback">✖️</span>
         </button>
         <div class="video-player">
           <iframe
@@ -297,25 +327,6 @@ export default {
 .dinor-tv {
   min-height: 100vh;
   background: var(--md-sys-color-surface, #fefbff);
-}
-
-.page-header {
-  background: linear-gradient(135deg, #1a1a1a 0%, #333333 100%);
-  padding: 32px 16px;
-  text-align: center;
-  color: white;
-}
-
-.header-content h1 {
-  margin: 0 0 8px 0;
-  font-size: 28px;
-  font-weight: 600;
-}
-
-.subtitle {
-  margin: 0;
-  font-size: 16px;
-  opacity: 0.8;
 }
 
 .loading-state,
@@ -627,5 +638,73 @@ export default {
   .modal-content {
     max-height: 95vh;
   }
+}
+
+/* Système de fallback pour les icônes - logique simplifiée */
+.emoji-fallback {
+  display: none; /* Masqué par défaut */
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* UNIQUEMENT quand .force-emoji est présent sur html, afficher les emoji */
+html.force-emoji .material-symbols-outlined {
+  display: none !important;
+}
+
+html.force-emoji .emoji-fallback {
+  display: inline-block !important;
+}
+
+/* Icônes de lecture */
+.play-button .material-symbols-outlined {
+  font-size: 48px;
+  color: #FFFFFF;
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+}
+
+.play-button .emoji-fallback {
+  font-size: 40px;
+  color: #FFFFFF;
+}
+
+/* Icônes de vues */
+.views .material-symbols-outlined,
+.viewers .material-symbols-outlined {
+  font-size: 16px;
+  margin-right: 4px;
+  color: inherit;
+}
+
+.views .emoji-fallback,
+.viewers .emoji-fallback {
+  font-size: 14px;
+  margin-right: 4px;
+  color: inherit;
+}
+
+/* Bouton de fermeture */
+.close-button .material-symbols-outlined {
+  font-size: 24px;
+  color: #FFFFFF;
+}
+
+.close-button .emoji-fallback {
+  font-size: 20px;
+  color: #FFFFFF;
+}
+
+/* États d'erreur */
+.error-icon .material-symbols-outlined {
+  font-size: 48px;
+  color: #EF4444;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+}
+
+.error-icon .emoji-fallback {
+  font-size: 48px;
+  color: #EF4444;
 }
 </style>

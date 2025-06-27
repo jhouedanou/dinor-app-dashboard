@@ -1,13 +1,5 @@
 <template>
   <div class="pages-list">
-    <!-- Header -->
-    <header class="page-header">
-      <div class="header-content">
-        <h1>Pages</h1>
-        <p class="subtitle">Informations et contenus utiles</p>
-      </div>
-    </header>
-
     <!-- Loading State -->
     <div v-if="loading" class="loading-state">
       <div class="loading-spinner"></div>
@@ -18,57 +10,59 @@
     <div v-else-if="error" class="error-state">
       <div class="error-icon">
         <span class="material-symbols-outlined">error</span>
+        <span class="emoji-fallback">⚠️</span>
       </div>
-      <p>{{ error }}</p>
-      <button @click="retry" class="retry-btn">
-        Réessayer
-      </button>
+      <h2 class="md3-title-large">Erreur de chargement</h2>
+      <p class="md3-body-large dinor-text-gray">{{ error }}</p>
+      <button @click="retry" class="btn-secondary">Réessayer</button>
     </div>
 
-    <!-- Content -->
-    <div v-else class="content">
-      <!-- Empty State -->
-      <div v-if="!pages.length && !loading" class="empty-state">
-        <div class="empty-icon">
-          <span class="material-symbols-outlined">menu_book</span>
-        </div>
-        <h3>Aucune page disponible</h3>
-        <p>Les pages d'information seront bientôt disponibles.</p>
+    <!-- Empty State -->
+    <div v-else-if="!loading && pages.length === 0" class="empty-state">
+      <div class="empty-icon">
+        <span class="material-symbols-outlined">menu_book</span>
+        <span class="emoji-fallback">📖</span>
       </div>
+      <h2 class="md3-title-medium">Aucune page trouvée</h2>
+      <p class="md3-body-medium dinor-text-gray">
+        Aucune page n'est disponible pour le moment.
+      </p>
+    </div>
 
-      <!-- Pages List -->
-      <div v-else class="pages-grid">
-        <article
-          v-for="page in pages"
-          :key="page.id"
-          @click="goToPage(page.id)"
-          class="page-card"
-        >
-          <div class="page-icon">
-            <span class="material-symbols-outlined">{{ getPageIcon(page.template) }}</span>
-          </div>
+    <!-- Pages List -->
+    <div v-else class="pages-grid">
+      <article
+        v-for="page in pages"
+        :key="page.id"
+        @click="goToPage(page.id)"
+        class="page-card"
+      >
+        <div class="page-icon">
+          <span class="material-symbols-outlined">{{ getPageIcon(page.template) }}</span>
+          <span class="emoji-fallback">{{ getPageEmoji(page.template) }}</span>
+        </div>
+        
+        <div class="page-content">
+          <h3 class="page-title">{{ page.title }}</h3>
+          <p v-if="page.excerpt" class="page-excerpt">
+            {{ page.excerpt }}
+          </p>
           
-          <div class="page-content">
-            <h3 class="page-title">{{ page.title }}</h3>
-            <p v-if="page.excerpt" class="page-excerpt">
-              {{ page.excerpt }}
-            </p>
-            
-            <div class="page-meta">
-              <span v-if="page.template" class="template-badge">
-                {{ getTemplateLabel(page.template) }}
-              </span>
-              <span v-if="page.updated_at" class="last-updated">
-                Mis à jour {{ formatDate(page.updated_at) }}
-              </span>
-            </div>
+          <div class="page-meta">
+            <span v-if="page.template" class="template-badge">
+              {{ getTemplateLabel(page.template) }}
+            </span>
+            <span v-if="page.updated_at" class="last-updated">
+              Mis à jour {{ formatDate(page.updated_at) }}
+            </span>
           </div>
-          
-          <div class="page-arrow">
-            <span class="material-symbols-outlined">chevron_right</span>
-          </div>
-        </article>
-      </div>
+        </div>
+        
+        <div class="page-arrow">
+          <span class="material-symbols-outlined">chevron_right</span>
+          <span class="emoji-fallback">▶️</span>
+        </div>
+      </article>
     </div>
   </div>
 </template>
@@ -151,6 +145,18 @@ export default {
       })
     }
     
+    const getPageEmoji = (template) => {
+      const emojis = {
+        'about': '🤔',
+        'contact': '📧',
+        'privacy': '🔒',
+        'terms': '📜',
+        'faq': '❓',
+        'default': '📄'
+      }
+      return emojis[template] || emojis.default
+    }
+    
     // Lifecycle
     onMounted(() => {
       loadPages()
@@ -164,7 +170,8 @@ export default {
       retry,
       getPageIcon,
       getTemplateLabel,
-      formatDate
+      formatDate,
+      getPageEmoji
     }
   }
 }
@@ -174,26 +181,6 @@ export default {
 .pages-list {
   min-height: 100vh;
   background: var(--md-sys-color-surface, #fefbff);
-}
-
-.page-header {
-  background: var(--md-sys-color-surface-container, #f7f2fa);
-  border-bottom: 1px solid var(--md-sys-color-outline-variant, #cac4d0);
-  padding: 32px 16px;
-  text-align: center;
-}
-
-.header-content h1 {
-  margin: 0 0 8px 0;
-  font-size: 28px;
-  font-weight: 600;
-  color: var(--md-sys-color-on-surface, #1c1b1f);
-}
-
-.subtitle {
-  margin: 0;
-  font-size: 16px;
-  color: var(--md-sys-color-on-surface-variant, #49454f);
 }
 
 .loading-state,
@@ -245,7 +232,7 @@ export default {
 
 .empty-icon .material-symbols-outlined {
   font-size: 32px;
-  color: var(--md-sys-color-on-surface-variant, #49454f);
+  color: var(--md-sys-color-on-tertiary-container, #31111d);
 }
 
 .content {
@@ -386,5 +373,63 @@ export default {
   .page-excerpt {
     font-size: 15px;
   }
+}
+
+/* Système de fallback pour les icônes - logique simplifiée */
+.emoji-fallback {
+  display: none; /* Masqué par défaut */
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* UNIQUEMENT quand .force-emoji est présent sur html, afficher les emoji */
+html.force-emoji .material-symbols-outlined {
+  display: none !important;
+}
+
+html.force-emoji .emoji-fallback {
+  display: inline-block !important;
+}
+
+.error-icon .material-symbols-outlined {
+  font-size: 32px;
+  color: var(--md-sys-color-on-error-container, #5f1411);
+}
+
+.error-icon .emoji-fallback {
+  font-size: 32px;
+  color: var(--md-sys-color-on-error-container, #5f1411);
+}
+
+.empty-icon .material-symbols-outlined {
+  font-size: 32px;
+  color: var(--md-sys-color-on-tertiary-container, #31111d);
+}
+
+.empty-icon .emoji-fallback {
+  font-size: 32px;
+  color: var(--md-sys-color-on-tertiary-container, #31111d);
+}
+
+.page-icon .material-symbols-outlined {
+  font-size: 32px;
+  color: var(--md-sys-color-primary, #6750a4);
+}
+
+.page-icon .emoji-fallback {
+  font-size: 30px;
+  color: var(--md-sys-color-primary, #6750a4);
+}
+
+.page-arrow .material-symbols-outlined {
+  font-size: 20px;
+  color: var(--md-sys-color-on-surface-variant, #49454f);
+}
+
+.page-arrow .emoji-fallback {
+  font-size: 16px;
+  color: var(--md-sys-color-on-surface-variant, #49454f);
 }
 </style>

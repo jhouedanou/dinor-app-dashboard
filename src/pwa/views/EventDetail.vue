@@ -20,11 +20,13 @@
           <div class="event-overlay dinor-gradient-primary">
             <div class="event-badges">
               <div v-if="event.location" class="md3-chip event-location">
-                <i class="material-icons">location_on</i>
+                <span class="material-symbols-outlined">location_on</span>
+                <span class="emoji-fallback">📍</span>
                 <span>{{ event.location }}</span>
               </div>
               <div v-if="event.category" class="md3-chip event-category">
-                <i class="material-icons">tag</i>
+                <span class="material-symbols-outlined">tag</span>
+                <span class="emoji-fallback">🏷️</span>
                 <span>{{ event.category.name }}</span>
               </div>
             </div>
@@ -35,19 +37,23 @@
         <div class="event-info">
           <div class="event-stats">
             <div class="stat-item">
-              <i class="material-icons dinor-text-secondary">event</i>
+              <span class="material-symbols-outlined dinor-text-secondary">event</span>
+              <span class="emoji-fallback dinor-text-secondary">📅</span>
               <span class="md3-body-medium">{{ formatEventDate(event.start_date) }}</span>
             </div>
             <div class="stat-item" v-if="event.start_time">
-              <i class="material-icons dinor-text-secondary">schedule</i>
-              <span class="md3-body-medium">{{ event.start_time }}</span>
+              <span class="material-symbols-outlined dinor-text-secondary">schedule</span>
+              <span class="emoji-fallback dinor-text-secondary">⏰</span>
+              <span class="md3-body-medium">{{ formatTime(event.start_time) }}</span>
             </div>
             <div class="stat-item">
-              <i class="material-icons dinor-text-secondary">favorite</i>
+              <span class="material-symbols-outlined dinor-text-secondary">favorite</span>
+              <span class="emoji-fallback dinor-text-secondary">❤️</span>
               <span class="md3-body-medium">{{ event.likes_count || 0 }}</span>
             </div>
             <div class="stat-item">
-              <i class="material-icons dinor-text-secondary">comment</i>
+              <span class="material-symbols-outlined dinor-text-secondary">comment</span>
+              <span class="emoji-fallback dinor-text-secondary">💬</span>
               <span class="md3-body-medium">{{ event.comments_count || 0 }}</span>
             </div>
           </div>
@@ -57,11 +63,11 @@
             <div class="detail-item">
               <h3 class="md3-title-small dinor-text-primary">Date et Heure</h3>
               <p class="md3-body-medium">
-                {{ formatEventDate(event.start_date) }}
-                <span v-if="event.start_time"> à {{ event.start_time }}</span>
+                {{ formatEventDateDetailed(event.start_date) }}
+                <span v-if="event.start_time"> à {{ formatTime(event.start_time) }}</span>
                 <span v-if="event.end_date && event.end_date !== event.start_date">
-                  - {{ formatEventDate(event.end_date) }}
-                  <span v-if="event.end_time"> à {{ event.end_time }}</span>
+                  - {{ formatEventDateDetailed(event.end_date) }}
+                  <span v-if="event.end_time"> à {{ formatTime(event.end_time) }}</span>
                 </span>
               </p>
             </div>
@@ -82,7 +88,8 @@
           <div v-if="event.registration_required" class="event-registration">
             <h3 class="md3-title-small dinor-text-primary">Inscription</h3>
             <p class="md3-body-medium">
-              <i class="material-icons dinor-text-secondary">info</i>
+              <span class="material-symbols-outlined dinor-text-secondary">info</span>
+              <span class="emoji-fallback dinor-text-secondary">ℹ️</span>
               Inscription requise pour cet événement
             </p>
             <div v-if="event.max_attendees" class="registration-info">
@@ -114,7 +121,7 @@
               <div v-for="comment in comments" :key="comment.id" class="comment-item">
                 <div class="comment-header">
                   <span class="comment-author md3-body-medium">{{ comment.author_name }}</span>
-                  <span class="comment-date md3-body-small dinor-text-gray">{{ formatDate(comment.created_at) }}</span>
+                  <span class="comment-date md3-body-small dinor-text-gray">{{ formatCommentDate(comment.created_at) }}</span>
                 </div>
                 <p class="comment-content md3-body-medium">{{ comment.content }}</p>
               </div>
@@ -129,7 +136,8 @@
       <!-- Error State -->
       <div v-else class="error-state">
         <div class="error-icon">
-          <i class="material-icons">error_outline</i>
+          <span class="material-symbols-outlined">error_outline</span>
+          <span class="emoji-fallback">⚠️</span>
         </div>
         <h2 class="md3-title-large">Événement introuvable</h2>
         <p class="md3-body-large dinor-text-gray">L'événement demandé n'existe pas ou a été supprimé.</p>
@@ -274,6 +282,16 @@ export default {
     }
 
     const formatEventDate = (date) => {
+      if (!date) return ''
+      return new Date(date).toLocaleDateString('fr-FR', {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short'
+      })
+    }
+
+    const formatEventDateDetailed = (date) => {
+      if (!date) return ''
       return new Date(date).toLocaleDateString('fr-FR', {
         weekday: 'long',
         year: 'numeric',
@@ -282,7 +300,52 @@ export default {
       })
     }
 
+    const formatTime = (time) => {
+      if (!time) return ''
+      // Si c'est déjà au format HH:MM, le retourner
+      if (time.match(/^\d{2}:\d{2}$/)) {
+        return time
+      }
+      // Si c'est un timestamp ou une date, extraire l'heure
+      try {
+        const date = new Date(time)
+        return date.toLocaleTimeString('fr-FR', {
+          hour: '2-digit',
+          minute: '2-digit'
+        })
+      } catch {
+        return time
+      }
+    }
+
+    const formatCommentDate = (date) => {
+      if (!date) return ''
+      const now = new Date()
+      const commentDate = new Date(date)
+      const diffTime = now - commentDate
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+      const diffHours = Math.floor(diffTime / (1000 * 60 * 60))
+      const diffMinutes = Math.floor(diffTime / (1000 * 60))
+
+      if (diffMinutes < 1) {
+        return 'À l\'instant'
+      } else if (diffMinutes < 60) {
+        return `Il y a ${diffMinutes} min`
+      } else if (diffHours < 24) {
+        return `Il y a ${diffHours} h`
+      } else if (diffDays < 7) {
+        return `Il y a ${diffDays} jour${diffDays > 1 ? 's' : ''}`
+      } else {
+        return commentDate.toLocaleDateString('fr-FR', {
+          day: 'numeric',
+          month: 'short',
+          year: commentDate.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+        })
+      }
+    }
+
     const formatDate = (date) => {
+      if (!date) return ''
       return new Date(date).toLocaleDateString('fr-FR')
     }
 
@@ -332,6 +395,9 @@ export default {
       goBack,
       goHome,
       formatEventDate,
+      formatEventDateDetailed,
+      formatTime,
+      formatCommentDate,
       formatDate,
       handleImageError,
       formatContent
@@ -667,9 +733,55 @@ p, span, div {
   margin-bottom: 16px;
 }
 
-.error-state .error-icon i {
+.error-state .error-icon span.material-symbols-outlined {
   font-size: 64px;
   color: #E53E3E; /* Rouge Dinor */
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+}
+
+.error-state .error-icon .emoji-fallback {
+  font-size: 64px;
+  color: #E53E3E; /* Rouge Dinor */
+}
+
+/* Système de fallback pour les icônes - logique simplifiée */
+.emoji-fallback {
+  display: none; /* Masqué par défaut */
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* UNIQUEMENT quand .force-emoji est présent sur html, afficher les emoji */
+html.force-emoji .material-symbols-outlined {
+  display: none !important;
+}
+
+html.force-emoji .emoji-fallback {
+  display: inline-block !important;
+}
+
+/* Styles spécifiques pour les icônes */
+.event-stats .material-symbols-outlined {
+  font-size: 20px;
+  margin-right: 8px;
+}
+
+.event-stats .emoji-fallback {
+  font-size: 18px;
+  margin-right: 8px;
+}
+
+/* Styles pour les puces event-badges */
+.md3-chip .material-symbols-outlined {
+  font-size: 18px;
+  margin-right: 6px;
+}
+
+.md3-chip .emoji-fallback {
+  font-size: 16px;
+  margin-right: 6px;
 }
 
 .error-state h2 {

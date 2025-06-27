@@ -1,13 +1,5 @@
 <template>
   <div class="events-list">
-    <!-- Header -->
-    <header class="page-header">
-      <div class="header-content">
-        <h1>Événements</h1>
-        <p class="subtitle">Participez à nos événements culinaires</p>
-      </div>
-    </header>
-
     <!-- Search and Filters -->
     <SearchAndFilters
       v-model:searchQuery="searchQuery"
@@ -31,8 +23,9 @@
     <div v-else-if="error" class="error-state">
       <div class="error-icon">
         <span class="material-symbols-outlined">error</span>
+        <span class="emoji-fallback">⚠️</span>
       </div>
-      <p>{{ error }}</p>
+      <p class="md3-body-large dinor-text-gray">Erreur lors du chargement des événements.</p>
       <button @click="retry" class="retry-btn">
         Réessayer
       </button>
@@ -44,13 +37,13 @@
       <div v-if="!filteredEvents.length && !loading" class="empty-state">
         <div class="empty-icon">
           <span class="material-symbols-outlined">event</span>
+          <span class="emoji-fallback">📅</span>
         </div>
-        <h3>{{ searchQuery || selectedCategory || hasActiveFilters ? 'Aucun événement trouvé' : 'Aucun événement disponible' }}</h3>
-        <p v-if="searchQuery || selectedCategory || hasActiveFilters">
-          Essayez de modifier vos critères de recherche.
-        </p>
-        <p v-else>
-          Les événements culinaires seront bientôt disponibles.
+        <h2 class="md3-title-medium">Aucun événement trouvé</h2>
+        <p class="md3-body-medium dinor-text-gray">
+          {{ searchQuery || selectedCategory || hasActiveFilters ? 
+            'Aucun événement ne correspond à vos critères de recherche.' : 
+            'Aucun événement n\'est disponible pour le moment.' }}
         </p>
         <button v-if="searchQuery || selectedCategory || hasActiveFilters" @click="clearAllFilters" class="clear-filters-btn">
           Effacer tous les filtres
@@ -70,6 +63,7 @@
               :src="event.featured_image_url || '/images/default-event.jpg'"
               :alt="event.title"
               loading="lazy"
+              @error="handleImageError"
             />
             <div class="event-status">
               <span :class="getStatusClass(event.status)">
@@ -94,24 +88,29 @@
             <div class="event-details">
               <div class="detail">
                 <span class="material-symbols-outlined">calendar_today</span>
+                <span class="emoji-fallback">📅</span>
                 <span>{{ formatDate(event.start_date) }}</span>
               </div>
               <div v-if="event.start_time" class="detail">
                 <span class="material-symbols-outlined">schedule</span>
+                <span class="emoji-fallback">⏰</span>
                 <span>{{ formatTime(event.start_time) }}</span>
               </div>
               <div v-if="event.location" class="detail">
                 <span class="material-symbols-outlined">location_on</span>
+                <span class="emoji-fallback">📍</span>
                 <span>{{ event.location }}</span>
               </div>
               <div v-if="event.event_type" class="detail">
                 <span class="material-symbols-outlined">category</span>
+                <span class="emoji-fallback">🏷️</span>
                 <span>{{ getEventTypeLabel(event.event_type) }}</span>
               </div>
             </div>
             
             <div v-if="event.max_participants" class="participants-info">
               <span class="material-symbols-outlined">group</span>
+              <span class="emoji-fallback">👥</span>
               <span>{{ event.participants_count || 0 }} / {{ event.max_participants }} participants</span>
             </div>
           </div>
@@ -364,6 +363,10 @@ export default {
       }).format(price)
     }
     
+    const handleImageError = (event) => {
+      event.target.src = '/images/default-event.jpg'
+    }
+    
     // Lifecycle
     onMounted(() => {
       loadEvents()
@@ -390,7 +393,8 @@ export default {
       getEventTypeLabel,
       formatDate,
       formatTime,
-      formatPrice
+      formatPrice,
+      handleImageError
     }
   }
 }
@@ -416,27 +420,6 @@ p, span, div {
   font-family: 'Roboto', sans-serif; /* Roboto pour les textes */
   color: #2D3748; /* Couleur foncée pour contraste 12.6:1 */
   line-height: 1.5;
-}
-
-.page-header {
-  background: #F4D03F; /* Fond doré */
-  padding: 32px 16px;
-  text-align: center;
-  border-radius: 0 0 16px 16px;
-}
-
-.header-content h1 {
-  margin: 0 0 8px 0;
-  font-size: 28px;
-  font-weight: 700;
-  color: #000000; /* Noir sur doré - contraste 5.1:1 */
-}
-
-.subtitle {
-  margin: 0;
-  font-size: 16px;
-  color: #2D3748; /* Couleur foncée sur doré - contraste 3.8:1 */
-  opacity: 1;
 }
 
 .loading-state,
@@ -678,4 +661,74 @@ p, span, div {
     gap: 8px;
   }
 }
+
+/* Système de fallback pour les icônes - logique simplifiée */
+.emoji-fallback {
+  display: none; /* Masqué par défaut */
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* UNIQUEMENT quand .force-emoji est présent sur html, afficher les emoji */
+html.force-emoji .material-symbols-outlined {
+  display: none !important;
+}
+
+html.force-emoji .emoji-fallback {
+  display: inline-block !important;
+}
+
+.error-icon .material-symbols-outlined,
+.empty-icon .material-symbols-outlined {
+  font-size: 48px;
+  color: #CBD5E0;
+  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 48;
+}
+
+.error-icon .emoji-fallback,
+.empty-icon .emoji-fallback {
+  font-size: 48px;
+  color: #CBD5E0;
+}
+
+.detail .material-symbols-outlined {
+  font-size: 16px;
+  color: #9CA3AF;
+  margin-right: 6px;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+}
+
+.detail .emoji-fallback {
+  font-size: 14px;
+  color: #9CA3AF;
+  margin-right: 6px;
+}
+
+.participants-info .material-symbols-outlined {
+  font-size: 16px;
+  color: #6B7280;
+  margin-right: 4px;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+}
+
+.participants-info .emoji-fallback {
+  font-size: 14px;
+  color: #6B7280;
+  margin-right: 4px;
+}
+
+/* Styles pour les puces */
+.md3-chip .material-symbols-outlined {
+  font-size: 16px;
+  margin-right: 4px;
+}
+
+.md3-chip .emoji-fallback {
+  font-size: 14px;
+  margin-right: 4px;
+}
+
+/* Responsive */
 </style>

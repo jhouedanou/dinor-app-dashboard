@@ -1,13 +1,5 @@
 <template>
   <div class="tips-list">
-    <!-- Header -->
-    <header class="page-header">
-      <div class="header-content">
-        <h1>Astuces Culinaires</h1>
-        <p class="subtitle">Découvrez nos conseils pour améliorer vos techniques culinaires</p>
-      </div>
-    </header>
-
     <!-- Loading State -->
     <div v-if="loading" class="loading-state">
       <div class="loading-spinner"></div>
@@ -18,75 +10,72 @@
     <div v-else-if="error" class="error-state">
       <div class="error-icon">
         <span class="material-symbols-outlined">error</span>
+        <span class="emoji-fallback">⚠️</span>
       </div>
-      <p>{{ error }}</p>
-      <button @click="retry" class="retry-btn">
-        Réessayer
-      </button>
+      <h2 class="md3-title-large">Erreur de chargement</h2>
+      <p class="md3-body-large dinor-text-gray">{{ error }}</p>
+      <button @click="retry" class="btn-secondary">Réessayer</button>
+    </div>
+
+    <!-- Empty State -->
+    <div v-else-if="!loading && tips.length === 0" class="empty-state">
+      <div class="empty-icon">
+        <span class="material-symbols-outlined">lightbulb</span>
+        <span class="emoji-fallback">💡</span>
+      </div>
+      <h2 class="md3-title-medium">Aucune astuce trouvée</h2>
+      <p class="md3-body-medium dinor-text-gray">
+        Aucune astuce n'est disponible pour le moment.
+      </p>
     </div>
 
     <!-- Content -->
     <div v-else class="content">
-      <!-- Empty State -->
-      <div v-if="!tips.length && !loading" class="empty-state">
-        <div class="empty-icon">
-          <span class="material-symbols-outlined">lightbulb</span>
-        </div>
-        <h3>Aucune astuce disponible</h3>
-        <p>Les astuces culinaires seront bientôt disponibles.</p>
-      </div>
-
       <!-- Tips Grid -->
-      <div v-else class="tips-grid">
-        <article
-          v-for="tip in tips"
-          :key="tip.id"
+      <div class="tips-grid">
+        <div 
+          v-for="tip in tips" 
+          :key="tip.id" 
+          class="tip-card md3-card md3-ripple"
           @click="goToTip(tip.id)"
-          class="tip-card"
         >
-          <div class="tip-header">
-            <div class="tip-icon">
-              <span class="material-symbols-outlined">lightbulb</span>
-            </div>
-            <div class="tip-meta">
-              <span v-if="tip.difficulty_level" class="difficulty">
-                {{ getDifficultyLabel(tip.difficulty_level) }}
-              </span>
-              <span v-if="tip.estimated_time" class="time">
-                <span class="material-symbols-outlined">schedule</span>
-                {{ tip.estimated_time }}min
-              </span>
-            </div>
+          <!-- Tip Icon -->
+          <div class="tip-icon">
+            <span class="material-symbols-outlined">lightbulb</span>
+            <span class="emoji-fallback">💡</span>
           </div>
-          
+
+          <!-- Tip Content -->
           <div class="tip-content">
-            <h3 class="tip-title">{{ tip.title }}</h3>
-            <p v-if="tip.content" class="tip-description">
+            <h3 class="tip-title md3-title-medium">{{ tip.title }}</h3>
+            <p v-if="tip.content" class="tip-description md3-body-medium dinor-text-gray">
               {{ getShortDescription(tip.content) }}
             </p>
             
-            <div v-if="tip.tags?.length" class="tip-tags">
-              <span
-                v-for="tag in tip.tags.slice(0, 3)"
-                :key="tag"
-                class="tag"
-              >
-                {{ tag }}
-              </span>
+            <!-- Tip Meta -->
+            <div class="tip-meta">
+              <div class="time" v-if="tip.created_at">
+                <span class="material-symbols-outlined">schedule</span>
+                <span class="emoji-fallback">⏰</span>
+                <span>{{ formatDate(tip.created_at) }}</span>
+              </div>
             </div>
-            
+
+            <!-- Tip Stats -->
             <div class="tip-stats">
               <div class="stat">
                 <span class="material-symbols-outlined">favorite</span>
+                <span class="emoji-fallback">❤️</span>
                 <span>{{ tip.likes_count || 0 }}</span>
               </div>
-              <div v-if="tip.category" class="stat">
+              <div class="stat" v-if="tip.category">
                 <span class="material-symbols-outlined">category</span>
+                <span class="emoji-fallback">🏷️</span>
                 <span>{{ tip.category.name }}</span>
               </div>
             </div>
           </div>
-        </article>
+        </div>
       </div>
     </div>
   </div>
@@ -153,6 +142,11 @@ export default {
       return text.length > 150 ? text.substring(0, 150) + '...' : text
     }
     
+    const formatDate = (date) => {
+      const options = { year: 'numeric', month: 'long', day: 'numeric' }
+      return new Date(date).toLocaleDateString(undefined, options)
+    }
+    
     // Lifecycle
     onMounted(() => {
       loadTips()
@@ -165,7 +159,8 @@ export default {
       goToTip,
       retry,
       getDifficultyLabel,
-      getShortDescription
+      getShortDescription,
+      formatDate
     }
   }
 }
@@ -176,26 +171,6 @@ export default {
   min-height: 100vh;
   background: #FFFFFF; /* Fond blanc comme Home */
   font-family: 'Roboto', sans-serif;
-}
-
-.page-header {
-  background: linear-gradient(135deg, var(--md-sys-color-primary-container, #eaddff) 0%, var(--md-sys-color-tertiary-container, #ffd8e4) 100%);
-  padding: 32px 16px;
-  text-align: center;
-}
-
-.header-content h1 {
-  margin: 0 0 8px 0;
-  font-size: 28px;
-  font-weight: 600;
-  color: var(--md-sys-color-on-primary-container, #21005d);
-}
-
-.subtitle {
-  margin: 0;
-  font-size: 16px;
-  color: var(--md-sys-color-on-primary-container, #21005d);
-  opacity: 0.8;
 }
 
 .loading-state,
@@ -415,5 +390,75 @@ export default {
     flex-direction: row;
     align-items: center;
   }
+}
+
+/* Système de fallback pour les icônes - logique simplifiée */
+.emoji-fallback {
+  display: none; /* Masqué par défaut */
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* UNIQUEMENT quand .force-emoji est présent sur html, afficher les emoji */
+html.force-emoji .material-symbols-outlined {
+  display: none !important;
+}
+
+html.force-emoji .emoji-fallback {
+  display: inline-block !important;
+}
+
+.error-icon .material-symbols-outlined {
+  font-size: 32px;
+  color: var(--md-sys-color-on-error-container, #5f1411);
+}
+
+.error-icon .emoji-fallback {
+  font-size: 32px;
+  color: var(--md-sys-color-on-error-container, #5f1411);
+}
+
+.empty-icon .material-symbols-outlined {
+  font-size: 32px;
+  color: var(--md-sys-color-on-tertiary-container, #31111d);
+}
+
+.empty-icon .emoji-fallback {
+  font-size: 32px;
+  color: var(--md-sys-color-on-tertiary-container, #31111d);
+}
+
+.tip-icon .material-symbols-outlined {
+  font-size: 32px;
+  color: #F59E0B;
+}
+
+.tip-icon .emoji-fallback {
+  font-size: 30px;
+  color: #F59E0B;
+}
+
+.time .material-symbols-outlined {
+  font-size: 16px;
+  color: #6B7280;
+  margin-right: 4px;
+}
+
+.time .emoji-fallback {
+  font-size: 14px;
+  color: #6B7280;
+  margin-right: 4px;
+}
+
+.stat .material-symbols-outlined {
+  font-size: 16px;
+  margin-right: 4px;
+}
+
+.stat .emoji-fallback {
+  font-size: 14px;
+  margin-right: 4px;
 }
 </style>

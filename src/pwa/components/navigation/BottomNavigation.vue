@@ -10,6 +10,7 @@
       >
         <div class="nav-icon">
           <span class="material-symbols-outlined">{{ item.icon }}</span>
+          <span class="emoji-fallback">{{ getEmojiForIcon(item.icon) }}</span>
         </div>
         <span class="nav-label">{{ item.label }}</span>
       </router-link>
@@ -29,23 +30,37 @@ export default {
     
     // Navigation avec les onglets demandés par l'utilisateur
     const navItems = ref([
-      { name: 'all', path: '/', icon: 'apps', label: 'All' },
+      { name: 'all', path: '/', icon: 'apps', label: 'Accueil' },
       { name: 'recipes', path: '/recipes', icon: 'restaurant', label: 'Recettes' },
       { name: 'tips', path: '/tips', icon: 'lightbulb', label: 'Astuces' },
-      { name: 'events', path: '/events', icon: 'event', label: 'Événements' },
+      { name: 'events', path: '/events', icon: 'event', label: 'Événements Dinor' },
       { name: 'web', path: '/web-embed', icon: 'language', label: 'Web' }
     ])
     
     const isActive = (path) => {
-      if (path === '/') {
-        return route.path === '/'
+      return route.path === path || (path !== '/' && route.path.startsWith(path))
+    }
+    
+    const getEmojiForIcon = (icon) => {
+      const emojiMap = {
+        'home': '🏠',
+        'restaurant': '🍴',
+        'lightbulb': '💡',
+        'event': '📅',
+        'calendar_today': '📅',
+        'tv': '📺',
+        'play_circle': '📺',
+        'menu_book': '📖',
+        'info': 'ℹ️',
+        'settings': '⚙️'
       }
-      return route.path.startsWith(path)
+      return emojiMap[icon] || '•'
     }
     
     return {
       navItems,
-      isActive
+      isActive,
+      getEmojiForIcon
     }
   }
 }
@@ -119,19 +134,11 @@ export default {
 
 .nav-icon .material-symbols-outlined {
   font-size: 24px;
-  font-variation-settings: 
-    'FILL' 0,
-    'wght' 400,
-    'GRAD' 0,
-    'opsz' 24;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
 .nav-item.active .nav-icon .material-symbols-outlined {
-  font-variation-settings: 
-    'FILL' 1,
-    'wght' 600,
-    'GRAD' 0,
-    'opsz' 24;
+  font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24;
 }
 
 .nav-label {
@@ -191,6 +198,53 @@ export default {
   
   .nav-item {
     max-width: 160px;
+  }
+}
+
+/* Système de fallback pour les icônes - logique simplifiée */
+.emoji-fallback {
+  display: none; /* Masqué par défaut */
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* UNIQUEMENT quand .force-emoji est présent sur html, afficher les emoji */
+html.force-emoji .material-symbols-outlined {
+  display: none !important;
+}
+
+html.force-emoji .emoji-fallback {
+  display: inline-block !important;
+}
+
+.nav-icon .material-symbols-outlined {
+  font-size: 24px;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.nav-icon .emoji-fallback {
+  font-size: 20px;
+}
+
+.nav-item.active .nav-icon .material-symbols-outlined {
+  font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24;
+}
+
+.nav-item.active .nav-icon .emoji-fallback {
+  font-size: 22px;
+  filter: brightness(1.2);
+}
+
+/* Responsive pour petit écran */
+@media (max-width: 480px) {
+  .nav-icon .material-symbols-outlined {
+    font-size: 20px;
+  }
+
+  .nav-icon .emoji-fallback {
+    font-size: 18px;
   }
 }
 </style>

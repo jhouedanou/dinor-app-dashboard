@@ -52,7 +52,7 @@ class CategoryController extends Controller
     public function recipes()
     {
         $categories = Category::active()
-            ->forRecipes()
+            ->general() // Utiliser les catégories générales car elles servent pour les recettes
             ->orderBy('name')
             ->get(['id', 'name', 'slug', 'color', 'icon']);
 

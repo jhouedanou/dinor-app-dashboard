@@ -6,7 +6,8 @@
         @click="handleBack" 
         class="md3-icon-button"
       >
-        <i class="material-icons">arrow_back</i>
+        <span class="material-symbols-outlined">arrow_back</span>
+        <span class="emoji-fallback">⬅️</span>
       </button>
       
       <!-- Logo et titre -->
@@ -46,14 +47,16 @@
             class="md3-icon-button" 
             :class="{ 'liked': isLiked }"
           >
-            <i class="material-icons">{{ isLiked ? 'favorite' : 'favorite_border' }}</i>
+            <span class="material-symbols-outlined">{{ isLiked ? 'favorite' : 'favorite_border' }}</span>
+            <span class="emoji-fallback">{{ isLiked ? '❤️' : '🤍' }}</span>
           </button>
           <button 
             v-if="showShare" 
             @click="handleShare" 
             class="md3-icon-button"
           >
-            <i class="material-icons">share</i>
+            <span class="material-symbols-outlined">share</span>
+            <span class="emoji-fallback">📤</span>
           </button>
         </slot>
       </div>
@@ -225,9 +228,54 @@ export default {
   background: rgba(255, 255, 255, 0.1);
 }
 
-.md3-icon-button i {
+.md3-icon-button span.material-symbols-outlined {
   color: #FFFFFF; /* Blanc sur rouge - contraste 4.5:1 */
   font-size: 20px; /* Taille d'icône réduite */
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+}
+
+.md3-icon-button.liked span.material-symbols-outlined {
+  color: #F4D03F; /* Doré pour les favoris */
+  font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 20;
+}
+
+/* Système de fallback pour les icônes - logique simplifiée */
+.emoji-fallback {
+  display: none; /* Masqué par défaut */
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+}
+
+/* UNIQUEMENT quand .force-emoji est présent sur html, afficher les emoji */
+html.force-emoji .material-symbols-outlined {
+  display: none !important;
+}
+
+html.force-emoji .emoji-fallback {
+  display: inline-block !important;
+}
+
+.md3-icon-button span.material-symbols-outlined {
+  color: #FFFFFF; /* Blanc sur rouge - contraste 4.5:1 */
+  font-size: 20px; /* Taille d'icône réduite */
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+}
+
+.md3-icon-button.liked span.material-symbols-outlined {
+  color: #F4D03F; /* Doré pour les favoris */
+  font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 20;
+}
+
+/* Styles pour les emoji fallback */
+.emoji-fallback {
+  font-size: 18px;
+  color: #FFFFFF;
+}
+
+.md3-icon-button.liked .emoji-fallback {
+  color: #F4D03F; /* Doré pour les favoris */
 }
 
 .md3-app-bar-title {
@@ -288,10 +336,6 @@ export default {
 .md3-app-bar-actions {
   display: flex;
   gap: 4px; /* Gap réduit */
-}
-
-.md3-icon-button.liked i {
-  color: #F4D03F; /* Doré pour les favoris */
 }
 
 /* Responsive */

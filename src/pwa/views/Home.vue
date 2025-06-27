@@ -29,8 +29,8 @@
               loading="lazy"
             />
             <div class="card-overlay">
-              <span v-if="item.preparation_time" class="time-badge">
-                {{ item.preparation_time }}min
+              <span v-if="getTotalTime(item)" class="time-badge">
+                {{ getTotalTime(item) }}min
               </span>
               <span v-if="item.difficulty" class="difficulty-badge">
                 {{ getDifficultyLabel(item.difficulty) }}
@@ -43,6 +43,7 @@
             <div class="card-meta">
               <span class="likes">
                 <span class="material-symbols-outlined">favorite</span>
+                <span class="emoji-fallback">❤️</span>
                 {{ item.likes_count || 0 }}
               </span>
               <span class="date">{{ formatDate(item.created_at) }}</span>
@@ -66,6 +67,7 @@
         <div class="tip-card">
           <div class="tip-icon">
             <span class="material-symbols-outlined">lightbulb</span>
+            <span class="emoji-fallback">💡</span>
           </div>
           <div class="card-content">
             <h3>{{ item.title }}</h3>
@@ -114,6 +116,7 @@
             <div class="card-meta">
               <span class="date">
                 <span class="material-symbols-outlined">calendar_today</span>
+                <span class="emoji-fallback">📅</span>
                 {{ formatDate(item.start_date) }}
               </span>
               <span class="created">{{ formatDate(item.created_at) }}</span>
@@ -145,6 +148,7 @@
             <div class="video-overlay">
               <div class="play-button">
                 <span class="material-symbols-outlined">play_circle</span>
+                <span class="emoji-fallback">▶️</span>
               </div>
               <div v-if="item.is_live" class="live-badge">
                 <span class="live-dot"></span>
@@ -161,6 +165,7 @@
             <div class="card-meta">
               <span class="views">
                 <span class="material-symbols-outlined">visibility</span>
+                <span class="emoji-fallback">👁️</span>
                 {{ item.views_count || 0 }}
               </span>
               <span class="date">{{ formatDate(item.created_at) }}</span>
@@ -283,9 +288,19 @@ export default {
       const labels = {
         'beginner': 'Débutant',
         'intermediate': 'Intermédiaire',
-        'advanced': 'Avancé'
+        'advanced': 'Avancé',
+        'easy': 'Facile',
+        'medium': 'Moyen',
+        'hard': 'Difficile'
       }
       return labels[difficulty] || difficulty
+    }
+    
+    const getTotalTime = (item) => {
+      const prepTime = item.preparation_time || 0
+      const cookTime = item.cooking_time || 0
+      const restTime = item.resting_time || 0
+      return prepTime + cookTime + restTime
     }
     
     const getStatusClass = (status) => {
@@ -376,6 +391,7 @@ export default {
       // Utilitaires
       getShortDescription,
       getDifficultyLabel,
+      getTotalTime,
       getStatusClass,
       getStatusLabel,
       formatDate,
@@ -596,7 +612,11 @@ export default {
 .likes .material-symbols-outlined,
 .views .material-symbols-outlined,
 .date .material-symbols-outlined {
-  font-size: 14px;
+  font-size: 18px;
+  margin-right: 6px;
+  color: #8B7000; /* Couleur dorée pour les icônes */
+  font-weight: 500;
+  vertical-align: middle;
 }
 
 /* Section Dinor TV */
@@ -801,7 +821,11 @@ export default {
 
 .likes .material-symbols-outlined,
 .date .material-symbols-outlined {
-  font-size: 14px;
+  font-size: 18px;
+  margin-right: 6px;
+  color: #8B7000; /* Couleur dorée pour les icônes */
+  font-weight: 500;
+  vertical-align: middle;
 }
 
 /* Tip Card */
@@ -1054,5 +1078,23 @@ p, span, div, .card-content p {
     align-items: flex-start;
     gap: 16px;
   }
+}
+
+/* Système de fallback pour les icônes - logique simplifiée */
+.emoji-fallback {
+  display: none; /* Masqué par défaut */
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* UNIQUEMENT quand .force-emoji est présent sur html, afficher les emoji */
+html.force-emoji .material-symbols-outlined {
+  display: none !important;
+}
+
+html.force-emoji .emoji-fallback {
+  display: inline-block !important;
 }
 </style>
