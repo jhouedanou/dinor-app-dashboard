@@ -319,6 +319,20 @@ else
     log_warning "Fichier artisan non trouvé pour les migrations event_categories"
 fi
 
+# 13.2. Migration spécifique des champs URL pages (correction)
+log_info "🗄️ Migration spécifique des champs URL pages..."
+if [ -f artisan ]; then
+    # Migration corrigée des champs URL pour les pages
+    $FORGE_PHP artisan migrate --path=database/migrations/2025_06_27_195245_add_url_fields_to_pages_table.php --force
+    if [ $? -eq 0 ]; then
+        log_success "Migration pages URL fields exécutée"
+    else
+        log_warning "Problème avec la migration pages URL fields"
+    fi
+else
+    log_warning "Fichier artisan non trouvé pour les migrations pages"
+fi
+
 # 14. Configuration de l'utilisateur admin (amélioré)
 log_info "👤 Configuration de l'utilisateur admin..."
 

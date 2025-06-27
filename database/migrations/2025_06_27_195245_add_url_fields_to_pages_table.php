@@ -12,9 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('pages', function (Blueprint $table) {
-            $table->string('url')->nullable()->after('featured_image');
-            $table->string('embed_url')->nullable()->after('url');
-            $table->boolean('is_external')->default(false)->after('embed_url');
+            // Vérifier si les colonnes n'existent pas déjà avant de les ajouter
+            if (!Schema::hasColumn('pages', 'url')) {
+                $table->string('url')->nullable();
+            }
+            if (!Schema::hasColumn('pages', 'embed_url')) {
+                $table->string('embed_url')->nullable();
+            }
+            if (!Schema::hasColumn('pages', 'is_external')) {
+                $table->boolean('is_external')->default(false);
+            }
         });
     }
 
@@ -24,7 +31,21 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('pages', function (Blueprint $table) {
-            $table->dropColumn(['url', 'embed_url', 'is_external']);
+            // Supprimer seulement les colonnes qui existent
+            $columnsToDrop = [];
+            if (Schema::hasColumn('pages', 'url')) {
+                $columnsToDrop[] = 'url';
+            }
+            if (Schema::hasColumn('pages', 'embed_url')) {
+                $columnsToDrop[] = 'embed_url';
+            }
+            if (Schema::hasColumn('pages', 'is_external')) {
+                $columnsToDrop[] = 'is_external';
+            }
+            
+            if (!empty($columnsToDrop)) {
+                $table->dropColumn($columnsToDrop);
+            }
         });
     }
 };
