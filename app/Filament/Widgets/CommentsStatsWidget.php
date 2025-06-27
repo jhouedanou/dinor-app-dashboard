@@ -69,5 +69,5 @@ class CommentsStatsWidget extends BaseWidget
 
     protected static ?int $sort = 3;
 
-    protected static ?string $pollingInterval = '30s';
+    protected static ?string $pollingInterval = null;
 }

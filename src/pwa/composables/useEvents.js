@@ -69,6 +69,10 @@ export function useEventsPagination(initialParams = {}) {
     return updateParams({ category_id: categoryId, page: 1 })
   }
 
+  const filterByEventCategory = (eventCategoryId) => {
+    return updateParams({ event_category_id: eventCategoryId, page: 1 })
+  }
+
   const filterByDate = (dateRange) => {
     return updateParams({ 
       date_from: dateRange.from,
@@ -90,6 +94,7 @@ export function useEventsPagination(initialParams = {}) {
     searchEvents,
     filterByStatus,
     filterByCategory,
+    filterByEventCategory,
     filterByDate
   }
 }

@@ -22,60 +22,61 @@
       </div>
     </div>
 
-    <!-- Category Filters -->
-    <div v-if="categories?.length" class="filters">
-      <div class="filter-header">
-        <span class="material-symbols-outlined">filter_list</span>
-        <span>Catégories</span>
-      </div>
-      <div class="filter-chips">
-        <button
-          @click="$emit('update:selectedCategory', null)"
-          class="filter-chip"
-          :class="{ active: !selectedCategory }"
-        >
-          Toutes
-        </button>
-        <button
-          v-for="category in categories"
-          :key="category.id"
-          @click="$emit('update:selectedCategory', category.id)"
-          class="filter-chip"
-          :class="{ active: selectedCategory === category.id }"
-        >
-          {{ category.name }}
-        </button>
-      </div>
-    </div>
-
-    <!-- Additional Filters -->
-    <div v-if="additionalFilters?.length" class="additional-filters">
-      <div 
-        v-for="filter in additionalFilters" 
-        :key="filter.key"
-        class="filter-group"
-      >
-        <div class="filter-header">
-          <span class="material-symbols-outlined">{{ filter.icon || 'tune' }}</span>
-          <span>{{ filter.label }}</span>
+    <!-- All Filters in One Row -->
+    <div v-if="categories?.length || additionalFilters?.length" class="all-filters">
+      <div class="filters-row">
+        <!-- Category Filter -->
+        <div v-if="categories?.length" class="filter-dropdown-group">
+          <label class="filter-label">
+            <span class="material-symbols-outlined">category</span>
+            Catégories
+          </label>
+          <div class="dropdown-wrapper">
+            <select
+              :value="selectedCategory || ''"
+              @change="$emit('update:selectedCategory', $event.target.value ? parseInt($event.target.value) : null)"
+              class="filter-dropdown"
+            >
+              <option value="">Toutes les catégories</option>
+              <option
+                v-for="category in categories"
+                :key="category.id"
+                :value="category.id"
+              >
+                {{ category.name }}
+              </option>
+            </select>
+            <span class="dropdown-arrow material-symbols-outlined">expand_more</span>
+          </div>
         </div>
-        <div class="filter-chips">
-          <button
-            @click="$emit('update:additionalFilter', { key: filter.key, value: null })"
-            class="filter-chip"
-            :class="{ active: !getFilterValue(filter.key) }"
-          >
-            {{ filter.allLabel || 'Tous' }}
-          </button>
-          <button
-            v-for="option in filter.options"
-            :key="option.value"
-            @click="$emit('update:additionalFilter', { key: filter.key, value: option.value })"
-            class="filter-chip"
-            :class="{ active: getFilterValue(filter.key) === option.value }"
-          >
-            {{ option.label }}
-          </button>
+
+        <!-- Additional Filters -->
+        <div 
+          v-for="filter in additionalFilters" 
+          :key="filter.key"
+          class="filter-dropdown-group"
+        >
+          <label class="filter-label">
+            <span class="material-symbols-outlined">{{ filter.icon || 'tune' }}</span>
+            {{ filter.label }}
+          </label>
+          <div class="dropdown-wrapper">
+            <select
+              :value="getFilterValue(filter.key) || ''"
+              @change="$emit('update:additionalFilter', { key: filter.key, value: $event.target.value || null })"
+              class="filter-dropdown"
+            >
+              <option value="">{{ filter.allLabel || 'Tous' }}</option>
+              <option
+                v-for="option in filter.options"
+                :key="option.value"
+                :value="option.value"
+              >
+                {{ option.label }}
+              </option>
+            </select>
+            <span class="dropdown-arrow material-symbols-outlined">expand_more</span>
+          </div>
         </div>
       </div>
     </div>
@@ -195,20 +196,24 @@ export default {
   background: var(--surface-variant-color, #f5f5f5);
 }
 
-.filters,
-.additional-filters {
+.all-filters {
   margin-bottom: 1rem;
 }
 
-.filter-group {
-  margin-bottom: 1rem;
+/* Styles pour les filtres déroulants */
+.filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-start;
 }
 
-.filter-group:last-child {
-  margin-bottom: 0;
+.filter-dropdown-group {
+  min-width: 200px;
+  flex: 1;
 }
 
-.filter-header {
+.filter-label {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -216,13 +221,67 @@ export default {
   font-weight: 600;
   color: var(--on-surface-color, #1f2937);
   font-size: 0.875rem;
+  cursor: pointer;
 }
 
-.filter-header .material-symbols-outlined {
+.filter-label .material-symbols-outlined {
   font-size: 1.125rem;
   color: var(--primary-color, #9F7C20);
 }
 
+.dropdown-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.filter-dropdown {
+  width: 100%;
+  appearance: none;
+  background: var(--surface-color, #ffffff);
+  border: 2px solid var(--outline-variant-color, #e5e7eb);
+  border-radius: 12px;
+  padding: 12px 40px 12px 16px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--on-surface-color, #1f2937);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  outline: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.filter-dropdown:hover {
+  border-color: var(--primary-color, #9F7C20);
+  box-shadow: 0 2px 8px rgba(159, 124, 32, 0.15);
+}
+
+.filter-dropdown:focus {
+  border-color: var(--primary-color, #9F7C20);
+  box-shadow: 0 0 0 3px rgba(159, 124, 32, 0.1);
+  background: var(--surface-color, #ffffff);
+}
+
+.filter-dropdown option {
+  padding: 8px 12px;
+  background: var(--surface-color, #ffffff);
+  color: var(--on-surface-color, #1f2937);
+}
+
+.dropdown-arrow {
+  position: absolute;
+  right: 12px;
+  color: var(--on-surface-variant-color, #6b7280);
+  pointer-events: none;
+  transition: transform 0.2s ease;
+}
+
+.filter-dropdown:focus + .dropdown-arrow {
+  transform: rotate(180deg);
+  color: var(--primary-color, #9F7C20);
+}
+
+/* Styles pour les anciennes chips de catégories */
 .filter-chips {
   display: flex;
   flex-wrap: wrap;
@@ -271,8 +330,37 @@ export default {
     padding: 0.75rem;
   }
   
+  .filters-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .filter-dropdown-group {
+    min-width: 100%;
+  }
+  
+  .filter-dropdown {
+    font-size: 16px; /* Prevent zoom on iOS */
+    padding: 14px 40px 14px 16px;
+  }
+  
   .filter-chips {
     -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 480px) {
+  .filters-row {
+    gap: 0.5rem;
+  }
+  
+  .filter-label {
+    font-size: 0.8rem;
+  }
+  
+  .filter-dropdown {
+    padding: 10px 35px 10px 12px;
+    font-size: 14px;
   }
 }
 </style> 

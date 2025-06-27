@@ -1,66 +1,59 @@
-// Variables SCSS pour la PWA Dinor
+// Variables de couleurs personnalisées Dinor - Version claire
 :root {
-  --color-primary: #f59e0b;
-  --color-primary-dark: #d97706;
-  --color-secondary: #6b7280;
-  --color-success: #10b981;
-  --color-error: #ef4444;
-  --color-warning: #f59e0b;
-  --color-bg: #f9fafb;
-  --color-surface: #ffffff;
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  --border-radius: 0.5rem;
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
   --transition-fast: 150ms ease-in-out;
   --transition-normal: 300ms ease-in-out;
   --bottom-nav-height: 84px;
+  
+  /* Nouvelles couleurs claires inspirées de l'image */
+  --red-primary: #E53E3E;
+  --red-dark: #C53030;
+  --gray: #718096;
+  --gray-light: #EDF2F7;
+  --champagne-pink: #F7FAFC;
+  --gold: #D69E2E;
+  --gold-light: #F6E05E;
+  --blood-red: #B91C1C;
+  
+  /* Couleurs système */
+  --color-primary: var(--red-primary);
+  --color-secondary: var(--gold);
+  --color-bg: #FFFFFF;
+  --color-surface: #FFFFFF;
+  --color-error: var(--red-dark);
 }
-/* CSS HEX */
---red-cmyk: #E1251Bff;
---gray: #818080ff;
---champagne-pink: #E6D9D0ff;
---dark-goldenrod: #9E7C22ff;
---blood-red: #690E08ff;
 
-/* CSS HSL */
---red-cmyk: hsla(3, 79%, 49%, 1);
---gray: hsla(0, 0%, 50%, 1);
---champagne-pink: hsla(25, 31%, 86%, 1);
---dark-goldenrod: hsla(44, 65%, 38%, 1);
---blood-red: hsla(4, 86%, 22%, 1);
+// Variables SCSS
+$red-primary: #E53E3E;
+$red-dark: #C53030;
+$gray: #718096;
+$gray-light: #EDF2F7;
+$champagne-pink: #F7FAFC;
+$gold: #D69E2E;
+$gold-light: #F6E05E;
+$blood-red: #B91C1C;
 
-/* SCSS HEX */
-$red-cmyk: #E1251Bff;
-$gray: #818080ff;
-$champagne-pink: #E6D9D0ff;
-$dark-goldenrod: #9E7C22ff;
-$blood-red: #690E08ff;
+// Gradients SCSS
+$gradient-top: linear-gradient(0deg, $red-primary, $gold, $champagne-pink, $gray-light);
+$gradient-right: linear-gradient(90deg, $red-primary, $gold, $champagne-pink, $gray-light);
+$gradient-bottom: linear-gradient(180deg, $red-primary, $gold, $champagne-pink, $gray-light);
+$gradient-left: linear-gradient(270deg, $red-primary, $gold, $champagne-pink, $gray-light);
+$gradient-top-right: linear-gradient(45deg, $red-primary, $gold);
+$gradient-bottom-right: linear-gradient(135deg, $red-primary, $red-dark);
+$gradient-top-left: linear-gradient(225deg, $gold, $gold-light);
+$gradient-bottom-left: linear-gradient(315deg, $red-primary, $red-dark);
+$gradient-radial: radial-gradient($red-primary, $gold, $champagne-pink);
 
-/* SCSS HSL */
-$red-cmyk: hsla(3, 79%, 49%, 1);
-$gray: hsla(0, 0%, 50%, 1);
-$champagne-pink: hsla(25, 31%, 86%, 1);
-$dark-goldenrod: hsla(44, 65%, 38%, 1);
-$blood-red: hsla(4, 86%, 22%, 1);
+// Import des polices Google Fonts
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&family=Open+Sans:wght@300;400;500;600;700&display=swap');
 
-/* SCSS RGB */
-$red-cmyk: rgba(225, 37, 27, 1);
-$gray: rgba(129, 128, 128, 1);
-$champagne-pink: rgba(230, 217, 208, 1);
-$dark-goldenrod: rgba(158, 124, 34, 1);
-$blood-red: rgba(105, 14, 8, 1);
-
-/* SCSS Gradient */
-$gradient-top: linear-gradient(0deg, #E1251Bff, #818080ff, #E6D9D0ff, #9E7C22ff, #690E08ff);
-$gradient-right: linear-gradient(90deg, #E1251Bff, #818080ff, #E6D9D0ff, #9E7C22ff, #690E08ff);
-$gradient-bottom: linear-gradient(180deg, #E1251Bff, #818080ff, #E6D9D0ff, #9E7C22ff, #690E08ff);
-$gradient-left: linear-gradient(270deg, #E1251Bff, #818080ff, #E6D9D0ff, #9E7C22ff, #690E08ff);
-$gradient-top-right: linear-gradient(45deg, #E1251Bff, #818080ff, #E6D9D0ff, #9E7C22ff, #690E08ff);
-$gradient-bottom-right: linear-gradient(135deg, #E1251Bff, #818080ff, #E6D9D0ff, #9E7C22ff, #690E08ff);
-$gradient-top-left: linear-gradient(225deg, #E1251Bff, #818080ff, #E6D9D0ff, #9E7C22ff, #690E08ff);
-$gradient-bottom-left: linear-gradient(315deg, #E1251Bff, #818080ff, #E6D9D0ff, #9E7C22ff, #690E08ff);
-$gradient-radial: radial-gradient(#E1251Bff, #818080ff, #E6D9D0ff, #9E7C22ff, #690E08ff);
 // Reset et base
 * {
   box-sizing: border-box;
@@ -69,17 +62,27 @@ $gradient-radial: radial-gradient(#E1251Bff, #818080ff, #E6D9D0ff, #9E7C22ff, #6
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Open Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   margin: 0;
   padding: 0;
   background-color: var(--color-bg);
-  color: #1f2937;
+  color: #2D3748;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+// Typographie
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Nunito Sans', sans-serif;
+  font-weight: 700;
+  color: #2D3748;
+  margin: 0;
+  line-height: 1.3;
 }
 
 // Layout PWA avec bottom navigation
@@ -135,8 +138,9 @@ body {
 
 .page-title {
   font-size: 1.5rem;
-  font-weight: bold;
-  color: #1f2937;
+  font-family: 'Nunito Sans', sans-serif;
+  font-weight: 700;
+  color: var(--red-primary);
   margin: 0;
   display: flex;
   align-items: center;
@@ -195,6 +199,7 @@ body {
 .empty-title {
   font-size: 1.25rem;
   font-weight: 600;
+  font-family: 'Nunito Sans', sans-serif;
   color: #374151;
   margin-bottom: 0.5rem;
 }
@@ -202,6 +207,7 @@ body {
 .empty-description {
   color: var(--color-secondary);
   margin-bottom: 1.5rem;
+  font-family: 'Open Sans', sans-serif;
 }
 
 // Cards avec hover optimisé
@@ -214,204 +220,25 @@ body {
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
   }
-  
-  &:active {
-    transform: translateY(0);
-  }
 }
 
-// Boutons
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem 1rem;
-  border-radius: var(--border-radius);
-  font-weight: 500;
-  transition: all var(--transition-fast);
-  cursor: pointer;
-  border: none;
-  text-decoration: none;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-  
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-}
-
-.btn-primary {
-  background: var(--color-primary);
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: var(--border-radius);
-  border: none;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color var(--transition-fast);
-  
-  &:hover:not(:disabled) {
-    background: var(--color-primary-dark);
-    transform: translateY(-1px);
-  }
-  
-  &:active {
-    transform: translateY(0);
-  }
-  
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-}
-
-// Forms optimisés
-.form-input {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: var(--border-radius);
-  font-size: 16px; // Évite le zoom sur iOS
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-  
-  &:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
-  }
-}
-
-// Images optimisées
-img {
-  max-width: 100%;
-  height: auto;
-}
-
-.img-lazy {
-  opacity: 0;
-  transition: opacity var(--transition-normal);
-  
-  &.loaded {
-    opacity: 1;
-  }
-}
-
-// Utilities
-.prose {
-  max-width: none;
-  line-height: 1.7;
-  
-  p {
-    margin-bottom: 1em;
-  }
-}
-
-.aspect-video {
-  aspect-ratio: 16 / 9;
-}
-
-.border-l-3 {
-  border-left-width: 3px;
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-// Grilles responsives
-.grid-responsive {
-  display: grid;
-  gap: 1.5rem;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-}
-
-@media (max-width: 640px) {
-  .grid-responsive {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-}
-
-// Animations PWA
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all var(--transition-normal);
-}
-
-.slide-up-enter-from {
-  opacity: 0;
-  transform: translateY(30px);
-}
-
-.slide-up-leave-to {
-  opacity: 0;
-  transform: translateY(-30px);
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity var(--transition-normal);
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-// Focus visible pour la navigation au clavier
-.focus-visible:focus {
-  outline: 2px solid var(--color-primary);
+// États de focus améliorés
+.focus-ring:focus {
+  outline: 2px solid var(--red-primary);
   outline-offset: 2px;
 }
 
-// Dark mode support (optionnel)
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg: #111827;
-    --color-surface: #1f2937;
-  }
-  
-  body {
-    background-color: var(--color-bg);
-    color: #f9fafb;
-  }
+// Animation d'apparition
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-// Print styles
-@media print {
-  .nav-bar,
-  .btn,
-  .comment-form {
-    display: none !important;
-  }
-  
-  .card-hover {
-    box-shadow: none !important;
-    transform: none !important;
-  }
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
 }
 
-// High contrast mode
-@media (prefers-contrast: high) {
-  .card-hover {
-    border: 2px solid #000;
-  }
-  
-  .btn-primary {
-    border: 2px solid #000;
-  }
-}
-
-// Reduced motion
+// Styles responsifs
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -420,46 +247,4 @@ img {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  
-  .spinner {
-    animation: none;
-    border-top-color: var(--color-primary);
-  }
-}
-
-// PWA specific
-.pwa-install-prompt {
-  position: fixed;
-  bottom: 1rem;
-  left: 1rem;
-  right: 1rem;
-  background: var(--color-surface);
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow-lg);
-  padding: 1rem;
-  z-index: 100;
-  transform: translateY(100%);
-  transition: transform var(--transition-normal);
-  
-  &.show {
-    transform: translateY(0);
-  }
-}
-
-// Optimisations touch
-.touch-target {
-  min-height: 44px;
-  min-width: 44px;
-}
-
-// Scroll snap pour les listes
-.scroll-snap-x {
-  scroll-snap-type: x mandatory;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.scroll-snap-item {
-  scroll-snap-align: start;
-  flex-shrink: 0;
 }

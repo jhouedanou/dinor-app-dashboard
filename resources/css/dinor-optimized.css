@@ -2,35 +2,63 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
+/* Import des polices Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&family=Open+Sans:wght@300;400;500;600;700&display=swap');
+
 /* ==============================================
-   DINOR OPTIMIZED CSS - Version locale optimisée
+   DINOR OPTIMIZED CSS - Version claire et moderne
    ============================================== */
 
-/* Variables CSS pour cohérence */
+/* Variables CSS pour cohérence - Thème clair */
 :root {
-  --dinor-red: #E1251B;
-  --dinor-gray: #818080;
-  --dinor-champagne: #E6D9D0;
-  --dinor-gold: #9E7C22;
-  --dinor-blood: #690E08;
+  /* Couleurs principales - Palette claire inspirée de l'image */
+  --dinor-red: #E53E3E;
+  --dinor-red-dark: #C53030;
+  --dinor-gray: #718096;
+  --dinor-gray-light: #EDF2F7;
+  --dinor-champagne: #F7FAFC;
+  --dinor-gold: #D69E2E;
+  --dinor-gold-light: #F6E05E;
+  --dinor-white: #FFFFFF;
   
-  /* Material Design 3 Variables */
-  --md-sys-color-surface: #fefbff;
-  --md-sys-color-on-surface: #1c1b1f;
-  --md-sys-color-primary: #9E7C22;
-  --md-sys-color-on-primary: #ffffff;
-  --md-sys-color-secondary: #E1251B;
-  --md-sys-color-on-secondary: #ffffff;
+  /* Material Design 3 Variables - Version claire */
+  --md-sys-color-surface: #FFFFFF;
+  --md-sys-color-surface-variant: #F7FAFC;
+  --md-sys-color-on-surface: #2D3748;
+  --md-sys-color-on-surface-variant: #4A5568;
+  --md-sys-color-primary: #E53E3E;
+  --md-sys-color-on-primary: #FFFFFF;
+  --md-sys-color-primary-container: #FED7D7;
+  --md-sys-color-on-primary-container: #C53030;
+  --md-sys-color-secondary: #D69E2E;
+  --md-sys-color-on-secondary: #FFFFFF;
+  --md-sys-color-secondary-container: #FAF089;
+  --md-sys-color-on-secondary-container: #B7791F;
+  --md-sys-color-background: #FFFFFF;
+  --md-sys-color-on-background: #1A202C;
 }
 
-/* Utilitaires personnalisés Dinor */
+/* Configuration des polices globales */
+body {
+  font-family: 'Open Sans', sans-serif !important;
+  background-color: var(--dinor-white) !important;
+  color: var(--md-sys-color-on-background) !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Nunito Sans', sans-serif !important;
+  font-weight: 700 !important;
+  color: var(--md-sys-color-on-surface) !important;
+}
+
+/* Utilitaires personnalisés Dinor - Version claire */
 @layer utilities {
   .dinor-text-primary {
-    color: var(--dinor-gold);
+    color: var(--dinor-red);
   }
   
   .dinor-text-secondary {
-    color: var(--dinor-red);
+    color: var(--dinor-gold);
   }
   
   .dinor-text-gray {
@@ -38,37 +66,55 @@
   }
   
   .dinor-bg-primary {
-    background-color: var(--dinor-gold);
-  }
-  
-  .dinor-bg-secondary {
     background-color: var(--dinor-red);
   }
   
+  .dinor-bg-secondary {
+    background-color: var(--dinor-gold);
+  }
+  
+  .dinor-bg-white {
+    background-color: var(--dinor-white);
+  }
+  
   .dinor-gradient-primary {
-    background: linear-gradient(135deg, var(--dinor-red) 0%, var(--dinor-gold) 100%);
+    background: linear-gradient(135deg, var(--dinor-red) 0%, var(--dinor-red-dark) 100%);
+  }
+  
+  .dinor-gradient-secondary {
+    background: linear-gradient(135deg, var(--dinor-gold) 0%, #B7791F 100%);
   }
   
   .dinor-gradient-soft {
-    background: linear-gradient(135deg, var(--dinor-champagne) 0%, var(--dinor-gray) 100%);
+    background: linear-gradient(135deg, var(--dinor-white) 0%, var(--dinor-champagne) 100%);
+  }
+  
+  .font-title {
+    font-family: 'Nunito Sans', sans-serif !important;
+    font-weight: 700 !important;
+  }
+  
+  .font-body {
+    font-family: 'Open Sans', sans-serif !important;
   }
 }
 
-/* Composants Material Design 3 */
+/* Composants Material Design 3 - Version claire */
 @layer components {
   .md3-card {
-    @apply bg-white rounded-2xl shadow-md3 overflow-hidden;
+    @apply dinor-bg-white rounded-2xl overflow-hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     transition: all 0.2s ease;
   }
   
   .md3-card:hover {
-    @apply shadow-md3-lg;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
     transform: translateY(-2px);
   }
   
   .md3-chip {
     @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium;
-    @apply bg-gray-100 text-gray-700;
+    @apply bg-gray-100 text-gray-700 font-body;
   }
   
   .md3-chip-selected {
@@ -77,7 +123,7 @@
   
   .md3-button {
     @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full font-medium;
-    @apply transition-all duration-200 ease-in-out;
+    @apply transition-all duration-200 ease-in-out font-body;
   }
   
   .md3-button-primary {
@@ -86,16 +132,17 @@
   
   .md3-button-primary:hover {
     @apply shadow-lg transform -translate-y-0.5;
+    background-color: var(--dinor-red-dark);
   }
   
   .md3-icon-button {
     @apply w-10 h-10 rounded-full flex items-center justify-center;
     @apply transition-all duration-200 ease-in-out;
-    @apply hover:bg-gray-100;
+    @apply hover:bg-gray-50;
   }
   
   .md3-top-app-bar {
-    @apply sticky top-0 z-50 bg-white border-b border-gray-200;
+    @apply sticky top-0 z-50 dinor-bg-white border-b border-gray-100;
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
   }
@@ -105,7 +152,8 @@
   }
   
   .md3-app-bar-title {
-    @apply flex items-center gap-3 flex-1;
+    @apply flex items-center gap-3 flex-1 font-title;
+    color: var(--dinor-red);
   }
   
   .md3-app-bar-actions {
@@ -113,7 +161,7 @@
   }
   
   .md3-main-content {
-    @apply min-h-screen pb-20 md:pb-0;
+    @apply min-h-screen pb-20 md:pb-0 dinor-bg-white;
   }
   
   .md3-loading-state {
@@ -121,7 +169,8 @@
   }
   
   .md3-circular-progress {
-    @apply w-10 h-10 border-4 border-gray-200 border-t-current rounded-full animate-spin;
+    @apply w-10 h-10 border-4 border-gray-200 rounded-full animate-spin;
+    border-top-color: var(--dinor-red);
   }
   
   .md3-recipes-grid {
@@ -129,11 +178,12 @@
   }
   
   .md3-card-elevated {
-    @apply md3-card shadow-lg;
+    @apply md3-card;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   }
   
   .md3-filter-container {
-    @apply p-4 bg-gray-50 border-b border-gray-200;
+    @apply p-4 dinor-bg-white border-b border-gray-100;
   }
   
   .md3-filter-scroll {
@@ -147,7 +197,7 @@
   }
   
   .md3-search-container {
-    @apply p-4 bg-white border-b border-gray-200;
+    @apply p-4 dinor-bg-white border-b border-gray-100;
   }
   
   .md3-search-bar {
@@ -155,12 +205,52 @@
   }
   
   .md3-search-input {
-    @apply w-full pl-12 pr-10 py-3 border border-gray-300 rounded-full;
-    @apply focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent;
+    @apply w-full pl-12 pr-10 py-3 border border-gray-200 rounded-full font-body;
+    @apply focus:outline-none focus:ring-2 focus:border-transparent;
+    background-color: var(--dinor-white);
+  }
+  
+  .md3-search-input:focus {
+    border-color: var(--dinor-red);
+    box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
   }
   
   .search-icon {
-    @apply absolute left-4 text-gray-400;
+    @apply absolute left-4;
+    color: var(--dinor-gray);
+  }
+
+  /* Menu de navigation en bas - Style de l'image */
+  .bottom-navigation {
+    @apply fixed bottom-0 left-0 right-0 z-50;
+    background: var(--dinor-red) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  
+  .bottom-nav-item {
+    @apply flex flex-col items-center justify-center flex-1 py-2 px-1;
+    color: rgba(255, 255, 255, 0.7) !important;
+    transition: all 0.2s ease;
+    font-family: 'Open Sans', sans-serif !important;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  
+  .bottom-nav-item.active {
+    color: var(--dinor-gold-light) !important;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+  }
+  
+  .bottom-nav-item:hover {
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+  
+  .bottom-nav-icon {
+    font-size: 20px;
+    margin-bottom: 4px;
   }
 }
 
@@ -200,38 +290,42 @@
   50% { transform: translateY(-5px); }
 }
 
-/* Utilitaires de responsive design */
+/* Classes utilitaires pour la responsivité */
 @layer utilities {
   .responsive-grid {
-    @apply grid gap-4;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4;
   }
   
   .responsive-flex {
-    @apply flex flex-col md:flex-row gap-4;
+    @apply flex flex-col sm:flex-row gap-4;
   }
 }
 
-/* Support pour les écrans tactiles */
+/* Optimisations pour les appareils tactiles */
 @media (hover: none) and (pointer: coarse) {
   .md3-card:hover {
     transform: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   }
   
   .md3-button-primary:hover {
     transform: none;
+    box-shadow: none;
+    background-color: var(--dinor-red);
   }
 }
 
-/* Mode sombre (préparation future) */
+/* Thème sombre (optionnel - conservé pour compatibilité) */
 @media (prefers-color-scheme: dark) {
   :root {
-    --md-sys-color-surface: #1c1b1f;
-    --md-sys-color-on-surface: #e6e1e5;
+    --md-sys-color-surface: #1A202C;
+    --md-sys-color-on-surface: #F7FAFC;
+    --md-sys-color-background: #1A202C;
+    --md-sys-color-on-background: #F7FAFC;
   }
 }
 
-/* Accessibilité - mouvement réduit */
+/* Réduction du mouvement */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -242,21 +336,19 @@
   }
 }
 
-/* PWA - Safe Area Support */
-@supports (padding: max(0px)) {
-  .safe-area-top {
-    padding-top: env(safe-area-inset-top, 0);
-  }
-  
-  .safe-area-bottom {
-    padding-bottom: env(safe-area-inset-bottom, 0);
-  }
-  
-  .safe-area-left {
-    padding-left: env(safe-area-inset-left, 0);
-  }
-  
-  .safe-area-right {
-    padding-right: env(safe-area-inset-right, 0);
-  }
+/* Safe Area pour les appareils avec encoche */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 0);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.safe-area-left {
+  padding-left: env(safe-area-inset-left, 0);
+}
+
+.safe-area-right {
+  padding-right: env(safe-area-inset-right, 0);
 } 

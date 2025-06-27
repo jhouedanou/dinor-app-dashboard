@@ -1,0 +1,179 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+// Import des variables SCSS
+@import 'variables';
+
+/* Import des polices Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&family=Open+Sans:wght@300;400;500;600;700&display=swap');
+
+/* Styles personnalisés pour l'application Dinor */
+body {
+    font-family: $font-primary;
+    background-color: $white;
+    color: $gray-800;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: $font-secondary;
+    font-weight: 700;
+    color: $gray-800;
+    line-height: 1.2;
+}
+
+h1 {
+    font-size: $text-3xl;
+    margin-bottom: $spacing-6;
+    
+    @include responsive(md) {
+        font-size: $text-4xl;
+    }
+}
+
+h2 {
+    font-size: $text-2xl;
+    margin-bottom: $spacing-5;
+    
+    @include responsive(md) {
+        font-size: $text-3xl;
+    }
+}
+
+h3 {
+    font-size: $text-xl;
+    margin-bottom: $spacing-4;
+    
+    @include responsive(md) {
+        font-size: $text-2xl;
+    }
+}
+
+// Utilitaires de boutons
+.btn {
+    @include btn-base;
+}
+
+.btn-primary {
+    @include btn-primary;
+}
+
+.btn-secondary {
+    @include btn-base;
+    background-color: $gray-200;
+    color: $gray-800;
+    
+    &:hover:not(:disabled) {
+        background-color: $gray-300;
+    }
+}
+
+.btn-success {
+    @include btn-base;
+    background-color: $success;
+    color: $white;
+    
+    &:hover:not(:disabled) {
+        background-color: color.adjust($success, $lightness: -10%);
+    }
+}
+
+.btn-error {
+    @include btn-base;
+    background-color: $error;
+    color: $white;
+    
+    &:hover:not(:disabled) {
+        background-color: color.adjust($error, $lightness: -10%);
+    }
+}
+
+// Cards
+.card {
+    @include card;
+}
+
+.card-compact {
+    @include card;
+    padding: $spacing-4;
+}
+
+// Utilitaires de layout
+.flex-center {
+    @include flex-center;
+}
+
+.flex-between {
+    @include flex-between;
+}
+
+// Styles spécifiques pour Filament
+.fi-page {
+    background-color: $gray-50;
+}
+
+.fi-header {
+    background-color: $white;
+    border-bottom: 1px solid $gray-200;
+}
+
+// Responsive utilities
+.hide-mobile {
+    @include responsive(md) {
+        display: block !important;
+    }
+    display: none !important;
+}
+
+.show-mobile {
+    display: block !important;
+    
+    @include responsive(md) {
+        display: none !important;
+    }
+}
+
+// Animations
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideInFromBottom {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn $transition-normal;
+}
+
+.animate-slide-in {
+    animation: slideInFromBottom $transition-normal;
+}
+
+// Hover effects
+.hover-lift {
+    transition: transform $transition-fast;
+    
+    &:hover {
+        transform: translateY(-2px);
+    }
+}
+
+// Focus states
+.focus-ring {
+    &:focus {
+        outline: 2px solid $primary;
+        outline-offset: 2px;
+    }
+} 

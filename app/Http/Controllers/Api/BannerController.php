@@ -17,13 +17,23 @@ class BannerController extends Controller
         try {
             $query = Banner::active()->ordered();
             
+            // Filtrer par type de contenu si spécifié
+            if ($request->has('type_contenu')) {
+                $query->where('type_contenu', $request->type_contenu);
+            }
+            
+            // Filtrer par section si spécifiée
+            if ($request->has('section')) {
+                $query->where('section', $request->section);
+            }
+            
             // Filtrer par position si spécifiée
             if ($request->has('position')) {
                 $query->where('position', $request->position);
             }
             
             // Par défaut, afficher les bannières pour la page d'accueil
-            if (!$request->has('position')) {
+            if (!$request->has('position') && !$request->has('type_contenu')) {
                 $query->forHome();
             }
             
@@ -33,7 +43,11 @@ class BannerController extends Controller
             $transformedBanners = $banners->map(function ($banner) {
                 return [
                     'id' => $banner->id,
-                    'title' => $banner->title,
+                    'type_contenu' => $banner->type_contenu,
+                    'titre' => $banner->titre,
+                    'sous_titre' => $banner->sous_titre,
+                    'section' => $banner->section,
+                    'title' => $banner->title, // legacy support
                     'description' => $banner->description,
                     'image_url' => $banner->image_url ? url('storage/' . $banner->image_url) : null,
                     'background_color' => $banner->background_color,
@@ -73,7 +87,11 @@ class BannerController extends Controller
             
             $transformedBanner = [
                 'id' => $banner->id,
-                'title' => $banner->title,
+                'type_contenu' => $banner->type_contenu,
+                'titre' => $banner->titre,
+                'sous_titre' => $banner->sous_titre,
+                'section' => $banner->section,
+                'title' => $banner->title, // legacy support
                 'description' => $banner->description,
                 'image_url' => $banner->image_url ? url('storage/' . $banner->image_url) : null,
                 'background_color' => $banner->background_color,
@@ -99,6 +117,56 @@ class BannerController extends Controller
                 'message' => 'Bannière non trouvée',
                 'error' => $e->getMessage()
             ], 404);
+        }
+    }
+
+    /**
+     * Afficher les bannières par type de contenu
+     */
+    public function getByType(string $type): JsonResponse
+    {
+        try {
+            $banners = Banner::active()
+                ->where('type_contenu', $type)
+                ->ordered()
+                ->get();
+            
+            // Transformer les données pour l'API
+            $transformedBanners = $banners->map(function ($banner) {
+                return [
+                    'id' => $banner->id,
+                    'type_contenu' => $banner->type_contenu,
+                    'titre' => $banner->titre,
+                    'sous_titre' => $banner->sous_titre,
+                    'section' => $banner->section,
+                    'title' => $banner->title, // legacy support
+                    'description' => $banner->description,
+                    'image_url' => $banner->image_url ? url('storage/' . $banner->image_url) : null,
+                    'background_color' => $banner->background_color,
+                    'text_color' => $banner->text_color,
+                    'button_text' => $banner->button_text,
+                    'button_url' => $banner->button_url,
+                    'button_color' => $banner->button_color,
+                    'position' => $banner->position,
+                    'order' => $banner->order,
+                    'created_at' => $banner->created_at,
+                    'updated_at' => $banner->updated_at,
+                ];
+            });
+            
+            return response()->json([
+                'success' => true,
+                'data' => $transformedBanners,
+                'count' => $transformedBanners->count(),
+                'type' => $type
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la récupération des bannières pour le type: ' . $type,
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 

@@ -1,0 +1,176 @@
+// Variables principales de couleurs Dinor
+$primary: #f59e0b;
+$primary-dark: #d97706;
+$secondary: #6b7280;
+$success: #10b981;
+$error: #ef4444;
+$warning: #f59e0b;
+$bg: #f9fafb;
+$surface: #ffffff;
+
+// Couleurs grises système
+$gray-50: #f9fafb;
+$gray-100: #f3f4f6;
+$gray-200: #e5e7eb;
+$gray-300: #d1d5db;
+$gray-400: #9ca3af;
+$gray-500: #6b7280;
+$gray-600: #4b5563;
+$gray-700: #374151;
+$gray-800: #1f2937;
+$gray-900: #111827;
+
+// Palette de couleurs étendue CMYK
+$red-cmyk: #E1251B;
+$gray: #818080;
+$champagne-pink: #E6D9D0;
+$dark-goldenrod: #9E7C22;
+$blood-red: #690E08;
+
+// Variantes HSL
+$red-cmyk-hsl: hsla(3, 79%, 49%, 1);
+$gray-hsl: hsla(0, 0%, 50%, 1);
+$champagne-pink-hsl: hsla(25, 31%, 86%, 1);
+$dark-goldenrod-hsl: hsla(44, 65%, 38%, 1);
+$blood-red-hsl: hsla(4, 86%, 22%, 1);
+
+// Variantes RGB avec transparence
+$red-cmyk-rgb: rgba(225, 37, 27, 1);
+$gray-rgb: rgba(129, 128, 128, 1);
+$champagne-pink-rgb: rgba(230, 217, 208, 1);
+$dark-goldenrod-rgb: rgba(158, 124, 34, 1);
+$blood-red-rgb: rgba(105, 14, 8, 1);
+
+// Gradients prédéfinis
+$gradient-top: linear-gradient(0deg, $red-cmyk, $gray, $champagne-pink, $dark-goldenrod, $blood-red);
+$gradient-right: linear-gradient(90deg, $red-cmyk, $gray, $champagne-pink, $dark-goldenrod, $blood-red);
+$gradient-bottom: linear-gradient(180deg, $red-cmyk, $gray, $champagne-pink, $dark-goldenrod, $blood-red);
+$gradient-left: linear-gradient(270deg, $red-cmyk, $gray, $champagne-pink, $dark-goldenrod, $blood-red);
+$gradient-top-right: linear-gradient(45deg, $red-cmyk, $gray, $champagne-pink, $dark-goldenrod, $blood-red);
+$gradient-bottom-right: linear-gradient(135deg, $red-cmyk, $gray, $champagne-pink, $dark-goldenrod, $blood-red);
+$gradient-top-left: linear-gradient(225deg, $red-cmyk, $gray, $champagne-pink, $dark-goldenrod, $blood-red);
+$gradient-bottom-left: linear-gradient(315deg, $red-cmyk, $gray, $champagne-pink, $dark-goldenrod, $blood-red);
+$gradient-radial: radial-gradient($red-cmyk, $gray, $champagne-pink, $dark-goldenrod, $blood-red);
+
+// Ombres
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+$shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+
+// Bordures
+$border-radius: 0.5rem;
+$border-radius-sm: 0.25rem;
+$border-radius-lg: 0.75rem;
+$border-radius-xl: 1rem;
+$border-radius-full: 9999px;
+
+// Transitions
+$transition-fast: 150ms ease-in-out;
+$transition-normal: 300ms ease-in-out;
+$transition-slow: 500ms ease-in-out;
+
+// Espacements
+$spacing-xs: 0.25rem;
+$spacing-sm: 0.5rem;
+$spacing-md: 1rem;
+$spacing-lg: 1.5rem;
+$spacing-xl: 2rem;
+$spacing-2xl: 3rem;
+
+// Espacements numériques (compatibilité)
+$spacing-1: 0.25rem;
+$spacing-2: 0.5rem;
+$spacing-3: 0.75rem;
+$spacing-4: 1rem;
+$spacing-5: 1.25rem;
+$spacing-6: 1.5rem;
+
+// Polices
+$font-primary: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+$font-secondary: 'Nunito Sans', sans-serif;
+$font-tertiary: 'Open Sans', sans-serif;
+
+// Tailles de police
+$text-xs: 0.75rem;
+$text-sm: 0.875rem;
+$text-base: 1rem;
+$text-lg: 1.125rem;
+$text-xl: 1.25rem;
+$text-2xl: 1.5rem;
+$text-3xl: 1.875rem;
+$text-4xl: 2.25rem;
+
+// Z-index
+$z-dropdown: 1000;
+$z-sticky: 1020;
+$z-fixed: 1030;
+$z-modal-backdrop: 1040;
+$z-modal: 1050;
+$z-popover: 1060;
+$z-tooltip: 1070;
+$z-toast: 1080;
+
+// Breakpoints
+$breakpoint-sm: 640px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 1024px;
+$breakpoint-xl: 1280px;
+$breakpoint-2xl: 1536px;
+
+// Layout PWA spécifique
+$bottom-nav-height: 84px;
+$header-height: 60px;
+
+// Mixins utiles
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin card-shadow {
+  box-shadow: $shadow-md;
+  border-radius: $border-radius;
+  background: $surface;
+}
+
+@mixin button-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $border-radius;
+  font-weight: 500;
+  transition: all $transition-fast;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@mixin responsive($breakpoint) {
+  @if $breakpoint == sm {
+    @media (min-width: $breakpoint-sm) { @content; }
+  }
+  @if $breakpoint == md {
+    @media (min-width: $breakpoint-md) { @content; }
+  }
+  @if $breakpoint == lg {
+    @media (min-width: $breakpoint-lg) { @content; }
+  }
+  @if $breakpoint == xl {
+    @media (min-width: $breakpoint-xl) { @content; }
+  }
+  @if $breakpoint == 2xl {
+    @media (min-width: $breakpoint-2xl) { @content; }
+  }
+} 

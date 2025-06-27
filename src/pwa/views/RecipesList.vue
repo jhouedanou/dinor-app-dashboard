@@ -1,30 +1,32 @@
 <template>
   <div class="recipes-list">
+    <!-- Bannières pour les recettes -->
+    <BannerSection 
+      type="recipes" 
+      section="hero" 
+      :banners="bannersByType"
+    />
+
     <!-- Header -->
     <header class="page-header">
       <div class="header-content">
         <h1>Recettes</h1>
-        <div class="search-container">
-          <div class="search-input-wrapper">
-            <span class="material-symbols-outlined search-icon">search</span>
-            <input
-              v-model="searchQuery"
-              type="text"
-              placeholder="Rechercher une recette..."
-              class="search-input"
-            />
-            <button 
-              v-if="searchQuery"
-              @click="clearSearch"
-              class="clear-search"
-              aria-label="Effacer la recherche"
-            >
-              <span class="material-symbols-outlined">close</span>
-            </button>
-          </div>
-        </div>
+        <p class="subtitle">Découvrez nos délicieuses recettes</p>
       </div>
     </header>
+
+    <!-- Search and Filters -->
+    <SearchAndFilters
+      v-model:searchQuery="searchQuery"
+      v-model:selectedCategory="selectedCategory"
+      search-placeholder="Rechercher une recette..."
+      :categories="categories"
+      :additional-filters="recipeFilters"
+      :selected-filters="selectedFilters"
+      :results-count="filteredRecipes.length"
+      item-type="recette"
+      @update:additionalFilter="updateAdditionalFilter"
+    />
 
     <!-- Loading State -->
     <div v-if="loading" class="loading-state">
@@ -45,27 +47,6 @@
 
     <!-- Content -->
     <div v-else class="content">
-      <!-- Filters (if needed) -->
-      <div v-if="categories?.length" class="filters">
-        <div class="filter-chips">
-          <button
-            @click="setSelectedCategory(null)"
-            class="filter-chip"
-            :class="{ active: !selectedCategory }"
-          >
-            Toutes
-          </button>
-          <button
-            v-for="category in categories"
-            :key="category.id"
-            @click="setSelectedCategory(category.id)"
-            class="filter-chip"
-            :class="{ active: selectedCategory === category.id }"
-          >
-            {{ category.name }}
-          </button>
-        </div>
-      </div>
 
       <!-- Results count -->
       <div v-if="filteredRecipes.length" class="results-info">
@@ -78,15 +59,15 @@
         <div class="empty-icon">
           <span class="material-symbols-outlined">restaurant</span>
         </div>
-        <h3>Aucune recette trouvée</h3>
-        <p v-if="searchQuery">
-          Essayez avec d'autres mots-clés ou parcourez toutes les recettes.
+        <h3>{{ searchQuery || selectedCategory || hasActiveFilters ? 'Aucune recette trouvée' : 'Aucune recette disponible' }}</h3>
+        <p v-if="searchQuery || selectedCategory || hasActiveFilters">
+          Essayez de modifier vos critères de recherche.
         </p>
         <p v-else>
           Les recettes seront bientôt disponibles.
         </p>
-        <button v-if="searchQuery" @click="clearSearch" class="clear-search-btn">
-          Voir toutes les recettes
+        <button v-if="searchQuery || selectedCategory || hasActiveFilters" @click="clearAllFilters" class="clear-filters-btn">
+          Effacer tous les filtres
         </button>
       </div>
 
@@ -141,17 +122,37 @@
 </template>
 
 <script>
-import { computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useRecipesStore } from '@/stores/recipes'
 import { useAppStore } from '@/stores/app'
+import { useBanners } from '@/composables/useBanners'
+import BannerSection from '@/components/common/BannerSection.vue'
+import SearchAndFilters from '@/components/common/SearchAndFilters.vue'
 
 export default {
   name: 'RecipesList',
+  components: {
+    BannerSection,
+    SearchAndFilters
+  },
   setup() {
     const router = useRouter()
     const recipesStore = useRecipesStore()
     const appStore = useAppStore()
+    
+    // Banner management
+    const { loadBannersByType } = useBanners()
+    const bannersByType = ref([])
+    
+    const loadBanners = async () => {
+      try {
+        const banners = await loadBannersByType('recipes')
+        bannersByType.value = banners
+      } catch (error) {
+        console.error('Error loading banners:', error)
+      }
+    }
     
     // Computed properties
     const searchQuery = computed({
@@ -169,6 +170,37 @@ export default {
     const filteredRecipes = computed(() => recipesStore.filteredRecipes)
     const categories = computed(() => []) // TODO: Add categories store
     
+    // Additional filters for recipes
+    const selectedFilters = ref({})
+    const recipeFilters = [
+      {
+        key: 'difficulty',
+        label: 'Difficulté',
+        icon: 'star',
+        allLabel: 'Tous niveaux',
+        options: [
+          { value: 'easy', label: 'Facile' },
+          { value: 'medium', label: 'Moyen' },
+          { value: 'hard', label: 'Difficile' }
+        ]
+      },
+      {
+        key: 'prep_time',
+        label: 'Temps de préparation',
+        icon: 'schedule',
+        allLabel: 'Tous temps',
+        options: [
+          { value: 'quick', label: '< 30 min' },
+          { value: 'medium', label: '30-60 min' },
+          { value: 'long', label: '> 60 min' }
+        ]
+      }
+    ]
+    
+    const hasActiveFilters = computed(() => {
+      return Object.values(selectedFilters.value).some(filter => filter !== null)
+    })
+    
     // Methods
     const goToRecipe = (id) => {
       router.push(`/recipe/${id}`)
@@ -180,6 +212,16 @@ export default {
     
     const setSelectedCategory = (categoryId) => {
       selectedCategory.value = categoryId
+    }
+    
+    const updateAdditionalFilter = ({ key, value }) => {
+      selectedFilters.value[key] = value
+    }
+    
+    const clearAllFilters = () => {
+      searchQuery.value = ''
+      selectedCategory.value = null
+      selectedFilters.value = {}
     }
     
     const retry = () => {
@@ -203,6 +245,7 @@ export default {
     // Lifecycle
     onMounted(() => {
       loadRecipes()
+      loadBanners()
       appStore.initializePWAListeners()
       appStore.initializeNetworkListeners()
     })
@@ -219,9 +262,15 @@ export default {
       error,
       filteredRecipes,
       categories,
+      bannersByType,
+      selectedFilters,
+      recipeFilters,
+      hasActiveFilters,
       goToRecipe,
       clearSearch,
       setSelectedCategory,
+      updateAdditionalFilter,
+      clearAllFilters,
       retry,
       getDifficultyLabel
     }
@@ -232,7 +281,8 @@ export default {
 <style scoped>
 .recipes-list {
   min-height: 100vh;
-  background: var(--md-sys-color-surface, #fefbff);
+  background: #FFFFFF; /* Fond blanc comme Home */
+  font-family: 'Roboto', sans-serif;
 }
 
 .page-header {
@@ -362,25 +412,29 @@ export default {
 
 .filter-chip {
   padding: 8px 16px;
-  border: 1px solid var(--md-sys-color-outline, #79747e);
+  border: 1px solid #E2E8F0;
   border-radius: 20px;
-  background: var(--md-sys-color-surface, #fefbff);
-  color: var(--md-sys-color-on-surface-variant, #49454f);
+  background: #FFFFFF;
+  color: #4A5568; /* Couleur avec bon contraste */
   font-size: 14px;
   font-weight: 500;
+  font-family: 'Roboto', sans-serif;
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
 }
 
 .filter-chip:hover {
-  background: var(--md-sys-color-surface-variant, #e7e0ec);
+  background: #F7FAFC;
+  border-color: #E53E3E;
+  color: #2D3748;
 }
 
 .filter-chip.active {
-  background: var(--md-sys-color-secondary-container, #e8def8);
-  color: var(--md-sys-color-on-secondary-container, #1d192b);
-  border-color: var(--md-sys-color-secondary, #625b71);
+  background: #F4D03F; /* Fond doré */
+  color: #2D3748; /* Couleur foncée pour contraste */
+  border-color: #FF6B35; /* Bordure orange */
+  font-weight: 600;
 }
 
 .results-info {
@@ -396,17 +450,19 @@ export default {
 }
 
 .recipe-card {
-  background: var(--md-sys-color-surface-container, #f7f2fa);
+  background: #FFFFFF; /* Fond blanc */
   border-radius: 16px;
   overflow: hidden;
   cursor: pointer;
   transition: all 0.2s ease;
-  border: 1px solid var(--md-sys-color-outline-variant, #cac4d0);
+  border: 1px solid #E2E8F0; /* Bordure gris clair */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .recipe-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(229, 62, 62, 0.15); /* Ombre rouge */
+  border-color: #E53E3E; /* Bordure rouge au hover */
 }
 
 .recipe-image {
@@ -458,15 +514,17 @@ export default {
   margin: 0 0 8px 0;
   font-size: 18px;
   font-weight: 600;
-  color: var(--md-sys-color-on-surface, #1c1b1f);
+  font-family: 'Open Sans', sans-serif; /* Police Open Sans pour les titres */
+  color: #2D3748; /* Couleur foncée pour bon contraste */
   line-height: 1.3;
 }
 
 .recipe-description {
   margin: 0 0 16px 0;
   font-size: 14px;
-  color: var(--md-sys-color-on-surface-variant, #49454f);
-  line-height: 1.4;
+  font-family: 'Roboto', sans-serif; /* Police Roboto pour les textes */
+  color: #4A5568; /* Couleur grise pour bon contraste */
+  line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -493,12 +551,13 @@ export default {
 .retry-btn,
 .clear-search-btn {
   padding: 12px 24px;
-  background: var(--md-sys-color-primary, #6750a4);
-  color: var(--md-sys-color-on-primary, #ffffff);
+  background: #E53E3E; /* Rouge principal */
+  color: #FFFFFF; /* Blanc pour bon contraste */
   border: none;
   border-radius: 20px;
   font-size: 14px;
   font-weight: 500;
+  font-family: 'Roboto', sans-serif;
   cursor: pointer;
   transition: all 0.2s ease;
   margin-top: 16px;
@@ -506,8 +565,10 @@ export default {
 
 .retry-btn:hover,
 .clear-search-btn:hover {
-  background: var(--md-sys-color-primary-container, #eaddff);
-  color: var(--md-sys-color-on-primary-container, #21005d);
+  background: #C53030; /* Rouge plus foncé */
+  color: #FFFFFF;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
 }
 
 /* Responsive */

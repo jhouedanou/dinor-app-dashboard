@@ -1,24 +1,16 @@
 <template>
   <div class="recipe-detail">
     <!-- Navigation Header -->
-    <nav class="md3-top-app-bar">
-      <div class="md3-app-bar-container">
-        <button @click="goBack" class="md3-icon-button">
-          <i class="material-icons">arrow_back</i>
-        </button>
-        <div class="md3-app-bar-title">
-          <h1 class="md3-title-large dinor-text-primary">{{ recipe?.title || 'Recette' }}</h1>
-        </div>
-        <div class="md3-app-bar-actions">
-          <button @click="toggleLike" class="md3-icon-button" :class="{ 'liked': userLiked }">
-            <i class="material-icons">{{ userLiked ? 'favorite' : 'favorite_border' }}</i>
-          </button>
-          <button @click="shareRecipe" class="md3-icon-button">
-            <i class="material-icons">share</i>
-          </button>
-        </div>
-      </div>
-    </nav>
+    <AppHeader 
+      :title="recipe?.title || 'Recette'"
+      :show-like="true"
+      :show-share="true"
+      :is-liked="userLiked"
+      back-path="/recipes"
+      @like="toggleLike"
+      @share="shareRecipe"
+      @back="goBack"
+    />
 
     <!-- Main Content -->
     <main class="md3-main-content">
@@ -39,14 +31,20 @@
             @error="handleImageError">
           <div class="recipe-overlay dinor-gradient-primary">
             <div class="recipe-badges">
-              <div v-if="recipe.difficulty_level" class="md3-chip recipe-difficulty">
-                <i class="material-icons">restaurant</i>
-                <span>{{ getDifficultyLabel(recipe.difficulty_level) }}</span>
-              </div>
-              <div v-if="recipe.category" class="md3-chip recipe-category">
-                <i class="material-icons">tag</i>
-                <span>{{ recipe.category.name }}</span>
-              </div>
+              <Badge 
+                v-if="recipe.difficulty_level"
+                :text="getDifficultyLabel(recipe.difficulty_level)"
+                icon="restaurant"
+                variant="secondary"
+                size="medium"
+              />
+              <Badge 
+                v-if="recipe.category"
+                :text="recipe.category.name"
+                icon="tag"
+                variant="neutral"
+                size="medium"
+              />
             </div>
           </div>
         </div>
@@ -145,9 +143,15 @@
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useApiStore } from '@/stores/api'
+import AppHeader from '@/components/common/AppHeader.vue'
+import Badge from '@/components/common/Badge.vue'
 
 export default {
   name: 'RecipeDetail',
+  components: {
+    AppHeader,
+    Badge
+  },
   props: {
     id: {
       type: String,
@@ -330,7 +334,22 @@ export default {
 <style scoped>
 .recipe-detail {
   min-height: 100vh;
-  background: var(--md-sys-color-surface);
+  background: #FFFFFF; /* Fond blanc comme Home */
+  font-family: 'Roboto', sans-serif;
+}
+
+/* Typographie globale */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Open Sans', sans-serif; /* Open Sans pour les titres */
+  font-weight: 600;
+  color: #2D3748; /* Couleur foncée pour bon contraste */
+  line-height: 1.3;
+}
+
+p, span, div {
+  font-family: 'Roboto', sans-serif; /* Roboto pour les textes */
+  color: #4A5568; /* Couleur grise pour bon contraste */
+  line-height: 1.5;
 }
 
 .recipe-hero {
@@ -369,8 +388,18 @@ export default {
   justify-content: space-around;
   margin-bottom: 1.5rem;
   padding: 1rem;
-  background: var(--md-sys-color-surface-variant);
+  background: #F4D03F; /* Fond doré */
   border-radius: 12px;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 480px) {
+  .recipe-stats {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+  }
 }
 
 .stat-item {
@@ -378,6 +407,16 @@ export default {
   flex-direction: column;
   align-items: center;
   gap: 0.25rem;
+  color: #2D3748; /* Couleur foncée pour contraste sur fond doré */
+  font-weight: 500;
+  min-width: 80px;
+}
+
+@media (max-width: 480px) {
+  .stat-item {
+    min-width: 60px;
+    font-size: 0.9rem;
+  }
 }
 
 .recipe-description,
@@ -419,8 +458,15 @@ export default {
 
 .comment-item {
   padding: 1rem;
-  background: var(--md-sys-color-surface-variant);
-  border-radius: 8px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s ease;
+}
+
+.comment-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .comment-header {

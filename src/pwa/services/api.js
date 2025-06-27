@@ -152,6 +152,14 @@ class ApiService {
     return this.request('/categories')
   }
 
+  async getEventCategories() {
+    return this.request('/categories/events')
+  }
+
+  async getRecipeCategories() {
+    return this.request('/categories/recipes')
+  }
+
   // Search
   async search(query, type = null) {
     const params = { q: query }

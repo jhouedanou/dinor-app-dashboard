@@ -75,6 +75,7 @@ class AdminPanelProvider extends PanelProvider
                 \App\Filament\Resources\LikeResource::class,
                 \App\Filament\Resources\CommentResource::class,
                 \App\Filament\Resources\BannerResource::class,
+                \App\Filament\Resources\BannerMockResource::class,
                 \App\Filament\Resources\PwaMenuItemResource::class,
             ])
             ->discoverResources(app_path('Filament/Resources'), 'App\\Filament\\Resources')

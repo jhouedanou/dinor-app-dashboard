@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             EventCategoriesSeeder::class,
             IngredientsSeeder::class,
             ProductionDataSeeder::class,
+            BannerSeeder::class,
         ]);
 
         // Créer des catégories

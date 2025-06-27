@@ -5,7 +5,7 @@ export default defineConfig({
     plugins: [
         laravel({
             input: [
-                'resources/css/app.css',
+                'resources/scss/app.scss',
                 'resources/css/dinor-optimized.css',
                 'resources/js/app.js',
                 'resources/css/filament/admin/theme.css',
@@ -17,6 +17,12 @@ export default defineConfig({
         }),
     ],
     css: {
+        preprocessorOptions: {
+            scss: {
+                additionalData: `@use "sass:color"; @import "resources/scss/variables.scss";`,
+                charset: false
+            }
+        },
         postcss: './postcss.config.js',
     },
     server: {

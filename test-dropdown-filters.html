@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Filtres Déroulants - Dinor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #9F7C20;
+            --surface-color: #ffffff;
+            --surface-variant-color: #f5f5f5;
+            --outline-variant-color: #e5e7eb;
+            --on-surface-color: #1f2937;
+            --on-surface-variant-color: #6b7280;
+            --primary-container-color: #f3e8d3;
+            --on-primary-container-color: #5d4e00;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        /* Styles pour les filtres déroulants */
+        .search-and-filters {
+            padding: 1rem;
+            background: var(--surface-color, #ffffff);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .additional-filters {
+            margin-bottom: 1rem;
+        }
+
+        .filters-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .filter-dropdown-group {
+            min-width: 200px;
+            flex: 1;
+        }
+
+        .filter-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--on-surface-color, #1f2937);
+            font-size: 0.875rem;
+            cursor: pointer;
+        }
+
+        .filter-label .material-symbols-outlined {
+            font-size: 1.125rem;
+            color: var(--primary-color, #9F7C20);
+        }
+
+        .dropdown-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .filter-dropdown {
+            width: 100%;
+            appearance: none;
+            background: var(--surface-color, #ffffff);
+            border: 2px solid var(--outline-variant-color, #e5e7eb);
+            border-radius: 12px;
+            padding: 12px 40px 12px 16px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--on-surface-color, #1f2937);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            outline: none;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .filter-dropdown:hover {
+            border-color: var(--primary-color, #9F7C20);
+            box-shadow: 0 2px 8px rgba(159, 124, 32, 0.15);
+        }
+
+        .filter-dropdown:focus {
+            border-color: var(--primary-color, #9F7C20);
+            box-shadow: 0 0 0 3px rgba(159, 124, 32, 0.1);
+            background: var(--surface-color, #ffffff);
+        }
+
+        .filter-dropdown option {
+            padding: 8px 12px;
+            background: var(--surface-color, #ffffff);
+            color: var(--on-surface-color, #1f2937);
+        }
+
+        .dropdown-arrow {
+            position: absolute;
+            right: 12px;
+            color: var(--on-surface-variant-color, #6b7280);
+            pointer-events: none;
+            transition: transform 0.2s ease;
+        }
+
+        .filter-dropdown:focus + .dropdown-arrow {
+            transform: rotate(180deg);
+            color: var(--primary-color, #9F7C20);
+        }
+
+        .results-info {
+            padding: 0.75rem 1rem;
+            background: var(--primary-container-color, #f3e8d3);
+            color: var(--on-primary-container-color, #5d4e00);
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.875rem;
+            margin-top: 1rem;
+        }
+
+        .demo-section {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+
+        .demo-section h2 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .filters-row {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+            
+            .filter-dropdown-group {
+                min-width: 100%;
+            }
+            
+            .filter-dropdown {
+                font-size: 16px; /* Prevent zoom on iOS */
+                padding: 14px 40px 14px 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .filters-row {
+                gap: 0.5rem;
+            }
+            
+            .filter-label {
+                font-size: 0.8rem;
+            }
+            
+            .filter-dropdown {
+                padding: 10px 35px 10px 12px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔽 Nouveaux Filtres Déroulants - Dinor</h1>
+        
+        <div class="demo-section">
+            <h2>✨ Filtres Améliorés</h2>
+            <p><strong>Avant :</strong> Boutons/chips qui prenaient beaucoup d'espace</p>
+            <p><strong>Après :</strong> Listes déroulantes élégantes et compactes</p>
+        </div>
+
+        <div class="search-and-filters">
+            <div class="additional-filters">
+                <div class="filters-row">
+                    <div class="filter-dropdown-group">
+                        <label class="filter-label">
+                            <span class="material-symbols-outlined">star</span>
+                            Difficulté
+                        </label>
+                        <div class="dropdown-wrapper">
+                            <select class="filter-dropdown" id="difficulty-filter">
+                                <option value="">Tous niveaux</option>
+                                <option value="easy">Facile</option>
+                                <option value="medium">Moyen</option>
+                                <option value="hard">Difficile</option>
+                            </select>
+                            <span class="dropdown-arrow material-symbols-outlined">expand_more</span>
+                        </div>
+                    </div>
+
+                    <div class="filter-dropdown-group">
+                        <label class="filter-label">
+                            <span class="material-symbols-outlined">schedule</span>
+                            Temps de préparation
+                        </label>
+                        <div class="dropdown-wrapper">
+                            <select class="filter-dropdown" id="time-filter">
+                                <option value="">Tous temps</option>
+                                <option value="quick">< 30 min</option>
+                                <option value="medium">30-60 min</option>
+                                <option value="long">> 60 min</option>
+                            </select>
+                            <span class="dropdown-arrow material-symbols-outlined">expand_more</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-info" id="results-info">
+                <span id="results-count">42</span> recettes trouvées
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>🎨 Fonctionnalités</h2>
+            <ul style="margin-left: 1.5rem; color: #666;">
+                <li>✅ <strong>Design moderne</strong> avec bordures arrondies</li>
+                <li>✅ <strong>Animations fluides</strong> au focus et hover</li>
+                <li>✅ <strong>Icônes intuitives</strong> pour chaque filtre</li>
+                <li>✅ <strong>Flèche animée</strong> qui se retourne au focus</li>
+                <li>✅ <strong>Responsive</strong> : vertical sur mobile</li>
+                <li>✅ <strong>Couleurs Dinor</strong> (doré #9F7C20)</li>
+                <li>✅ <strong>Ombres subtiles</strong> pour la profondeur</li>
+            </ul>
+        </div>
+
+        <div class="demo-section">
+            <h2>📱 Test Responsif</h2>
+            <p>Réduisez la largeur de votre navigateur pour voir l'adaptation mobile :</p>
+            <ul style="margin-left: 1.5rem; color: #666;">
+                <li><strong>< 768px :</strong> Filtres en colonne</li>
+                <li><strong>< 480px :</strong> Optimisation mobile complète</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Simulation d'interaction
+        const difficultyFilter = document.getElementById('difficulty-filter');
+        const timeFilter = document.getElementById('time-filter');
+        const resultsInfo = document.getElementById('results-info');
+        const resultsCount = document.getElementById('results-count');
+
+        function updateResults() {
+            const difficulty = difficultyFilter.value;
+            const time = timeFilter.value;
+            
+            let count = 42; // Base
+            if (difficulty) count = Math.floor(count * 0.6);
+            if (time) count = Math.floor(count * 0.7);
+            
+            resultsCount.textContent = count;
+            
+            let text = `${count} recette${count > 1 ? 's' : ''} trouvée${count > 1 ? 's' : ''}`;
+            if (difficulty || time) {
+                text += ' avec filtres actifs';
+            }
+            
+            resultsInfo.innerHTML = text;
+        }
+
+        difficultyFilter.addEventListener('change', updateResults);
+        timeFilter.addEventListener('change', updateResults);
+
+        console.log('🎯 Filtres déroulants Dinor chargés avec succès !');
+    </script>
+</body>
+</html> 

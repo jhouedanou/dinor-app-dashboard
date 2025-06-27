@@ -94,6 +94,16 @@ export default defineConfig({
       }
     })
   ],
+  css: {
+    preprocessorOptions: {
+      scss: {
+        additionalData: `@use "sass:color"; @import "@/assets/styles/variables.scss";`,
+        charset: false
+      }
+    },
+    postcss: './postcss.config.js',
+    devSourcemap: true
+  },
   root: 'src/pwa',
   base: '/pwa/dist/',
   build: {
@@ -103,9 +113,7 @@ export default defineConfig({
     minify: 'terser',
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
-      input: {
-        main: path.resolve(__dirname, 'src/pwa/index.html')
-      },
+      input: path.resolve(__dirname, 'src/pwa/index.html'),
       output: {
         entryFileNames: 'assets/[name].[hash].js',
         chunkFileNames: 'assets/[name].[hash].js',
@@ -119,8 +127,27 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    host: '0.0.0.0',
+    strictPort: true,
+    hmr: {
+      port: 3001
+    },
+    watch: {
+      usePolling: true,
+      interval: 300
+    },
     proxy: {
       '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false
+      },
+      '/images': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false
+      },
+      '/storage': {
         target: 'http://localhost:8000',
         changeOrigin: true,
         secure: false
@@ -133,7 +160,8 @@ export default defineConfig({
       '@components': path.resolve(__dirname, 'src/pwa/components'),
       '@stores': path.resolve(__dirname, 'src/pwa/stores'),
       '@services': path.resolve(__dirname, 'src/pwa/services'),
-      '@utils': path.resolve(__dirname, 'src/pwa/utils')
+      '@utils': path.resolve(__dirname, 'src/pwa/utils'),
+      '@styles': path.resolve(__dirname, 'src/pwa/assets/styles')
     }
   }
 })

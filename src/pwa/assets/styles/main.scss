@@ -1,34 +1,24 @@
-// Variables SCSS pour la PWA Dinor
-:root {
-  --color-primary: #f59e0b;
-  --color-primary-dark: #d97706;
-  --color-secondary: #6b7280;
-  --color-success: #10b981;
-  --color-error: #ef4444;
-  --color-warning: #f59e0b;
-  --color-bg: #f9fafb;
-  --color-surface: #ffffff;
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  --border-radius: 0.5rem;
-  --transition-fast: 150ms ease-in-out;
-  --transition-normal: 300ms ease-in-out;
-  --bottom-nav-height: 84px;
-}
-/* CSS HEX */
---red-cmyk: #E1251Bff;
---gray: #818080ff;
---champagne-pink: #E6D9D0ff;
---dark-goldenrod: #9E7C22ff;
---blood-red: #690E08ff;
+// Import des variables depuis le fichier centralisé
+// Note: les variables et fonctions SCSS sont importées automatiquement par Vite
 
-/* CSS HSL */
---red-cmyk: hsla(3, 79%, 49%, 1);
---gray: hsla(0, 0%, 50%, 1);
---champagne-pink: hsla(25, 31%, 86%, 1);
---dark-goldenrod: hsla(44, 65%, 38%, 1);
---blood-red: hsla(4, 86%, 22%, 1);
+// Variables CSS custom properties pour une meilleure performance
+:root {
+  --color-primary: #{$primary};
+  --color-primary-dark: #{$primary-dark};
+  --color-secondary: #{$secondary};
+  --color-success: #{$success};
+  --color-error: #{$error};
+  --color-warning: #{$warning};
+  --color-bg: #{$bg};
+  --color-surface: #{$surface};
+  --shadow-sm: #{$shadow-sm};
+  --shadow-md: #{$shadow-md};
+  --shadow-lg: #{$shadow-lg};
+  --border-radius: #{$border-radius};
+  --transition-fast: #{$transition-fast};
+  --transition-normal: #{$transition-normal};
+  --bottom-nav-height: #{$bottom-nav-height};
+}
 
 /* SCSS HEX */
 $red-cmyk: #E1251Bff;
@@ -61,6 +51,7 @@ $gradient-bottom-right: linear-gradient(135deg, #E1251Bff, #818080ff, #E6D9D0ff,
 $gradient-top-left: linear-gradient(225deg, #E1251Bff, #818080ff, #E6D9D0ff, #9E7C22ff, #690E08ff);
 $gradient-bottom-left: linear-gradient(315deg, #E1251Bff, #818080ff, #E6D9D0ff, #9E7C22ff, #690E08ff);
 $gradient-radial: radial-gradient(#E1251Bff, #818080ff, #E6D9D0ff, #9E7C22ff, #690E08ff);
+
 // Reset et base
 * {
   box-sizing: border-box;
@@ -69,14 +60,15 @@ $gradient-radial: radial-gradient(#E1251Bff, #818080ff, #E6D9D0ff, #9E7C22ff, #6
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: $font-primary;
   margin: 0;
   padding: 0;
   background-color: var(--color-bg);
-  color: #1f2937;
+  color: $gray-800;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -99,7 +91,7 @@ body {
 }
 
 // Optimisations pour mobile
-@media (max-width: 768px) {
+@include responsive(md) {
   body {
     font-size: 16px; // Évite le zoom sur iOS
   }
@@ -115,7 +107,7 @@ body {
   box-shadow: var(--shadow-sm);
   position: sticky;
   top: 0;
-  z-index: 50;
+  z-index: $z-sticky;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
@@ -123,29 +115,26 @@ body {
 // Page headers
 .page-header {
   background: white;
-  padding: 1rem;
-  border-bottom: 1px solid #e5e7eb;
+  padding: $spacing-md;
+  border-bottom: 1px solid $gray-200;
   position: sticky;
   top: 0;
-  z-index: 40;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  z-index: $z-fixed;
+  @include flex-between;
 }
 
 .page-title {
-  font-size: 1.5rem;
+  font-size: $text-2xl;
   font-weight: bold;
-  color: #1f2937;
+  color: $gray-800;
   margin: 0;
-  display: flex;
-  align-items: center;
+  @include flex-center;
 }
 
 .new-badge {
   background: var(--color-error);
   color: white;
-  font-size: 0.625rem;
+  font-size: $text-xs;
   padding: 2px 6px;
   border-radius: 8px;
   margin-left: 8px;
@@ -154,19 +143,17 @@ body {
 
 // Loading states
 .loading-container {
-  display: flex;
+  @include flex-center;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem 1rem;
+  padding: $spacing-2xl $spacing-md;
 }
 
 .spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #f3f4f6;
+  border: 4px solid $gray-100;
   border-top: 4px solid var(--color-primary);
-  border-radius: 50%;
+  border-radius: $border-radius-full;
   animation: spin 1s linear infinite;
 }
 
@@ -176,32 +163,32 @@ body {
 }
 
 .loading-text {
-  margin-top: 1rem;
+  margin-top: $spacing-md;
   color: var(--color-secondary);
 }
 
 // Empty states
 .empty-state {
   text-align: center;
-  padding: 3rem 1rem;
+  padding: $spacing-2xl $spacing-md;
 }
 
 .empty-icon {
-  font-size: 3rem;
-  color: #d1d5db;
-  margin-bottom: 1rem;
+  font-size: $text-4xl;
+  color: $gray-300;
+  margin-bottom: $spacing-md;
 }
 
 .empty-title {
-  font-size: 1.25rem;
+  font-size: $text-xl;
   font-weight: 600;
-  color: #374151;
-  margin-bottom: 0.5rem;
+  color: $gray-700;
+  margin-bottom: $spacing-2;
 }
 
 .empty-description {
   color: var(--color-secondary);
-  margin-bottom: 1.5rem;
+  margin-bottom: $spacing-6;
 }
 
 // Cards avec hover optimisé
@@ -220,36 +207,16 @@ body {
   }
 }
 
-// Boutons
+// Boutons avec mixins
 .btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem 1rem;
-  border-radius: var(--border-radius);
-  font-weight: 500;
-  transition: all var(--transition-fast);
-  cursor: pointer;
-  border: none;
-  text-decoration: none;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-  
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+  @include button-base;
 }
 
 .btn-primary {
+  @include button-base;
   background: var(--color-primary);
   color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: var(--border-radius);
-  border: none;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color var(--transition-fast);
+  padding: $spacing-3 $spacing-6;
   
   &:hover:not(:disabled) {
     background: var(--color-primary-dark);
@@ -259,10 +226,35 @@ body {
   &:active {
     transform: translateY(0);
   }
+}
+
+.btn-secondary {
+  @include button-base;
+  background: $gray-200;
+  color: $gray-800;
   
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  &:hover:not(:disabled) {
+    background: $gray-300;
+  }
+}
+
+.btn-success {
+  @include button-base;
+  background: var(--color-success);
+  color: white;
+  
+  &:hover:not(:disabled) {
+    background: color.adjust($success, $lightness: -10%);
+  }
+}
+
+.btn-error {
+  @include button-base;
+  background: var(--color-error);
+  color: white;
+  
+  &:hover:not(:disabled) {
+    background: color.adjust($error, $lightness: -10%);
   }
 }
 
@@ -327,76 +319,124 @@ img {
   border: 0;
 }
 
-// Grilles responsives
+// Grids responsives
 .grid-responsive {
   display: grid;
-  gap: 1.5rem;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-}
-
-@media (max-width: 640px) {
-  .grid-responsive {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-}
-
-// Animations PWA
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all var(--transition-normal);
-}
-
-.slide-up-enter-from {
-  opacity: 0;
-  transform: translateY(30px);
-}
-
-.slide-up-leave-to {
-  opacity: 0;
-  transform: translateY(-30px);
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity var(--transition-normal);
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-// Focus visible pour la navigation au clavier
-.focus-visible:focus {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
-
-// Dark mode support (optionnel)
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg: #111827;
-    --color-surface: #1f2937;
+  gap: $spacing-md;
+  grid-template-columns: 1fr;
+  
+  @include responsive(sm) {
+    grid-template-columns: repeat(2, 1fr);
   }
   
-  body {
-    background-color: var(--color-bg);
-    color: #f9fafb;
+  @include responsive(lg) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  @include responsive(xl) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+// Utility classes
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.mb-2 { margin-bottom: $spacing-2; }
+.mb-3 { margin-bottom: $spacing-3; }
+.mb-4 { margin-bottom: $spacing-4; }
+.mb-6 { margin-bottom: $spacing-6; }
+
+.mt-2 { margin-top: $spacing-2; }
+.mt-3 { margin-top: $spacing-3; }
+.mt-4 { margin-top: $spacing-4; }
+.mt-6 { margin-top: $spacing-6; }
+
+.p-2 { padding: $spacing-2; }
+.p-3 { padding: $spacing-3; }
+.p-4 { padding: $spacing-4; }
+.p-6 { padding: $spacing-6; }
+
+// Responsive visibility
+.hidden-mobile {
+  display: none;
+  
+  @include responsive(md) {
+    display: block;
+  }
+}
+
+.visible-mobile {
+  display: block;
+  
+  @include responsive(md) {
+    display: none;
+  }
+}
+
+// Animations
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn var(--transition-normal);
+}
+
+.animate-slide-up {
+  animation: slideUp var(--transition-normal);
+}
+
+// Focus states
+.focus-ring {
+  &:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+// Scrollbar customization
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: $gray-100;
+}
+
+::-webkit-scrollbar-thumb {
+  background: $gray-300;
+  border-radius: 4px;
+  
+  &:hover {
+    background: $gray-400;
   }
 }
 
 // Print styles
 @media print {
-  .nav-bar,
-  .btn,
-  .comment-form {
+  .no-print {
     display: none !important;
   }
   
-  .card-hover {
-    box-shadow: none !important;
-    transform: none !important;
+  .page-header {
+    position: static;
+    box-shadow: none;
+    border-bottom: 1px solid $gray-300;
   }
 }
 
@@ -462,4 +502,90 @@ img {
 .scroll-snap-item {
   scroll-snap-align: start;
   flex-shrink: 0;
+}
+.content-carousel {
+  background: #f59e0b;
+  box-shadow: none;
+}
+
+.md3-top-app-bar {
+  background: #E53E3E; /* Rouge Dinor */
+  padding: 12px 16px; /* Padding réduit */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.md3-app-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 12px; /* Gap réduit */
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.md3-icon-button {
+  background: none;
+  border: none;
+  padding: 6px; /* Padding réduit */
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.md3-icon-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.md3-icon-button i {
+  color: #FFFFFF; /* Blanc sur rouge - contraste 4.5:1 */
+  font-size: 20px; /* Taille d'icône réduite */
+}
+
+.md3-app-bar-title {
+  flex: 1;
+}
+
+.md3-app-bar-title h1 {
+  margin: 0;
+  font-size: 16px; /* Taille de texte réduite */
+  font-weight: 600; /* Poids réduit */
+  color: #FFFFFF; /* Blanc sur rouge - contraste 4.5:1 */
+  font-family: 'Open Sans', sans-serif;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.md3-app-bar-actions {
+  display: flex;
+  gap: 4px; /* Gap réduit */
+}
+
+.md3-icon-button.liked i {
+  color: #F4D03F; /* Doré pour les favoris */
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .md3-top-app-bar {
+    padding: 10px 12px; /* Padding encore plus réduit sur mobile */
+  }
+  
+  .md3-app-bar-container {
+    gap: 8px;
+  }
+  
+  .md3-app-bar-title h1 {
+    font-size: 14px; /* Taille encore plus petite sur mobile */
+  }
+  
+  .md3-icon-button i {
+    font-size: 18px;
+  }  
+}
+.content-carousel{
+  box-shadow: none;
 }

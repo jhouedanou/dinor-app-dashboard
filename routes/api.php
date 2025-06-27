@@ -49,17 +49,24 @@ Route::prefix('v1')->group(function () {
     
     // Bannières
     Route::get('/banners', [BannerController::class, 'index']);
+    Route::get('/banners/{id}', [BannerController::class, 'show']);
+    Route::get('/banners/type/{type}', [BannerController::class, 'getByType']);
     
     // PWA Menu Items
     Route::get('/pwa-menu-items', [PwaMenuItemController::class, 'index']);
     
     // Pages
     Route::get('/pages', [PageController::class, 'index']);
-    Route::get('/banners/{id}', [BannerController::class, 'show']);
     
     // Catégories
     Route::get('/categories', [CategoryController::class, 'index']);
     Route::get('/categories/events', [CategoryController::class, 'events']);
+
+// Event Categories (nouvelles catégories spécifiques aux événements)
+Route::get('/event-categories', [App\Http\Controllers\Api\EventCategoryController::class, 'index']);
+Route::get('/event-categories/{id}', [App\Http\Controllers\Api\EventCategoryController::class, 'show']);
+Route::post('/event-categories', [App\Http\Controllers\Api\EventCategoryController::class, 'store']);
+Route::post('/event-categories/check-exists', [App\Http\Controllers\Api\EventCategoryController::class, 'checkExists']);
     Route::get('/categories/recipes', [CategoryController::class, 'recipes']);
     Route::post('/categories', [CategoryController::class, 'store']);
     Route::get('/categories/check', [CategoryController::class, 'checkExists']);
@@ -88,6 +95,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/pages', [PageController::class, 'index']);
     Route::get('/pages/homepage', [PageController::class, 'homepage']);
     Route::get('/pages/menu', [PageController::class, 'menu']);
+    Route::get('/pages/latest', [PageController::class, 'latest']);
     Route::get('/pages/{slug}', [PageController::class, 'show']);
     
     // Likes - Routes publiques (lecture seulement)

@@ -4,7 +4,7 @@ import router from './router'
 import App from './App.vue'
 
 // Import global styles
-import './assets/styles/main.css'
+import './assets/styles/main.scss'
 
 const app = createApp(App)
 const pinia = createPinia()

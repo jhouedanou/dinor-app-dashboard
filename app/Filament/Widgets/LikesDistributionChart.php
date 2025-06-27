@@ -60,7 +60,7 @@ class LikesDistributionChart extends ChartWidget
         ];
     }
 
-    protected static ?string $pollingInterval = '60s';
+    protected static ?string $pollingInterval = null;
 
     protected static bool $isLazy = false;
 }

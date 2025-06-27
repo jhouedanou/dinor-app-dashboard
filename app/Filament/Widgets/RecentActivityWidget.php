@@ -119,5 +119,5 @@ class RecentActivityWidget extends BaseWidget
         return $likes->union($comments);
     }
 
-    protected static ?string $pollingInterval = '30s';
+    protected static ?string $pollingInterval = null;
 }

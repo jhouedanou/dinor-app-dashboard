@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\EventResource\Pages;
 use App\Models\Event;
 use App\Models\Category;
+use App\Models\EventCategory;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -44,12 +45,44 @@ class EventResource extends Resource
                             ->maxLength(255)
                             ->unique(Event::class, 'slug', ignoreRecord: true),
                         
-                        Forms\Components\Select::make('category_id')
-                            ->label('Catégorie')
-                            ->options(Category::active()->forEvents()->pluck('name', 'id'))
+                        Forms\Components\Select::make('event_category_id')
+                            ->label('Catégorie d\'événement')
+                            ->options(EventCategory::active()->pluck('name', 'id'))
                             ->required()
                             ->searchable()
-                            ->helperText('Seules les catégories de type "Événement" sont affichées'),
+                            ->helperText('Sélectionnez une catégorie spécifique aux événements')
+                            ->createOptionForm([
+                                Forms\Components\TextInput::make('name')
+                                    ->label('Nom de la catégorie')
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->live(onBlur: true)
+                                    ->afterStateUpdated(fn ($state, callable $set) => 
+                                        $set('slug', \Str::slug($state))
+                                    ),
+                                Forms\Components\TextInput::make('slug')
+                                    ->label('Slug')
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->unique(EventCategory::class, 'slug'),
+                                Forms\Components\Textarea::make('description')
+                                    ->label('Description')
+                                    ->rows(3),
+                                Forms\Components\ColorPicker::make('color')
+                                    ->label('Couleur')
+                                    ->default('#3b82f6'),
+                            ])
+                            ->createOptionUsing(function (array $data) {
+                                $eventCategory = EventCategory::create([
+                                    'name' => $data['name'],
+                                    'slug' => $data['slug'],
+                                    'description' => $data['description'] ?? null,
+                                    'color' => $data['color'] ?? '#3b82f6',
+                                    'is_active' => true,
+                                ]);
+                                
+                                return $eventCategory->id;
+                            }),
                             
                         Forms\Components\Textarea::make('description')
                             ->label('Description courte')
@@ -414,9 +447,10 @@ class EventResource extends Resource
                     ->searchable()
                     ->sortable(),
                     
-                Tables\Columns\TextColumn::make('category.name')
-                    ->label('Catégorie')
+                Tables\Columns\TextColumn::make('eventCategory.name')
+                    ->label('Catégorie d\'événement')
                     ->badge()
+                    ->color(fn ($record) => $record->eventCategory?->color ?? '#6b7280')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('event_type')
@@ -470,8 +504,9 @@ class EventResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('category')
-                    ->relationship('category', 'name'),
+                Tables\Filters\SelectFilter::make('eventCategory')
+                    ->relationship('eventCategory', 'name')
+                    ->label('Catégorie d\'événement'),
                 Tables\Filters\SelectFilter::make('event_type'),
                 Tables\Filters\SelectFilter::make('status'),
                 Tables\Filters\Filter::make('upcoming')

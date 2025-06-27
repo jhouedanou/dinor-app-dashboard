@@ -77,4 +77,35 @@ class PageController extends Controller
             'data' => $pages
         ]);
     }
+
+    public function latest()
+    {
+        $page = Page::published()
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        if (!$page) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Aucune page disponible'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $page->id,
+                'title' => $page->title,
+                'description' => $page->description,
+                'url' => $page->url,
+                'embed_url' => $page->embed_url,
+                'is_external' => $page->is_external,
+                'content' => $page->content,
+                'meta_title' => $page->meta_title,
+                'meta_description' => $page->meta_description,
+                'created_at' => $page->created_at,
+                'updated_at' => $page->updated_at,
+            ]
+        ]);
+    }
 } 

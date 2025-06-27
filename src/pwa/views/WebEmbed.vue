@@ -1,24 +1,21 @@
 <template>
   <div class="web-embed">
     <!-- Navigation Header -->
-    <nav class="md3-top-app-bar">
-      <div class="md3-app-bar-container">
-        <button @click="goBack" class="md3-icon-button">
-          <i class="material-icons">arrow_back</i>
+    <AppHeader 
+      :title="pageTitle"
+      :show-like="false"
+      :show-share="false"
+      @back="goBack"
+    >
+      <template #actions>
+        <button @click="refreshPage" class="md3-icon-button">
+          <i class="material-icons">refresh</i>
         </button>
-        <div class="md3-app-bar-title">
-          <h1 class="md3-title-large dinor-text-primary">{{ pageTitle }}</h1>
-        </div>
-        <div class="md3-app-bar-actions">
-          <button @click="refreshPage" class="md3-icon-button">
-            <i class="material-icons">refresh</i>
-          </button>
-          <button @click="openInNewTab" class="md3-icon-button">
-            <i class="material-icons">open_in_new</i>
-          </button>
-        </div>
-      </div>
-    </nav>
+        <button @click="openInNewTab" class="md3-icon-button">
+          <i class="material-icons">open_in_new</i>
+        </button>
+      </template>
+    </AppHeader>
 
     <!-- Main Content -->
     <main class="md3-main-content">
@@ -61,24 +58,60 @@
 <script>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useApi } from '@/composables/useApi'
+import AppHeader from '@/components/common/AppHeader.vue'
 
 export default {
   name: 'WebEmbed',
+  components: {
+    AppHeader
+  },
   setup() {
     const router = useRouter()
     const route = useRoute()
+    const { request } = useApi()
     
     const webFrame = ref(null)
     const loading = ref(true)
     const error = ref(false)
     const errorMessage = ref('')
     const pageTitle = ref('Page Web')
+    const currentPage = ref(null)
+    const embedUrl = ref('')
     
-    const embedUrl = computed(() => {
+    const loadLatestPage = async () => {
+      try {
+        loading.value = true
+        error.value = false
+        
+        const data = await request('/pages/latest')
+        
+        if (data.success && data.data) {
+          currentPage.value = data.data
+          pageTitle.value = data.data.title || 'Page Web'
+          
+          // Utiliser embed_url s'il existe, sinon url
+          const targetUrl = data.data.embed_url || data.data.url
+          if (targetUrl) {
+            embedUrl.value = targetUrl
+          } else {
+            throw new Error('Aucune URL disponible pour cette page')
+          }
+        } else {
+          throw new Error(data.message || 'Aucune page disponible')
+        }
+      } catch (err) {
+        error.value = true
+        errorMessage.value = err.message || 'Erreur lors du chargement de la page'
+        loading.value = false
+      }
+    }
+    
+    // Fallback pour URL en query parameter (pour compatibilité)
+    const getUrlFromQuery = () => {
       const url = route.query.url
       if (!url) return ''
       
-      // Validation basique de l'URL
       try {
         new URL(decodeURIComponent(url))
         return decodeURIComponent(url)
@@ -87,7 +120,7 @@ export default {
         errorMessage.value = 'URL invalide fournie'
         return ''
       }
-    })
+    }
     
     const onIframeLoad = () => {
       loading.value = false
@@ -118,6 +151,8 @@ export default {
         loading.value = true
         error.value = false
         webFrame.value.src = embedUrl.value
+      } else {
+        loadLatestPage()
       }
     }
     
@@ -135,11 +170,17 @@ export default {
       router.go(-1)
     }
     
-    onMounted(() => {
-      if (!embedUrl.value) {
-        error.value = true
-        errorMessage.value = 'Aucune URL fournie pour l\'affichage'
-        loading.value = false
+    onMounted(async () => {
+      // Vérifier s'il y a une URL dans les paramètres de query
+      const queryUrl = getUrlFromQuery()
+      
+      if (queryUrl) {
+        // Utiliser l'URL de query parameter
+        embedUrl.value = queryUrl
+        pageTitle.value = 'Page Web'
+      } else {
+        // Charger la dernière page depuis l'API
+        await loadLatestPage()
       }
       
       // Timeout de sécurité pour le chargement
@@ -159,12 +200,14 @@ export default {
       errorMessage,
       pageTitle,
       embedUrl,
+      currentPage,
       onIframeLoad,
       onIframeError,
       refreshPage,
       retryLoad,
       openInNewTab,
-      goBack
+      goBack,
+      loadLatestPage
     }
   }
 }

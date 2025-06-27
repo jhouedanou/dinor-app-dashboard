@@ -37,6 +37,7 @@ class Event extends Model
         'parking_info',
         'public_transport_info',
         'category_id',
+        'event_category_id',
         'featured_image',
         'gallery',
         'video_url',
@@ -146,6 +147,11 @@ class Event extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function eventCategory()
+    {
+        return $this->belongsTo(EventCategory::class, 'event_category_id');
     }
 
     public function mediaFiles()

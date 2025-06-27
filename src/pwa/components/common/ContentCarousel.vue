@@ -113,7 +113,7 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 
 export default {
@@ -207,7 +207,7 @@ export default {
       canScrollRight.value = carousel.scrollLeft < (carousel.scrollWidth - carousel.clientWidth)
     }
     
-    // Gestion des événements
+    // Gestion des clics sur les items
     const handleItemClick = (item) => {
       emit('item-click', item)
       
@@ -225,43 +225,40 @@ export default {
       }
     }
     
-    const handleImageError = (event) => {
-      event.target.src = getDefaultImage()
-    }
-    
-    // Utilitaires
+    // Utilitaires pour l'affichage
     const getShortDescription = (text) => {
-      if (!text) return ''
-      const cleanText = text.replace(/<[^>]*>/g, '')
-      return cleanText.length > 80 ? cleanText.substring(0, 80) + '...' : cleanText
+      if (!text) return 'Aucune description disponible'
+      const maxLength = 100
+      return text.length > maxLength ? text.substring(0, maxLength) + '...' : text
     }
     
-    const getDefaultImage = () => {
-      const defaults = {
-        recipes: '/images/default-recipe.jpg',
-        tips: '/images/default-tip.jpg',
-        events: '/images/default-event.jpg',
-        videos: '/images/default-video.jpg'
+    const formatDate = (dateString) => {
+      if (!dateString) return ''
+      const date = new Date(dateString)
+      return date.toLocaleDateString('fr-FR', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      })
+    }
+    
+    const formatDuration = (seconds) => {
+      if (!seconds) return ''
+      const minutes = Math.floor(seconds / 60)
+      const remainingSeconds = seconds % 60
+      return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
+    }
+    
+    const getDifficultyLabel = (difficulty) => {
+      const levels = {
+        'easy': 'Facile',
+        'medium': 'Moyen',
+        'hard': 'Difficile',
+        'beginner': 'Débutant',
+        'intermediate': 'Intermédiaire',
+        'advanced': 'Avancé'
       }
-      return defaults[props.contentType] || '/images/default.jpg'
-    }
-    
-    const getTypeIcon = () => {
-      const icons = {
-        recipes: 'restaurant',
-        tips: 'lightbulb',
-        events: 'event',
-        videos: 'play_circle'
-      }
-      return icons[props.contentType] || 'info'
-    }
-    
-    const getItemClass = () => {
-      return `${props.contentType}-card`
-    }
-    
-    const getStatusClass = (status) => {
-      return `status-${status}`
+      return levels[difficulty] || difficulty || 'Non spécifié'
     }
     
     const getStatusLabel = (status) => {
@@ -273,32 +270,59 @@ export default {
         'draft': 'Brouillon',
         'published': 'Publié'
       }
-      return labels[status] || status
+      return labels[status] || status || 'Non défini'
     }
     
-    const getDifficultyLabel = (difficulty) => {
-      const labels = {
-        'beginner': 'Débutant',
-        'intermediate': 'Intermédiaire',
-        'advanced': 'Avancé'
+    const getStatusClass = (status) => {
+      return `status-${status}`
+    }
+    
+    const getItemClass = () => {
+      return `content-${props.contentType}`
+    }
+    
+    const getTypeIcon = () => {
+      const icons = {
+        'recipes': 'restaurant',
+        'tips': 'lightbulb',
+        'events': 'event',
+        'videos': 'play_circle'
       }
-      return labels[difficulty] || difficulty
+      return icons[props.contentType] || 'info'
     }
     
-    const formatDate = (dateString) => {
-      if (!dateString) return ''
-      return new Date(dateString).toLocaleDateString('fr-FR', {
-        day: 'numeric',
-        month: 'short'
-      })
+    const getDefaultImage = () => {
+      const images = {
+        'recipes': '/images/default-recipe.jpg',
+        'tips': '/images/default-tip.jpg',
+        'events': '/images/default-event.jpg',
+        'videos': '/images/default-video.jpg'
+      }
+      return images[props.contentType] || '/images/default-recipe.jpg'
+    }
+    
+    const getVideoThumbnail = (videoUrl) => {
+      // Logique pour extraire la miniature de la vidéo
+      if (videoUrl?.includes('youtube.com') || videoUrl?.includes('youtu.be')) {
+        const videoId = videoUrl.split('v=')[1] || videoUrl.split('/').pop()
+        return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
+      }
+      return '/images/default-video-thumbnail.jpg'
+    }
+    
+    const handleImageError = (event) => {
+      event.target.src = getDefaultImage()
     }
     
     // Lifecycle
-    onMounted(() => {
+    onMounted(async () => {
+      await nextTick()
+      updateScrollButtons()
+      
+      // Écouter les événements de scroll
       const carousel = carouselRef.value
       if (carousel) {
         carousel.addEventListener('scroll', updateScrollButtons)
-        updateScrollButtons()
       }
     })
     
@@ -317,15 +341,17 @@ export default {
       scrollCarousel,
       scrollToIndex,
       handleItemClick,
-      handleImageError,
       getShortDescription,
-      getDefaultImage,
-      getTypeIcon,
-      getItemClass,
-      getStatusClass,
-      getStatusLabel,
+      formatDate,
+      formatDuration,
       getDifficultyLabel,
-      formatDate
+      getStatusLabel,
+      getStatusClass,
+      getItemClass,
+      getTypeIcon,
+      getDefaultImage,
+      getVideoThumbnail,
+      handleImageError
     }
   }
 }
@@ -333,42 +359,60 @@ export default {
 
 <style scoped>
 .content-carousel {
-  padding: 32px 16px;
+  margin-bottom: 32px;
+  background: #FFFFFF; /* Fond blanc */
+  border-radius: 16px;
+  overflow: hidden;
+  padding-bottom: 2em !important;
+ /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); */
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
+  align-items: center !important;
+  padding: 1em;
+  flex-direction:row !important;
+  background: #F4D03F; /* Fond doré */
+  border-radius: 16px 16px 0 0;
 }
 
 .section-header h2 {
   margin: 0;
-  font-size: 24px;
-  font-weight: 600;
-  color: var(--md-sys-color-on-surface, #1c1b1f);
+  font-size: 1.2em;
+  font-weight: 700;
+  font-family: 'Open Sans', sans-serif;
+  color: #000000; /* Noir sur doré - contraste 5.1:1 */
 }
 
 .see-all-btn {
   display: flex;
   align-items: center;
   gap: 4px;
-  color: var(--md-sys-color-primary, #6750a4);
+  padding: 8px 16px;
+  background: #E53E3E; /* Rouge Dinor */
+  color: #FFFFFF; /* Blanc sur rouge - contraste 4.5:1 */
   text-decoration: none;
-  font-weight: 500;
-  font-size: 14px;
-  transition: all 0.2s ease;
-  padding: 8px 12px;
   border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
 }
 
 .see-all-btn:hover {
-  background: var(--md-sys-color-primary-container, #eaddff);
-  color: var(--md-sys-color-on-primary-container, #21005d);
+  background: #C53030; /* Rouge plus foncé */
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
 }
 
-/* États de chargement */
+.see-all-btn .material-symbols-outlined {
+  font-size: 18px;
+}
+
+.carousel-container {
+  padding: 16px;
+}
+
 .carousel-loading,
 .carousel-error,
 .carousel-empty {
@@ -376,15 +420,15 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 200px;
-  color: var(--md-sys-color-on-surface-variant, #49454f);
+  padding: 48px 16px;
+  text-align: center;
 }
 
-.carousel-loading .loading-spinner {
+.loading-spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid var(--md-sys-color-surface-variant, #e7e0ec);
-  border-top: 3px solid var(--md-sys-color-primary, #6750a4);
+  border: 3px solid #E2E8F0;
+  border-top: 3px solid #E53E3E;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 12px;
@@ -397,12 +441,18 @@ export default {
 
 .carousel-error .material-symbols-outlined,
 .carousel-empty .material-symbols-outlined {
-  font-size: 32px;
-  margin-bottom: 8px;
-  opacity: 0.6;
+  font-size: 48px;
+  color: #4A5568; /* Gris foncé - contraste 7.5:1 */
+  margin-bottom: 12px;
 }
 
-/* Carousel */
+.carousel-error p,
+.carousel-empty p {
+  margin: 0;
+  font-size: 14px;
+  color: #4A5568; /* Gris foncé - contraste 7.5:1 */
+}
+
 .carousel-wrapper {
   position: relative;
 }
@@ -413,86 +463,212 @@ export default {
   overflow-x: auto;
   scroll-behavior: smooth;
   padding-bottom: 8px;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  scrollbar-width: thin;
+  scrollbar-color: #E53E3E #F7FAFC;
 }
 
 .carousel::-webkit-scrollbar {
-  display: none;
+  height: 6px;
+}
+
+.carousel::-webkit-scrollbar-track {
+  background: #F7FAFC;
+  border-radius: 3px;
+}
+
+.carousel::-webkit-scrollbar-thumb {
+  background: #E53E3E;
+  border-radius: 3px;
+}
+
+.carousel::-webkit-scrollbar-thumb:hover {
+  background: #C53030;
 }
 
 .carousel-item {
   flex: 0 0 280px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: transform 0.2s ease;
 }
 
 .carousel-item:hover {
   transform: translateY(-4px);
 }
 
-/* Cartes */
-.default-card {
-  background: var(--md-sys-color-surface-container, #f7f2fa);
-  border-radius: 16px;
+/* Styles par défaut pour les cartes */
+.default-card,
+.recipe-card,
+.tip-card,
+.event-card,
+.video-card {
+  background: #FFFFFF;
+  border-radius: 12px;
   overflow: hidden;
-  border: 1px solid var(--md-sys-color-outline-variant, #cac4d0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #E2E8F0;
+  transition: all 0.2s ease;
   height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-.card-image {
-  position: relative;
-  height: 160px;
-  overflow: hidden;
+.default-card:hover,
+.recipe-card:hover,
+.tip-card:hover,
+.event-card:hover,
+.video-card:hover {
+  box-shadow: 0 4px 16px rgba(229, 62, 62, 0.2);
+  border-color: #E53E3E;
 }
 
-.card-image img {
+.card-image,
+.video-thumbnail {
+  height: 160px;
+  overflow: hidden;
+  position: relative;
+}
+
+.card-image img,
+.video-thumbnail img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  filter: brightness(1.1) contrast(1.1);
 }
 
-.card-icon {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 120px;
-  background: var(--md-sys-color-tertiary-container, #ffd8e4);
-}
-
-.card-icon .material-symbols-outlined {
-  font-size: 48px;
-  color: var(--md-sys-color-on-tertiary-container, #31111d);
-}
-
-.card-overlay {
+.card-overlay,
+.video-overlay {
   position: absolute;
   top: 8px;
   right: 8px;
   display: flex;
-  gap: 8px;
+  gap: 4px;
+  flex-direction: column;
+  align-items: flex-end;
 }
 
 .time-badge,
-.status-badge {
+.difficulty-badge,
+.status-badge,
+.duration-badge {
   padding: 4px 8px;
   border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.time-badge,
+.duration-badge {
+  background: #E53E3E;
+  color: #FFFFFF;
+}
+
+.difficulty-badge {
+  background: #F4D03F;
+  color: #2D3748;
 }
 
 .status-active {
-  background: var(--md-sys-color-primary-container, #eaddff);
-  color: var(--md-sys-color-on-primary-container, #21005d);
+  background: #E53E3E;
+  color: #FFFFFF;
 }
 
 .status-upcoming {
-  background: var(--md-sys-color-tertiary-container, #ffd8e4);
-  color: var(--md-sys-color-on-tertiary-container, #31111d);
+  background: #F4D03F;
+  color: #2D3748;
+}
+
+.status-completed {
+  background: #4A5568;
+  color: #FFFFFF;
+}
+
+.status-cancelled {
+  background: #FF6B35;
+  color: #FFFFFF;
+}
+
+.live-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: #E53E3E;
+  color: #FFFFFF;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.live-dot {
+  width: 6px;
+  height: 6px;
+  background: #FFFFFF;
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.play-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 48px;
+  height: 48px;
+  background: rgba(229, 62, 62, 0.9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.play-button:hover {
+  background: #E53E3E;
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+.play-button .material-symbols-outlined {
+  font-size: 28px;
+  color: #FFFFFF;
+}
+
+.card-icon {
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F7FAFC;
+}
+
+.card-icon .material-symbols-outlined {
+  font-size: 64px;
+  color: #E53E3E;
+}
+
+.tip-icon {
+  width: 48px;
+  height: 48px;
+  background: #F4D03F;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 16px auto 12px;
+  flex-shrink: 0;
+}
+
+.tip-icon .material-symbols-outlined {
+  font-size: 24px;
+  color: #2D3748;
 }
 
 .card-content {
@@ -505,8 +681,9 @@ export default {
 .card-content h3 {
   margin: 0 0 8px 0;
   font-size: 16px;
-  font-weight: 600;
-  color: var(--md-sys-color-on-surface, #1c1b1f);
+  font-weight: 700;
+  color: #000000;
+  font-family: 'Open Sans', sans-serif;
   line-height: 1.3;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -516,67 +693,102 @@ export default {
 
 .card-content p {
   margin: 0 0 12px 0;
-  font-size: 14px;
-  color: var(--md-sys-color-on-surface-variant, #49454f);
+  font-size: 13px;
+  color: #4A5568;
   line-height: 1.4;
+  flex: 1;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  flex: 1;
 }
 
 .card-meta {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
   font-size: 12px;
-  color: var(--md-sys-color-on-surface-variant, #49454f);
+  color: #4A5568;
   margin-top: auto;
 }
 
 .likes,
-.date,
-.difficulty {
+.views {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-.likes .material-symbols-outlined {
-  font-size: 14px;
+.likes .material-symbols-outlined,
+.views .material-symbols-outlined {
+  font-size: 16px;
+  color: #E53E3E;
 }
 
-/* Contrôles */
+.date,
+.created {
+  font-size: 11px;
+  color: #718096;
+}
+
+.time,
+.difficulty {
+  padding: 2px 6px;
+  background: #F7FAFC;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #2D3748;
+}
+
+/* Contrôles du carousel */
 .carousel-controls {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
   display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 16px;
+  justify-content: space-between;
+  pointer-events: none;
+  padding: 0 8px;
 }
 
 .carousel-btn {
   width: 40px;
   height: 40px;
-  border: none;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
   border-radius: 50%;
-  background: var(--md-sys-color-primary-container, #eaddff);
-  color: var(--md-sys-color-on-primary-container, #21005d);
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
   transition: all 0.2s ease;
+  pointer-events: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .carousel-btn:hover:not(:disabled) {
-  background: var(--md-sys-color-primary, #6750a4);
-  color: var(--md-sys-color-on-primary, #ffffff);
+  background: #E53E3E;
+  border-color: #E53E3E;
+  transform: scale(1.1);
+}
+
+.carousel-btn:hover:not(:disabled) .material-symbols-outlined {
+  color: #FFFFFF;
 }
 
 .carousel-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.3;
   cursor: not-allowed;
+}
+
+.carousel-btn .material-symbols-outlined {
+  font-size: 24px;
+  color: #2D3748;
+  transition: color 0.2s ease;
 }
 
 /* Indicateurs */
@@ -584,41 +796,39 @@ export default {
   display: flex;
   justify-content: center;
   gap: 8px;
-  margin-top: 12px;
+  margin-top: 16px;
 }
 
 .indicator {
   width: 8px;
   height: 8px;
-  border: none;
   border-radius: 50%;
-  background: var(--md-sys-color-outline-variant, #cac4d0);
+  border: none;
+  background: #CBD5E0;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.indicator.active {
-  background: var(--md-sys-color-primary, #6750a4);
+.indicator.active,
+.indicator:hover {
+  background: #E53E3E;
+  transform: scale(1.2);
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .content-carousel {
-    padding: 24px 16px;
-  }
-  
-  .section-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-  
   .carousel-item {
     flex: 0 0 240px;
   }
   
-  .section-header h2 {
-    font-size: 20px;
+  .section-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  
+  .carousel-controls {
+    display: none;
   }
 }
 
@@ -627,12 +837,21 @@ export default {
     flex: 0 0 200px;
   }
   
-  .card-image {
+  .card-image,
+  .video-thumbnail {
     height: 120px;
   }
   
   .card-content {
     padding: 12px;
+  }
+  
+  .card-content h3 {
+    font-size: 14px;
+  }
+  
+  .card-content p {
+    font-size: 12px;
   }
 }
 </style>

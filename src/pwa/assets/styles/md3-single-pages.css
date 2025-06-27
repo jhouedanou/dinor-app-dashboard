@@ -8,7 +8,9 @@
     flex-direction: column;
 }
 
-/* Top App Bar Material Design 3 */
+/* Top App Bar Material Design 3 - Ces styles sont maintenant gérés par le composant AppHeader */
+/* Commenté pour éviter les conflits avec le composant scoped AppHeader.vue */
+/*
 .md3-top-app-bar {
     background: var(--md-sys-color-surface-container);
     border-bottom: 1px solid var(--md-sys-color-outline-variant);
@@ -74,6 +76,7 @@
 .md3-icon-button:active {
     transform: scale(0.95);
 }
+*/
 
 /* Main Content */
 .md3-main-content {

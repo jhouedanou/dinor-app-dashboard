@@ -12,6 +12,10 @@ class Banner extends Model
     protected $fillable = [
         'title',
         'description',
+        'type_contenu',
+        'titre',
+        'sous_titre',
+        'section',
         'image_url',
         'background_color',
         'text_color',

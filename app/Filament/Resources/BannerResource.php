@@ -38,12 +38,48 @@ class BannerResource extends Resource
                 Forms\Components\Section::make('Contenu de la bannière')
                     ->description('Configurez le contenu principal de votre bannière')
                     ->schema([
-                        Forms\Components\TextInput::make('title')
-                            ->label('Titre')
+                        Forms\Components\Select::make('type_contenu')
+                            ->label('Type de contenu')
+                            ->options([
+                                'recipes' => 'Recettes',
+                                'tips' => 'Astuces',
+                                'events' => 'Événements',
+                                'dinor_tv' => 'Dinor TV',
+                                'pages' => 'Pages',
+                                'home' => 'Accueil'
+                            ])
+                            ->required()
+                            ->helperText('Type de contenu pour cette bannière'),
+
+                        Forms\Components\TextInput::make('titre')
+                            ->label('Titre de la bannière')
                             ->required()
                             ->maxLength(255)
+                            ->placeholder('Ex: Nos Délicieuses Recettes')
+                            ->helperText('Titre principal de la bannière'),
+
+                        Forms\Components\TextInput::make('sous_titre')
+                            ->label('Sous-titre')
+                            ->maxLength(255)
+                            ->placeholder('Ex: Découvrez la cuisine ivoirienne')
+                            ->helperText('Sous-titre de la bannière'),
+
+                        Forms\Components\Select::make('section')
+                            ->label('Section')
+                            ->options([
+                                'header' => 'En-tête',
+                                'hero' => 'Bannière principale',
+                                'featured' => 'Contenu mis en avant',
+                                'footer' => 'Pied de page'
+                            ])
+                            ->required()
+                            ->helperText('Section où afficher la bannière'),
+
+                        Forms\Components\TextInput::make('title')
+                            ->label('Titre (Legacy)')
+                            ->maxLength(255)
                             ->placeholder('Ex: Bienvenue sur Dinor')
-                            ->helperText('Titre principal affiché sur la bannière'),
+                            ->helperText('Titre principal affiché sur la bannière (support ancien système)'),
 
                         Forms\Components\Textarea::make('description')
                             ->label('Description')
@@ -129,17 +165,50 @@ class BannerResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('title')
+                Tables\Columns\TextColumn::make('type_contenu')
+                    ->label('Type')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'recipes' => 'success',
+                        'tips' => 'info',
+                        'events' => 'warning',
+                        'dinor_tv' => 'danger',
+                        'pages' => 'gray',
+                        default => 'primary',
+                    })
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'recipes' => 'Recettes',
+                        'tips' => 'Astuces',
+                        'events' => 'Événements',
+                        'dinor_tv' => 'Dinor TV',
+                        'pages' => 'Pages',
+                        'home' => 'Accueil',
+                        default => $state,
+                    }),
+
+                Tables\Columns\TextColumn::make('titre')
                     ->label('Titre')
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
 
-                Tables\Columns\TextColumn::make('description')
-                    ->label('Description')
-                    ->limit(50)
+                Tables\Columns\TextColumn::make('sous_titre')
+                    ->label('Sous-titre')
+                    ->limit(30)
                     ->tooltip(function ($record) {
-                        return $record->description;
+                        return $record->sous_titre;
+                    }),
+
+                Tables\Columns\TextColumn::make('section')
+                    ->label('Section')
+                    ->badge()
+                    ->color('gray')
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'header' => 'En-tête',
+                        'hero' => 'Hero',
+                        'featured' => 'Mis en avant',
+                        'footer' => 'Pied de page',
+                        default => $state,
                     }),
 
                 Tables\Columns\ColorColumn::make('background_color')

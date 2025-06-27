@@ -1,24 +1,16 @@
 <template>
   <div class="event-detail">
     <!-- Navigation Header -->
-    <nav class="md3-top-app-bar">
-      <div class="md3-app-bar-container">
-        <button @click="goBack" class="md3-icon-button">
-          <i class="material-icons">arrow_back</i>
-        </button>
-        <div class="md3-app-bar-title">
-          <h1 class="md3-title-large dinor-text-primary">{{ event?.title || 'Événement' }}</h1>
-        </div>
-        <div class="md3-app-bar-actions">
-          <button @click="toggleLike" class="md3-icon-button" :class="{ 'liked': userLiked }">
-            <i class="material-icons">{{ userLiked ? 'favorite' : 'favorite_border' }}</i>
-          </button>
-          <button @click="shareEvent" class="md3-icon-button">
-            <i class="material-icons">share</i>
-          </button>
-        </div>
-      </div>
-    </nav>
+    <AppHeader 
+      :title="event?.title || 'Événement'"
+      :show-like="true"
+      :show-share="true"
+      :is-liked="userLiked"
+      back-path="/events"
+      @like="toggleLike"
+      @share="shareEvent"
+      @back="goBack"
+    />
 
     <!-- Main Content -->
     <main class="md3-main-content">
@@ -166,9 +158,13 @@
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useApiStore } from '@/stores/api'
+import AppHeader from '@/components/common/AppHeader.vue'
 
 export default {
   name: 'EventDetail',
+  components: {
+    AppHeader
+  },
   props: {
     id: {
       type: String,
@@ -346,21 +342,47 @@ export default {
 </script>
 
 <style scoped>
+/* Styles globaux */
 .event-detail {
   min-height: 100vh;
-  background: var(--md-sys-color-surface);
+  background: #FFFFFF; /* Fond blanc pour tous les écrans */
+  font-family: 'Roboto', sans-serif;
+}
+
+/* Typographie globale */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Open Sans', sans-serif; /* Open Sans pour les titres */
+  font-weight: 600;
+  color: #000000; /* Noir pour les titres - contraste 21:1 */
+  line-height: 1.3;
+}
+
+p, span, div {
+  font-family: 'Roboto', sans-serif; /* Roboto pour les textes */
+  color: #2D3748; /* Couleur foncée pour contraste 12.6:1 */
+  line-height: 1.5;
+}
+
+/* Styles spécifiques au composant EventDetail (sans l'en-tête qui est maintenant externalisé) */
+
+/* Contenu principal */
+.md3-main-content {
+  padding: 16px;
 }
 
 .event-hero {
   position: relative;
   height: 250px;
   overflow: hidden;
+  border-radius: 16px;
+  margin-bottom: 24px;
 }
 
 .event-hero-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  filter: brightness(1.1) contrast(1.1); /* Améliorer la luminosité des images */
 }
 
 .event-overlay {
@@ -369,92 +391,251 @@ export default {
   left: 0;
   right: 0;
   background: linear-gradient(transparent, rgba(0,0,0,0.7));
-  padding: 1rem;
+  padding: 16px;
+  border-radius: 0 0 16px 16px;
 }
 
 .event-badges {
   display: flex;
-  gap: 0.5rem;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
+.md3-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.event-location {
+  background: #E53E3E; /* Rouge Dinor */
+  color: #FFFFFF; /* Blanc sur rouge - contraste 4.5:1 */
+}
+
+.event-category {
+  background: #F4D03F; /* Doré */
+  color: #2D3748; /* Couleur foncée sur doré - contraste 3.8:1 */
+}
+
 .event-info {
-  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .event-stats {
   display: flex;
   justify-content: space-around;
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background: var(--md-sys-color-surface-variant);
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #F4D03F; /* Fond doré */
   border-radius: 12px;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .stat-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
+  gap: 4px;
+}
+
+.stat-item i {
+  font-size: 24px;
+  color: #E53E3E; /* Rouge Dinor sur doré */
+}
+
+.stat-item span {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2D3748; /* Couleur foncée sur doré - contraste 3.8:1 */
 }
 
 .event-details {
-  margin-bottom: 2rem;
+  margin-bottom: 24px;
 }
 
 .detail-item {
-  margin-bottom: 1rem;
-  padding: 1rem;
-  background: var(--md-sys-color-surface-variant);
-  border-radius: 8px;
+  margin-bottom: 16px;
+  padding: 16px;
+  background: #FFFFFF; /* Fond blanc */
+  border-radius: 12px;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.detail-item h3 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #000000; /* Noir - contraste 21:1 */
+}
+
+.detail-item p {
+  margin: 0;
+  font-size: 14px;
+  color: #2D3748; /* Couleur foncée - contraste 12.6:1 */
 }
 
 .event-description,
 .event-registration,
 .comments-section {
-  margin-bottom: 2rem;
+  margin-bottom: 24px;
+  padding: 20px;
+  background: #FFFFFF; /* Fond blanc */
+  border-radius: 12px;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.event-description h2,
+.comments-section h2 {
+  margin: 0 0 16px 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #000000; /* Noir - contraste 21:1 */
 }
 
 .event-registration {
-  padding: 1rem;
-  background: var(--md-sys-color-primary-container);
-  border-radius: 8px;
+  background: #F7FAFC; /* Fond très clair */
+  border-color: #E53E3E; /* Bordure rouge */
+}
+
+.event-registration h3 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #E53E3E; /* Rouge Dinor */
+}
+
+.event-registration p {
+  margin: 0;
+  font-size: 14px;
+  color: #2D3748; /* Couleur foncée - contraste 12.6:1 */
 }
 
 .registration-info {
-  margin-top: 0.5rem;
+  margin-top: 8px;
+}
+
+.registration-info p {
+  font-size: 12px;
+  color: #4A5568; /* Gris foncé - contraste 7.5:1 */
 }
 
 .add-comment-form {
-  margin-bottom: 1rem;
+  margin-bottom: 24px;
 }
 
 .md3-textarea {
   width: 100%;
   min-height: 80px;
-  padding: 0.75rem;
-  border: 1px solid var(--md-sys-color-outline);
+  padding: 12px;
+  border: 1px solid #E2E8F0;
   border-radius: 8px;
-  margin-bottom: 0.5rem;
+  margin-bottom: 12px;
   resize: vertical;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  color: #2D3748; /* Couleur foncée */
+  background: #FFFFFF; /* Fond blanc */
+}
+
+.md3-textarea:focus {
+  outline: none;
+  border-color: #E53E3E; /* Rouge Dinor */
+  box-shadow: 0 0 0 2px rgba(229, 62, 62, 0.2);
+}
+
+.btn-primary {
+  padding: 12px 24px;
+  background: #E53E3E; /* Rouge Dinor */
+  color: #FFFFFF; /* Blanc sur rouge - contraste 4.5:1 */
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #C53030; /* Rouge plus foncé */
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
+}
+
+.btn-primary:disabled {
+  background: #CBD5E0; /* Gris clair */
+  color: #A0AEC0; /* Gris moyen */
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  padding: 12px 24px;
+  background: #FFFFFF; /* Fond blanc */
+  color: #E53E3E; /* Rouge Dinor */
+  border: 1px solid #E53E3E;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: #E53E3E; /* Rouge Dinor */
+  color: #FFFFFF; /* Blanc sur rouge */
+  transform: translateY(-1px);
 }
 
 .comments-list {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 16px;
 }
 
 .comment-item {
-  padding: 1rem;
-  background: var(--md-sys-color-surface-variant);
+  padding: 16px;
+  background: #F7FAFC; /* Fond très clair */
   border-radius: 8px;
+  border: 1px solid #E2E8F0;
 }
 
 .comment-header {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 0.5rem;
+  margin-bottom: 8px;
+}
+
+.comment-author {
+  font-weight: 700;
+  color: #2D3748; /* Couleur foncée */
+}
+
+.comment-date {
+  font-size: 12px;
+  color: #4A5568; /* Gris foncé - contraste 7.5:1 */
+}
+
+.comment-content {
+  margin: 0;
+  font-size: 14px;
+  color: #2D3748; /* Couleur foncée */
+  line-height: 1.5;
+}
+
+.empty-comments {
+  text-align: center;
+  padding: 24px;
+  color: #4A5568; /* Gris foncé - contraste 7.5:1 */
 }
 
 .loading-container,
@@ -464,17 +645,74 @@ export default {
   align-items: center;
   justify-content: center;
   min-height: 60vh;
-  padding: 2rem;
+  padding: 32px;
   text-align: center;
 }
 
-.error-icon i {
-  font-size: 4rem;
-  color: var(--md-sys-color-error);
-  margin-bottom: 1rem;
+.loading-container .md3-circular-progress {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #E2E8F0;
+  border-top: 4px solid #E53E3E;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
 }
 
-.md3-icon-button.liked {
-  color: var(--md-sys-color-error);
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-state .error-icon {
+  margin-bottom: 16px;
+}
+
+.error-state .error-icon i {
+  font-size: 64px;
+  color: #E53E3E; /* Rouge Dinor */
+}
+
+.error-state h2 {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #000000; /* Noir - contraste 21:1 */
+}
+
+.error-state p {
+  margin: 0 0 24px 0;
+  font-size: 16px;
+  color: #4A5568; /* Gris foncé - contraste 7.5:1 */
+}
+
+.error-actions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .event-stats {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .stat-item {
+    flex-direction: row;
+    justify-content: center;
+  }
+  
+  .error-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .error-actions button {
+    width: 100%;
+    max-width: 200px;
+  }
 }
 </style> 

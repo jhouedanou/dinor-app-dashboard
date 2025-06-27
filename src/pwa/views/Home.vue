@@ -1,53 +1,14 @@
 <template>
   <div class="home">
-    <!-- Bannière dynamique avec overlay -->
-    <section 
-      v-for="banner in banners" 
-      :key="banner.id"
-      class="hero banner" 
-      :style="{
-        backgroundColor: banner.background_color,
-        backgroundImage: banner.image_url ? `url(${banner.image_url})` : null,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
-      }"
-    >
-      <!-- Overlay pour améliorer la lisibilité du texte -->
-      <div 
-        v-if="banner.image_url" 
-        class="banner-overlay"
-        :style="{
-          background: `linear-gradient(135deg, ${banner.background_color}CC, ${banner.background_color}88)`
-        }"
-      ></div>
-      
-      <!-- Contenu avec overlay -->
-      <div class="hero-content" :style="{ color: banner.text_color }">
-        <h1 class="banner-title">{{ banner.title }}</h1>
-        <p v-if="banner.description" class="banner-description">{{ banner.description }}</p>
-        <router-link 
-          v-if="banner.button_text && banner.button_url"
-          :to="banner.button_url"
-          class="hero-button"
-          :style="{
-            backgroundColor: banner.button_color,
-            color: getContrastColor(banner.button_color),
-            borderColor: banner.button_color
-          }"
-        >
-          {{ banner.button_text }}
-        </router-link>
-      </div>
-    </section>
+    <!-- Zone de contenu principal - maintenant que l'en-tête est séparé -->
+    <div class="content-area">
 
-    <!-- Bannière par défaut si aucune bannière configurée -->
-    <section v-if="!banners.length && !loadingBanners" class="hero">
-      <div class="hero-content">
-        <h1>Bienvenue sur Dinor</h1>
-        <p>Découvrez les saveurs authentiques de la Côte d'Ivoire</p>
-      </div>
-    </section>
+    <!-- Bannières d'accueil -->
+    <BannerSection 
+      type="home" 
+      section="hero" 
+      :banners="banners"
+    />
 
     <!-- Recettes - 4 dernières -->
     <ContentCarousel
@@ -208,7 +169,9 @@
         </div>
       </template>
     </ContentCarousel>
-  </div>
+    
+    </div> <!-- Fermer content-area -->
+  </div> <!-- Fermer home -->
 </template>
 
 <script>
@@ -220,11 +183,13 @@ import { useEvents } from '@/composables/useEvents'
 import { useDinorTV } from '@/composables/useDinorTV'
 import { useBanners } from '@/composables/useBanners'
 import ContentCarousel from '@/components/common/ContentCarousel.vue'
+import BannerSection from '@/components/common/BannerSection.vue'
 
 export default {
   name: 'Home',
   components: {
-    ContentCarousel
+    ContentCarousel,
+    BannerSection
   },
   setup() {
     const router = useRouter()
@@ -425,118 +390,33 @@ export default {
 <style scoped>
 .home {
   min-height: 100vh;
-  background: var(--md-sys-color-surface, #fefbff);
+  background: #FFFFFF; /* Fond blanc */
+  font-family: 'Roboto', sans-serif;
 }
 
-/* Hero Section */
-.hero {
-  background: linear-gradient(135deg, var(--md-sys-color-primary-container, #eaddff) 0%, var(--md-sys-color-tertiary-container, #ffd8e4) 100%);
-  padding: 48px 16px;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
+/* Zone de contenu principal */
+.content-area {
+  background: #FFFFFF; /* Grande zone blanche/gris clair */
+  min-height: calc(100vh - 200px);
+  padding: 20px 16px;
 }
 
-.hero.banner {
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
-.hero.banner::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.3);
-  z-index: 1;
-}
-
-.hero.banner .hero-content {
-  position: relative;
-  z-index: 2;
-}
-
-.hero-content h1 {
-  margin: 0 0 16px 0;
-  font-size: 32px;
-  font-weight: 700;
-  color: var(--md-sys-color-on-primary-container, #21005d);
-}
-
-.hero.banner h1 {
-  color: inherit;
-}
-
-.hero-content p {
-  margin: 0 0 32px 0;
-  font-size: 18px;
-  color: var(--md-sys-color-on-primary-container, #21005d);
-  opacity: 0.8;
-}
-
-.hero.banner p {
-  color: inherit;
-  opacity: 0.9;
-}
-
-.hero-button {
-  display: inline-block;
-  padding: 12px 24px;
-  border-radius: 24px;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 16px;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-top: 16px;
-}
-
-.hero-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.hero-stats {
-  display: flex;
-  justify-content: center;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-
-.stat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.stat-number {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--md-sys-color-primary, #6750a4);
-}
-
-.stat-label {
-  font-size: 14px;
-  color: var(--md-sys-color-on-primary-container, #21005d);
-  opacity: 0.7;
-}
+/* Suppression de l'ancienne section hero - maintenant gérée par AppHeader */
 
 /* Cartes spécifiques */
 .recipe-card,
 .tip-card,
 .event-card,
 .video-card {
-  background: var(--md-sys-color-surface-container, #f7f2fa);
+  background: #FFFFFF; /* Fond blanc */
   border-radius: 16px;
   overflow: hidden;
-  border: 1px solid var(--md-sys-color-outline-variant, #cac4d0);
+  border: 1px solid #E2E8F0; /* Bordure gris clair */
   height: 100%;
   display: flex;
   flex-direction: column;
   transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .recipe-card:hover,
@@ -544,7 +424,8 @@ export default {
 .event-card:hover,
 .video-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 24px rgba(229, 62, 62, 0.15); /* Ombre rouge */
+  border-color: #E53E3E; /* Bordure rouge au hover */
 }
 
 /* Images et overlays */
@@ -567,12 +448,12 @@ export default {
   justify-content: center;
   align-items: center;
   height: 120px;
-  background: var(--md-sys-color-tertiary-container, #ffd8e4);
+  background: linear-gradient(135deg, #F4D03F 0%, #FF6B35 100%); /* Dégradé doré vers orange */
 }
 
 .tip-icon .material-symbols-outlined {
   font-size: 48px;
-  color: var(--md-sys-color-on-tertiary-container, #31111d);
+  color: #FFFFFF; /* Icône blanche sur fond coloré */
 }
 
 .card-overlay,
@@ -1123,19 +1004,45 @@ export default {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
+/* Typographie avec nouvelles polices */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Open Sans', sans-serif; /* Open Sans pour les titres */
+  font-weight: 600;
+  color: #2D3748;
+  margin: 0 0 16px 0;
+  line-height: 1.3;
+}
+
+p, span, div, .card-content p {
+  font-family: 'Roboto', sans-serif; /* Roboto pour les textes */
+  color: #4A5568;
+  line-height: 1.5;
+}
+
+/* Titres spécifiques */
+.section-header h2 {
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 700; /* Plus bold */
+  font-size: 24px;
+  color: #000000; /* Noir pour les titres de section */
+}
+
+.card-content h3 {
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 600;
+  font-size: 18px;
+  color: #2D3748;
+  margin-bottom: 8px;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
-  .hero-content h1,
-  .banner-title {
-    font-size: 28px;
+  .section-header h2 {
+    font-size: 20px;
   }
   
-  .banner-description {
-    font-size: 1rem;
-  }
-  
-  .hero-stats {
-    gap: 24px;
+  .card-content h3 {
+    font-size: 16px;
   }
   
   .carousel-item {

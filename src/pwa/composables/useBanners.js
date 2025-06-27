@@ -8,12 +8,16 @@ export function useBanners() {
   const loading = ref(false)
   const error = ref(null)
 
-  const loadBanners = async (position = 'home') => {
+  const loadBanners = async (filters = {}) => {
     loading.value = true
     error.value = null
     
     try {
-      const params = position ? { position } : {}
+      const params = {}
+      if (filters.position) params.position = filters.position
+      if (filters.type_contenu) params.type_contenu = filters.type_contenu
+      if (filters.section) params.section = filters.section
+      
       const data = await request('/banners', { params })
       
       if (data.success) {
@@ -24,6 +28,29 @@ export function useBanners() {
     } catch (err) {
       error.value = 'Impossible de charger les bannières'
       console.error('Erreur bannières:', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const loadBannersByType = async (type) => {
+    loading.value = true
+    error.value = null
+    
+    try {
+      const data = await request(`/banners/type/${type}`)
+      
+      if (data.success) {
+        banners.value = data.data
+        return data.data
+      } else {
+        error.value = data.message || 'Erreur lors du chargement des bannières'
+        return []
+      }
+    } catch (err) {
+      error.value = 'Impossible de charger les bannières pour ce type'
+      console.error('Erreur bannières par type:', err)
+      return []
     } finally {
       loading.value = false
     }
@@ -54,9 +81,19 @@ export function useBanners() {
     )
   }
 
+  const getBannersBySection = (section) => {
+    return banners.value.filter(banner => banner.section === section)
+  }
+
+  const getBannersByTypeAndSection = (type, section) => {
+    return banners.value.filter(banner => 
+      banner.type_contenu === type && banner.section === section
+    )
+  }
+
   // Auto-charge les bannières au montage
   onMounted(() => {
-    loadBanners()
+    loadBanners({ position: 'home' })
   })
 
   return {
@@ -64,8 +101,11 @@ export function useBanners() {
     loading,
     error,
     loadBanners,
+    loadBannersByType,
     getBanner,
     getActiveBanners,
-    getBannersByPosition
+    getBannersByPosition,
+    getBannersBySection,
+    getBannersByTypeAndSection
   }
 } 

@@ -10,7 +10,7 @@ class EventController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Event::with('category')
+        $query = Event::with(['category', 'eventCategory'])
             ->where('is_published', true)
             ->where('status', 'active')
             ->orderBy('start_date', 'asc');
@@ -18,6 +18,10 @@ class EventController extends Controller
         // Filtres optionnels
         if ($request->has('category_id')) {
             $query->where('category_id', $request->category_id);
+        }
+
+        if ($request->has('event_category_id')) {
+            $query->where('event_category_id', $request->event_category_id);
         }
 
         if ($request->has('upcoming')) {
@@ -30,7 +34,7 @@ class EventController extends Controller
 
         // Option pour inclure le contenu non publié (pour debug admin)
         if ($request->has('include_unpublished')) {
-            $query = Event::with('category')->orderBy('start_date', 'asc');
+            $query = Event::with(['category', 'eventCategory'])->orderBy('start_date', 'asc');
         }
 
         if ($request->has('location')) {
@@ -67,7 +71,7 @@ class EventController extends Controller
 
     public function show($id)
     {
-        $event = Event::with('category')
+        $event = Event::with(['category', 'eventCategory'])
             ->published()
             ->active()
             ->findOrFail($id);
@@ -80,7 +84,7 @@ class EventController extends Controller
 
     public function upcoming()
     {
-        $events = Event::with('category')
+        $events = Event::with(['category', 'eventCategory'])
             ->published()
             ->active()
             ->upcoming()
@@ -95,7 +99,7 @@ class EventController extends Controller
 
     public function featured()
     {
-        $events = Event::with('category')
+        $events = Event::with(['category', 'eventCategory'])
             ->published()
             ->active()
             ->featured()
