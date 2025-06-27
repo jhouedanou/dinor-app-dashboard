@@ -66,8 +66,9 @@ async function generateIcons() {
             await sharp(inputSvg)
                 .resize(size, size, {
                     fit: 'contain',
-                    background: { r: 255, g: 255, b: 255, alpha: 1 }
+                    background: '#ffffff'
                 })
+                .flatten({ background: '#ffffff' })
                 .png()
                 .toFile(outputPath);
             
