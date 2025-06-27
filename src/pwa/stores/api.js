@@ -133,9 +133,13 @@ export const useApiStore = defineStore('api', () => {
         if (result.success) {
           return result.data
         }
+      } else if (response.status === 400 || response.status === 404) {
+        // Cache PWA non disponible ou non configuré - c'est normal
+        console.log('ℹ️ [API Store] Cache PWA non disponible, utilisation du cache local uniquement')
+        return null
       }
     } catch (error) {
-      console.warn('Erreur cache PWA get:', error)
+      console.log('ℹ️ [API Store] Cache PWA non accessible:', error.message)
     }
     return null
   }
@@ -148,7 +152,7 @@ export const useApiStore = defineStore('api', () => {
 
       const params = extractParams(options)
       
-      await fetch('/api/pwa/cache/set', {
+      const response = await fetch('/api/pwa/cache/set', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -156,8 +160,13 @@ export const useApiStore = defineStore('api', () => {
         },
         body: JSON.stringify({ type, data, params })
       })
+
+      if (!response.ok && response.status !== 400 && response.status !== 404) {
+        console.log('⚠️ [API Store] Problème avec le cache PWA:', response.status)
+      }
     } catch (error) {
-      console.warn('Erreur cache PWA set:', error)
+      // Cache PWA non disponible - c'est normal en développement
+      console.log('ℹ️ [API Store] Cache PWA non accessible pour la sauvegarde')
     }
   }
 
