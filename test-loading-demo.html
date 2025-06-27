@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎨 Démo Loading Screen DINOR</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Roboto', Arial, sans-serif;
+            background: #f0f0f0;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .demo-header {
+            margin-bottom: 30px;
+        }
+        
+        .demo-header h1 {
+            color: #E53E3E;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .btn {
+            background: #E53E3E;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.2s ease;
+        }
+        
+        .btn:hover {
+            background: #C53030;
+            transform: translateY(-2px);
+        }
+        
+        .info {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 600px;
+            margin: 20px auto;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .features {
+            text-align: left;
+            margin-top: 20px;
+        }
+        
+        .features li {
+            margin: 8px 0;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-header">
+        <h1>🎨 Loading Screen DINOR</h1>
+        <p>Nouveau design avec animations sur fond rouge</p>
+    </div>
+    
+    <div class="controls">
+        <button class="btn" onclick="showFullscreen()">🚀 Voir en plein écran</button>
+        <button class="btn" onclick="window.location.href='http://localhost:3000'">📱 Voir dans l'app</button>
+    </div>
+    
+    <div class="info">
+        <h3>✨ Fonctionnalités du Loading Screen</h3>
+        <ul class="features">
+            <li><strong>🎯 Logo DINOR animé</strong> - Effet de pulsation, brillance et glow</li>
+            <li><strong>📊 Barre de progression dorée</strong> - Animation fluide avec effet shimmer</li>
+            <li><strong>🫧 Bulles flottantes</strong> - 12 bulles qui remontent en continu</li>
+            <li><strong>📝 Messages dynamiques</strong> - Texte qui change pendant le chargement</li>
+            <li><strong>🎨 Fond rouge dégradé</strong> - Même couleur que le header</li>
+            <li><strong>📱 Design responsive</strong> - Adapté à tous les écrans</li>
+        </ul>
+        
+        <h3>🎯 Intégration</h3>
+        <p>Le loading screen apparaît automatiquement au démarrage de l'app PWA et dure 2.5 secondes.</p>
+        
+        <h3>🎨 Header mis à jour</h3>
+        <p><strong>Logo à gauche plus gros</strong> (36px) + <strong>Titre à droite</strong></p>
+        <p>Navigation visible sur tous les écrans (mobile, tablette, desktop)</p>
+    </div>
+
+    <script>
+        function showFullscreen() {
+            // Créer un overlay plein écran avec le loading screen
+            const overlay = document.createElement('div');
+            overlay.innerHTML = `
+                <div style="
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100vw;
+                    height: 100vh;
+                    background: linear-gradient(135deg, #E53E3E 0%, #C53030 50%, #E53E3E 100%);
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 9999;
+                    color: white;
+                    font-family: 'Roboto', Arial, sans-serif;
+                    cursor: pointer;
+                ">
+                    <div style="
+                        text-align: center;
+                        animation: pulse 2s infinite;
+                    ">
+                        <div style="
+                            font-size: 48px;
+                            font-weight: bold;
+                            margin-bottom: 20px;
+                            text-shadow: 0 0 20px rgba(255,255,255,0.5);
+                        ">DINOR</div>
+                        <div style="font-size: 20px; margin-bottom: 40px;">Dinor se prépare...</div>
+                        <div style="
+                            width: 300px;
+                            height: 6px;
+                            background: rgba(255,255,255,0.2);
+                            border-radius: 3px;
+                            overflow: hidden;
+                            margin-bottom: 10px;
+                        ">
+                            <div style="
+                                width: 70%;
+                                height: 100%;
+                                background: linear-gradient(90deg, #F4D03F, #F7DC6F);
+                                animation: shimmer 2s infinite;
+                            "></div>
+                        </div>
+                        <div style="font-size: 14px; opacity: 0.8;">70%</div>
+                        <div style="
+                            margin-top: 30px;
+                            font-size: 14px;
+                            opacity: 0.7;
+                        ">Cliquez pour fermer</div>
+                    </div>
+                </div>
+                <style>
+                    @keyframes pulse {
+                        0%, 100% { transform: scale(1); }
+                        50% { transform: scale(1.05); }
+                    }
+                    @keyframes shimmer {
+                        0%, 100% { box-shadow: 0 0 10px rgba(244,208,63,0.5); }
+                        50% { box-shadow: 0 0 20px rgba(244,208,63,0.8); }
+                    }
+                </style>
+            `;
+            
+            overlay.onclick = () => document.body.removeChild(overlay);
+            document.body.appendChild(overlay);
+        }
+    </script>
+</body>
+</html> 

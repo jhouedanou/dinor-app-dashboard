@@ -1,40 +1,75 @@
 <template>
-  <div id="app-container">
-    <!-- En-tête de l'application simplifié -->
-    <AppHeader />
-    
-    <!-- Main Content -->
-    <main 
-      class="main-content" 
-      :class="{ 'with-bottom-nav': showBottomNav, 'with-header': true }"
-    >
-      <router-view />
-    </main>
-    
-    <!-- Bottom Navigation -->
-    <BottomNavigation v-if="showBottomNav" />
-    
-    <!-- PWA Install Prompt -->
-    <InstallPrompt />
+  <!-- Loading Screen -->
+  <LoadingScreen 
+    v-if="showLoading"
+    :visible="showLoading"
+    :duration="2500"
+    @complete="onLoadingComplete"
+  />
+  
+  <!-- App principale (masquée pendant le loading) -->
+  <div v-if="!showLoading" id="app">
+    <div class="app-container">
+      <!-- En-tête de l'application simplifié -->
+      <AppHeader 
+        :title="currentPageTitle"
+        :show-like="showLikeButton"
+        :show-share="showShareButton"
+        :is-liked="isLiked"
+        :back-path="backPath"
+        @like="handleLike"
+        @share="handleShare"
+        @back="handleBack"
+      />
+      
+      <!-- Main Content -->
+      <main 
+        class="main-content" 
+        :class="{ 'with-bottom-nav': showBottomNav, 'with-header': true }"
+      >
+        <router-view 
+          @update-header="updateHeader" 
+          @like="handleLike"
+          @share="handleShare"
+          ref="currentView"
+        />
+      </main>
+      
+      <!-- Bottom Navigation -->
+      <BottomNavigation v-if="showBottomNav" />
+      
+      <!-- PWA Install Prompt -->
+      <InstallPrompt />
+    </div>
   </div>
 </template>
 
 <script>
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
-import AppHeader from '@components/common/AppHeader.vue'
-import BottomNavigation from '@components/navigation/BottomNavigation.vue'
-import InstallPrompt from '@components/common/InstallPrompt.vue'
+import { computed, ref, watch, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import AppHeader from '@/components/common/AppHeader.vue'
+import BottomNavigation from '@/components/navigation/BottomNavigation.vue'
+import InstallPrompt from '@/components/common/InstallPrompt.vue'
+import LoadingScreen from '@/components/common/LoadingScreen.vue'
 
 export default {
   name: 'App',
   components: {
     AppHeader,
     BottomNavigation,
-    InstallPrompt
+    InstallPrompt,
+    LoadingScreen
   },
   setup() {
     const route = useRoute()
+    const router = useRouter()
+    
+    // État pour le header dynamique
+    const currentPageTitle = ref('Dinor')
+    const showLikeButton = ref(false)
+    const showShareButton = ref(false)
+    const isLiked = ref(false)
+    const backPath = ref(null)
     
     // Show bottom nav only on main pages
     const showBottomNav = computed(() => {
@@ -42,8 +77,132 @@ export default {
       return mainRoutes.some(routePath => route.path === routePath || (routePath !== '/' && route.path.startsWith(routePath)))
     })
     
+    // Titre dynamique selon la route
+    const updateTitle = () => {
+      if (route.path === '/') {
+        currentPageTitle.value = 'Dinor'
+        showLikeButton.value = false
+        showShareButton.value = false
+        backPath.value = null
+      } else if (route.path === '/recipes') {
+        currentPageTitle.value = 'Recettes'
+        showLikeButton.value = false
+        showShareButton.value = false
+        backPath.value = null
+      } else if (route.path === '/tips') {
+        currentPageTitle.value = 'Astuces'
+        showLikeButton.value = false
+        showShareButton.value = false
+        backPath.value = null
+      } else if (route.path === '/events') {
+        currentPageTitle.value = 'Événements'
+        showLikeButton.value = false
+        showShareButton.value = false
+        backPath.value = null
+      } else if (route.path === '/dinor-tv') {
+        currentPageTitle.value = 'Dinor TV'
+        showLikeButton.value = false
+        showShareButton.value = false
+        backPath.value = null
+      } else if (route.path === '/pages') {
+        currentPageTitle.value = 'Pages'
+        showLikeButton.value = false
+        showShareButton.value = false
+        backPath.value = null
+      } else if (route.path.startsWith('/recipe/')) {
+        currentPageTitle.value = 'Recette'
+        showLikeButton.value = true
+        showShareButton.value = true
+        backPath.value = '/recipes'
+      } else if (route.path.startsWith('/tip/')) {
+        currentPageTitle.value = 'Astuce'
+        showLikeButton.value = true
+        showShareButton.value = true
+        backPath.value = '/tips'
+      } else if (route.path.startsWith('/event/')) {
+        currentPageTitle.value = 'Événement'
+        showLikeButton.value = true
+        showShareButton.value = true
+        backPath.value = '/events'
+      } else {
+        currentPageTitle.value = 'Dinor'
+        showLikeButton.value = false
+        showShareButton.value = false
+        backPath.value = '/'
+      }
+    }
+    
+    // Mettre à jour le titre quand la route change
+    watch(() => route.path, updateTitle, { immediate: true })
+    
+    // Function pour mettre à jour le header depuis les composants enfants
+    const updateHeader = (headerData) => {
+      if (headerData.title) currentPageTitle.value = headerData.title
+      if (headerData.showLike !== undefined) showLikeButton.value = headerData.showLike
+      if (headerData.showShare !== undefined) showShareButton.value = headerData.showShare
+      if (headerData.isLiked !== undefined) isLiked.value = headerData.isLiked
+      if (headerData.backPath !== undefined) backPath.value = headerData.backPath
+    }
+    
+    // Handlers pour les actions - déléguées aux vues enfants
+    const currentView = ref(null)
+    
+    const handleLike = () => {
+      if (currentView.value && currentView.value.toggleLike) {
+        currentView.value.toggleLike()
+      }
+    }
+    
+    const handleShare = () => {
+      if (currentView.value) {
+        if (currentView.value.shareEvent) {
+          currentView.value.shareEvent()
+        } else if (currentView.value.shareRecipe) {
+          currentView.value.shareRecipe()
+        } else if (currentView.value.shareTip) {
+          currentView.value.shareTip()
+        }
+      }
+    }
+    
+    const handleBack = () => {
+      if (backPath.value) {
+        router.push(backPath.value)
+      } else {
+        router.go(-1)
+      }
+    }
+    
+    // Initialiser le titre
+    updateTitle()
+    
+    const showLoading = ref(true)
+    
+    const onLoadingComplete = () => {
+      showLoading.value = false
+      console.log('🎉 [App] Chargement terminé, app prête !')
+    }
+    
+    // Pour tester, on peut forcer le loading à s'arrêter après un délai
+    onMounted(() => {
+      // Le loading se terminera automatiquement via le composant LoadingScreen
+      console.log('🚀 [App] Application démarrée avec loading screen')
+    })
+    
     return {
-      showBottomNav
+      showBottomNav,
+      currentPageTitle,
+      showLikeButton,
+      showShareButton,
+      isLiked,
+      backPath,
+      currentView,
+      updateHeader,
+      handleLike,
+      handleShare,
+      handleBack,
+      showLoading,
+      onLoadingComplete
     }
   }
 }
@@ -54,11 +213,31 @@ export default {
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Roboto:wght@300;400;500;600;700&display=swap');
 
 /* Global app styles */
-#app-container {
-  font-family: 'Roboto', sans-serif; /* Roboto pour les textes */
-  background-color: #FFFFFF; /* Fond blanc */
-  min-height: 100vh;
-  color: #2D3748;
+#app {
+  font-family: 'Roboto', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Reset global */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: #F5F5F5;
+  font-family: 'Roboto', sans-serif;
 }
 
 .main-content {

@@ -22,6 +22,9 @@ return new class extends Migration
             $table->integer('order')->default(0);
             $table->foreignId('parent_id')->nullable()->constrained('pages')->onDelete('cascade');
             $table->string('featured_image')->nullable();
+            $table->string('url')->nullable();
+            $table->string('embed_url')->nullable();
+            $table->boolean('is_external')->default(false);
             $table->timestamps();
             $table->softDeletes();
         });

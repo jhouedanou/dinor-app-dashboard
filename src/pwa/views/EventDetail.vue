@@ -1,17 +1,5 @@
 <template>
   <div class="event-detail">
-    <!-- Navigation Header -->
-    <AppHeader 
-      :title="event?.title || 'Événement'"
-      :show-like="true"
-      :show-share="true"
-      :is-liked="userLiked"
-      back-path="/events"
-      @like="toggleLike"
-      @share="shareEvent"
-      @back="goBack"
-    />
-
     <!-- Main Content -->
     <main class="md3-main-content">
       <!-- Loading State -->
@@ -158,20 +146,17 @@
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useApiStore } from '@/stores/api'
-import AppHeader from '@/components/common/AppHeader.vue'
 
 export default {
   name: 'EventDetail',
-  components: {
-    AppHeader
-  },
+  emits: ['update-header'],
   props: {
     id: {
       type: String,
       required: true
     }
   },
-  setup(props) {
+  setup(props, { emit }) {
     const router = useRouter()
     const route = useRoute()
     const apiStore = useApiStore()
@@ -189,6 +174,15 @@ export default {
           event.value = data.data
           await loadComments()
           await checkUserLike()
+          
+          // Mettre à jour le header avec le titre de l'événement
+          emit('update-header', {
+            title: event.value.title || 'Événement',
+            showLike: true,
+            showShare: true,
+            isLiked: userLiked.value,
+            backPath: '/events'
+          })
         }
       } catch (error) {
         console.error('Erreur lors du chargement de l\'événement:', error)
@@ -228,6 +222,11 @@ export default {
           if (event.value) {
             event.value.likes_count = data.data.total_likes
           }
+          
+          // Mettre à jour le statut like dans le header
+          emit('update-header', {
+            isLiked: userLiked.value
+          })
         }
       } catch (error) {
         console.error('Erreur lors du toggle like:', error)

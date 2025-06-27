@@ -156,10 +156,41 @@ export default {
   }
 }
 
-/* Desktop - masquer la navigation inférieure */
+/* Adaptation responsive pour desktop et tablette */
 @media (min-width: 768px) {
   .bottom-navigation {
-    display: none;
+    /* Réduire légèrement la hauteur sur desktop */
+    border-top: 2px solid rgba(0, 0, 0, 0.1);
+  }
+  
+  .nav-items {
+    max-width: 600px; /* Limite la largeur sur grand écran */
+    margin: 0 auto; /* Centre la navigation */
+    height: 70px; /* Légèrement plus bas sur desktop */
+  }
+  
+  .nav-item {
+    max-width: 120px; /* Plus d'espace pour les labels sur grand écran */
+    padding: 10px 8px; /* Plus de padding sur desktop */
+  }
+  
+  .nav-label {
+    font-size: 13px; /* Label légèrement plus grand sur desktop */
+  }
+  
+  .nav-icon .material-symbols-outlined {
+    font-size: 26px; /* Icônes légèrement plus grandes sur desktop */
+  }
+}
+
+/* Très grands écrans */
+@media (min-width: 1200px) {
+  .nav-items {
+    max-width: 800px; /* Plus d'espace sur très grand écran */
+  }
+  
+  .nav-item {
+    max-width: 160px;
   }
 }
 </style>

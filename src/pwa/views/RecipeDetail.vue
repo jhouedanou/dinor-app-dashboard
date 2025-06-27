@@ -1,17 +1,5 @@
 <template>
   <div class="recipe-detail">
-    <!-- Navigation Header -->
-    <AppHeader 
-      :title="recipe?.title || 'Recette'"
-      :show-like="true"
-      :show-share="true"
-      :is-liked="userLiked"
-      back-path="/recipes"
-      @like="toggleLike"
-      @share="shareRecipe"
-      @back="goBack"
-    />
-
     <!-- Main Content -->
     <main class="md3-main-content">
       <!-- Loading State -->
@@ -143,13 +131,12 @@
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useApiStore } from '@/stores/api'
-import AppHeader from '@/components/common/AppHeader.vue'
 import Badge from '@/components/common/Badge.vue'
 
 export default {
   name: 'RecipeDetail',
+  emits: ['update-header'],
   components: {
-    AppHeader,
     Badge
   },
   props: {
@@ -158,7 +145,7 @@ export default {
       required: true
     }
   },
-  setup(props) {
+  setup(props, { emit }) {
     const router = useRouter()
     const route = useRoute()
     const apiStore = useApiStore()
@@ -176,6 +163,15 @@ export default {
           recipe.value = data.data
           await loadComments()
           await checkUserLike()
+          
+          // Mettre à jour le header avec le titre de la recette
+          emit('update-header', {
+            title: recipe.value.title || 'Recette',
+            showLike: true,
+            showShare: true,
+            isLiked: userLiked.value,
+            backPath: '/recipes'
+          })
         }
       } catch (error) {
         console.error('Erreur lors du chargement de la recette:', error)
@@ -218,6 +214,11 @@ export default {
           if (recipe.value) {
             recipe.value.likes_count = data.data.total_likes
           }
+          
+          // Mettre à jour le statut like dans le header
+          emit('update-header', {
+            isLiked: userLiked.value
+          })
         }
       } catch (error) {
         console.error('Erreur lors du toggle like:', error)

@@ -8,9 +8,36 @@
       >
         <i class="material-icons">arrow_back</i>
       </button>
+      
+      <!-- Logo et titre -->
       <div class="md3-app-bar-title">
-        <h1 class="md3-title-large dinor-text-primary">{{ displayTitle }}</h1>
+        <div class="dinor-logo-container">
+          <!-- Logo principal (à gauche, plus gros) -->
+          <div class="logo-section">
+            <img 
+              :src="logoSrc" 
+              alt="Dinor" 
+              class="dinor-logo"
+              @error="handleLogoError"
+            >
+            <!-- Logo fallback SVG inline (masqué par défaut) -->
+            <svg 
+              class="dinor-logo-fallback" 
+              style="display: none;"
+              viewBox="0 0 120 50" 
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <text x="15" y="32" font-family="Arial, sans-serif" font-size="22" font-weight="bold" fill="white">DINOR</text>
+            </svg>
+          </div>
+          
+          <!-- Titre (à droite) -->
+          <div class="title-section">
+            <h1 class="md3-title-large dinor-text-primary">{{ displayTitle }}</h1>
+          </div>
+        </div>
       </div>
+      
       <div class="md3-app-bar-actions">
         <slot name="actions">
           <button 
@@ -36,7 +63,7 @@
 
 <script>
 import { useRouter, useRoute } from 'vue-router'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 export default {
   name: 'AppHeader',
@@ -66,6 +93,9 @@ export default {
   setup(props, { emit }) {
     const router = useRouter()
     const route = useRoute()
+    
+    // URL du logo (avec fallback)
+    const logoSrc = ref('/images/LOGO_DINOR_monochrome.svg')
 
     // Masquer le bouton retour sur la page d'accueil
     const showBackButton = computed(() => {
@@ -120,12 +150,44 @@ export default {
       emit('share')
     }
 
+    const handleLogoError = () => {
+      console.error('❌ [AppHeader] Erreur de chargement du logo DINOR')
+      console.log('🔍 [AppHeader] Chemin testé:', logoSrc.value)
+      console.log('📁 [AppHeader] Vérifiez que le fichier existe dans public/images/')
+      console.log('🔄 [AppHeader] Tentative avec chemin alternatif...')
+      
+      // Essayer un chemin alternatif
+      if (logoSrc.value === '/images/LOGO_DINOR_monochrome.svg') {
+        logoSrc.value = './images/LOGO_DINOR_monochrome.svg'
+        console.log('🔄 [AppHeader] Nouvel essai avec:', logoSrc.value)
+      } else {
+        console.error('💥 [AppHeader] Impossible de charger le logo externe')
+        console.log('🔄 [AppHeader] Utilisation du logo fallback SVG inline')
+        
+        // Masquer le logo externe et afficher le fallback SVG
+        const logoElement = document.querySelector('.dinor-logo')
+        const fallbackElement = document.querySelector('.dinor-logo-fallback')
+        
+        if (logoElement) {
+          logoElement.style.display = 'none'
+          console.log('👁️ [AppHeader] Logo externe masqué')
+        }
+        
+        if (fallbackElement) {
+          fallbackElement.style.display = 'block'
+          console.log('✅ [AppHeader] Logo fallback SVG affiché')
+        }
+      }
+    }
+
     return {
       showBackButton,
       displayTitle,
       handleBack,
       handleLike,
-      handleShare
+      handleShare,
+      handleLogoError,
+      logoSrc
     }
   }
 }
@@ -172,6 +234,45 @@ export default {
   flex: 1;
 }
 
+/* Conteneur logo + titre */
+.dinor-logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Logo à gauche, titre à droite */
+  width: 100%;
+  gap: 16px;
+}
+
+/* Section logo (à gauche) */
+.logo-section {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Logo Dinor (plus gros) */
+.dinor-logo {
+  height: 36px; /* Plus gros que les 24px précédents */
+  width: auto;
+  /* Rendre le logo blanc */
+  filter: brightness(0) invert(1);
+  flex-shrink: 0; /* Empêche le logo de se compresser */
+}
+
+/* Logo fallback SVG (plus gros) */
+.dinor-logo-fallback {
+  height: 36px; /* Même hauteur que le logo principal */
+  width: auto;
+  flex-shrink: 0;
+}
+
+/* Section titre (à droite) */
+.title-section {
+  flex: 1;
+  text-align: right; /* Alignement à droite */
+  min-width: 0; /* Permet la troncature */
+}
+
 .md3-app-bar-title h1 {
   margin: 0;
   font-size: 16px; /* Taille de texte réduite */
@@ -199,16 +300,38 @@ export default {
     padding: 10px 12px; /* Padding encore plus réduit sur mobile */
   }
   
-  .md3-app-bar-container {
-    gap: 8px;
+  .dinor-logo-container {
+    gap: 12px; /* Gap réduit sur mobile */
+  }
+  
+  .dinor-logo {
+    height: 28px; /* Logo plus petit sur mobile mais toujours plus gros qu'avant */
+  }
+  
+  .dinor-logo-fallback {
+    height: 28px; /* Logo fallback plus petit sur mobile */
   }
   
   .md3-app-bar-title h1 {
-    font-size: 14px; /* Taille encore plus petite sur mobile */
+    font-size: 14px; /* Titre plus petit sur mobile */
+  }
+}
+
+@media (max-width: 480px) {
+  .md3-app-bar-title h1 {
+    display: none; /* Masquer le titre sur très petit écran */
   }
   
-  .md3-icon-button i {
-    font-size: 18px;
+  .dinor-logo {
+    height: 32px; /* Logo encore plus gros quand seul */
+  }
+  
+  .dinor-logo-fallback {
+    height: 32px; /* Logo fallback plus grand quand seul */
+  }
+  
+  .dinor-logo-container {
+    justify-content: center; /* Centrer le logo quand pas de titre */
   }
 }
 </style> 

@@ -171,3 +171,85 @@ curl 'http://localhost:8000/api/banners?type_contenu=home&section=hero'
 - ✅ **Documentation** et guides intégrés
 
 Le système de bannières était déjà entièrement développé, il fallait juste le rendre accessible ! 🎉 
+
+# 🔧 Guide : Autoriser roue.dinorapp.com en iframe
+
+## 📋 **Problème**
+Le site `roue.dinorapp.com` renvoie le header `X-Frame-Options: SAMEORIGIN` qui bloque l'affichage en iframe depuis d'autres domaines (comme localhost:3000).
+
+## 🎯 **Solution**
+Modifier le fichier `.htaccess` de `roue.dinorapp.com` pour autoriser l'affichage en iframe.
+
+## 🔧 **Étapes à suivre**
+
+### **1. Ouvrir le fichier .htaccess**
+```bash
+# Sur le serveur de roue.dinorapp.com
+nano .htaccess
+# ou
+vim .htaccess
+```
+
+### **2. Ajouter les directives (option recommandée)**
+```apache
+# Autoriser l'affichage en iframe pour le développement local
+Header always unset X-Frame-Options
+Header always set Content-Security-Policy "frame-ancestors 'self' http://localhost:* https://localhost:*"
+```
+
+### **3. Alternatives selon le niveau de sécurité**
+
+#### **Option A : Autoriser tous les domaines (moins sécurisé)**
+```apache
+Header always unset X-Frame-Options
+Header always set Content-Security-Policy "frame-ancestors *"
+```
+
+#### **Option B : Autoriser uniquement des domaines spécifiques (plus sécurisé)**
+```apache
+Header always unset X-Frame-Options
+Header always set Content-Security-Policy "frame-ancestors 'self' http://localhost:3000 https://localhost:3000 https://dinorapp.com https://*.dinorapp.com"
+```
+
+#### **Option C : Méthode ancienne avec X-Frame-Options**
+```apache
+Header always set X-Frame-Options "ALLOWALL"
+```
+
+### **4. Sauvegarder et tester**
+```bash
+# Sauvegarder le fichier .htaccess
+# Puis tester avec le script fourni
+./check-iframe-headers.sh
+```
+
+## 🧪 **Vérification du succès**
+
+### **Avant modification :**
+```
+❌ X-Frame-Options trouvé: SAMEORIGIN
+   -> Ce site bloque l'affichage en iframe
+```
+
+### **Après modification :**
+```
+✅ Aucun X-Frame-Options trouvé
+   -> Ce site autorise l'affichage en iframe
+🔒 Content-Security-Policy: frame-ancestors 'self' http://localhost:* https://localhost:*
+   -> Politique frame-ancestors détectée
+```
+
+## 🎉 **Résultat attendu**
+Une fois modifié, `roue.dinorapp.com` devrait s'afficher correctement dans l'iframe de la PWA WebEmbed !
+
+## 📝 **Notes importantes**
+- Ces modifications n'affectent que l'affichage en iframe
+- Le site reste sécurisé pour les autres aspects
+- Vous pouvez toujours restreindre à des domaines spécifiques pour plus de sécurité
+- Testez toujours après modification
+
+## 🔄 **Rollback si nécessaire**
+Pour revenir à l'état précédent, supprimez les lignes ajoutées dans `.htaccess` ou remettez :
+```apache
+Header always set X-Frame-Options "SAMEORIGIN"
+``` 

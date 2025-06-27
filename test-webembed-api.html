@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test WebEmbed API</title>
+</head>
+<body>
+    <h1>Test de l'API WebEmbed</h1>
+    <button onclick="testAPI()">Tester l'API /pages/latest</button>
+    <button onclick="testWithURL()">Tester iframe avec example.com</button>
+    <button onclick="testFrameOptions()">Tester X-Frame-Options</button>
+    
+    <div id="results"></div>
+
+    <script>
+        async function testAPI() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<h2>Test API /pages/latest</h2><p>En cours...</p>';
+            
+            try {
+                console.log('🧪 [Test] Début du test API');
+                const response = await fetch('http://localhost:3000/api/v1/pages/latest');
+                console.log('📩 [Test] Réponse:', response);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('📋 [Test] Données:', data);
+                
+                resultsDiv.innerHTML = `
+                    <h2>✅ Succès API /pages/latest</h2>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                    <p><strong>Status:</strong> ${response.status}</p>
+                    <p><strong>URL:</strong> ${data.data?.url || 'Non définie'}</p>
+                    <p><strong>Embed URL:</strong> ${data.data?.embed_url || 'Non définie'}</p>
+                    
+                    <h3>🔍 Diagnostic :</h3>
+                    <p style="color: orange;">⚠️ L'URL <code>${data.data?.url}</code> a probablement <code>X-Frame-Options: SAMEORIGIN</code></p>
+                    <p>Cela signifie qu'elle ne peut pas être affichée en iframe depuis localhost.</p>
+                `;
+            } catch (error) {
+                console.error('💥 [Test] Erreur:', error);
+                resultsDiv.innerHTML = `
+                    <h2>❌ Erreur API</h2>
+                    <p><strong>Erreur:</strong> ${error.message}</p>
+                    <p>Vérifiez la console pour plus de détails</p>
+                `;
+            }
+        }
+        
+        async function testWithURL() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<h2>Test avec URL directe</h2>';
+            
+            const testUrl = 'https://httpbin.org/'; // Site qui permet les iframes
+            
+            resultsDiv.innerHTML += `
+                <p><strong>URL de test:</strong> ${testUrl}</p>
+                <p><strong>Accès direct:</strong> <a href="${testUrl}" target="_blank">Ouvrir dans un nouvel onglet</a></p>
+                <p style="color: green;">✅ Ce site autorise normalement les iframes</p>
+                <iframe width="100%" height="400" src="${testUrl}" frameborder="1" style="border: 1px solid #ccc;"></iframe>
+            `;
+        }
+        
+        async function testFrameOptions() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<h2>Test X-Frame-Options</h2>';
+            
+            const sites = [
+                { url: 'https://httpbin.org/', expected: '✅ Autorise iframe' },
+                { url: 'https://roue.dinorapp.com', expected: '❌ Bloque iframe (SAMEORIGIN)' },
+                { url: 'https://example.com', expected: '✅ Autorise iframe' }
+            ];
+            
+            resultsDiv.innerHTML += '<p>Test de différents sites :</p>';
+            
+            for (const site of sites) {
+                resultsDiv.innerHTML += `
+                    <div style="margin: 10px 0; padding: 10px; border: 1px solid #ddd;">
+                        <p><strong>${site.url}</strong> - ${site.expected}</p>
+                        <iframe width="300" height="200" src="${site.url}" frameborder="1" 
+                                style="border: 1px solid #ccc;" 
+                                onload="console.log('✅ Iframe chargée:', '${site.url}')"
+                                onerror="console.log('❌ Iframe erreur:', '${site.url}')">
+                        </iframe>
+                    </div>
+                `;
+            }
+            
+            resultsDiv.innerHTML += `
+                <h3>🔍 Explication :</h3>
+                <p><strong>X-Frame-Options: DENY</strong> - Bloque complètement les iframes</p>
+                <p><strong>X-Frame-Options: SAMEORIGIN</strong> - Autorise seulement le même domaine</p>
+                <p><strong>Pas de X-Frame-Options</strong> - Autorise les iframes</p>
+            `;
+        }
+    </script>
+</body>
+</html> 

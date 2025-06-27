@@ -12,14 +12,26 @@ class Page extends Model
 
     protected $fillable = [
         'title',
+        'content',
+        'slug',
+        'meta_title',
+        'meta_description',
+        'meta_keywords',
+        'template',
         'url',
-        'description',
+        'embed_url',
+        'is_external',
         'is_published',
-        'order'
+        'is_homepage',
+        'order',
+        'parent_id',
+        'featured_image'
     ];
 
     protected $casts = [
         'is_published' => 'boolean',
+        'is_homepage' => 'boolean',
+        'is_external' => 'boolean',
         'order' => 'integer'
     ];
 

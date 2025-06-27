@@ -297,6 +297,28 @@ else
     log_warning "Fichier artisan non trouvé"
 fi
 
+# 13.1. Migration spécifique des catégories d'événements
+log_info "🗄️ Migration spécifique des catégories d'événements..."
+if [ -f artisan ]; then
+    # Migration de la table event_categories
+    $FORGE_PHP artisan migrate --path=database/migrations/2025_01_01_000000_create_event_categories_table.php --force
+    if [ $? -eq 0 ]; then
+        log_success "Migration event_categories exécutée"
+    else
+        log_warning "Problème avec la migration event_categories"
+    fi
+    
+    # Migration de l'ajout de event_category_id aux events
+    $FORGE_PHP artisan migrate --path=database/migrations/2025_01_01_000001_add_event_category_id_to_events_table.php --force
+    if [ $? -eq 0 ]; then
+        log_success "Migration event_category_id exécutée"
+    else
+        log_warning "Problème avec la migration event_category_id"
+    fi
+else
+    log_warning "Fichier artisan non trouvé pour les migrations event_categories"
+fi
+
 # 14. Configuration de l'utilisateur admin (amélioré)
 log_info "👤 Configuration de l'utilisateur admin..."
 

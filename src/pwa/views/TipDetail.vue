@@ -1,17 +1,5 @@
 <template>
   <div class="tip-detail">
-    <!-- Navigation Header -->
-    <AppHeader 
-      :title="tip?.title || 'Astuce'"
-      :show-like="true"
-      :show-share="true"
-      :is-liked="userLiked"
-      back-path="/tips"
-      @like="toggleLike"
-      @share="shareTip"
-      @back="goBack"
-    />
-
     <!-- Main Content -->
     <main class="md3-main-content">
       <!-- Loading State -->
@@ -134,13 +122,12 @@
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useApiStore } from '@/stores/api'
-import AppHeader from '@/components/common/AppHeader.vue'
 import Badge from '@/components/common/Badge.vue'
 
 export default {
   name: 'TipDetail',
+  emits: ['update-header'],
   components: {
-    AppHeader,
     Badge
   },
   props: {
@@ -149,7 +136,7 @@ export default {
       required: true
     }
   },
-  setup(props) {
+  setup(props, { emit }) {
     const router = useRouter()
     const route = useRoute()
     const apiStore = useApiStore()
@@ -167,6 +154,15 @@ export default {
           tip.value = data.data
           await loadComments()
           await checkUserLike()
+          
+          // Mettre à jour le header avec le titre de l'astuce
+          emit('update-header', {
+            title: tip.value.title || 'Astuce',
+            showLike: true,
+            showShare: true,
+            isLiked: userLiked.value,
+            backPath: '/tips'
+          })
         }
       } catch (error) {
         console.error('Erreur lors du chargement de l\'astuce:', error)
@@ -206,6 +202,11 @@ export default {
           if (tip.value) {
             tip.value.likes_count = data.data.total_likes
           }
+          
+          // Mettre à jour le statut like dans le header
+          emit('update-header', {
+            isLiked: userLiked.value
+          })
         }
       } catch (error) {
         console.error('Erreur lors du toggle like:', error)

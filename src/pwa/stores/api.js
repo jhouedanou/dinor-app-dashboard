@@ -49,12 +49,17 @@ export const useApiStore = defineStore('api', () => {
 
   async function request(endpoint, options = {}) {
     const cacheKey = `${endpoint}_${JSON.stringify(options)}`
+    console.log('🌐 [API Store] Nouvelle requête:', { endpoint, options, cacheKey })
     
     // Vérifier le cache PWA d'abord (sauf pour POST/PUT/DELETE)
     if (!options.method || options.method === 'GET') {
+      console.log('🔍 [API Store] Vérification du cache PWA...')
       const cached = await checkPWACache(endpoint, options)
       if (cached) {
+        console.log('⚡ [API Store] Données trouvées dans le cache PWA:', cached)
         return cached
+      } else {
+        console.log('❌ [API Store] Aucune donnée dans le cache PWA')
       }
     }
 
@@ -63,6 +68,8 @@ export const useApiStore = defineStore('api', () => {
 
     try {
       const url = `${baseURL.value}${endpoint}`
+      console.log('📡 [API Store] URL complète:', url)
+      
       const config = {
         headers: {
           'Content-Type': 'application/json',
@@ -72,26 +79,35 @@ export const useApiStore = defineStore('api', () => {
         },
         ...options
       }
+      console.log('⚙️ [API Store] Configuration de la requête:', config)
 
+      console.log('🚀 [API Store] Envoi de la requête fetch...')
       const response = await fetch(url, config)
+      console.log('📩 [API Store] Réponse reçue:', { status: response.status, ok: response.ok })
       
       if (!response.ok) {
+        console.error('❌ [API Store] Erreur HTTP:', response.status, response.statusText)
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
+      console.log('🔄 [API Store] Parsing JSON...')
       const data = await response.json()
+      console.log('✅ [API Store] Données JSON reçues:', data)
       
       // Mettre en cache les requêtes GET réussies dans le cache PWA
       if (!options.method || options.method === 'GET') {
+        console.log('💾 [API Store] Mise en cache PWA...')
         await setPWACache(endpoint, data, options)
       }
 
       return data
     } catch (error) {
+      console.error('💥 [API Store] Erreur lors de la requête:', error)
       setError(cacheKey, error.message)
       throw error
     } finally {
       setLoading(cacheKey, false)
+      console.log('🏁 [API Store] Fin de la requête:', endpoint)
     }
   }
 
