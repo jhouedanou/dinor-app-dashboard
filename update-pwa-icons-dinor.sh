@@ -48,10 +48,10 @@ if command -v node >/dev/null 2>&1; then
         npm install sharp --save-dev
     fi
     
-    # Créer un script Node.js pour la conversion
-    cat > convert-svg-to-icons.js << 'EOF'
-const sharp = require('sharp');
-const fs = require('fs');
+    # Créer un script Node.js pour la conversion (compatible ESM)
+    cat > convert-svg-to-icons.mjs << 'EOF'
+import sharp from 'sharp';
+import fs from 'fs';
 
 const sizes = [32, 72, 96, 128, 144, 152, 192, 384, 512];
 const inputSvg = 'public/images/Dinor-Logo.svg';
@@ -85,10 +85,10 @@ EOF
 
     # Exécuter la conversion
     log_info "🔄 Conversion du SVG en icônes PNG..."
-    node convert-svg-to-icons.js
+    node convert-svg-to-icons.mjs
     
     # Nettoyer le script temporaire
-    rm convert-svg-to-icons.js
+    rm convert-svg-to-icons.mjs
     
     log_success "Icônes PNG générées avec succès"
     
