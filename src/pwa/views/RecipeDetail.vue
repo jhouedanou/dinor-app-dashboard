@@ -193,6 +193,7 @@ export default {
     const comments = ref([])
     const loading = ref(true)
     const userLiked = ref(false)
+    const userFavorited = ref(false)
     const newComment = ref('')
     const showAuthModal = ref(false)
 
@@ -215,6 +216,7 @@ export default {
           recipe.value = data.data
           await loadComments()
           await checkUserLike()
+          await checkUserFavorite()
           
           // Mettre à jour les métadonnées Open Graph
           updateOpenGraphTags(shareData.value)
@@ -224,7 +226,9 @@ export default {
             title: recipe.value.title || 'Recette',
             showLike: true,
             showShare: true,
+            showFavorite: true,
             isLiked: userLiked.value,
+            isFavorited: userFavorited.value,
             backPath: '/recipes'
           })
         }
@@ -278,6 +282,15 @@ export default {
       }
     }
 
+    const checkUserFavorite = async () => {
+      try {
+        const data = await apiStore.get(`/favorites/check`, { type: 'recipe', id: props.id })
+        userFavorited.value = data.success && data.is_favorited
+      } catch (error) {
+        console.error('Erreur lors de la vérification du favori:', error)
+      }
+    }
+
     const toggleLike = async () => {
       try {
         const data = await apiStore.request('/likes/toggle', {
@@ -300,6 +313,28 @@ export default {
         }
       } catch (error) {
         console.error('Erreur lors du toggle like:', error)
+      }
+    }
+
+    const toggleFavorite = async () => {
+      try {
+        const data = await apiStore.post('/favorites/toggle', {
+          favoritable_type: 'recipe',
+          favoritable_id: props.id
+        })
+        if (data.success) {
+          userFavorited.value = !userFavorited.value
+          if (recipe.value) {
+            recipe.value.favorites_count = data.data.total_favorites
+          }
+          
+          // Mettre à jour le statut favori dans le header
+          emit('update-header', {
+            isFavorited: userFavorited.value
+          })
+        }
+      } catch (error) {
+        console.error('Erreur lors du toggle favori:', error)
       }
     }
 
@@ -441,7 +476,8 @@ export default {
     // Exposer la fonction share pour le composant parent
     defineExpose({
       share: callShare,
-      toggleLike
+      toggleLike,
+      toggleFavorite
     })
 
     // Exposer les méthodes et les refs nécessaires au template et au parent
@@ -450,10 +486,12 @@ export default {
       comments,
       loading,
       userLiked,
+      userFavorited,
       newComment,
       authStore,
       showAuthModal,
       toggleLike,
+      toggleFavorite,
       addComment,
       canDeleteComment,
       deleteComment,
@@ -471,6 +509,8 @@ export default {
 </script>
 
 <style scoped>
+@import '../assets/styles/comments.css';
+
 .recipe-detail {
   min-height: 100vh;
   background: #FFFFFF; /* Fond blanc comme Home */
@@ -575,90 +615,7 @@ p, span, div {
   border-bottom: 1px solid var(--md-sys-color-outline-variant);
 }
 
-.add-comment-form {
-  margin-bottom: 1rem;
-}
 
-.auth-prompt {
-  text-align: center;
-  padding: 1.5rem;
-  background: #f8f9fa;
-  border-radius: 12px;
-  border: 1px solid #e0e0e0;
-}
-
-.auth-prompt-text {
-  margin: 0 0 1rem 0;
-  color: #666;
-  font-size: 0.95rem;
-}
-
-.authenticated-user {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  padding: 0.75rem 1rem;
-  background: #e8f5e8;
-  border-radius: 8px;
-  font-size: 0.875rem;
-}
-
-.user-info {
-  color: #2d5a2d;
-  font-weight: 500;
-}
-
-.btn-logout {
-  background: none;
-  border: 1px solid #ddd;
-  padding: 0.25rem 0.75rem;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  cursor: pointer;
-  color: #666;
-  transition: all 0.2s;
-}
-
-.btn-logout:hover {
-  background: #f5f5f5;
-  border-color: #ccc;
-}
-
-.md3-textarea {
-  width: 100%;
-  min-height: 80px;
-  padding: 0.75rem;
-  border: 1px solid var(--md-sys-color-outline);
-  border-radius: 8px;
-  margin-bottom: 0.5rem;
-  resize: vertical;
-}
-
-.comments-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.comment-item {
-  padding: 1rem;
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.2s ease;
-}
-
-.comment-item:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.comment-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
-}
 
 .loading-container,
 .error-state {

@@ -8,6 +8,7 @@ const EventsList = () => import('@/views/EventsList.vue')
 const PagesList = () => import('@/views/PagesList.vue')
 const DinorTV = () => import('@/views/DinorTV.vue')
 const WebEmbed = () => import('@/views/WebEmbed.vue')
+const Profile = () => import('@/views/Profile.vue')
 
 // Detail components
 const RecipeDetail = () => import('@/views/RecipeDetail.vue')
@@ -85,6 +86,12 @@ const routes = [
     name: 'web-embed',
     component: WebEmbed,
     meta: { title: 'Web Embed' }
+  },
+  {
+    path: '/profile',
+    name: 'profile',
+    component: Profile,
+    meta: { title: 'Profil' }
   },
   {
     path: '/:pathMatch(.*)*',

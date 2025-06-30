@@ -211,6 +211,7 @@ export default {
     const comments = ref([])
     const loading = ref(true)
     const userLiked = ref(false)
+    const userFavorited = ref(false)
     const newComment = ref('')
     const showAuthModal = ref(false)
 
@@ -233,6 +234,7 @@ export default {
           event.value = data.data
           await loadComments()
           await checkUserLike()
+          await checkUserFavorite()
           
           // Mettre à jour les métadonnées Open Graph
           updateOpenGraphTags(shareData.value)
@@ -242,7 +244,9 @@ export default {
             title: event.value.title || 'Événement',
             showLike: true,
             showShare: true,
+            showFavorite: true,
             isLiked: userLiked.value,
+            isFavorited: userFavorited.value,
             backPath: '/events'
           })
         }
@@ -296,6 +300,15 @@ export default {
       }
     }
 
+    const checkUserFavorite = async () => {
+      try {
+        const data = await apiStore.get(`/favorites/check`, { type: 'event', id: props.id })
+        userFavorited.value = data.success && data.is_favorited
+      } catch (error) {
+        console.error('Erreur lors de la vérification du favori:', error)
+      }
+    }
+
     const toggleLike = async () => {
       try {
         const data = await apiStore.post('/likes/toggle', {
@@ -315,6 +328,28 @@ export default {
         }
       } catch (error) {
         console.error('Erreur lors du toggle like:', error)
+      }
+    }
+
+    const toggleFavorite = async () => {
+      try {
+        const data = await apiStore.post('/favorites/toggle', {
+          favoritable_type: 'event',
+          favoritable_id: props.id
+        })
+        if (data.success) {
+          userFavorited.value = !userFavorited.value
+          if (event.value) {
+            event.value.favorites_count = data.data.total_favorites
+          }
+          
+          // Mettre à jour le statut favori dans le header
+          emit('update-header', {
+            isFavorited: userFavorited.value
+          })
+        }
+      } catch (error) {
+        console.error('Erreur lors du toggle favori:', error)
       }
     }
 
@@ -505,7 +540,8 @@ export default {
     // Exposer la fonction share pour le composant parent
     defineExpose({
       share: callShare,
-      toggleLike
+      toggleLike,
+      toggleFavorite
     })
 
     return {
@@ -513,8 +549,10 @@ export default {
       comments,
       loading,
       userLiked,
+      userFavorited,
       newComment,
       toggleLike,
+      toggleFavorite,
       addComment,
       canDeleteComment,
       deleteComment,
@@ -537,6 +575,8 @@ export default {
 </script>
 
 <style scoped>
+@import '../assets/styles/comments.css';
+
 /* Styles globaux */
 .event-detail {
   min-height: 100vh;
@@ -726,113 +766,7 @@ p, span, div {
   color: #4A5568; /* Gris foncé - contraste 7.5:1 */
 }
 
-.add-comment-form {
-  margin-bottom: 24px;
-}
 
-.md3-textarea {
-  width: 100%;
-  min-height: 80px;
-  padding: 12px;
-  border: 1px solid #E2E8F0;
-  border-radius: 8px;
-  margin-bottom: 12px;
-  resize: vertical;
-  font-family: 'Roboto', sans-serif;
-  font-size: 14px;
-  color: #2D3748; /* Couleur foncée */
-  background: #FFFFFF; /* Fond blanc */
-}
-
-.md3-textarea:focus {
-  outline: none;
-  border-color: #E53E3E; /* Rouge Dinor */
-  box-shadow: 0 0 0 2px rgba(229, 62, 62, 0.2);
-}
-
-.btn-primary {
-  padding: 12px 24px;
-  background: #E53E3E; /* Rouge Dinor */
-  color: #FFFFFF; /* Blanc sur rouge - contraste 4.5:1 */
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: #C53030; /* Rouge plus foncé */
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
-}
-
-.btn-primary:disabled {
-  background: #CBD5E0; /* Gris clair */
-  color: #A0AEC0; /* Gris moyen */
-  cursor: not-allowed;
-}
-
-.btn-secondary {
-  padding: 12px 24px;
-  background: #FFFFFF; /* Fond blanc */
-  color: #E53E3E; /* Rouge Dinor */
-  border: 1px solid #E53E3E;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-secondary:hover {
-  background: #E53E3E; /* Rouge Dinor */
-  color: #FFFFFF; /* Blanc sur rouge */
-  transform: translateY(-1px);
-}
-
-.comments-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.comment-item {
-  padding: 16px;
-  background: #F7FAFC; /* Fond très clair */
-  border-radius: 8px;
-  border: 1px solid #E2E8F0;
-}
-
-.comment-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-.comment-author {
-  font-weight: 700;
-  color: #2D3748; /* Couleur foncée */
-}
-
-.comment-date {
-  font-size: 12px;
-  color: #4A5568; /* Gris foncé - contraste 7.5:1 */
-}
-
-.comment-content {
-  margin: 0;
-  font-size: 14px;
-  color: #2D3748; /* Couleur foncée */
-  line-height: 1.5;
-}
-
-.empty-comments {
-  text-align: center;
-  padding: 24px;
-  color: #4A5568; /* Gris foncé - contraste 7.5:1 */
-}
 
 .loading-container,
 .error-state {
@@ -933,8 +867,9 @@ html.force-emoji .emoji-fallback {
 /* Responsive */
 @media (max-width: 768px) {
   .event-stats {
-    flex-direction: column;
+    flex-direction: row;
     gap: 12px;
+    flex-wrap: wrap;
   }
   
   .stat-item {

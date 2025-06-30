@@ -4,13 +4,14 @@ namespace App\Models;
 
 use App\Traits\Likeable;
 use App\Traits\Commentable;
+use App\Traits\Favoritable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Recipe extends Model
 {
-    use HasFactory, Likeable, Commentable;
+    use HasFactory, Likeable, Commentable, Favoritable;
 
     protected $fillable = [
         'title',

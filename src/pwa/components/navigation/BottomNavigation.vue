@@ -33,8 +33,9 @@ export default {
       { name: 'all', path: '/', icon: 'apps', label: 'Accueil' },
       { name: 'recipes', path: '/recipes', icon: 'restaurant', label: 'Recettes' },
       { name: 'tips', path: '/tips', icon: 'lightbulb', label: 'Astuces' },
-      { name: 'events', path: '/events', icon: 'event', label: 'Événements Dinor' },
-      { name: 'web', path: '/web-embed', icon: 'language', label: 'Web' }
+      { name: 'events', path: '/events', icon: 'event', label: 'Événements' },
+      { name: 'dinor-tv', path: '/dinor-tv', icon: 'play_circle', label: 'DinorTV' },
+      { name: 'profile', path: '/profile', icon: 'person', label: 'Profil' }
     ])
     
     const isActive = (path) => {
@@ -43,6 +44,7 @@ export default {
     
     const getEmojiForIcon = (icon) => {
       const emojiMap = {
+        'apps': '🏠',
         'home': '🏠',
         'restaurant': '🍴',
         'lightbulb': '💡',
@@ -50,6 +52,7 @@ export default {
         'calendar_today': '📅',
         'tv': '📺',
         'play_circle': '📺',
+        'person': '👤',
         'menu_book': '📖',
         'info': 'ℹ️',
         'settings': '⚙️'

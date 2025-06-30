@@ -357,7 +357,8 @@ html.force-emoji .emoji-fallback {
   }
   
   .md3-app-bar-title h1 {
-    font-size: 14px; /* Titre plus petit sur mobile */
+    font-size: 20px;
+    font-weight: bold; /* Titre plus petit sur mobile */
   }
 }
 

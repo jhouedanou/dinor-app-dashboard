@@ -181,6 +181,7 @@ export default {
     const comments = ref([])
     const loading = ref(true)
     const userLiked = ref(false)
+    const userFavorited = ref(false)
     const newComment = ref('')
     const showAuthModal = ref(false)
 
@@ -203,6 +204,7 @@ export default {
           tip.value = data.data
           await loadComments()
           await checkUserLike()
+          await checkUserFavorite()
           
           // Mettre à jour les métadonnées Open Graph
           updateOpenGraphTags(shareData.value)
@@ -212,7 +214,9 @@ export default {
             title: tip.value.title || 'Astuce',
             showLike: true,
             showShare: true,
+            showFavorite: true,
             isLiked: userLiked.value,
+            isFavorited: userFavorited.value,
             backPath: '/tips'
           })
         }
@@ -266,6 +270,15 @@ export default {
       }
     }
 
+    const checkUserFavorite = async () => {
+      try {
+        const data = await apiStore.get(`/favorites/check`, { type: 'tip', id: props.id })
+        userFavorited.value = data.success && data.is_favorited
+      } catch (error) {
+        console.error('Erreur lors de la vérification du favori:', error)
+      }
+    }
+
     const toggleLike = async () => {
       try {
         const data = await apiStore.post('/likes/toggle', {
@@ -285,6 +298,28 @@ export default {
         }
       } catch (error) {
         console.error('Erreur lors du toggle like:', error)
+      }
+    }
+
+    const toggleFavorite = async () => {
+      try {
+        const data = await apiStore.post('/favorites/toggle', {
+          favoritable_type: 'tip',
+          favoritable_id: props.id
+        })
+        if (data.success) {
+          userFavorited.value = !userFavorited.value
+          if (tip.value) {
+            tip.value.favorites_count = data.data.total_favorites
+          }
+          
+          // Mettre à jour le statut favori dans le header
+          emit('update-header', {
+            isFavorited: userFavorited.value
+          })
+        }
+      } catch (error) {
+        console.error('Erreur lors du toggle favori:', error)
       }
     }
 
@@ -420,7 +455,8 @@ export default {
     // Exposer la fonction share pour le composant parent
     defineExpose({
       share: callShare,
-      toggleLike
+      toggleLike,
+      toggleFavorite
     })
 
     return {
@@ -428,8 +464,10 @@ export default {
       comments,
       loading,
       userLiked,
+      userFavorited,
       newComment,
       toggleLike,
+      toggleFavorite,
       addComment,
       canDeleteComment,
       deleteComment,
@@ -449,6 +487,8 @@ export default {
 </script>
 
 <style scoped>
+@import '../assets/styles/comments.css';
+
 .tip-detail {
   min-height: 100vh;
   background: #FFFFFF; /* Fond blanc comme Home */
@@ -549,44 +589,7 @@ p, span, div {
   margin-top: 0.5rem;
 }
 
-.add-comment-form {
-  margin-bottom: 1rem;
-}
 
-.md3-textarea {
-  width: 100%;
-  min-height: 80px;
-  padding: 0.75rem;
-  border: 1px solid var(--md-sys-color-outline);
-  border-radius: 8px;
-  margin-bottom: 0.5rem;
-  resize: vertical;
-}
-
-.comments-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.comment-item {
-  padding: 1rem;
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.2s ease;
-}
-
-.comment-item:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.comment-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
-}
 
 .loading-container,
 .error-state {

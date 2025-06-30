@@ -108,6 +108,9 @@ Route::post('/event-categories/check-exists', [App\Http\Controllers\Api\EventCat
     Route::get('/comments/{comment}/replies', [CommentController::class, 'replies']);
     Route::get('/comments/captcha/generate', [CommentController::class, 'generateCaptcha']);
     
+    // Favorites - Routes publiques (lecture seulement)
+    Route::get('/favorites/check', [App\Http\Controllers\Api\FavoriteController::class, 'check']);
+    
     // Test route pour debug des commentaires
     Route::get('/test/comments/{id}', function($id) {
         $recipe = \App\Models\Recipe::with(['approvedComments.user:id,name', 'approvedComments.replies.user:id,name'])->find($id);
@@ -195,6 +198,11 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     Route::post('/comments', [CommentController::class, 'store']);
     Route::put('/comments/{comment}', [CommentController::class, 'update']);
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy']);
+    
+    // Favorites - Routes protégées
+    Route::get('/favorites', [App\Http\Controllers\Api\FavoriteController::class, 'index']);
+    Route::post('/favorites/toggle', [App\Http\Controllers\Api\FavoriteController::class, 'toggle']);
+    Route::delete('/favorites/{favorite}', [App\Http\Controllers\Api\FavoriteController::class, 'remove']);
     
     // Routes de suppression pour l'administration
     Route::delete('/recipes/{recipe}', [RecipeController::class, 'destroy']);
