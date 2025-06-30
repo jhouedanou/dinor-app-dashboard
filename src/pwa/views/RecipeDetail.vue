@@ -53,19 +53,6 @@
               <span class="md3-body-medium">{{ recipe.likes_count || 0 }}</span>
             </div>
             <div class="stat-item">
-              <FavoriteButton
-                type="recipe"
-                :item-id="recipe.id"
-                :initial-favorited="userFavorited"
-                :initial-count="recipe.favorites_count || 0"
-                :show-count="true"
-                size="medium"
-                @auth-required="showAuthModal = true"
-                @update:favorited="userFavorited = $event"
-                @update:count="recipe.favorites_count = $event"
-              />
-            </div>
-            <div class="stat-item">
               <i class="material-icons dinor-text-secondary">comment</i>
               <span class="md3-body-medium">{{ recipe.comments_count || 0 }}</span>
             </div>
@@ -253,8 +240,8 @@ export default {
           emit('update-header', {
             title: recipe.value.title || 'Recette',
             showShare: true,
-            showFavorite: true,
-            isFavorited: userFavorited.value,
+            showLike: true,
+            isLiked: userLiked.value,
             backPath: '/recipes'
           })
         }
@@ -332,8 +319,10 @@ export default {
             recipe.value.likes_count = data.data.total_likes
           }
           
-          // Mettre à jour le statut like (pour usage interne)
-          // Pas besoin de mettre à jour le header car on utilise maintenant les favoris
+          // Mettre à jour le statut like dans le header
+          emit('update-header', {
+            isLiked: userLiked.value
+          })
         }
       } catch (error) {
         console.error('Erreur lors du toggle like:', error)
@@ -519,8 +508,7 @@ export default {
     // Exposer la fonction share pour le composant parent
     defineExpose({
       share: callShare,
-      toggleLike,
-      toggleFavorite
+      toggleLike
     })
 
     // Exposer les méthodes et les refs nécessaires au template et au parent

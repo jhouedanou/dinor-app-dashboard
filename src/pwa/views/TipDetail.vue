@@ -227,8 +227,8 @@ export default {
           emit('update-header', {
             title: tip.value.title || 'Astuce',
             showShare: true,
-            showFavorite: true,
-            isFavorited: userFavorited.value,
+            showLike: true,
+            isLiked: userLiked.value,
             backPath: '/tips'
           })
         }
@@ -303,8 +303,10 @@ export default {
             tip.value.likes_count = data.data.total_likes
           }
           
-          // Mettre à jour le statut like (pour usage interne)
-          // Pas besoin de mettre à jour le header car on utilise maintenant les favoris
+          // Mettre à jour le statut like dans le header
+          emit('update-header', {
+            isLiked: userLiked.value
+          })
         }
       } catch (error) {
         console.error('Erreur lors du toggle like:', error)
@@ -486,8 +488,7 @@ export default {
     // Exposer la fonction share pour le composant parent
     defineExpose({
       share: callShare,
-      toggleLike,
-      toggleFavorite
+      toggleLike
     })
 
     return {
