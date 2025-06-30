@@ -40,6 +40,12 @@
       
       <!-- PWA Install Prompt -->
       <InstallPrompt />
+      
+      <!-- Share Modal -->
+      <ShareModal 
+        v-model="showShareModal"
+        :share-data="currentShareData"
+      />
     </div>
   </div>
 </template>
@@ -47,10 +53,12 @@
 <script>
 import { computed, ref, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useSocialShare } from '@/composables/useSocialShare'
 import AppHeader from '@/components/common/AppHeader.vue'
 import BottomNavigation from '@/components/navigation/BottomNavigation.vue'
 import InstallPrompt from '@/components/common/InstallPrompt.vue'
 import LoadingScreen from '@/components/common/LoadingScreen.vue'
+import ShareModal from '@/components/common/ShareModal.vue'
 
 export default {
   name: 'App',
@@ -58,11 +66,16 @@ export default {
     AppHeader,
     BottomNavigation,
     InstallPrompt,
-    LoadingScreen
+    LoadingScreen,
+    ShareModal
   },
   setup() {
     const route = useRoute()
     const router = useRouter()
+    const { share, showShareModal } = useSocialShare()
+    
+    // Données de partage courantes
+    const currentShareData = ref({})
     
     // État pour le header dynamique
     const currentPageTitle = ref('Dinor')
@@ -154,15 +167,35 @@ export default {
     }
     
     const handleShare = () => {
-      if (currentView.value) {
-        if (currentView.value.shareEvent) {
-          currentView.value.shareEvent()
-        } else if (currentView.value.shareRecipe) {
-          currentView.value.shareRecipe()
-        } else if (currentView.value.shareTip) {
-          currentView.value.shareTip()
-        }
+      console.log('🎯 [App] handleShare appelé!')
+      
+      // Créer les données de partage basées sur la route actuelle
+      const shareData = {
+        title: currentPageTitle.value || 'Dinor',
+        text: `Découvrez ${currentPageTitle.value} sur Dinor`,
+        url: window.location.href
       }
+      
+      // Si nous sommes sur une page de détail, ajouter des informations spécifiques
+      if (route.path.startsWith('/recipe/')) {
+        shareData.text = `Découvrez cette délicieuse recette sur Dinor`
+        shareData.type = 'recipe'
+        shareData.id = route.params.id
+      } else if (route.path.startsWith('/tip/')) {
+        shareData.text = `Découvrez cette astuce pratique sur Dinor`
+        shareData.type = 'tip'
+        shareData.id = route.params.id
+      } else if (route.path.startsWith('/event/')) {
+        shareData.text = `Ne manquez pas cet événement sur Dinor`
+        shareData.type = 'event'
+        shareData.id = route.params.id
+      }
+      
+      // Stocker les données de partage pour le modal
+      currentShareData.value = shareData
+      
+      console.log('🚀 [App] Déclenchement du partage avec:', shareData)
+      share(shareData)
     }
     
     const handleBack = () => {
@@ -202,7 +235,9 @@ export default {
       handleShare,
       handleBack,
       showLoading,
-      onLoadingComplete
+      onLoadingComplete,
+      showShareModal,
+      currentShareData
     }
   }
 }

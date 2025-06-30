@@ -47,8 +47,8 @@ export default defineConfig({
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
-        scope: '/pwa/',
-        start_url: '/pwa/',
+        scope: '/',
+        start_url: '/',
         icons: [
           {
             src: '/pwa/icons/icon-72x72.png',
@@ -105,7 +105,7 @@ export default defineConfig({
     devSourcemap: true
   },
   root: 'src/pwa',
-  base: '/pwa/dist/',
+  base: '/',
   build: {
     outDir: '../../public/pwa/dist',
     emptyOutDir: true,

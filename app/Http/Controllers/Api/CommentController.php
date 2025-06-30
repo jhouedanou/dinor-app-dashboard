@@ -69,14 +69,50 @@ class CommentController extends Controller
             ], 401);
         }
 
+        // Support pour les deux formats : ancien (type/id) et nouveau (commentable_type/commentable_id)
+        $type = $request->type;
+        $id = $request->id;
+        
+        // Si on utilise le nouveau format, extraire le type depuis commentable_type
+        if (!$type && $request->commentable_type) {
+            $commentableType = $request->commentable_type;
+            if (str_contains($commentableType, 'Recipe')) {
+                $type = 'recipe';
+            } elseif (str_contains($commentableType, 'Event')) {
+                $type = 'event';
+            } elseif (str_contains($commentableType, 'DinorTv')) {
+                $type = 'dinor_tv';
+            } elseif (str_contains($commentableType, 'Tip')) {
+                $type = 'tip';
+            }
+        }
+        
+        // Si on utilise le nouveau format, utiliser commentable_id
+        if (!$id && $request->commentable_id) {
+            $id = $request->commentable_id;
+        }
+
         $request->validate([
-            'type' => 'required|in:recipe,event,dinor_tv,tip',
-            'id' => 'required|integer|exists:' . $this->getTableName($request->type) . ',id',
             'content' => 'required|string|min:3|max:1000',
             'parent_id' => 'sometimes|integer|exists:comments,id'
         ]);
 
-        $model = $this->getModel($request->type, $request->id);
+        // Validation supplémentaire pour type et id
+        if (!$type || !in_array($type, ['recipe', 'event', 'dinor_tv', 'tip'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Type de contenu invalide. Types acceptés : recipe, event, dinor_tv, tip'
+            ], 422);
+        }
+
+        if (!$id || !is_numeric($id)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'ID de contenu invalide'
+            ], 422);
+        }
+
+        $model = $this->getModel($type, (int)$id);
         
         if (!$model) {
             return response()->json([
@@ -89,7 +125,7 @@ class CommentController extends Controller
         if ($request->parent_id) {
             $parentComment = Comment::find($request->parent_id);
             if (!$parentComment || 
-                $parentComment->commentable_id != $request->id || 
+                $parentComment->commentable_id != $id || 
                 $parentComment->commentable_type != get_class($model)) {
                 return response()->json([
                     'success' => false,

@@ -86,15 +86,27 @@
             
             <!-- Add Comment Form -->
             <div class="add-comment-form">
-              <textarea 
-                v-model="newComment" 
-                placeholder="Ajoutez votre commentaire..." 
-                class="md3-textarea"
-                rows="3">
-              </textarea>
-              <button @click="addComment" class="btn-primary" :disabled="!newComment.trim()">
-                Publier
-              </button>
+              <div v-if="!authStore.isAuthenticated" class="auth-prompt">
+                <p class="auth-prompt-text">Connectez-vous pour laisser un commentaire</p>
+                <button @click="showAuthModal = true" class="btn-primary">
+                  Se connecter
+                </button>
+              </div>
+              <div v-else>
+                <div class="authenticated-user">
+                  <span class="user-info">Connecté en tant que {{ authStore.userName }}</span>
+                  <button @click="authStore.logout()" class="btn-logout">Déconnexion</button>
+                </div>
+                <textarea 
+                  v-model="newComment" 
+                  placeholder="Ajoutez votre commentaire..." 
+                  class="md3-textarea"
+                  rows="3">
+                </textarea>
+                <button @click="addComment" class="btn-primary" :disabled="!newComment.trim()">
+                  Publier
+                </button>
+              </div>
             </div>
 
             <!-- Comments List -->
@@ -124,20 +136,38 @@
         <button @click="goBack" class="btn-primary">Retour</button>
       </div>
     </main>
+    
+    <!-- Share Modal -->
+    <ShareModal 
+      v-model="showShareModal" 
+      :share-data="shareData"
+    />
+    
+    <!-- Auth Modal -->
+    <AuthModal 
+      v-model="showAuthModal"
+      @authenticated="handleAuthenticated"
+    />
   </div>
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, defineExpose } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useApiStore } from '@/stores/api'
+import { useAuthStore } from '@/stores/auth'
+import { useSocialShare } from '@/composables/useSocialShare'
 import Badge from '@/components/common/Badge.vue'
+import ShareModal from '@/components/common/ShareModal.vue'
+import AuthModal from '@/components/common/AuthModal.vue'
 
 export default {
   name: 'RecipeDetail',
   emits: ['update-header'],
   components: {
-    Badge
+    Badge,
+    ShareModal,
+    AuthModal
   },
   props: {
     id: {
@@ -149,12 +179,27 @@ export default {
     const router = useRouter()
     const route = useRoute()
     const apiStore = useApiStore()
+    const authStore = useAuthStore()
+    const { share, showShareModal, updateOpenGraphTags } = useSocialShare()
     
     const recipe = ref(null)
     const comments = ref([])
     const loading = ref(true)
     const userLiked = ref(false)
     const newComment = ref('')
+    const showAuthModal = ref(false)
+
+    const shareData = computed(() => {
+      if (!recipe.value) return {}
+      return {
+        title: recipe.value.title,
+        text: recipe.value.description || `Découvrez cette délicieuse recette : ${recipe.value.title}`,
+        url: window.location.href,
+        image: recipe.value.image,
+        type: 'recipe',
+        id: recipe.value.id
+      }
+    })
 
     const loadRecipe = async () => {
       try {
@@ -163,6 +208,9 @@ export default {
           recipe.value = data.data
           await loadComments()
           await checkUserLike()
+          
+          // Mettre à jour les métadonnées Open Graph
+          updateOpenGraphTags(shareData.value)
           
           // Mettre à jour le header avec le titre de la recette
           emit('update-header', {
@@ -194,7 +242,7 @@ export default {
     const checkUserLike = async () => {
       try {
         const data = await apiStore.get(`/likes/check`, { type: 'recipe', id: props.id })
-        userLiked.value = data.success && data.data.liked
+        userLiked.value = data.success && data.is_liked
       } catch (error) {
         console.error('Erreur lors de la vérification du like:', error)
       }
@@ -228,39 +276,51 @@ export default {
     const addComment = async () => {
       if (!newComment.value.trim()) return
       
+      // Vérifier si l'utilisateur est connecté
+      if (!authStore.isAuthenticated) {
+        showAuthModal.value = true
+        return
+      }
+      
       try {
-        const data = await apiStore.request('/comments', {
-          method: 'POST',
-          body: {
-            type: 'recipe',
-            id: props.id,
-            content: newComment.value,
-            author_name: 'Utilisateur'
-          }
-        })
+        const commentData = {
+          commentable_type: 'App\\Models\\Recipe',
+          commentable_id: parseInt(props.id),
+          content: newComment.value
+        }
+        
+        console.log('📝 [Comments] Envoi du commentaire:', commentData)
+        
+        const data = await apiStore.post('/comments', commentData)
+        
         if (data.success) {
+          console.log('✅ [Comments] Commentaire ajouté avec succès')
           await loadComments()
           newComment.value = ''
         }
       } catch (error) {
-        console.error('Erreur lors de l\'ajout du commentaire:', error)
+        console.error('❌ [Comments] Erreur lors de l\'ajout du commentaire:', error)
+        
+        // Si erreur 401, demander connexion
+        if (error.message.includes('401')) {
+          showAuthModal.value = true
+        }
       }
     }
 
-    const shareRecipe = () => {
-      if (navigator.share && recipe.value) {
-        navigator.share({
-          title: recipe.value.title,
-          text: recipe.value.description,
-          url: window.location.href
-        })
-      } else {
-        // Fallback pour les navigateurs sans support de Web Share API
-        navigator.clipboard.writeText(window.location.href)
-        alert('Lien copié dans le presse-papiers!')
+    const handleAuthenticated = () => {
+      // Utilisateur connecté, on peut maintenant essayer d'ajouter le commentaire
+      showAuthModal.value = false
+      if (newComment.value.trim()) {
+        addComment()
       }
     }
 
+    // Composable pour le partage social
+    const callShare = () => {
+      share(shareData.value)
+    }
+    
     const goBack = () => {
       router.push('/recipes')
     }
@@ -313,20 +373,31 @@ export default {
       loadRecipe()
     })
 
+    // Exposer la fonction share pour le composant parent
+    defineExpose({
+      share: callShare,
+      toggleLike
+    })
+
+    // Exposer les méthodes et les refs nécessaires au template et au parent
     return {
       recipe,
       comments,
       loading,
       userLiked,
       newComment,
+      authStore,
+      showAuthModal,
       toggleLike,
       addComment,
-      shareRecipe,
+      handleAuthenticated,
       goBack,
       getDifficultyLabel,
       formatDate,
       handleImageError,
-      formatInstructions
+      formatInstructions,
+      showShareModal,
+      shareData
     }
   }
 }
@@ -439,6 +510,52 @@ p, span, div {
 
 .add-comment-form {
   margin-bottom: 1rem;
+}
+
+.auth-prompt {
+  text-align: center;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+}
+
+.auth-prompt-text {
+  margin: 0 0 1rem 0;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.authenticated-user {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  background: #e8f5e8;
+  border-radius: 8px;
+  font-size: 0.875rem;
+}
+
+.user-info {
+  color: #2d5a2d;
+  font-weight: 500;
+}
+
+.btn-logout {
+  background: none;
+  border: 1px solid #ddd;
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  color: #666;
+  transition: all 0.2s;
+}
+
+.btn-logout:hover {
+  background: #f5f5f5;
+  border-color: #ccc;
 }
 
 .md3-textarea {

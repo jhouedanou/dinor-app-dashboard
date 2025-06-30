@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\CacheController;
+use App\Http\Controllers\Api\ShareController;
 use App\Http\Controllers\PWA\CacheController as PWACacheController;
 use App\Http\Controllers\PWA\PwaMenuItemController;
 
@@ -105,6 +106,9 @@ Route::post('/event-categories/check-exists', [App\Http\Controllers\Api\EventCat
     // Comments - Routes publiques (lecture seulement)
     Route::get('/comments', [CommentController::class, 'index']);
     Route::get('/comments/{comment}/replies', [CommentController::class, 'replies']);
+    
+    // Shares - Tracking des partages
+    Route::post('/shares/track', [ShareController::class, 'track']);
     
     // Dashboard global pour l'app
     Route::get('/dashboard', function() {

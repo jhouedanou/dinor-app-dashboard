@@ -18,6 +18,11 @@ class AuthController extends Controller
      */
     public function register(Request $request): JsonResponse
     {
+        \Log::info('🔐 [Auth] Tentative d\'inscription reçue', [
+            'data' => $request->all(),
+            'headers' => $request->headers->all()
+        ]);
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
@@ -25,12 +30,19 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
+            \Log::error('❌ [Auth] Erreurs de validation lors de l\'inscription', [
+                'errors' => $validator->errors()->toArray(),
+                'data' => $request->all()
+            ]);
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Erreurs de validation',
                 'errors' => $validator->errors()
             ], 422);
         }
+
+        \Log::info('✅ [Auth] Validation réussie, création de l\'utilisateur');
 
         $user = User::create([
             'name' => $request->name,
@@ -41,6 +53,8 @@ class AuthController extends Controller
         ]);
 
         $token = $user->createToken('api-token')->plainTextToken;
+
+        \Log::info('✅ [Auth] Utilisateur créé avec succès', ['user_id' => $user->id]);
 
         return response()->json([
             'success' => true,

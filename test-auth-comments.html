@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Authentification et Commentaires</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-section {
+            background: #f5f5f5;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .form-group {
+            margin: 10px 0;
+        }
+        input, textarea, button {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .response {
+            background: #e8f5e8;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .error {
+            background: #ffe8e8;
+            color: #c00;
+        }
+        .success {
+            background: #e8f5e8;
+            color: #0a0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Authentification et Commentaires</h1>
+    
+    <!-- Section Inscription -->
+    <div class="form-section">
+        <h2>1. Inscription</h2>
+        <div class="form-group">
+            <input type="text" id="reg-name" placeholder="Nom" value="Test User">
+        </div>
+        <div class="form-group">
+            <input type="email" id="reg-email" placeholder="Email" value="test@dinor.com">
+        </div>
+        <div class="form-group">
+            <input type="password" id="reg-password" placeholder="Mot de passe" value="password123">
+        </div>
+        <div class="form-group">
+            <input type="password" id="reg-password-confirm" placeholder="Confirmer mot de passe" value="password123">
+        </div>
+        <button onclick="register()">S'inscrire</button>
+        <div id="register-response" class="response" style="display: none;"></div>
+    </div>
+
+    <!-- Section Connexion -->
+    <div class="form-section">
+        <h2>2. Connexion</h2>
+        <div class="form-group">
+            <input type="email" id="login-email" placeholder="Email" value="test@dinor.com">
+        </div>
+        <div class="form-group">
+            <input type="password" id="login-password" placeholder="Mot de passe" value="password123">
+        </div>
+        <button onclick="login()">Se connecter</button>
+        <div id="login-response" class="response" style="display: none;"></div>
+    </div>
+
+    <!-- Section Commentaires -->
+    <div class="form-section">
+        <h2>3. Ajouter un commentaire</h2>
+        <div class="form-group">
+            <textarea id="comment-content" placeholder="Votre commentaire..." rows="3">Ceci est un test de commentaire !</textarea>
+        </div>
+        <div class="form-group">
+            <select id="comment-type" title="Type de contenu">
+                <option value="App\\Models\\Recipe">Recette</option>
+                <option value="App\\Models\\Event">Événement</option>
+                <option value="App\\Models\\Tip">Astuce</option>
+            </select>
+            <input type="number" id="comment-id" placeholder="ID" value="1">
+        </div>
+        <button onclick="addComment()">Ajouter commentaire</button>
+        <div id="comment-response" class="response" style="display: none;"></div>
+    </div>
+
+    <!-- Section État -->
+    <div class="form-section">
+        <h2>4. État actuel</h2>
+        <button onclick="checkAuth()">Vérifier l'authentification</button>
+        <button onclick="logout()">Se déconnecter</button>
+        <div id="auth-status" class="response" style="display: none;"></div>
+    </div>
+
+    <script>
+        let currentToken = null;
+
+        async function makeRequest(url, options = {}) {
+            const config = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                ...options
+            };
+
+            if (currentToken) {
+                config.headers.Authorization = `Bearer ${currentToken}`;
+            }
+
+            try {
+                const response = await fetch(url, config);
+                const data = await response.json();
+                
+                return {
+                    ok: response.ok,
+                    status: response.status,
+                    data: data
+                };
+            } catch (error) {
+                return {
+                    ok: false,
+                    status: 0,
+                    error: error.message
+                };
+            }
+        }
+
+        function showResponse(elementId, response, isSuccess = true) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = `response ${isSuccess ? 'success' : 'error'}`;
+            element.textContent = JSON.stringify(response, null, 2);
+        }
+
+        async function register() {
+            const name = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+            const password_confirmation = document.getElementById('reg-password-confirm').value;
+
+            console.log('🔐 [Test] Tentative d\'inscription...');
+            
+            const response = await makeRequest('/api/v1/auth/register', {
+                method: 'POST',
+                body: JSON.stringify({
+                    name,
+                    email,
+                    password,
+                    password_confirmation
+                })
+            });
+
+            console.log('📩 [Test] Réponse inscription:', response);
+            
+            if (response.ok && response.data.success) {
+                currentToken = response.data.data.token;
+                console.log('✅ [Test] Inscription réussie, token reçu');
+            }
+            
+            showResponse('register-response', response, response.ok);
+        }
+
+        async function login() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            console.log('🔐 [Test] Tentative de connexion...');
+            
+            const response = await makeRequest('/api/v1/auth/login', {
+                method: 'POST',
+                body: JSON.stringify({ email, password })
+            });
+
+            console.log('📩 [Test] Réponse connexion:', response);
+            
+            if (response.ok && response.data.success) {
+                currentToken = response.data.data.token;
+                console.log('✅ [Test] Connexion réussie, token reçu');
+            }
+            
+            showResponse('login-response', response, response.ok);
+        }
+
+        async function addComment() {
+            const content = document.getElementById('comment-content').value;
+            const commentable_type = document.getElementById('comment-type').value;
+            const commentable_id = parseInt(document.getElementById('comment-id').value);
+
+            console.log('📝 [Test] Ajout d\'un commentaire...');
+            
+            const response = await makeRequest('/api/v1/comments', {
+                method: 'POST',
+                body: JSON.stringify({
+                    commentable_type,
+                    commentable_id,
+                    content
+                })
+            });
+
+            console.log('📩 [Test] Réponse commentaire:', response);
+            showResponse('comment-response', response, response.ok);
+        }
+
+        async function checkAuth() {
+            console.log('🔍 [Test] Vérification de l\'authentification...');
+            
+            const response = await makeRequest('/api/v1/auth/profile');
+            
+            console.log('📩 [Test] Statut auth:', response);
+            showResponse('auth-status', {
+                authenticated: response.ok,
+                token: currentToken ? 'Token présent' : 'Pas de token',
+                ...response
+            }, response.ok);
+        }
+
+        async function logout() {
+            console.log('👋 [Test] Déconnexion...');
+            
+            const response = await makeRequest('/api/v1/auth/logout', {
+                method: 'POST'
+            });
+
+            if (response.ok) {
+                currentToken = null;
+                console.log('✅ [Test] Déconnexion réussie');
+            }
+            
+            showResponse('auth-status', response, response.ok);
+        }
+
+        // Test initial
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 [Test] Page de test chargée');
+        });
+    </script>
+</body>
+</html> 

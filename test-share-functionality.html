@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Partage Dinor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #E53E3E;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        .test-section h2 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        button {
+            background: #E53E3E;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #c71f16;
+        }
+        .console-output {
+            background: #222;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .log-entry {
+            margin: 2px 0;
+        }
+        .instructions {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+        .instructions ol {
+            margin: 10px 0;
+        }
+        .instructions li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Test du Système de Partage Dinor</h1>
+        
+        <div class="instructions">
+            <h3>📋 Instructions de test</h3>
+            <ol>
+                <li>Ouvrez la console du navigateur (F12)</li>
+                <li>Naviguez vers une page d'événement : <a href="/event/1" target="_blank">/event/1</a></li>
+                <li>Cliquez sur le bouton de partage dans l'en-tête</li>
+                <li>Observez les logs dans la console</li>
+                <li>Les logs seront aussi affichés ci-dessous</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <h2>🚀 Tests de l'API Web Share</h2>
+            <button onclick="testNativeShare()">Tester Web Share API</button>
+            <button onclick="checkShareSupport()">Vérifier Support</button>
+        </div>
+
+        <div class="test-section">
+            <h2>🔗 Liens directs vers les pages</h2>
+            <button onclick="window.open('/events', '_blank')">Liste Événements</button>
+            <button onclick="window.open('/event/1', '_blank')">Événement #1</button>
+            <button onclick="window.open('/recipes', '_blank')">Liste Recettes</button>
+            <button onclick="window.open('/recipe/1', '_blank')">Recette #1</button>
+        </div>
+
+        <div class="test-section">
+            <h2>📱 Console Output</h2>
+            <div id="console-output" class="console-output">
+                <div class="log-entry">En attente des logs...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Intercepter console.log
+        const consoleOutput = document.getElementById('console-output');
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+
+        function addLogEntry(message, type = 'log') {
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            const time = new Date().toLocaleTimeString();
+            entry.innerHTML = `<span style="color: ${type === 'error' ? '#f44' : type === 'warn' ? '#fa0' : '#0f0'}">[${time}] ${message}</span>`;
+            consoleOutput.appendChild(entry);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addLogEntry(args.join(' '), 'log');
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addLogEntry(args.join(' '), 'error');
+        };
+
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addLogEntry(args.join(' '), 'warn');
+        };
+
+        // Tests
+        function checkShareSupport() {
+            console.log('🔍 Vérification du support Web Share API...');
+            if (navigator.share) {
+                console.log('✅ Web Share API supportée!');
+                console.log('📱 User Agent:', navigator.userAgent);
+            } else {
+                console.error('❌ Web Share API non supportée sur ce navigateur');
+                console.log('💡 Le modal de partage sera utilisé comme fallback');
+            }
+        }
+
+        async function testNativeShare() {
+            console.log('🚀 Test de partage natif...');
+            
+            if (!navigator.share) {
+                console.error('❌ Web Share API non disponible');
+                return;
+            }
+
+            try {
+                await navigator.share({
+                    title: 'Test Événement Dinor',
+                    text: 'Ceci est un test du système de partage',
+                    url: window.location.href
+                });
+                console.log('✅ Partage réussi!');
+            } catch (err) {
+                if (err.name === 'AbortError') {
+                    console.log('🚫 Partage annulé par l\'utilisateur');
+                } else {
+                    console.error('❌ Erreur de partage:', err.message);
+                }
+            }
+        }
+
+        // Au chargement
+        window.addEventListener('load', () => {
+            console.log('🎉 Page de test chargée');
+            checkShareSupport();
+        });
+    </script>
+</body>
+</html> 

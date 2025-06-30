@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useCacheStore } from './cache'
+import { useAuthStore } from './auth'
 
 export const useApiStore = defineStore('api', () => {
   // State
@@ -10,6 +11,9 @@ export const useApiStore = defineStore('api', () => {
   
   // Cache store
   const cacheStore = useCacheStore()
+
+  // Auth store
+  const authStore = useAuthStore()
 
   function getBaseURL() {
     if (import.meta.env.DEV) {
@@ -79,6 +83,13 @@ export const useApiStore = defineStore('api', () => {
         },
         ...options
       }
+      
+      // Ajouter le token d'authentification si disponible
+      if (authStore.token) {
+        config.headers.Authorization = `Bearer ${authStore.token}`
+        console.log('🔐 [API Store] Token d\'authentification ajouté')
+      }
+      
       console.log('⚙️ [API Store] Configuration de la requête:', config)
 
       console.log('🚀 [API Store] Envoi de la requête fetch...')
@@ -114,10 +125,7 @@ export const useApiStore = defineStore('api', () => {
   // Fonction pour vérifier le cache PWA
   async function checkPWACache(endpoint, options = {}) {
     try {
-      const type = getContentType(endpoint)
-      if (!type) return null
-
-      const params = extractParams(options)
+      const key = `${endpoint}_${JSON.stringify(options.params || {})}`;
       
       const response = await fetch('/api/pwa/cache/get', {
         method: 'POST',
@@ -125,48 +133,38 @@ export const useApiStore = defineStore('api', () => {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify({ type, params })
-      })
+        body: JSON.stringify({ key })
+      });
 
       if (response.ok) {
-        const result = await response.json()
-        if (result.success) {
-          return result.data
+        const result = await response.json();
+        if (result.success && result.cached) {
+          return result.data;
         }
-      } else if (response.status === 400 || response.status === 404) {
-        // Cache PWA non disponible ou non configuré - c'est normal
-        console.log('ℹ️ [API Store] Cache PWA non disponible, utilisation du cache local uniquement')
-        return null
       }
     } catch (error) {
-      console.log('ℹ️ [API Store] Cache PWA non accessible:', error.message)
+      console.log('ℹ️ [API Store] Cache PWA non accessible:', error.message);
     }
-    return null
+    return null;
   }
 
   // Fonction pour mettre en cache dans la PWA
   async function setPWACache(endpoint, data, options = {}) {
     try {
-      const type = getContentType(endpoint)
-      if (!type) return
-
-      const params = extractParams(options)
+      const key = `${endpoint}_${JSON.stringify(options.params || {})}`;
+      const ttl = options.cacheTTL || 3600; // Utiliser le TTL de l'option ou 1h par défaut
       
-      const response = await fetch('/api/pwa/cache/set', {
+      await fetch('/api/pwa/cache/set', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify({ type, data, params })
-      })
-
-      if (!response.ok && response.status !== 400 && response.status !== 404) {
-        console.log('⚠️ [API Store] Problème avec le cache PWA:', response.status)
-      }
+        body: JSON.stringify({ key, value: data, ttl })
+      });
     } catch (error) {
       // Cache PWA non disponible - c'est normal en développement
-      console.log('ℹ️ [API Store] Cache PWA non accessible pour la sauvegarde')
+      console.log('ℹ️ [API Store] Cache PWA non accessible pour la sauvegarde');
     }
   }
 

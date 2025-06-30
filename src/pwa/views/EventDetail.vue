@@ -147,17 +147,31 @@
         </div>
       </div>
     </main>
+    
+    <!-- Share Modal -->
+    <ShareModal 
+      v-model="showShareModal" 
+      :share-data="shareData"
+    />
   </div>
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, defineExpose } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useApiStore } from '@/stores/api'
+import { useAuthStore } from '@/stores/auth'
+import { useSocialShare } from '@/composables/useSocialShare'
+import ShareModal from '@/components/common/ShareModal.vue'
+import AuthModal from '@/components/common/AuthModal.vue'
 
 export default {
   name: 'EventDetail',
   emits: ['update-header'],
+  components: {
+    ShareModal,
+    AuthModal
+  },
   props: {
     id: {
       type: String,
@@ -168,12 +182,25 @@ export default {
     const router = useRouter()
     const route = useRoute()
     const apiStore = useApiStore()
+    const { share, showShareModal, updateOpenGraphTags } = useSocialShare()
     
     const event = ref(null)
     const comments = ref([])
     const loading = ref(true)
     const userLiked = ref(false)
     const newComment = ref('')
+
+    const shareData = computed(() => {
+      if (!event.value) return {}
+      return {
+        title: event.value.title,
+        text: `Ne manquez pas cet événement : ${event.value.title}`,
+        url: window.location.href,
+        image: event.value.image,
+        type: 'event',
+        id: event.value.id
+      }
+    })
 
     const loadEvent = async () => {
       try {
@@ -182,6 +209,9 @@ export default {
           event.value = data.data
           await loadComments()
           await checkUserLike()
+          
+          // Mettre à jour les métadonnées Open Graph
+          updateOpenGraphTags(shareData.value)
           
           // Mettre à jour le header avec le titre de l'événement
           emit('update-header', {
@@ -213,7 +243,7 @@ export default {
     const checkUserLike = async () => {
       try {
         const data = await apiStore.get(`/likes/check`, { type: 'event', id: props.id })
-        userLiked.value = data.success && data.data.liked
+        userLiked.value = data.success && data.is_liked
       } catch (error) {
         console.error('Erreur lors de la vérification du like:', error)
       }
@@ -260,17 +290,9 @@ export default {
       }
     }
 
-    const shareEvent = () => {
-      if (navigator.share && event.value) {
-        navigator.share({
-          title: event.value.title,
-          text: event.value.content,
-          url: window.location.href
-        })
-      } else {
-        navigator.clipboard.writeText(window.location.href)
-        alert('Lien copié dans le presse-papiers!')
-      }
+    // Composable pour le partage social
+    const callShare = () => {
+      share(shareData.value)
     }
 
     const goBack = () => {
@@ -383,6 +405,12 @@ export default {
       loadEvent()
     })
 
+    // Exposer la fonction share pour le composant parent
+    defineExpose({
+      share: callShare,
+      toggleLike
+    })
+
     return {
       event,
       comments,
@@ -391,7 +419,6 @@ export default {
       newComment,
       toggleLike,
       addComment,
-      shareEvent,
       goBack,
       goHome,
       formatEventDate,
@@ -400,7 +427,9 @@ export default {
       formatCommentDate,
       formatDate,
       handleImageError,
-      formatContent
+      formatContent,
+      showShareModal,
+      shareData
     }
   }
 }

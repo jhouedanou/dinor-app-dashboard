@@ -115,20 +115,32 @@
         </div>
       </div>
     </main>
+    
+    <!-- Share Modal -->
+    <ShareModal 
+      v-model="showShareModal" 
+      :share-data="shareData"
+    />
   </div>
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, defineExpose } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useApiStore } from '@/stores/api'
+import { useAuthStore } from '@/stores/auth'
+import { useSocialShare } from '@/composables/useSocialShare'
 import Badge from '@/components/common/Badge.vue'
+import ShareModal from '@/components/common/ShareModal.vue'
+import AuthModal from '@/components/common/AuthModal.vue'
 
 export default {
   name: 'TipDetail',
   emits: ['update-header'],
   components: {
-    Badge
+    Badge,
+    ShareModal,
+    AuthModal
   },
   props: {
     id: {
@@ -140,12 +152,25 @@ export default {
     const router = useRouter()
     const route = useRoute()
     const apiStore = useApiStore()
+    const { share, showShareModal, updateOpenGraphTags } = useSocialShare()
     
     const tip = ref(null)
     const comments = ref([])
     const loading = ref(true)
     const userLiked = ref(false)
     const newComment = ref('')
+
+    const shareData = computed(() => {
+      if (!tip.value) return {}
+      return {
+        title: tip.value.title,
+        text: `Découvrez cette astuce pratique : ${tip.value.title}`,
+        url: window.location.href,
+        image: tip.value.image,
+        type: 'tip',
+        id: tip.value.id
+      }
+    })
 
     const loadTip = async () => {
       try {
@@ -154,6 +179,9 @@ export default {
           tip.value = data.data
           await loadComments()
           await checkUserLike()
+          
+          // Mettre à jour les métadonnées Open Graph
+          updateOpenGraphTags(shareData.value)
           
           // Mettre à jour le header avec le titre de l'astuce
           emit('update-header', {
@@ -185,7 +213,7 @@ export default {
     const checkUserLike = async () => {
       try {
         const data = await apiStore.get(`/likes/check`, { type: 'tip', id: props.id })
-        userLiked.value = data.success && data.data.liked
+        userLiked.value = data.success && data.is_liked
       } catch (error) {
         console.error('Erreur lors de la vérification du like:', error)
       }
@@ -232,19 +260,11 @@ export default {
       }
     }
 
-    const shareTip = () => {
-      if (navigator.share && tip.value) {
-        navigator.share({
-          title: tip.value.title,
-          text: tip.value.content,
-          url: window.location.href
-        })
-      } else {
-        navigator.clipboard.writeText(window.location.href)
-        alert('Lien copié dans le presse-papiers!')
-      }
+    // Composable pour le partage social
+    const callShare = () => {
+      share(shareData.value)
     }
-
+    
     const goBack = () => {
       router.push('/tips')
     }
@@ -300,6 +320,12 @@ export default {
       loadTip()
     })
 
+    // Exposer la fonction share pour le composant parent
+    defineExpose({
+      share: callShare,
+      toggleLike
+    })
+
     return {
       tip,
       comments,
@@ -308,13 +334,14 @@ export default {
       newComment,
       toggleLike,
       addComment,
-      shareTip,
       goBack,
       goHome,
       getDifficultyLabel,
       formatDate,
       handleImageError,
-      formatContent
+      formatContent,
+      showShareModal,
+      shareData
     }
   }
 }
