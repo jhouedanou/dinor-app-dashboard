@@ -204,6 +204,13 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     Route::post('/favorites/toggle', [App\Http\Controllers\Api\FavoriteController::class, 'toggle']);
     Route::delete('/favorites/{favorite}', [App\Http\Controllers\Api\FavoriteController::class, 'remove']);
     
+    // Profile - Routes protégées
+    Route::get('/profile', [App\Http\Controllers\Api\ProfileController::class, 'show']);
+    Route::get('/profile/stats', [App\Http\Controllers\Api\ProfileController::class, 'getStats']);
+    Route::put('/profile/name', [App\Http\Controllers\Api\ProfileController::class, 'updateName']);
+    Route::put('/profile/password', [App\Http\Controllers\Api\ProfileController::class, 'updatePassword']);
+    Route::post('/profile/request-deletion', [App\Http\Controllers\Api\ProfileController::class, 'requestDataDeletion']);
+    
     // Routes de suppression pour l'administration
     Route::delete('/recipes/{recipe}', [RecipeController::class, 'destroy']);
     Route::delete('/tips/{tip}', [TipController::class, 'destroy']);

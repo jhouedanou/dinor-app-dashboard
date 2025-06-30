@@ -185,6 +185,14 @@ const resetForms = () => {
 }
 
 const handleLogin = async () => {
+  // Vérifier si l'utilisateur est déjà connecté
+  if (authStore.isAuthenticated) {
+    console.log('✅ [Auth Modal] Utilisateur déjà connecté, fermeture du modal')
+    emit('authenticated', authStore.user)
+    close()
+    return
+  }
+  
   const result = await authStore.login(loginForm)
   
   if (result.success) {

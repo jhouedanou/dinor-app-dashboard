@@ -15,6 +15,11 @@ const RecipeDetail = () => import('@/views/RecipeDetail.vue')
 const TipDetail = () => import('@/views/TipDetail.vue')
 const EventDetail = () => import('@/views/EventDetail.vue')
 
+// Legal pages
+const TermsOfService = () => import('@/views/TermsOfService.vue')
+const PrivacyPolicy = () => import('@/views/PrivacyPolicy.vue')
+const CookiePolicy = () => import('@/views/CookiePolicy.vue')
+
 const routes = [
   {
     path: '/',
@@ -92,6 +97,24 @@ const routes = [
     name: 'profile',
     component: Profile,
     meta: { title: 'Profil' }
+  },
+  {
+    path: '/terms',
+    name: 'terms-of-service',
+    component: TermsOfService,
+    meta: { title: 'Conditions Générales d\'Utilisation' }
+  },
+  {
+    path: '/privacy',
+    name: 'privacy-policy',
+    component: PrivacyPolicy,
+    meta: { title: 'Politique de Confidentialité' }
+  },
+  {
+    path: '/cookies',
+    name: 'cookie-policy',
+    component: CookiePolicy,
+    meta: { title: 'Politique des Cookies' }
   },
   {
     path: '/:pathMatch(.*)*',

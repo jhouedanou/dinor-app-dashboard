@@ -45,8 +45,16 @@ export const useAuthStore = defineStore('auth', () => {
     if (savedToken && savedUser) {
       token.value = savedToken
       try {
-        user.value = JSON.parse(savedUser)
-      } catch {
+        const parsedUser = JSON.parse(savedUser)
+        if (parsedUser && typeof parsedUser === 'object') {
+          user.value = parsedUser
+          console.log('🔍 [Auth Store] Utilisateur restauré:', parsedUser)
+        } else {
+          console.warn('🔍 [Auth Store] Données utilisateur invalides')
+          clearAuth()
+        }
+      } catch (error) {
+        console.error('🔍 [Auth Store] Erreur parsing utilisateur:', error)
         // Si erreur de parsing, on clear tout
         clearAuth()
       }
@@ -91,6 +99,12 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const login = async (credentials) => {
+    // Vérifier si l'utilisateur est déjà connecté
+    if (isAuthenticated.value) {
+      console.log('✅ [Auth] Utilisateur déjà connecté, pas besoin de se reconnecter')
+      return { success: true, user: user.value }
+    }
+
     loading.value = true
     error.value = null
 

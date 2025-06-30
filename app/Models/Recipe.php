@@ -31,6 +31,7 @@ class Recipe extends Model
         'featured_image',
         'gallery',
         'video_url',
+        'summary_video_url',
         'video_thumbnail',
         'calories_per_serving',
         'protein_grams',

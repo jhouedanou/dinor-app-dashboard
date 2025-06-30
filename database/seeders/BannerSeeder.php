@@ -16,6 +16,7 @@ class BannerSeeder extends Seeder
         Banner::updateOrCreate(
             ['type_contenu' => 'home', 'section' => 'hero'],
             [
+                'title' => 'Bienvenue sur Dinor',
                 'titre' => 'Bienvenue sur Dinor',
                 'sous_titre' => 'Découvrez la richesse de la cuisine ivoirienne',
                 'description' => 'Une application dédiée aux saveurs authentiques de la Côte d\'Ivoire. Recettes traditionnelles, astuces culinaires et événements gastronomiques.',
@@ -34,6 +35,7 @@ class BannerSeeder extends Seeder
         Banner::updateOrCreate(
             ['type_contenu' => 'recipes', 'section' => 'hero'],
             [
+                'title' => 'Nos Délicieuses Recettes',
                 'titre' => 'Nos Délicieuses Recettes',
                 'sous_titre' => 'Du traditionnel au moderne',
                 'description' => 'Explorez notre collection de recettes ivoiriennes, des plats traditionnels aux créations modernes.',
@@ -52,6 +54,7 @@ class BannerSeeder extends Seeder
         Banner::updateOrCreate(
             ['type_contenu' => 'tips', 'section' => 'hero'],
             [
+                'title' => 'Astuces Culinaires',
                 'titre' => 'Astuces Culinaires',
                 'sous_titre' => 'Les secrets des grands chefs',
                 'description' => 'Découvrez les techniques et astuces qui feront de vous un expert de la cuisine ivoirienne.',
@@ -70,6 +73,7 @@ class BannerSeeder extends Seeder
         Banner::updateOrCreate(
             ['type_contenu' => 'events', 'section' => 'hero'],
             [
+                'title' => 'Événements Culinaires',
                 'titre' => 'Événements Culinaires',
                 'sous_titre' => 'Rencontres et découvertes',
                 'description' => 'Participez à nos événements gastronomiques et découvrez la culture culinaire ivoirienne.',
@@ -88,6 +92,7 @@ class BannerSeeder extends Seeder
         Banner::updateOrCreate(
             ['type_contenu' => 'dinor_tv', 'section' => 'hero'],
             [
+                'title' => 'Dinor TV',
                 'titre' => 'Dinor TV',
                 'sous_titre' => 'Cuisine en direct',
                 'description' => 'Regardez nos chefs préparer les meilleurs plats ivoiriens en direct et en replay.',
@@ -106,6 +111,7 @@ class BannerSeeder extends Seeder
         Banner::updateOrCreate(
             ['type_contenu' => 'home', 'section' => 'featured'],
             [
+                'title' => 'Nouvelle Collection',
                 'titre' => 'Nouvelle Collection',
                 'sous_titre' => 'Plats de fête ivoiriens',
                 'description' => 'Découvrez notre nouvelle collection de recettes pour les grandes occasions.',

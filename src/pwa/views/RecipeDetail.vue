@@ -53,8 +53,35 @@
               <span class="md3-body-medium">{{ recipe.likes_count || 0 }}</span>
             </div>
             <div class="stat-item">
+              <FavoriteButton
+                type="recipe"
+                :item-id="recipe.id"
+                :initial-favorited="userFavorited"
+                :initial-count="recipe.favorites_count || 0"
+                :show-count="true"
+                size="medium"
+                @auth-required="showAuthModal = true"
+                @update:favorited="userFavorited = $event"
+                @update:count="recipe.favorites_count = $event"
+              />
+            </div>
+            <div class="stat-item">
               <i class="material-icons dinor-text-secondary">comment</i>
               <span class="md3-body-medium">{{ recipe.comments_count || 0 }}</span>
+            </div>
+          </div>
+
+          <!-- Summary Video -->
+          <div v-if="recipe.summary_video_url" class="recipe-summary-video">
+            <h2 class="md3-title-medium dinor-text-primary">Résumé en vidéo</h2>
+            <div class="video-container">
+              <iframe
+                :src="getEmbedUrl(recipe.summary_video_url)"
+                :title="`Résumé vidéo : ${recipe.title}`"
+                frameborder="0"
+                allowfullscreen
+                class="summary-video-iframe"
+              ></iframe>
             </div>
           </div>
 
@@ -160,13 +187,14 @@
 
 <script>
 import { ref, onMounted, computed, defineExpose } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { useApiStore } from '@/stores/api'
 import { useAuthStore } from '@/stores/auth'
 import { useSocialShare } from '@/composables/useSocialShare'
 import Badge from '@/components/common/Badge.vue'
 import ShareModal from '@/components/common/ShareModal.vue'
 import AuthModal from '@/components/common/AuthModal.vue'
+import FavoriteButton from '@/components/common/FavoriteButton.vue'
 
 export default {
   name: 'RecipeDetail',
@@ -174,7 +202,8 @@ export default {
   components: {
     Badge,
     ShareModal,
-    AuthModal
+    AuthModal,
+    FavoriteButton
   },
   props: {
     id: {
@@ -184,7 +213,6 @@ export default {
   },
   setup(props, { emit }) {
     const router = useRouter()
-    const route = useRoute()
     const apiStore = useApiStore()
     const authStore = useAuthStore()
     const { share, showShareModal, updateOpenGraphTags } = useSocialShare()
@@ -224,10 +252,8 @@ export default {
           // Mettre à jour le header avec le titre de la recette
           emit('update-header', {
             title: recipe.value.title || 'Recette',
-            showLike: true,
             showShare: true,
             showFavorite: true,
-            isLiked: userLiked.value,
             isFavorited: userFavorited.value,
             backPath: '/recipes'
           })
@@ -306,10 +332,8 @@ export default {
             recipe.value.likes_count = data.data.total_likes
           }
           
-          // Mettre à jour le statut like dans le header
-          emit('update-header', {
-            isLiked: userLiked.value
-          })
+          // Mettre à jour le statut like (pour usage interne)
+          // Pas besoin de mettre à jour le header car on utilise maintenant les favoris
         }
       } catch (error) {
         console.error('Erreur lors du toggle like:', error)
@@ -469,6 +493,25 @@ export default {
       return instructions.toString()
     }
 
+    const getEmbedUrl = (videoUrl) => {
+      if (!videoUrl) return ''
+      
+      // Gérer les URLs YouTube
+      const youtubeMatch = videoUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)
+      if (youtubeMatch) {
+        return `https://www.youtube.com/embed/${youtubeMatch[1]}?rel=0&modestbranding=1`
+      }
+      
+      // Gérer les URLs Vimeo
+      const vimeoMatch = videoUrl.match(/vimeo\.com\/(\d+)/)
+      if (vimeoMatch) {
+        return `https://player.vimeo.com/video/${vimeoMatch[1]}`
+      }
+      
+      // Retourner l'URL telle quelle si ce n'est pas YouTube ou Vimeo
+      return videoUrl
+    }
+
     onMounted(() => {
       loadRecipe()
     })
@@ -501,6 +544,7 @@ export default {
       formatDate,
       handleImageError,
       formatInstructions,
+      getEmbedUrl,
       showShareModal,
       shareData
     }
@@ -598,11 +642,39 @@ p, span, div {
   }
 }
 
+.recipe-summary-video,
 .recipe-description,
 .recipe-ingredients,
 .recipe-instructions,
 .comments-section {
   margin-bottom: 2rem;
+}
+
+.recipe-summary-video {
+  background: #F8F9FA;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.video-container {
+  position: relative;
+  padding-bottom: 56.25%; /* Ratio 16:9 */
+  height: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.summary-video-iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 8px;
 }
 
 .ingredients-list {

@@ -62,6 +62,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the favorites made by this user
+     */
+    public function favorites()
+    {
+        return $this->hasMany(UserFavorite::class);
+    }
+
+    /**
      * Check if user is admin
      */
     public function isAdmin(): bool

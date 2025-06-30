@@ -42,13 +42,13 @@
       <div class="md3-app-bar-actions">
         <slot name="actions">
           <button 
-            v-if="showLike" 
-            @click="handleLike" 
+            v-if="showFavorite" 
+            @click="handleFavorite" 
             class="md3-icon-button" 
-            :class="{ 'liked': isLiked }"
+            :class="{ 'favorited': isFavorited }"
           >
-            <span class="material-symbols-outlined">{{ isLiked ? 'favorite' : 'favorite_border' }}</span>
-            <span class="emoji-fallback">{{ isLiked ? '❤️' : '🤍' }}</span>
+            <span class="material-symbols-outlined">{{ isFavorited ? 'favorite' : 'favorite_border' }}</span>
+            <span class="emoji-fallback">{{ isFavorited ? '❤️' : '🤍' }}</span>
           </button>
           <button 
             v-if="showShare" 
@@ -75,7 +75,7 @@ export default {
       type: String,
       required: true
     },
-    showLike: {
+    showFavorite: {
       type: Boolean,
       default: false
     },
@@ -83,7 +83,7 @@ export default {
       type: Boolean,
       default: false
     },
-    isLiked: {
+    isFavorited: {
       type: Boolean,
       default: false
     },
@@ -92,7 +92,7 @@ export default {
       default: null
     }
   },
-  emits: ['like', 'share', 'back'],
+  emits: ['favorite', 'share', 'back'],
   setup(props, { emit }) {
     const router = useRouter()
     const route = useRoute()
@@ -145,8 +145,8 @@ export default {
       emit('back')
     }
 
-    const handleLike = () => {
-      emit('like')
+    const handleFavorite = () => {
+      emit('favorite')
     }
 
     const handleShare = () => {
@@ -187,7 +187,7 @@ export default {
       showBackButton,
       displayTitle,
       handleBack,
-      handleLike,
+      handleFavorite,
       handleShare,
       handleLogoError,
       logoSrc
@@ -263,7 +263,7 @@ html.force-emoji .emoji-fallback {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
 }
 
-.md3-icon-button.liked span.material-symbols-outlined {
+.md3-icon-button.favorited span.material-symbols-outlined {
   color: #F4D03F; /* Doré pour les favoris */
   font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 20;
 }
@@ -274,7 +274,7 @@ html.force-emoji .emoji-fallback {
   color: #FFFFFF;
 }
 
-.md3-icon-button.liked .emoji-fallback {
+.md3-icon-button.favorited .emoji-fallback {
   color: #F4D03F; /* Doré pour les favoris */
 }
 

@@ -28,36 +28,28 @@
         <div class="user-details">
           <h1 class="user-name">{{ authStore.userName }}</h1>
           <p class="user-email">{{ authStore.user?.email }}</p>
-          <p class="member-since">Membre depuis {{ formatMemberSince(authStore.user?.created_at) }}</p>
+          <p class="member-since" v-if="authStore.user?.created_at">Membre depuis {{ formatMemberSince(authStore.user.created_at) }}</p>
         </div>
-        <button @click="authStore.logout()" class="btn-logout">
-          <i class="material-icons">logout</i>
-          Déconnexion
+      </div>
+
+      <!-- Profile Navigation -->
+      <div class="profile-navigation">
+        <button 
+          v-for="section in profileSections" 
+          :key="section.key"
+          @click="activeSection = section.key"
+          class="nav-button"
+          :class="{ active: activeSection === section.key }"
+        >
+          <i class="material-icons">{{ section.icon }}</i>
+          <span>{{ section.label }}</span>
         </button>
       </div>
 
-      <!-- Stats Section -->
-      <div class="user-stats">
-        <div class="stat-card">
-          <div class="stat-number">{{ totalFavorites }}</div>
-          <div class="stat-label">Favoris</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number">{{ favoritesStats.recipes || 0 }}</div>
-          <div class="stat-label">Recettes</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number">{{ favoritesStats.tips || 0 }}</div>
-          <div class="stat-label">Astuces</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number">{{ favoritesStats.events || 0 }}</div>
-          <div class="stat-label">Événements</div>
-        </div>
-      </div>
-
-      <!-- Favorites Section -->
-      <div class="favorites-section">
+      <!-- Profile Sections -->
+      <div class="profile-sections">
+        <!-- Favorites Section -->
+        <div v-if="activeSection === 'favorites'" class="section-content">
         <div class="section-header">
           <h2 class="section-title">Mes Favoris</h2>
           <div class="filter-tabs">
@@ -134,6 +126,173 @@
             Découvrir du contenu
           </router-link>
         </div>
+        </div>
+
+        <!-- Account Section -->
+        <div v-if="activeSection === 'account'" class="section-content">
+          <h2 class="section-title">Mon Compte</h2>
+          
+          <!-- Username Update Form -->
+          <div class="form-section">
+            <h3 class="form-title">Nom d'utilisateur</h3>
+            <form @submit.prevent="updateUsername" class="update-form">
+              <div class="form-field">
+                <label class="form-label">Nouveau nom d'utilisateur</label>
+                <input 
+                  v-model="usernameForm.name" 
+                  type="text" 
+                  class="form-input" 
+                  placeholder="Votre nom d'utilisateur"
+                  required
+                  minlength="2"
+                  maxlength="255"
+                >
+              </div>
+              <div class="form-actions">
+                <button type="submit" class="btn-primary" :disabled="usernameForm.loading">
+                  <span v-if="usernameForm.loading">Mise à jour...</span>
+                  <span v-else>Mettre à jour</span>
+                </button>
+              </div>
+              <div v-if="usernameForm.message" class="form-message" :class="usernameForm.success ? 'success' : 'error'">
+                {{ usernameForm.message }}
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Security Section -->
+        <div v-if="activeSection === 'security'" class="section-content">
+          <h2 class="section-title">Sécurité</h2>
+          
+          <!-- Password Change Form -->
+          <div class="form-section">
+            <h3 class="form-title">Changer le mot de passe</h3>
+            <form @submit.prevent="updatePassword" class="update-form">
+              <div class="form-field">
+                <label class="form-label">Mot de passe actuel</label>
+                <input 
+                  v-model="passwordForm.currentPassword" 
+                  type="password" 
+                  class="form-input" 
+                  placeholder="Votre mot de passe actuel"
+                  required
+                >
+              </div>
+              <div class="form-field">
+                <label class="form-label">Nouveau mot de passe</label>
+                <input 
+                  v-model="passwordForm.newPassword" 
+                  type="password" 
+                  class="form-input" 
+                  placeholder="Votre nouveau mot de passe"
+                  required
+                  minlength="8"
+                >
+                <small class="form-hint">Au moins 8 caractères avec lettres et chiffres</small>
+              </div>
+              <div class="form-field">
+                <label class="form-label">Confirmer le nouveau mot de passe</label>
+                <input 
+                  v-model="passwordForm.confirmPassword" 
+                  type="password" 
+                  class="form-input" 
+                  placeholder="Confirmer votre nouveau mot de passe"
+                  required
+                  minlength="8"
+                >
+              </div>
+              <div class="form-actions">
+                <button type="submit" class="btn-primary" :disabled="passwordForm.loading">
+                  <span v-if="passwordForm.loading">Mise à jour...</span>
+                  <span v-else>Changer le mot de passe</span>
+                </button>
+              </div>
+              <div v-if="passwordForm.message" class="form-message" :class="passwordForm.success ? 'success' : 'error'">
+                {{ passwordForm.message }}
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Legal Section -->
+        <div v-if="activeSection === 'legal'" class="section-content">
+          <h2 class="section-title">Légal & Confidentialité</h2>
+          
+          <!-- Terms and Privacy Links -->
+          <div class="legal-section">
+            <h3 class="form-title">Conditions d'utilisation</h3>
+            <div class="legal-links">
+              <a href="/terms" class="legal-link">
+                <i class="material-icons">description</i>
+                <span>Conditions générales d'utilisation</span>
+                <i class="material-icons">arrow_forward_ios</i>
+              </a>
+              <a href="/privacy" class="legal-link">
+                <i class="material-icons">privacy_tip</i>
+                <span>Politique de confidentialité</span>
+                <i class="material-icons">arrow_forward_ios</i>
+              </a>
+              <a href="/cookies" class="legal-link">
+                <i class="material-icons">cookie</i>
+                <span>Politique des cookies</span>
+                <i class="material-icons">arrow_forward_ios</i>
+              </a>
+            </div>
+          </div>
+
+          <!-- Data Deletion Request -->
+          <div class="form-section danger-section">
+            <h3 class="form-title danger-title">Suppression des données</h3>
+            <p class="danger-description">
+              Vous pouvez demander la suppression de toutes vos données personnelles conformément au RGPD. 
+              Cette action est irréversible.
+            </p>
+            <form @submit.prevent="requestDataDeletion" class="update-form">
+              <div class="form-field">
+                <label class="form-label">Raison de la suppression (optionnel)</label>
+                <textarea 
+                  v-model="deletionForm.reason" 
+                  class="form-textarea" 
+                  placeholder="Expliquez pourquoi vous souhaitez supprimer vos données..."
+                  rows="3"
+                  maxlength="500"
+                ></textarea>
+              </div>
+              <div class="form-field">
+                <label class="checkbox-label">
+                  <input 
+                    v-model="deletionForm.confirm" 
+                    type="checkbox" 
+                    required
+                  >
+                  Je confirme vouloir supprimer définitivement toutes mes données
+                </label>
+              </div>
+              <div class="form-actions">
+                <button type="submit" class="btn-danger" :disabled="deletionForm.loading || !deletionForm.confirm">
+                  <span v-if="deletionForm.loading">Demande en cours...</span>
+                  <span v-else>Demander la suppression</span>
+                </button>
+              </div>
+              <div v-if="deletionForm.message" class="form-message" :class="deletionForm.success ? 'success' : 'error'">
+                {{ deletionForm.message }}
+              </div>
+            </form>
+          </div>
+
+          <!-- Logout Section -->
+          <div class="form-section">
+            <h3 class="form-title">Déconnexion</h3>
+            <p class="form-description">
+              Vous serez déconnecté de votre compte sur cet appareil.
+            </p>
+            <button @click="authStore.logout()" class="btn-logout-main">
+              <i class="material-icons">logout</i>
+              <span>Se déconnecter</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -163,6 +322,39 @@ export default {
     const showAuthModal = ref(false)
     const favorites = ref([])
     const selectedFilter = ref('all')
+    const activeSection = ref('favorites')
+
+    // Form states
+    const usernameForm = ref({
+      name: '',
+      loading: false,
+      message: '',
+      success: false
+    })
+
+    const passwordForm = ref({
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+      loading: false,
+      message: '',
+      success: false
+    })
+
+    const deletionForm = ref({
+      reason: '',
+      confirm: false,
+      loading: false,
+      message: '',
+      success: false
+    })
+
+    const profileSections = ref([
+      { key: 'favorites', label: 'Favoris', icon: 'favorite' },
+      { key: 'account', label: 'Compte', icon: 'person' },
+      { key: 'security', label: 'Sécurité', icon: 'security' },
+      { key: 'legal', label: 'Légal', icon: 'gavel' }
+    ])
 
     const filterTabs = ref([
       { key: 'all', label: 'Tout', icon: 'apps' },
@@ -298,21 +490,141 @@ export default {
     }
 
     const formatDate = (date) => {
-      return new Date(date).toLocaleDateString('fr-FR', {
-        day: 'numeric',
-        month: 'short'
-      })
+      if (!date) return ''
+      
+      try {
+        const parsedDate = new Date(date)
+        if (isNaN(parsedDate.getTime())) {
+          return ''
+        }
+        
+        return parsedDate.toLocaleDateString('fr-FR', {
+          day: 'numeric',
+          month: 'short'
+        })
+      } catch (error) {
+        console.warn('Erreur lors du formatage de la date:', error)
+        return ''
+      }
     }
 
     const formatMemberSince = (date) => {
-      return new Date(date).toLocaleDateString('fr-FR', {
-        year: 'numeric',
-        month: 'long'
-      })
+      if (!date) return 'Date inconnue'
+      
+      try {
+        const parsedDate = new Date(date)
+        if (isNaN(parsedDate.getTime())) {
+          return 'Date inconnue'
+        }
+        
+        return parsedDate.toLocaleDateString('fr-FR', {
+          year: 'numeric',
+          month: 'long'
+        })
+      } catch (error) {
+        console.warn('Erreur lors du formatage de la date membre:', error)
+        return 'Date inconnue'
+      }
     }
 
     const handleImageError = (event) => {
       event.target.src = '/images/default-content.jpg'
+    }
+
+    // Form handlers
+    const updateUsername = async () => {
+      usernameForm.value.loading = true
+      usernameForm.value.message = ''
+      
+      try {
+        const data = await apiStore.request('/profile/name', {
+          method: 'PUT',
+          body: {
+            name: usernameForm.value.name
+          }
+        })
+        
+        if (data.success) {
+          usernameForm.value.success = true
+          usernameForm.value.message = 'Nom d\'utilisateur mis à jour avec succès'
+          // Update auth store
+          authStore.user.name = data.data.name
+          usernameForm.value.name = ''
+        }
+      } catch (error) {
+        usernameForm.value.success = false
+        usernameForm.value.message = error.response?.data?.message || 'Erreur lors de la mise à jour'
+      } finally {
+        usernameForm.value.loading = false
+      }
+    }
+
+    const updatePassword = async () => {
+      if (passwordForm.value.newPassword !== passwordForm.value.confirmPassword) {
+        passwordForm.value.success = false
+        passwordForm.value.message = 'Les mots de passe ne correspondent pas'
+        return
+      }
+
+      passwordForm.value.loading = true
+      passwordForm.value.message = ''
+      
+      try {
+        const data = await apiStore.request('/profile/password', {
+          method: 'PUT',
+          body: {
+            current_password: passwordForm.value.currentPassword,
+            new_password: passwordForm.value.newPassword,
+            new_password_confirmation: passwordForm.value.confirmPassword
+          }
+        })
+        
+        if (data.success) {
+          passwordForm.value.success = true
+          passwordForm.value.message = 'Mot de passe mis à jour avec succès'
+          // Clear form
+          passwordForm.value.currentPassword = ''
+          passwordForm.value.newPassword = ''
+          passwordForm.value.confirmPassword = ''
+        }
+      } catch (error) {
+        passwordForm.value.success = false
+        passwordForm.value.message = error.response?.data?.message || 'Erreur lors de la mise à jour'
+      } finally {
+        passwordForm.value.loading = false
+      }
+    }
+
+    const requestDataDeletion = async () => {
+      if (!confirm('Êtes-vous absolument sûr de vouloir demander la suppression de toutes vos données ? Cette action est irréversible.')) {
+        return
+      }
+
+      deletionForm.value.loading = true
+      deletionForm.value.message = ''
+      
+      try {
+        const data = await apiStore.request('/profile/request-deletion', {
+          method: 'POST',
+          body: {
+            reason: deletionForm.value.reason,
+            confirm: deletionForm.value.confirm
+          }
+        })
+        
+        if (data.success) {
+          deletionForm.value.success = true
+          deletionForm.value.message = data.message
+          // Clear form
+          deletionForm.value.reason = ''
+          deletionForm.value.confirm = false
+        }
+      } catch (error) {
+        deletionForm.value.success = false
+        deletionForm.value.message = error.response?.data?.message || 'Erreur lors de la demande'
+      } finally {
+        deletionForm.value.loading = false
+      }
     }
 
     // Watch auth state changes
@@ -327,6 +639,12 @@ export default {
     onMounted(() => {
       if (authStore.isAuthenticated) {
         loadFavorites()
+        // Initialize username form with current name
+        usernameForm.value.name = authStore.user?.name || ''
+        
+        // Debug user data
+        console.log('🔍 [Profile] Données utilisateur:', authStore.user)
+        console.log('🔍 [Profile] Date création:', authStore.user?.created_at)
       }
     })
 
@@ -335,11 +653,16 @@ export default {
       showAuthModal,
       favorites,
       selectedFilter,
+      activeSection,
+      profileSections,
       filterTabs,
       totalFavorites,
       favoritesStats,
       filteredFavorites,
       authStore,
+      usernameForm,
+      passwordForm,
+      deletionForm,
       removeFavorite,
       goToContent,
       getTypeIcon,
@@ -350,7 +673,10 @@ export default {
       getExploreLink,
       formatDate,
       formatMemberSince,
-      handleImageError
+      handleImageError,
+      updateUsername,
+      updatePassword,
+      requestDataDeletion
     }
   }
 }
@@ -801,6 +1127,321 @@ export default {
   .favorite-image {
     width: 60px;
     height: 60px;
+  }
+}
+
+/* Profile Navigation */
+.profile-navigation {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.nav-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  color: #4A5568;
+  min-width: fit-content;
+}
+
+.nav-button:hover {
+  background: #F7FAFC;
+  border-color: #CBD5E0;
+}
+
+.nav-button.active {
+  background: #E53E3E;
+  color: #FFFFFF;
+  border-color: #E53E3E;
+}
+
+.nav-button i {
+  font-size: 20px;
+}
+
+/* Profile Sections */
+.profile-sections {
+  min-height: 400px;
+}
+
+.section-content {
+  background: #FFFFFF;
+  border-radius: 12px;
+  padding: 24px;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Form Styles */
+.form-section {
+  margin-bottom: 32px;
+  padding: 24px;
+  background: #F8F9FA;
+  border-radius: 12px;
+  border: 1px solid #E2E8F0;
+}
+
+.form-title {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #2D3748;
+}
+
+.form-description {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  color: #4A5568;
+  line-height: 1.5;
+}
+
+.update-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2D3748;
+}
+
+.form-input,
+.form-textarea {
+  padding: 12px;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #FFFFFF;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: #E53E3E;
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-hint {
+  font-size: 12px;
+  color: #4A5568;
+  margin-top: 4px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #2D3748;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #E53E3E;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-start;
+}
+
+.form-message {
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.form-message.success {
+  background: #F0FDF4;
+  color: #059669;
+  border: 1px solid #10B981;
+}
+
+.form-message.error {
+  background: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid #EF4444;
+}
+
+/* Button Styles */
+.btn-danger {
+  padding: 12px 24px;
+  background: #DC2626;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-danger:hover {
+  background: #B91C1C;
+}
+
+.btn-danger:disabled {
+  background: #9CA3AF;
+  cursor: not-allowed;
+}
+
+.btn-logout-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: #E53E3E;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-logout-main:hover {
+  background: #C53030;
+  transform: translateY(-1px);
+}
+
+.btn-logout-main i {
+  font-size: 18px;
+}
+
+/* Legal Section */
+.legal-section {
+  margin-bottom: 32px;
+}
+
+.legal-links {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.legal-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #2D3748;
+  transition: all 0.2s ease;
+}
+
+.legal-link:hover {
+  background: #F7FAFC;
+  border-color: #CBD5E0;
+  transform: translateX(4px);
+}
+
+.legal-link i:first-child {
+  font-size: 20px;
+  color: #E53E3E;
+}
+
+.legal-link span {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.legal-link i:last-child {
+  font-size: 16px;
+  color: #9CA3AF;
+}
+
+/* Danger Section */
+.danger-section {
+  border-color: #FCA5A5;
+  background: #FEF2F2;
+}
+
+.danger-title {
+  color: #DC2626;
+}
+
+.danger-description {
+  color: #7F1D1D;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+/* Responsive Design for New Elements */
+@media (max-width: 768px) {
+  .profile-navigation {
+    justify-content: flex-start;
+  }
+  
+  .nav-button {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+  
+  .section-content {
+    padding: 16px;
+  }
+  
+  .form-section {
+    padding: 16px;
+  }
+  
+  .legal-link {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-button {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+  
+  .nav-button i {
+    font-size: 18px;
+  }
+  
+  .section-content {
+    padding: 12px;
+  }
+  
+  .form-section {
+    padding: 12px;
   }
 }
 </style>

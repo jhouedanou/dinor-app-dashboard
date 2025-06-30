@@ -54,6 +54,20 @@
             </div>
           </div>
 
+          <!-- Summary Video -->
+          <div v-if="tip.summary_video_url && tip.summary_video_url.trim()" class="tip-summary-video">
+            <h2 class="md3-title-medium dinor-text-primary">Résumé en vidéo</h2>
+            <div class="video-container">
+              <iframe
+                :src="getEmbedUrl(tip.summary_video_url)"
+                :title="`Résumé vidéo : ${tip.title}`"
+                frameborder="0"
+                allowfullscreen
+                class="summary-video-iframe"
+              ></iframe>
+            </div>
+          </div>
+
           <!-- Content -->
           <div class="tip-content-text">
             <h2 class="md3-title-medium dinor-text-primary">Astuce</h2>
@@ -212,10 +226,8 @@ export default {
           // Mettre à jour le header avec le titre de l'astuce
           emit('update-header', {
             title: tip.value.title || 'Astuce',
-            showLike: true,
             showShare: true,
             showFavorite: true,
-            isLiked: userLiked.value,
             isFavorited: userFavorited.value,
             backPath: '/tips'
           })
@@ -291,10 +303,8 @@ export default {
             tip.value.likes_count = data.data.total_likes
           }
           
-          // Mettre à jour le statut like dans le header
-          emit('update-header', {
-            isLiked: userLiked.value
-          })
+          // Mettre à jour le statut like (pour usage interne)
+          // Pas besoin de mettre à jour le header car on utilise maintenant les favoris
         }
       } catch (error) {
         console.error('Erreur lors du toggle like:', error)
@@ -448,6 +458,27 @@ export default {
       return content.toString()
     }
 
+    const getEmbedUrl = (videoUrl) => {
+      if (!videoUrl || !videoUrl.trim()) return ''
+      
+      const cleanUrl = videoUrl.trim()
+      
+      // Gérer les URLs YouTube
+      const youtubeMatch = cleanUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)
+      if (youtubeMatch) {
+        return `https://www.youtube.com/embed/${youtubeMatch[1]}?rel=0&modestbranding=1`
+      }
+      
+      // Gérer les URLs Vimeo
+      const vimeoMatch = cleanUrl.match(/vimeo\.com\/(\d+)/)
+      if (vimeoMatch) {
+        return `https://player.vimeo.com/video/${vimeoMatch[1]}`
+      }
+      
+      // Retourner l'URL telle quelle si ce n'est pas YouTube ou Vimeo
+      return cleanUrl
+    }
+
     onMounted(() => {
       loadTip()
     })
@@ -477,6 +508,7 @@ export default {
       formatDate,
       handleImageError,
       formatContent,
+      getEmbedUrl,
       showShareModal,
       shareData,
       authStore,
@@ -576,10 +608,38 @@ p, span, div {
   }
 }
 
+.tip-summary-video,
 .tip-content-text,
 .tip-tags,
 .comments-section {
   margin-bottom: 2rem;
+}
+
+.tip-summary-video {
+  background: #F8F9FA;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.video-container {
+  position: relative;
+  padding-bottom: 56.25%; /* Ratio 16:9 */
+  height: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.summary-video-iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 8px;
 }
 
 .tags-container {

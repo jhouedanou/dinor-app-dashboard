@@ -13,11 +13,11 @@
       <!-- En-tête de l'application simplifié -->
       <AppHeader 
         :title="currentPageTitle"
-        :show-like="showLikeButton"
+        :show-favorite="showFavoriteButton"
         :show-share="showShareButton"
-        :is-liked="isLiked"
+        :is-favorited="isFavorited"
         :back-path="backPath"
-        @like="handleLike"
+        @favorite="handleFavorite"
         @share="handleShare"
         @back="handleBack"
       />
@@ -29,7 +29,7 @@
       >
         <router-view 
           @update-header="updateHeader" 
-          @like="handleLike"
+          @favorite="handleFavorite"
           @share="handleShare"
           ref="currentView"
         />
@@ -79,9 +79,9 @@ export default {
     
     // État pour le header dynamique
     const currentPageTitle = ref('Dinor')
-    const showLikeButton = ref(false)
+    const showFavoriteButton = ref(false)
     const showShareButton = ref(false)
-    const isLiked = ref(false)
+    const isFavorited = ref(false)
     const backPath = ref(null)
     
     // Show bottom nav only on main pages
@@ -94,52 +94,52 @@ export default {
     const updateTitle = () => {
       if (route.path === '/') {
         currentPageTitle.value = 'Dinor'
-        showLikeButton.value = false
+        showFavoriteButton.value = false
         showShareButton.value = false
         backPath.value = null
       } else if (route.path === '/recipes') {
         currentPageTitle.value = 'Recettes'
-        showLikeButton.value = false
+        showFavoriteButton.value = false
         showShareButton.value = false
         backPath.value = null
       } else if (route.path === '/tips') {
         currentPageTitle.value = 'Astuces'
-        showLikeButton.value = false
+        showFavoriteButton.value = false
         showShareButton.value = false
         backPath.value = null
       } else if (route.path === '/events') {
         currentPageTitle.value = 'Événements'
-        showLikeButton.value = false
+        showFavoriteButton.value = false
         showShareButton.value = false
         backPath.value = null
       } else if (route.path === '/dinor-tv') {
         currentPageTitle.value = 'Dinor TV'
-        showLikeButton.value = false
+        showFavoriteButton.value = false
         showShareButton.value = false
         backPath.value = null
       } else if (route.path === '/pages') {
         currentPageTitle.value = 'Pages'
-        showLikeButton.value = false
+        showFavoriteButton.value = false
         showShareButton.value = false
         backPath.value = null
       } else if (route.path.startsWith('/recipe/')) {
         currentPageTitle.value = 'Recette'
-        showLikeButton.value = true
+        showFavoriteButton.value = true
         showShareButton.value = true
         backPath.value = '/recipes'
       } else if (route.path.startsWith('/tip/')) {
         currentPageTitle.value = 'Astuce'
-        showLikeButton.value = true
+        showFavoriteButton.value = true
         showShareButton.value = true
         backPath.value = '/tips'
       } else if (route.path.startsWith('/event/')) {
         currentPageTitle.value = 'Événement'
-        showLikeButton.value = true
+        showFavoriteButton.value = true
         showShareButton.value = true
         backPath.value = '/events'
       } else {
         currentPageTitle.value = 'Dinor'
-        showLikeButton.value = false
+        showFavoriteButton.value = false
         showShareButton.value = false
         backPath.value = '/'
       }
@@ -151,18 +151,18 @@ export default {
     // Function pour mettre à jour le header depuis les composants enfants
     const updateHeader = (headerData) => {
       if (headerData.title) currentPageTitle.value = headerData.title
-      if (headerData.showLike !== undefined) showLikeButton.value = headerData.showLike
+      if (headerData.showFavorite !== undefined) showFavoriteButton.value = headerData.showFavorite
       if (headerData.showShare !== undefined) showShareButton.value = headerData.showShare
-      if (headerData.isLiked !== undefined) isLiked.value = headerData.isLiked
+      if (headerData.isFavorited !== undefined) isFavorited.value = headerData.isFavorited
       if (headerData.backPath !== undefined) backPath.value = headerData.backPath
     }
     
     // Handlers pour les actions - déléguées aux vues enfants
     const currentView = ref(null)
     
-    const handleLike = () => {
-      if (currentView.value && currentView.value.toggleLike) {
-        currentView.value.toggleLike()
+    const handleFavorite = () => {
+      if (currentView.value && currentView.value.toggleFavorite) {
+        currentView.value.toggleFavorite()
       }
     }
     
@@ -225,13 +225,13 @@ export default {
     return {
       showBottomNav,
       currentPageTitle,
-      showLikeButton,
+      showFavoriteButton,
       showShareButton,
-      isLiked,
+      isFavorited,
       backPath,
       currentView,
       updateHeader,
-      handleLike,
+      handleFavorite,
       handleShare,
       handleBack,
       showLoading,

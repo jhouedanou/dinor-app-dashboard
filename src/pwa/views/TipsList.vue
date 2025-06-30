@@ -64,9 +64,22 @@
             <!-- Tip Stats -->
             <div class="tip-stats">
               <div class="stat">
-                <span class="material-symbols-outlined">favorite</span>
-                <span class="emoji-fallback">❤️</span>
+                <span class="material-symbols-outlined">thumb_up</span>
+                <span class="emoji-fallback">👍</span>
                 <span>{{ tip.likes_count || 0 }}</span>
+              </div>
+              <div class="stat">
+                <FavoriteButton
+                  type="tip"
+                  :item-id="tip.id"
+                  :initial-favorited="false"
+                  :initial-count="tip.favorites_count || 0"
+                  :show-count="true"
+                  size="small"
+                  variant="minimal"
+                  @auth-required="showAuthModal = true"
+                  @click.stop=""
+                />
               </div>
               <div class="stat" v-if="tip.category">
                 <span class="material-symbols-outlined">category</span>
@@ -78,6 +91,11 @@
         </div>
       </div>
     </div>
+    
+    <!-- Auth Modal -->
+    <AuthModal 
+      v-model="showAuthModal"
+    />
   </div>
 </template>
 
@@ -85,9 +103,15 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import apiService from '@/services/api'
+import FavoriteButton from '@/components/common/FavoriteButton.vue'
+import AuthModal from '@/components/common/AuthModal.vue'
 
 export default {
   name: 'TipsList',
+  components: {
+    FavoriteButton,
+    AuthModal
+  },
   setup() {
     const router = useRouter()
     
@@ -95,6 +119,7 @@ export default {
     const tips = ref([])
     const loading = ref(false)
     const error = ref(null)
+    const showAuthModal = ref(false)
     
     // Methods
     const goToTip = (id) => {
@@ -156,6 +181,7 @@ export default {
       tips,
       loading,
       error,
+      showAuthModal,
       goToTip,
       retry,
       getDifficultyLabel,

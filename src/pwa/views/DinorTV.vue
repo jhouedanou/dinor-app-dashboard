@@ -116,6 +116,15 @@
                 <div class="video-date">
                   <span>{{ formatDate(featuredVideo.created_at) }}</span>
                 </div>
+                <FavoriteButton
+                  type="dinor_tv"
+                  :item-id="featuredVideo.id"
+                  :initial-favorited="false"
+                  :initial-count="featuredVideo.favorites_count || 0"
+                  :show-count="true"
+                  size="medium"
+                  @auth-required="showAuthModal = true"
+                />
               </div>
             </div>
           </div>
@@ -154,6 +163,17 @@
                   <div class="video-date">
                     <span>{{ formatDate(video.created_at) }}</span>
                   </div>
+                  <FavoriteButton
+                    type="dinor_tv"
+                    :item-id="video.id"
+                    :initial-favorited="false"
+                    :initial-count="video.favorites_count || 0"
+                    :show-count="true"
+                    size="small"
+                    variant="minimal"
+                    @auth-required="showAuthModal = true"
+                    @click.stop=""
+                  />
                 </div>
               </div>
             </div>
@@ -183,25 +203,50 @@
         </div>
       </div>
     </div>
+    
+    <!-- Auth Modal -->
+    <AuthModal 
+      v-model="showAuthModal"
+    />
   </div>
 </template>
 
 <script>
 import { ref, computed, onMounted } from 'vue'
 import apiService from '@/services/api'
+import FavoriteButton from '@/components/common/FavoriteButton.vue'
+import AuthModal from '@/components/common/AuthModal.vue'
 
 export default {
   name: 'DinorTV',
+  components: {
+    FavoriteButton,
+    AuthModal
+  },
   setup() {
     // State
     const videos = ref([])
     const selectedVideo = ref(null)
     const loading = ref(false)
     const error = ref(null)
+    const showAuthModal = ref(false)
     
     // Computed
     const liveVideos = computed(() => {
       return videos.value.filter(video => video.is_live)
+    })
+    
+    const featuredVideo = computed(() => {
+      // Retourne la première vidéo featured ou la première vidéo disponible
+      const featured = videos.value.find(video => video.is_featured)
+      return featured || videos.value[0] || null
+    })
+    
+    const regularVideos = computed(() => {
+      // Retourne toutes les vidéos sauf la featured
+      const featured = featuredVideo.value
+      if (!featured) return videos.value
+      return videos.value.filter(video => video.id !== featured.id)
     })
     
     // Methods
@@ -298,6 +343,18 @@ export default {
       })
     }
     
+    const formatViews = (viewsCount) => {
+      if (!viewsCount || viewsCount === 0) return '0 vue'
+      if (viewsCount === 1) return '1 vue'
+      if (viewsCount < 1000) return `${viewsCount} vues`
+      if (viewsCount < 1000000) return `${Math.floor(viewsCount / 1000)}k vues`
+      return `${Math.floor(viewsCount / 1000000)}M vues`
+    }
+    
+    const handleImageError = (event) => {
+      event.target.src = '/images/default-video-thumbnail.jpg'
+    }
+    
     // Lifecycle
     onMounted(() => {
       loadVideos()
@@ -306,9 +363,12 @@ export default {
     return {
       videos,
       liveVideos,
+      featuredVideo,
+      regularVideos,
       selectedVideo,
       loading,
       error,
+      showAuthModal,
       retry,
       playVideo,
       closeVideo,
@@ -317,7 +377,9 @@ export default {
       getShortDescription,
       formatDuration,
       formatDate,
-      formatTime
+      formatTime,
+      formatViews,
+      handleImageError
     }
   }
 }

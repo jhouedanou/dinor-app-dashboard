@@ -180,7 +180,7 @@
 
 <script>
 import { ref, onMounted, computed, defineExpose } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { useApiStore } from '@/stores/api'
 import { useAuthStore } from '@/stores/auth'
 import { useSocialShare } from '@/composables/useSocialShare'
@@ -202,7 +202,6 @@ export default {
   },
   setup(props, { emit }) {
     const router = useRouter()
-    const route = useRoute()
     const apiStore = useApiStore()
     const authStore = useAuthStore()
     const { share, showShareModal, updateOpenGraphTags } = useSocialShare()
@@ -242,10 +241,8 @@ export default {
           // Mettre à jour le header avec le titre de l'événement
           emit('update-header', {
             title: event.value.title || 'Événement',
-            showLike: true,
             showShare: true,
             showFavorite: true,
-            isLiked: userLiked.value,
             isFavorited: userFavorited.value,
             backPath: '/events'
           })
@@ -321,10 +318,8 @@ export default {
             event.value.likes_count = data.data.total_likes
           }
           
-          // Mettre à jour le statut like dans le header
-          emit('update-header', {
-            isLiked: userLiked.value
-          })
+          // Mettre à jour le statut like (pour usage interne)
+          // Pas besoin de mettre à jour le header car on utilise maintenant les favoris
         }
       } catch (error) {
         console.error('Erreur lors du toggle like:', error)

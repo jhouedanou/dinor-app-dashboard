@@ -18,6 +18,7 @@ class Tip extends Model
         'image',
         'gallery',
         'video_url',
+        'summary_video_url',
         'tags',
         'is_featured',
         'is_published',

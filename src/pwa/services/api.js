@@ -169,6 +169,34 @@ class ApiService {
     return this.request(`/search?${queryString}`)
   }
 
+  // Favorites
+  async getFavorites(params = {}) {
+    const queryString = new URLSearchParams(params).toString()
+    const endpoint = `/favorites${queryString ? `?${queryString}` : ''}`
+    return this.request(endpoint)
+  }
+
+  async toggleFavorite(favoritable_type, favoritable_id) {
+    return this.request('/favorites/toggle', {
+      method: 'POST',
+      body: JSON.stringify({
+        favoritable_type,
+        favoritable_id
+      })
+    })
+  }
+
+  async checkFavorite(type, id) {
+    const params = new URLSearchParams({ type, id })
+    return this.request(`/favorites/check?${params}`)
+  }
+
+  async removeFavorite(favoriteId) {
+    return this.request(`/favorites/${favoriteId}`, {
+      method: 'DELETE'
+    })
+  }
+
   // Clear cache
   clearCache() {
     this.cache.clear()

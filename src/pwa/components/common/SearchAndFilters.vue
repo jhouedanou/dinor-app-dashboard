@@ -354,7 +354,8 @@ export default {
   }
   
   .filters-row {
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: 0.75rem;
   }
   
