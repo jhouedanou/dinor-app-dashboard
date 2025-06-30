@@ -71,7 +71,7 @@ class EventController extends Controller
 
     public function show($id)
     {
-        $event = Event::with(['category', 'eventCategory'])
+        $event = Event::with(['category', 'eventCategory', 'approvedComments.user:id,name', 'approvedComments.replies.user:id,name'])
             ->published()
             ->active()
             ->findOrFail($id);

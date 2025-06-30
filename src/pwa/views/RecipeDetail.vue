@@ -230,12 +230,18 @@ export default {
 
     const loadComments = async () => {
       try {
-        const data = await apiStore.get(`/comments`, { type: 'recipe', id: props.id })
+        console.log('🔄 [Comments] Chargement des commentaires pour recipe ID:', props.id)
+        const data = await apiStore.get(`/comments`, { 
+          commentable_type: 'App\\Models\\Recipe', 
+          commentable_id: props.id 
+        })
+        console.log('📥 [Comments] Réponse reçue:', data)
         if (data.success) {
           comments.value = data.data
+          console.log('✅ [Comments] Commentaires chargés:', comments.value.length, 'commentaires')
         }
       } catch (error) {
-        console.error('Erreur lors du chargement des commentaires:', error)
+        console.error('❌ [Comments] Erreur lors du chargement des commentaires:', error)
       }
     }
 

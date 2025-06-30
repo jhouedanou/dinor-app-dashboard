@@ -42,7 +42,8 @@ class DinorTvController extends Controller
 
     public function show($id)
     {
-        $video = DinorTv::published()
+        $video = DinorTv::with(['approvedComments.user:id,name', 'approvedComments.replies.user:id,name'])
+            ->published()
             ->findOrFail($id);
 
         return response()->json([

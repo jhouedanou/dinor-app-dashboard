@@ -106,6 +106,22 @@ Route::post('/event-categories/check-exists', [App\Http\Controllers\Api\EventCat
     // Comments - Routes publiques (lecture seulement)
     Route::get('/comments', [CommentController::class, 'index']);
     Route::get('/comments/{comment}/replies', [CommentController::class, 'replies']);
+    Route::get('/comments/captcha/generate', [CommentController::class, 'generateCaptcha']);
+    
+    // Test route pour debug des commentaires
+    Route::get('/test/comments/{id}', function($id) {
+        $recipe = \App\Models\Recipe::with(['approvedComments.user:id,name', 'approvedComments.replies.user:id,name'])->find($id);
+        if (!$recipe) {
+            return response()->json(['error' => 'Recipe not found'], 404);
+        }
+        return response()->json([
+            'recipe_id' => $id,
+            'recipe_title' => $recipe->title,
+            'comments_from_relation' => $recipe->approvedComments,
+            'comments_from_db' => \App\Models\Comment::where('commentable_type', 'App\\Models\\Recipe')->where('commentable_id', $id)->where('is_approved', true)->get(),
+            'all_comments_for_recipe' => \App\Models\Comment::where('commentable_type', 'App\\Models\\Recipe')->where('commentable_id', $id)->get()
+        ]);
+    });
     
     // Shares - Tracking des partages
     Route::post('/shares/track', [ShareController::class, 'track']);

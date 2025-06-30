@@ -53,7 +53,7 @@ class TipController extends Controller
 
     public function show($id)
     {
-        $tip = Tip::with('category')
+        $tip = Tip::with(['category', 'approvedComments.user:id,name', 'approvedComments.replies.user:id,name'])
             ->published()
             ->findOrFail($id);
 

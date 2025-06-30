@@ -66,7 +66,7 @@ class RecipeController extends Controller
 
     public function show($id)
     {
-        $recipe = Recipe::with('category')
+        $recipe = Recipe::with(['category', 'approvedComments.user:id,name', 'approvedComments.replies.user:id,name'])
             ->published()
             ->findOrFail($id);
 

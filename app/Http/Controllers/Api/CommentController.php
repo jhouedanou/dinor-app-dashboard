@@ -20,13 +20,30 @@ class CommentController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        // Support both old format (type/id) and new format (commentable_type/commentable_id)
+        $type = $request->input('type') ?: $this->extractTypeFromCommentableType($request->input('commentable_type'));
+        $id = $request->input('id') ?: $request->input('commentable_id');
+
         $request->validate([
-            'type' => 'required|in:recipe,event,dinor_tv,tip',
-            'id' => 'required|integer|exists:' . $this->getTableName($request->type) . ',id',
             'per_page' => 'sometimes|integer|min:1|max:50'
         ]);
 
-        $model = $this->getModel($request->type, $request->id);
+        // Manual validation for type and id
+        if (!$type || !in_array($type, ['recipe', 'event', 'dinor_tv', 'tip'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Type de contenu invalide'
+            ], 400);
+        }
+
+        if (!$id || !is_numeric($id)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'ID du contenu invalide'
+            ], 400);
+        }
+
+        $model = $this->getModel($type, $id);
         
         if (!$model) {
             return response()->json([
@@ -35,21 +52,17 @@ class CommentController extends Controller
             ], 404);
         }
 
-        $perPage = $request->get('per_page', 10);
-
+        // Temporairement sans pagination pour debug
         $comments = $model->approvedComments()
                          ->with(['user:id,name', 'replies.user:id,name'])
-                         ->paginate($perPage);
+                         ->get();
+
+        \Log::info('📋 [Comments] Commentaires trouvés:', ['count' => $comments->count(), 'comments' => $comments->toArray()]);
 
         return response()->json([
             'success' => true,
-            'data' => $comments->items(),
-            'pagination' => [
-                'current_page' => $comments->currentPage(),
-                'last_page' => $comments->lastPage(),
-                'per_page' => $comments->perPage(),
-                'total' => $comments->total()
-            ]
+            'data' => $comments->toArray(),
+            'total' => $comments->count()
         ]);
     }
 
@@ -69,50 +82,60 @@ class CommentController extends Controller
             ], 401);
         }
 
-        // Support pour les deux formats : ancien (type/id) et nouveau (commentable_type/commentable_id)
-        $type = $request->type;
-        $id = $request->id;
-        
-        // Si on utilise le nouveau format, extraire le type depuis commentable_type
-        if (!$type && $request->commentable_type) {
-            $commentableType = $request->commentable_type;
-            if (str_contains($commentableType, 'Recipe')) {
-                $type = 'recipe';
-            } elseif (str_contains($commentableType, 'Event')) {
-                $type = 'event';
-            } elseif (str_contains($commentableType, 'DinorTv')) {
-                $type = 'dinor_tv';
-            } elseif (str_contains($commentableType, 'Tip')) {
-                $type = 'tip';
-            }
-        }
-        
-        // Si on utilise le nouveau format, utiliser commentable_id
-        if (!$id && $request->commentable_id) {
-            $id = $request->commentable_id;
+        // Support both old format (type/id) and new format (commentable_type/commentable_id)
+        $type = $request->input('type') ?: $this->extractTypeFromCommentableType($request->input('commentable_type'));
+        $id = $request->input('id') ?: $request->input('commentable_id');
+
+        // Log des données reçues pour debug
+        \Log::info('📝 [Comments] Données reçues:', ['data' => $request->all()]);
+        \Log::info('📝 [Comments] Type extrait:', ['type' => $type]);
+        \Log::info('📝 [Comments] ID extrait:', ['id' => $id]);
+        \Log::info('📝 [Comments] User connecté:', ['user' => Auth::check() ? Auth::user()->toArray() : 'Non connecté']);
+
+        try {
+            $request->validate([
+                'content' => 'required|string|min:3|max:1000',
+                'parent_id' => 'sometimes|integer|exists:comments,id',
+                'captcha_answer' => 'sometimes|integer'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('❌ [Comments] Erreur de validation:', ['errors' => $e->errors()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur de validation',
+                'errors' => $e->errors()
+            ], 422);
         }
 
-        $request->validate([
-            'content' => 'required|string|min:3|max:1000',
-            'parent_id' => 'sometimes|integer|exists:comments,id'
-        ]);
-
-        // Validation supplémentaire pour type et id
+        // Manual validation for type and id
         if (!$type || !in_array($type, ['recipe', 'event', 'dinor_tv', 'tip'])) {
             return response()->json([
                 'success' => false,
-                'message' => 'Type de contenu invalide. Types acceptés : recipe, event, dinor_tv, tip'
-            ], 422);
+                'message' => 'Type de contenu invalide'
+            ], 400);
         }
 
         if (!$id || !is_numeric($id)) {
             return response()->json([
                 'success' => false,
-                'message' => 'ID de contenu invalide'
-            ], 422);
+                'message' => 'ID du contenu invalide'
+            ], 400);
         }
 
-        $model = $this->getModel($type, (int)$id);
+        // Vérification du captcha (désactivé temporairement pour debug)
+        // if ($request->has('captcha_answer')) {
+        //     $captchaSession = session('captcha_' . $request->ip());
+        //     if (!$captchaSession || $captchaSession['answer'] != $request->captcha_answer || 
+        //         (time() - $captchaSession['created_at']) > 300) { // 5 minutes
+        //         return response()->json([
+        //             'success' => false,
+        //             'message' => 'Captcha invalide ou expiré',
+        //             'requires_captcha' => true
+        //         ], 400);
+        //     }
+        // }
+
+        $model = $this->getModel($type, $id);
         
         if (!$model) {
             return response()->json([
@@ -150,7 +173,12 @@ class CommentController extends Controller
             'parent_id' => $request->parent_id
         ]);
 
+        // Effacer le captcha après utilisation (temporairement désactivé)
+        // session()->forget('captcha_' . $request->ip());
+
         $comment->load(['user:id,name']);
+        
+        \Log::info('✅ [Comments] Commentaire créé avec succès:', ['comment' => $comment->toArray()]);
 
         return response()->json([
             'success' => true,
@@ -257,5 +285,54 @@ class CommentController extends Controller
             'tip' => 'tips',
             default => ''
         };
+    }
+
+    /**
+     * Extract type from commentable_type (e.g., "App\Models\Recipe" -> "recipe")
+     */
+    private function extractTypeFromCommentableType(?string $commentableType): ?string
+    {
+        if (!$commentableType) {
+            return null;
+        }
+
+        return match($commentableType) {
+            'App\\Models\\Recipe', 'App\Models\Recipe' => 'recipe',
+            'App\\Models\\Event', 'App\Models\Event' => 'event',
+            'App\\Models\\DinorTv', 'App\Models\DinorTv' => 'dinor_tv',
+            'App\\Models\\Tip', 'App\Models\Tip' => 'tip',
+            default => null
+        };
+    }
+
+    /**
+     * Generate a simple math captcha
+     */
+    public function generateCaptcha(Request $request): JsonResponse
+    {
+        $num1 = rand(1, 10);
+        $num2 = rand(1, 10);
+        $operations = ['+', '-', '*'];
+        $operation = $operations[array_rand($operations)];
+        
+        $answer = match($operation) {
+            '+' => $num1 + $num2,
+            '-' => $num1 - $num2,
+            '*' => $num1 * $num2,
+        };
+
+        // Stocker en session avec l'IP de l'utilisateur
+        session(['captcha_' . $request->ip() => [
+            'answer' => $answer,
+            'created_at' => time()
+        ]]);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'question' => "{$num1} {$operation} {$num2} = ?",
+                'expires_in' => 300 // 5 minutes
+            ]
+        ]);
     }
 } 

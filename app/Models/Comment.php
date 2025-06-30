@@ -129,13 +129,6 @@ class Comment extends Model
         return false;
     }
 
-    /**
-     * Get the admin who moderated this comment
-     */
-    public function moderatedBy(): BelongsTo
-    {
-        return $this->belongsTo(AdminUser::class, 'moderated_by');
-    }
 
     /**
      * Get status label in French
