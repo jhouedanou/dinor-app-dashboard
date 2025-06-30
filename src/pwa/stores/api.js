@@ -55,8 +55,8 @@ export const useApiStore = defineStore('api', () => {
     const cacheKey = `${endpoint}_${JSON.stringify(options)}`
     console.log('🌐 [API Store] Nouvelle requête:', { endpoint, options, cacheKey })
     
-    // Vérifier le cache PWA d'abord (sauf pour POST/PUT/DELETE)
-    if (!options.method || options.method === 'GET') {
+    // Vérifier le cache PWA d'abord (sauf pour POST/PUT/DELETE ou si forceRefresh est activé)
+    if ((!options.method || options.method === 'GET') && !options.forceRefresh) {
       console.log('🔍 [API Store] Vérification du cache PWA...')
       const cached = await checkPWACache(endpoint, options)
       if (cached) {
@@ -65,6 +65,8 @@ export const useApiStore = defineStore('api', () => {
       } else {
         console.log('❌ [API Store] Aucune donnée dans le cache PWA')
       }
+    } else if (options.forceRefresh) {
+      console.log('🔄 [API Store] Rechargement forcé - cache ignoré')
     }
 
     setLoading(cacheKey, true)
@@ -197,6 +199,15 @@ export const useApiStore = defineStore('api', () => {
     return request(fullEndpoint, { ...options, method: 'GET' })
   }
 
+  // Méthode GET qui force le rechargement sans cache
+  async function getFresh(endpoint, params = {}, options = {}) {
+    const queryString = new URLSearchParams(params).toString()
+    const fullEndpoint = queryString ? `${endpoint}?${queryString}` : endpoint
+    // Invalider le cache avant de faire la requête
+    invalidateCache(endpoint)
+    return request(fullEndpoint, { ...options, method: 'GET', forceRefresh: true })
+  }
+
   async function post(endpoint, data, options = {}) {
     return request(endpoint, {
       ...options,
@@ -255,6 +266,7 @@ export const useApiStore = defineStore('api', () => {
     clearError,
     request,
     get,
+    getFresh,
     post,
     put,
     del,

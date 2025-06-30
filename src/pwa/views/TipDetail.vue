@@ -74,23 +74,42 @@
             
             <!-- Add Comment Form -->
             <div class="add-comment-form">
-              <textarea 
-                v-model="newComment" 
-                placeholder="Ajoutez votre commentaire..." 
-                class="md3-textarea"
-                rows="3">
-              </textarea>
-              <button @click="addComment" class="btn-primary" :disabled="!newComment.trim()">
-                Publier
-              </button>
+              <div v-if="!authStore.isAuthenticated" class="auth-prompt">
+                <p class="auth-prompt-text">Connectez-vous pour laisser un commentaire</p>
+                <button @click="showAuthModal = true" class="btn-primary">
+                  Se connecter
+                </button>
+              </div>
+              <div v-else>
+                <div class="authenticated-user">
+                  <span class="user-info">Connecté en tant que {{ authStore.userName }}</span>
+                  <button @click="authStore.logout()" class="btn-logout">Déconnexion</button>
+                </div>
+                <textarea 
+                  v-model="newComment" 
+                  placeholder="Ajoutez votre commentaire..." 
+                  class="md3-textarea"
+                  rows="3">
+                </textarea>
+                <button @click="addComment" class="btn-primary" :disabled="!newComment.trim()">
+                  Publier
+                </button>
+              </div>
             </div>
 
             <!-- Comments List -->
             <div v-if="comments.length" class="comments-list">
               <div v-for="comment in comments" :key="comment.id" class="comment-item">
                 <div class="comment-header">
-                  <span class="comment-author md3-body-medium">{{ comment.author_name }}</span>
-                  <span class="comment-date md3-body-small dinor-text-gray">{{ formatDate(comment.created_at) }}</span>
+                  <div class="comment-meta">
+                    <span class="comment-author md3-body-medium">{{ comment.author_name }}</span>
+                    <span class="comment-date md3-body-small dinor-text-gray">{{ formatDate(comment.created_at) }}</span>
+                  </div>
+                  <div v-if="canDeleteComment(comment)" class="comment-actions">
+                    <button @click="deleteComment(comment.id)" class="btn-delete" title="Supprimer le commentaire">
+                      <i class="material-icons">delete</i>
+                    </button>
+                  </div>
                 </div>
                 <p class="comment-content md3-body-medium">{{ comment.content }}</p>
               </div>
@@ -121,6 +140,9 @@
       v-model="showShareModal" 
       :share-data="shareData"
     />
+
+    <!-- Auth Modal -->
+    <AuthModal v-model="showAuthModal" />
   </div>
 </template>
 
@@ -152,6 +174,7 @@ export default {
     const router = useRouter()
     const route = useRoute()
     const apiStore = useApiStore()
+    const authStore = useAuthStore()
     const { share, showShareModal, updateOpenGraphTags } = useSocialShare()
     
     const tip = ref(null)
@@ -159,6 +182,7 @@ export default {
     const loading = ref(true)
     const userLiked = ref(false)
     const newComment = ref('')
+    const showAuthModal = ref(false)
 
     const shareData = computed(() => {
       if (!tip.value) return {}
@@ -201,12 +225,35 @@ export default {
 
     const loadComments = async () => {
       try {
-        const data = await apiStore.get(`/comments`, { type: 'tip', id: props.id })
+        console.log('🔄 [Comments] Chargement des commentaires pour tip ID:', props.id)
+        const data = await apiStore.get(`/comments`, { 
+          commentable_type: 'App\\Models\\Tip', 
+          commentable_id: props.id 
+        })
+        console.log('📥 [Comments] Réponse reçue:', data)
         if (data.success) {
           comments.value = data.data
+          console.log('✅ [Comments] Commentaires chargés:', comments.value.length, 'commentaires')
         }
       } catch (error) {
-        console.error('Erreur lors du chargement des commentaires:', error)
+        console.error('❌ [Comments] Erreur lors du chargement des commentaires:', error)
+      }
+    }
+
+    const loadCommentsFresh = async () => {
+      try {
+        console.log('🔄 [Comments] Rechargement FRAIS des commentaires pour tip ID:', props.id)
+        const data = await apiStore.getFresh(`/comments`, { 
+          commentable_type: 'App\\Models\\Tip', 
+          commentable_id: props.id 
+        })
+        console.log('📥 [Comments] Réponse fraîche reçue:', data)
+        if (data.success) {
+          comments.value = data.data
+          console.log('✅ [Comments] Commentaires frais chargés:', comments.value.length, 'commentaires')
+        }
+      } catch (error) {
+        console.error('❌ [Comments] Erreur lors du rechargement frais des commentaires:', error)
       }
     }
 
@@ -244,19 +291,69 @@ export default {
     const addComment = async () => {
       if (!newComment.value.trim()) return
       
+      if (!authStore.isAuthenticated) {
+        showAuthModal.value = true
+        return
+      }
+      
       try {
-        const data = await apiStore.post('/comments', {
-          type: 'tip',
-          id: props.id,
-          content: newComment.value,
-          author_name: 'Utilisateur'
-        })
+        const commentData = {
+          commentable_type: 'App\\Models\\Tip',
+          commentable_id: parseInt(props.id),
+          content: newComment.value
+        }
+        
+        console.log('📝 [Comments] Envoi du commentaire:', commentData)
+        
+        const data = await apiStore.post('/comments', commentData)
+        
         if (data.success) {
-          await loadComments()
+          console.log('✅ [Comments] Commentaire ajouté avec succès')
+          // Recharger les commentaires avec des données fraîches
+          await loadCommentsFresh()
           newComment.value = ''
         }
       } catch (error) {
-        console.error('Erreur lors de l\'ajout du commentaire:', error)
+        console.error('❌ [Comments] Erreur lors de l\'ajout du commentaire:', error)
+        
+        // Si erreur 401, demander connexion
+        if (error.message.includes('401')) {
+          showAuthModal.value = true
+        }
+      }
+    }
+
+    const canDeleteComment = (comment) => {
+      if (!authStore.isAuthenticated) return false
+      
+      // L'utilisateur peut supprimer ses propres commentaires
+      if (comment.user_id && comment.user_id === authStore.user?.id) return true
+      
+      // Si pas d'user_id, vérifier par l'IP/session (pour les commentaires anonymes)
+      // Pour l'instant, on ne permet que la suppression des commentaires avec user_id
+      return false
+    }
+
+    const deleteComment = async (commentId) => {
+      if (!confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?')) {
+        return
+      }
+
+      try {
+        console.log('🗑️ [Comments] Suppression du commentaire ID:', commentId)
+        
+        const data = await apiStore.request(`/comments/${commentId}`, {
+          method: 'DELETE'
+        })
+        
+        if (data.success) {
+          console.log('✅ [Comments] Commentaire supprimé avec succès')
+          // Recharger les commentaires avec des données fraîches
+          await loadCommentsFresh()
+        }
+      } catch (error) {
+        console.error('❌ [Comments] Erreur lors de la suppression du commentaire:', error)
+        alert('Erreur lors de la suppression du commentaire')
       }
     }
 
@@ -334,6 +431,8 @@ export default {
       newComment,
       toggleLike,
       addComment,
+      canDeleteComment,
+      deleteComment,
       goBack,
       goHome,
       getDifficultyLabel,
@@ -341,7 +440,9 @@ export default {
       handleImageError,
       formatContent,
       showShareModal,
-      shareData
+      shareData,
+      authStore,
+      showAuthModal
     }
   }
 }

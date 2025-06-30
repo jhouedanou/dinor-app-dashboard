@@ -113,8 +113,15 @@
             <div v-if="comments.length" class="comments-list">
               <div v-for="comment in comments" :key="comment.id" class="comment-item">
                 <div class="comment-header">
-                  <span class="comment-author md3-body-medium">{{ comment.author_name }}</span>
-                  <span class="comment-date md3-body-small dinor-text-gray">{{ formatDate(comment.created_at) }}</span>
+                  <div class="comment-meta">
+                    <span class="comment-author md3-body-medium">{{ comment.author_name }}</span>
+                    <span class="comment-date md3-body-small dinor-text-gray">{{ formatDate(comment.created_at) }}</span>
+                  </div>
+                  <div v-if="canDeleteComment(comment)" class="comment-actions">
+                    <button @click="deleteComment(comment.id)" class="btn-delete" title="Supprimer le commentaire">
+                      <i class="material-icons">delete</i>
+                    </button>
+                  </div>
                 </div>
                 <p class="comment-content md3-body-medium">{{ comment.content }}</p>
               </div>
@@ -245,6 +252,23 @@ export default {
       }
     }
 
+    const loadCommentsFresh = async () => {
+      try {
+        console.log('🔄 [Comments] Rechargement FRAIS des commentaires pour recipe ID:', props.id)
+        const data = await apiStore.getFresh(`/comments`, { 
+          commentable_type: 'App\\Models\\Recipe', 
+          commentable_id: props.id 
+        })
+        console.log('📥 [Comments] Réponse fraîche reçue:', data)
+        if (data.success) {
+          comments.value = data.data
+          console.log('✅ [Comments] Commentaires frais chargés:', comments.value.length, 'commentaires')
+        }
+      } catch (error) {
+        console.error('❌ [Comments] Erreur lors du rechargement frais des commentaires:', error)
+      }
+    }
+
     const checkUserLike = async () => {
       try {
         const data = await apiStore.get(`/likes/check`, { type: 'recipe', id: props.id })
@@ -301,7 +325,8 @@ export default {
         
         if (data.success) {
           console.log('✅ [Comments] Commentaire ajouté avec succès')
-          await loadComments()
+          // Recharger les commentaires avec des données fraîches
+          await loadCommentsFresh()
           newComment.value = ''
         }
       } catch (error) {
@@ -311,6 +336,40 @@ export default {
         if (error.message.includes('401')) {
           showAuthModal.value = true
         }
+      }
+    }
+
+    const canDeleteComment = (comment) => {
+      if (!authStore.isAuthenticated) return false
+      
+      // L'utilisateur peut supprimer ses propres commentaires
+      if (comment.user_id && comment.user_id === authStore.user?.id) return true
+      
+      // Si pas d'user_id, vérifier par l'IP/session (pour les commentaires anonymes)
+      // Pour l'instant, on ne permet que la suppression des commentaires avec user_id
+      return false
+    }
+
+    const deleteComment = async (commentId) => {
+      if (!confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?')) {
+        return
+      }
+
+      try {
+        console.log('🗑️ [Comments] Suppression du commentaire ID:', commentId)
+        
+        const data = await apiStore.request(`/comments/${commentId}`, {
+          method: 'DELETE'
+        })
+        
+        if (data.success) {
+          console.log('✅ [Comments] Commentaire supprimé avec succès')
+          // Recharger les commentaires avec des données fraîches
+          await loadCommentsFresh()
+        }
+      } catch (error) {
+        console.error('❌ [Comments] Erreur lors de la suppression du commentaire:', error)
+        alert('Erreur lors de la suppression du commentaire')
       }
     }
 
@@ -396,6 +455,8 @@ export default {
       showAuthModal,
       toggleLike,
       addComment,
+      canDeleteComment,
+      deleteComment,
       handleAuthenticated,
       goBack,
       getDifficultyLabel,
