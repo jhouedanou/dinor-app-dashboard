@@ -1,0 +1,12 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Redirect /pwa to the PWA app
+    RewriteRule ^pwa/?$ /pwa/dist/index.html [L]
+    RewriteRule ^pwa/(.*)$ /pwa/dist/$1 [L]
+    
+    # Handle Laravel routes
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule>
