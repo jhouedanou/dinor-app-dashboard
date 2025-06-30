@@ -364,6 +364,7 @@ export default {
   }
   
   .filter-dropdown {
+  
     font-size: 16px; /* Prevent zoom on iOS */
     padding: 14px 40px 14px 16px;
   }
