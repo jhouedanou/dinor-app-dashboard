@@ -9,18 +9,28 @@
 
 
 
+    <!-- Toggle Filters Button -->
+    <div class="filters-toggle">
+      <button @click="showFilters = !showFilters" class="toggle-btn">
+        <i class="material-icons">{{ showFilters ? 'expand_less' : 'expand_more' }}</i>
+        <span>{{ showFilters ? 'Masquer les filtres' : 'Afficher les filtres' }}</span>
+      </button>
+    </div>
+
     <!-- Search and Filters -->
-    <SearchAndFilters
-      v-model:searchQuery="searchQuery"
-      v-model:selectedCategory="selectedCategory"
-      search-placeholder="Rechercher une recette..."
-      :categories="categories"
-      :additional-filters="recipeFilters"
-      :selected-filters="selectedFilters"
-      :results-count="filteredRecipes.length"
-      item-type="recette"
-      @update:additionalFilter="updateAdditionalFilter"
-    />
+    <div v-show="showFilters" class="filters-container">
+      <SearchAndFilters
+        v-model:searchQuery="searchQuery"
+        v-model:selectedCategory="selectedCategory"
+        search-placeholder="Rechercher une recette..."
+        :categories="categories"
+        :additional-filters="recipeFilters"
+        :selected-filters="selectedFilters"
+        :results-count="filteredRecipes.length"
+        item-type="recette"
+        @update:additionalFilter="updateAdditionalFilter"
+      />
+    </div>
 
     <!-- Loading State -->
     <div v-if="loading" class="loading-state">

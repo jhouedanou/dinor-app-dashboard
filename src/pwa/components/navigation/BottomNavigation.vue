@@ -9,7 +9,7 @@
         :class="{ 'active': isActive(item.path) }"
       >
         <div class="nav-icon">
-          <span class="material-symbols-outlined">{{ item.icon }}</span>
+          <i class="material-icons">{{ item.icon }}</i>
           <span class="emoji-fallback">{{ getEmojiForIcon(item.icon) }}</span>
         </div>
         <span class="nav-label">{{ item.label }}</span>
@@ -35,6 +35,7 @@ export default {
       { name: 'tips', path: '/tips', icon: 'lightbulb', label: 'Astuces' },
       { name: 'events', path: '/events', icon: 'event', label: 'Événements' },
       { name: 'dinor-tv', path: '/dinor-tv', icon: 'play_circle', label: 'DinorTV' },
+      { name: 'pages', path: '/pages', icon: 'web', label: 'Web' },
       { name: 'profile', path: '/profile', icon: 'person', label: 'Profil' }
     ])
     
@@ -52,6 +53,7 @@ export default {
         'calendar_today': '📅',
         'tv': '📺',
         'play_circle': '📺',
+        'web': '🌐',
         'person': '👤',
         'menu_book': '📖',
         'info': 'ℹ️',
@@ -135,12 +137,12 @@ export default {
   margin-bottom: 4px;
 }
 
-.nav-icon .material-symbols-outlined {
+.nav-icon .material-icons {
   font-size: 24px;
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
-.nav-item.active .nav-icon .material-symbols-outlined {
+.nav-item.active .nav-icon .material-icons {
   font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24;
 }
 
@@ -188,7 +190,7 @@ export default {
     font-size: 13px; /* Label légèrement plus grand sur desktop */
   }
   
-  .nav-icon .material-symbols-outlined {
+  .nav-icon .material-icons {
     font-size: 26px; /* Icônes légèrement plus grandes sur desktop */
   }
 }
@@ -209,12 +211,12 @@ export default {
   display: none; /* Masqué par défaut */
 }
 
-.material-symbols-outlined {
+.material-icons {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
 /* UNIQUEMENT quand .force-emoji est présent sur html, afficher les emoji */
-html.force-emoji .material-symbols-outlined {
+html.force-emoji .material-icons {
   display: none !important;
 }
 
@@ -222,7 +224,7 @@ html.force-emoji .emoji-fallback {
   display: inline-block !important;
 }
 
-.nav-icon .material-symbols-outlined {
+.nav-icon .material-icons {
   font-size: 24px;
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
@@ -231,7 +233,7 @@ html.force-emoji .emoji-fallback {
   font-size: 20px;
 }
 
-.nav-item.active .nav-icon .material-symbols-outlined {
+.nav-item.active .nav-icon .material-icons {
   font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24;
 }
 
@@ -242,7 +244,7 @@ html.force-emoji .emoji-fallback {
 
 /* Responsive pour petit écran */
 @media (max-width: 480px) {
-  .nav-icon .material-symbols-outlined {
+  .nav-icon .material-icons {
     font-size: 20px;
   }
 

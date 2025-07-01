@@ -464,7 +464,12 @@ export default {
 
     const getShortDescription = (description) => {
       if (!description) return ''
-      return description.length > 100 ? description.substring(0, 100) + '...' : description
+      
+      // Supprimer les balises HTML
+      const stripHtml = description.replace(/<[^>]*>/g, '')
+      
+      // Limiter la longueur
+      return stripHtml.length > 100 ? stripHtml.substring(0, 100) + '...' : stripHtml
     }
 
     const getEmptyMessage = () => {
