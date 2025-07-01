@@ -30,7 +30,7 @@
         <!-- Category Filter -->
         <div v-if="categories?.length" class="filter-dropdown-group">
           <label class="filter-label">
-            <i class="material-icons">category</span>
+            <i class="material-icons">category</i>
             <span class="emoji-fallback">📂</span>
             Catégories
           </label>
@@ -60,11 +60,11 @@
           :key="filter.key"
           class="filter-dropdown-group"
         >
-          <label class="filter-label">
-            <i class="material-icons">{{ filter.icon || 'tune' }}</span>
-            <span class="emoji-fallback">{{ filter.icon === 'schedule' ? '⏱️' : '⚙️' }}</span>
-            {{ filter.label }}
-          </label>
+                      <label class="filter-label">
+              <i class="material-icons">{{ filter.icon || 'tune' }}</i>
+              <span class="emoji-fallback">{{ filter.icon === 'schedule' ? '⏱️' : '⚙️' }}</span>
+              {{ filter.label }}
+            </label>
           <div class="dropdown-wrapper">
             <select
               :value="getFilterValue(filter.key) || ''"
