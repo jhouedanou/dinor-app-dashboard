@@ -45,11 +45,18 @@ trait Likeable
     public function addLike($userId = null, $ipAddress = null, $userAgent = null)
     {
         if (!$this->isLikedBy($userId, $ipAddress)) {
-            return $this->likes()->create([
+            $like = $this->likes()->create([
                 'user_id' => $userId,
                 'ip_address' => $ipAddress,
                 'user_agent' => $userAgent,
             ]);
+
+            // Increment likes_count if like was created
+            if ($like) {
+                $this->increment('likes_count');
+            }
+
+            return $like;
         }
         
         return false;
@@ -68,7 +75,14 @@ trait Likeable
             $query->where('ip_address', $ipAddress);
         }
 
-        return $query->delete();
+        $deleted = $query->delete();
+
+        // Decrement likes_count if a like was actually deleted
+        if ($deleted > 0) {
+            $this->decrement('likes_count');
+        }
+
+        return $deleted;
     }
 
     /**

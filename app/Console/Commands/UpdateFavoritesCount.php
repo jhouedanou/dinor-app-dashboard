@@ -21,21 +21,25 @@ class UpdateFavoritesCount extends Command
      *
      * @var string
      */
-    protected $description = 'Update favorites_count field for all content types';
+    protected $description = 'Update favorites_count and likes_count fields for all content types';
 
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        $this->info('Updating favorites count for all content...');
+        $this->info('Updating favorites and likes count for all content...');
 
         // Update recipes
         $this->info('Updating recipes...');
         Recipe::chunk(100, function ($recipes) {
             foreach ($recipes as $recipe) {
-                $actualCount = $recipe->favorites()->count();
-                $recipe->update(['favorites_count' => $actualCount]);
+                $favoritesCount = $recipe->favorites()->count();
+                $likesCount = $recipe->likes()->count();
+                $recipe->update([
+                    'favorites_count' => $favoritesCount,
+                    'likes_count' => $likesCount
+                ]);
             }
         });
 
@@ -43,8 +47,12 @@ class UpdateFavoritesCount extends Command
         $this->info('Updating events...');
         Event::chunk(100, function ($events) {
             foreach ($events as $event) {
-                $actualCount = $event->favorites()->count();
-                $event->update(['favorites_count' => $actualCount]);
+                $favoritesCount = $event->favorites()->count();
+                $likesCount = $event->likes()->count();
+                $event->update([
+                    'favorites_count' => $favoritesCount,
+                    'likes_count' => $likesCount
+                ]);
             }
         });
 
@@ -52,11 +60,15 @@ class UpdateFavoritesCount extends Command
         $this->info('Updating tips...');
         Tip::chunk(100, function ($tips) {
             foreach ($tips as $tip) {
-                $actualCount = $tip->favorites()->count();
-                $tip->update(['favorites_count' => $actualCount]);
+                $favoritesCount = $tip->favorites()->count();
+                $likesCount = $tip->likes()->count();
+                $tip->update([
+                    'favorites_count' => $favoritesCount,
+                    'likes_count' => $likesCount
+                ]);
             }
         });
 
-        $this->info('Favorites count updated successfully!');
+        $this->info('Favorites and likes count updated successfully!');
     }
 }
