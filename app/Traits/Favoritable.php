@@ -40,13 +40,20 @@ trait Favoritable
      */
     public function addToFavorites($userId)
     {
-        return UserFavorite::firstOrCreate([
+        $favorite = UserFavorite::firstOrCreate([
             'user_id' => $userId,
             'favoritable_id' => $this->id,
             'favoritable_type' => get_class($this),
         ], [
             'favorited_at' => now(),
         ]);
+
+        // Increment favorites_count if the favorite was just created
+        if ($favorite->wasRecentlyCreated) {
+            $this->increment('favorites_count');
+        }
+
+        return $favorite;
     }
 
     /**
@@ -54,9 +61,16 @@ trait Favoritable
      */
     public function removeFromFavorites($userId)
     {
-        return $this->favorites()
-                   ->where('user_id', $userId)
-                   ->delete();
+        $deleted = $this->favorites()
+                       ->where('user_id', $userId)
+                       ->delete();
+
+        // Decrement favorites_count if a favorite was actually deleted
+        if ($deleted > 0) {
+            $this->decrement('favorites_count');
+        }
+
+        return $deleted;
     }
 
     /**

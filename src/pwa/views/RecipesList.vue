@@ -169,6 +169,9 @@ export default {
       }
     }
     
+    // Filters visibility toggle
+    const showFilters = ref(true)
+    
     // Categories management
     const categories = ref([])
     
@@ -339,6 +342,7 @@ export default {
       selectedFilters,
       recipeFilters,
       hasActiveFilters,
+      showFilters,
       goToRecipe,
       clearSearch,
       setSelectedCategory,
@@ -357,6 +361,41 @@ export default {
   min-height: 100vh;
   background: #FFFFFF; /* Fond blanc comme Home */
   font-family: 'Roboto', sans-serif;
+}
+
+/* Toggle Filters Button */
+.filters-toggle {
+  padding: 16px;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  font-size: 14px;
+  color: #2D3748;
+}
+
+.toggle-btn:hover {
+  background: #F7FAFC;
+  border-color: #CBD5E0;
+}
+
+.toggle-btn i {
+  font-size: 20px;
+  color: #E53E3E;
+}
+
+.filters-container {
+  transition: all 0.3s ease;
 }
 
 

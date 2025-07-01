@@ -18,7 +18,7 @@
           class="clear-search"
           aria-label="Effacer la recherche"
         >
-          <i class="material-icons">close</span>
+          <i class="material-icons">close</i>
           <span class="emoji-fallback">✖️</span>
         </button>
       </div>

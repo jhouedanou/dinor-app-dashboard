@@ -1,17 +1,27 @@
 <template>
   <div class="events-list">
+    <!-- Toggle Filters Button -->
+    <div class="filters-toggle">
+      <button @click="showFilters = !showFilters" class="toggle-btn">
+        <i class="material-icons">{{ showFilters ? 'expand_less' : 'expand_more' }}</i>
+        <span>{{ showFilters ? 'Masquer les filtres' : 'Afficher les filtres' }}</span>
+      </button>
+    </div>
+
     <!-- Search and Filters -->
-    <SearchAndFilters
-      v-model:searchQuery="searchQuery"
-      v-model:selectedCategory="selectedCategory"
-      search-placeholder="Rechercher un événement..."
-      :categories="categories"
-      :additional-filters="eventFilters"
-      :selected-filters="selectedFilters"
-      :results-count="filteredEvents.length"
-      item-type="événement"
-      @update:additionalFilter="updateAdditionalFilter"
-    />
+    <div v-show="showFilters" class="filters-container">
+      <SearchAndFilters
+        v-model:searchQuery="searchQuery"
+        v-model:selectedCategory="selectedCategory"
+        search-placeholder="Rechercher un événement..."
+        :categories="categories"
+        :additional-filters="eventFilters"
+        :selected-filters="selectedFilters"
+        :results-count="filteredEvents.length"
+        item-type="événement"
+        @update:additionalFilter="updateAdditionalFilter"
+      />
+    </div>
 
     <!-- Loading State -->
     <div v-if="loading" class="loading-state">
@@ -140,6 +150,7 @@ export default {
     const loading = ref(false)
     const error = ref(null)
     const searchQuery = ref('')
+    const showFilters = ref(true)
     const selectedCategory = ref(null)
     const selectedFilters = ref({
       eventType: null,
@@ -384,6 +395,7 @@ export default {
       filteredEvents,
       hasActiveFilters,
       eventFilters,
+      showFilters,
       goToEvent,
       retry,
       updateAdditionalFilter,
@@ -406,6 +418,41 @@ export default {
   min-height: 100vh;
   background: #FFFFFF; /* Fond blanc pour tous les écrans */
   font-family: 'Roboto', sans-serif;
+}
+
+/* Toggle Filters Button */
+.filters-toggle {
+  padding: 16px;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  font-size: 14px;
+  color: #2D3748;
+}
+
+.toggle-btn:hover {
+  background: #F7FAFC;
+  border-color: #CBD5E0;
+}
+
+.toggle-btn i {
+  font-size: 20px;
+  color: #E53E3E;
+}
+
+.filters-container {
+  transition: all 0.3s ease;
 }
 
 /* Typographie globale */

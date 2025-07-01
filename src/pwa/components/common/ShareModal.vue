@@ -6,7 +6,7 @@
           <div class="share-modal-header">
             <h3>Partager</h3>
             <button class="close-btn" @click="close" aria-label="Fermer">
-              <i class="material-icons">close</span>
+              <i class="material-icons">close</i>
             </button>
           </div>
           
@@ -34,7 +34,7 @@
                 class="share-link-input"
               >
               <button @click="handleCopyLink" class="copy-btn" :class="{ copied: linkCopied }">
-                <i class="material-icons">{{ linkCopied ? 'check' : 'content_copy' }}</span>
+                <i class="material-icons">{{ linkCopied ? 'check' : 'content_copy' }}</i>
                 {{ linkCopied ? 'Copié!' : 'Copier' }}
               </button>
             </div>

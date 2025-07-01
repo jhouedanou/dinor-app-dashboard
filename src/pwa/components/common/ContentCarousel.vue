@@ -63,8 +63,12 @@
                   <p>{{ getShortDescription(item.short_description || item.content || item.description) }}</p>
                   <div class="card-meta">
                     <span v-if="item.likes_count" class="likes">
-                      <i class="material-icons">favorite</i>
+                      <i class="material-icons">thumb_up</i>
                       {{ item.likes_count }}
+                    </span>
+                    <span v-if="item.favorites_count" class="favorites">
+                      <i class="material-icons">favorite</i>
+                      {{ item.favorites_count }}
                     </span>
                     <span v-if="item.created_at" class="date">
                       {{ formatDate(item.created_at) }}
@@ -714,13 +718,19 @@ export default {
 }
 
 .likes,
+.favorites,
 .views {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-.likes .material-icons,
+.likes .material-icons {
+  font-size: 16px;
+  color: #3182CE;
+}
+
+.favorites .material-icons,
 .views .material-icons {
   font-size: 16px;
   color: #E53E3E;
