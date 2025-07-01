@@ -42,13 +42,20 @@
       <div class="md3-app-bar-actions">
         <slot name="actions">
           <button 
-            v-if="showLike" 
-            @click="handleLike" 
+            v-if="showFavorite" 
+            @click="handleFavoriteToggle" 
             class="md3-icon-button" 
-            :class="{ 'liked': isLiked }"
+            :class="{ 'liked': isFavorited, 'loading': favoriteLoading }"
+            :disabled="favoriteLoading || !canInteractWithFavorites"
+            :title="isFavorited ? 'Retirer des favoris' : 'Ajouter aux favoris'"
           >
-            <span class="material-symbols-outlined">{{ isLiked ? 'favorite' : 'favorite_border' }}</span>
-            <span class="emoji-fallback">{{ isLiked ? '❤️' : '🤍' }}</span>
+            <!-- Loading state -->
+            <div v-if="favoriteLoading" class="loading-spinner-header"></div>
+            <!-- Heart icon -->
+            <template v-else>
+              <span class="material-symbols-outlined">{{ isFavorited ? 'favorite' : 'favorite_border' }}</span>
+              <span class="emoji-fallback">{{ isFavorited ? '❤️' : '🤍' }}</span>
+            </template>
           </button>
           <button 
             v-if="showShare" 
@@ -66,7 +73,9 @@
 
 <script>
 import { useRouter, useRoute } from 'vue-router'
-import { computed, ref } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+import apiService from '@/services/api'
 
 export default {
   name: 'AppHeader',
@@ -75,15 +84,22 @@ export default {
       type: String,
       required: true
     },
-    showLike: {
+    showFavorite: {
+      type: Boolean,
+      default: false
+    },
+    favoriteType: {
+      type: String,
+      validator: (value) => ['recipe', 'tip', 'event', 'dinor_tv'].includes(value)
+    },
+    favoriteItemId: {
+      type: [Number, String]
+    },
+    initialFavorited: {
       type: Boolean,
       default: false
     },
     showShare: {
-      type: Boolean,
-      default: false
-    },
-    isLiked: {
       type: Boolean,
       default: false
     },
@@ -92,17 +108,34 @@ export default {
       default: null
     }
   },
-  emits: ['like', 'share', 'back'],
+  emits: ['favorite-updated', 'share', 'back', 'auth-required'],
   setup(props, { emit }) {
     const router = useRouter()
     const route = useRoute()
+    const authStore = useAuthStore()
     
     // URL du logo (avec fallback)
     const logoSrc = ref('/images/LOGO_DINOR_monochrome.svg')
+    
+    // État des favoris
+    const isFavorited = ref(props.initialFavorited)
+    const favoriteLoading = ref(false)
 
     // Masquer le bouton retour sur la page d'accueil
     const showBackButton = computed(() => {
       return route.path !== '/'
+    })
+    
+    // Vérifier si l'utilisateur peut interagir avec les favoris
+    const canInteractWithFavorites = computed(() => {
+      const result = authStore.isAuthenticated && props.favoriteType && props.favoriteItemId
+      console.log('🔍 [AppHeader] canInteractWithFavorites:', {
+        isAuthenticated: authStore.isAuthenticated,
+        favoriteType: props.favoriteType,
+        favoriteItemId: props.favoriteItemId,
+        result
+      })
+      return result
     })
 
     // Titre dynamique selon la page
@@ -135,6 +168,147 @@ export default {
       // Titre par défaut
       return 'Dinor'
     })
+    
+    // Charger le statut favori
+    const loadFavoriteStatus = async () => {
+      console.log('📊 [AppHeader] === CHARGEMENT STATUT FAVORI ===')
+      console.log('📊 [AppHeader] Vérifications:', {
+        isAuthenticated: authStore.isAuthenticated,
+        favoriteType: props.favoriteType,
+        favoriteItemId: props.favoriteItemId
+      })
+      
+      if (!authStore.isAuthenticated || !props.favoriteType || !props.favoriteItemId) {
+        console.log('📊 [AppHeader] Conditions non remplies, favori = false')
+        isFavorited.value = false
+        return
+      }
+      
+      try {
+        console.log('📡 [AppHeader] Vérification API du statut favori...')
+        const data = await apiService.checkFavorite(props.favoriteType, props.favoriteItemId)
+        console.log('📡 [AppHeader] Réponse statut favori:', data)
+        
+        if (data.success) {
+          isFavorited.value = data.is_favorited
+          console.log('✅ [AppHeader] Statut favori chargé:', data.is_favorited)
+        }
+      } catch (error) {
+        console.warn('⚠️ [AppHeader] Erreur lors de la vérification du statut favori:', error)
+      }
+      
+      console.log('📊 [AppHeader] === FIN CHARGEMENT STATUT FAVORI ===')
+    }
+    
+    // Gérer le toggle des favoris
+    const handleFavoriteToggle = async () => {
+      console.log('🌟 [AppHeader] === DÉBUT TOGGLE FAVORI ===')
+      console.log('🌟 [AppHeader] Props reçues:', {
+        type: props.favoriteType,
+        itemId: props.favoriteItemId,
+        showFavorite: props.showFavorite
+      })
+      
+      // Vérification détaillée de l'authentification
+      console.log('🔐 [AppHeader] État d\'authentification détaillé:', {
+        'authStore.isAuthenticated': authStore.isAuthenticated,
+        'authStore.user': authStore.user,
+        'authStore.token': authStore.token ? '***existe***' : null,
+        'localStorage.auth_token': localStorage.getItem('auth_token') ? '***existe***' : null,
+        'localStorage.auth_user': localStorage.getItem('auth_user') ? '***existe***' : null
+      })
+      
+      // Forcer la réinitialisation de l'auth store si nécessaire
+      const savedToken = localStorage.getItem('auth_token')
+      const savedUser = localStorage.getItem('auth_user')
+      
+      if (savedToken && savedUser && !authStore.isAuthenticated) {
+        console.log('🔄 [AppHeader] Réinitialisation de l\'auth store détectée')
+        authStore.initAuth()
+        
+        // Attendre un peu que l'état se mette à jour
+        await new Promise(resolve => setTimeout(resolve, 100))
+        
+        console.log('🔄 [AppHeader] État après réinitialisation:', {
+          'authStore.isAuthenticated': authStore.isAuthenticated,
+          'authStore.user': authStore.user
+        })
+      }
+      
+      if (!authStore.isAuthenticated) {
+        console.log('🔒 [AppHeader] Utilisateur non connecté - affichage modal auth')
+        emit('auth-required')
+        return
+      }
+      
+      if (!props.favoriteType || !props.favoriteItemId) {
+        console.error('❌ [AppHeader] Type ou ID manquant pour les favoris:', {
+          favoriteType: props.favoriteType,
+          favoriteItemId: props.favoriteItemId
+        })
+        return
+      }
+      
+      if (favoriteLoading.value) {
+        console.log('⏳ [AppHeader] Déjà en cours de chargement')
+        return
+      }
+      
+      favoriteLoading.value = true
+      const previousState = isFavorited.value
+      
+      // Optimistic update
+      isFavorited.value = !isFavorited.value
+      console.log('🔄 [AppHeader] Mise à jour optimiste:', {
+        previousState,
+        newState: isFavorited.value
+      })
+      
+      try {
+        console.log('📡 [AppHeader] Envoi requête API toggle favori...')
+        const data = await apiService.toggleFavorite(props.favoriteType, props.favoriteItemId)
+        console.log('📡 [AppHeader] Réponse API reçue:', data)
+        
+        if (data.success) {
+          isFavorited.value = data.is_favorited
+          
+          // Emit events for parent components
+          emit('favorite-updated', {
+            isFavorited: isFavorited.value,
+            favoritesCount: data.data?.total_favorites || 0
+          })
+          
+          console.log('🌟 [AppHeader] Toggle favori réussi:', {
+            type: props.favoriteType,
+            id: props.favoriteItemId,
+            favorited: isFavorited.value,
+            favoritesCount: data.data?.total_favorites || 0
+          })
+        } else {
+          throw new Error(data.message || 'Erreur lors de la mise à jour des favoris')
+        }
+      } catch (error) {
+        console.error('❌ [AppHeader] Erreur toggle favori:', error)
+        console.error('❌ [AppHeader] Détails erreur:', {
+          message: error.message,
+          status: error.status,
+          response: error.response
+        })
+        
+        // Revert optimistic update
+        isFavorited.value = previousState
+        console.log('🔄 [AppHeader] Rollback vers état précédent:', previousState)
+        
+        // Show error message (you could emit an error event here)
+        if (error.message.includes('401') || error.status === 401) {
+          console.log('🔒 [AppHeader] Erreur 401 - redirection vers auth')
+          emit('auth-required')
+        }
+      } finally {
+        favoriteLoading.value = false
+        console.log('🌟 [AppHeader] === FIN TOGGLE FAVORI ===')
+      }
+    }
 
     const handleBack = () => {
       if (props.backPath) {
@@ -143,10 +317,6 @@ export default {
         router.go(-1)
       }
       emit('back')
-    }
-
-    const handleLike = () => {
-      emit('like')
     }
 
     const handleShare = () => {
@@ -182,12 +352,66 @@ export default {
         }
       }
     }
+    
+    // Watch for auth changes
+    watch(() => authStore.isAuthenticated, (isAuth, oldAuth) => {
+      console.log('👀 [AppHeader] Watch authStore.isAuthenticated changé:', {
+        oldValue: oldAuth,
+        newValue: isAuth,
+        user: authStore.user,
+        token: authStore.token ? '***existe***' : null
+      })
+      
+      if (isAuth) {
+        console.log('✅ [AppHeader] Utilisateur connecté - chargement statut favori')
+        loadFavoriteStatus()
+      } else {
+        console.log('❌ [AppHeader] Utilisateur déconnecté - favori = false')
+        isFavorited.value = false
+      }
+    })
+    
+    // Watch for prop changes
+    watch(() => props.initialFavorited, (newVal, oldVal) => {
+      console.log('👀 [AppHeader] Watch initialFavorited changé:', { oldVal, newVal })
+      isFavorited.value = newVal
+    })
+    
+    watch(() => [props.favoriteType, props.favoriteItemId], ([newType, newId], [oldType, oldId]) => {
+      console.log('👀 [AppHeader] Watch favoriteType/ItemId changé:', {
+        oldType, newType,
+        oldId, newId,
+        isAuthenticated: authStore.isAuthenticated
+      })
+      
+      if (authStore.isAuthenticated && props.favoriteType && props.favoriteItemId) {
+        console.log('🔄 [AppHeader] Rechargement statut favori suite à changement props')
+        loadFavoriteStatus()
+      }
+    })
+    
+    onMounted(() => {
+      console.log('🚀 [AppHeader] Composant monté - état initial:', {
+        isAuthenticated: authStore.isAuthenticated,
+        favoriteType: props.favoriteType,
+        favoriteItemId: props.favoriteItemId,
+        initialFavorited: props.initialFavorited
+      })
+      
+      if (authStore.isAuthenticated && props.favoriteType && props.favoriteItemId) {
+        console.log('🔄 [AppHeader] Chargement initial du statut favori')
+        loadFavoriteStatus()
+      }
+    })
 
     return {
       showBackButton,
       displayTitle,
+      isFavorited,
+      favoriteLoading,
+      canInteractWithFavorites,
       handleBack,
-      handleLike,
+      handleFavoriteToggle,
       handleShare,
       handleLogoError,
       logoSrc
@@ -378,5 +602,35 @@ html.force-emoji .emoji-fallback {
   .dinor-logo-container {
     justify-content: center; /* Centrer le logo quand pas de titre */
   }
+}
+
+/* Loading state for favorite button */
+.md3-icon-button.loading {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.md3-icon-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.loading-spinner-header {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid #FFFFFF;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.md3-icon-button i {
+  font-size: 18px;
+}
+
+/* Animations */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 </style> 

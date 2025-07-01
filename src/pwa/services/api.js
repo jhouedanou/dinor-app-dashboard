@@ -26,28 +26,57 @@ class ApiService {
     if (!options.method || options.method === 'GET') {
       const cached = this.cache.get(cacheKey)
       if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
+        console.log('📦 [API] Cache hit for:', endpoint)
         return cached.data
       }
     }
+
+    // Récupérer le token d'authentification du localStorage
+    const authToken = localStorage.getItem('auth_token')
+    console.log('🔐 [API] Token d\'authentification:', authToken ? '***existe***' : 'null')
 
     const config = {
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
+        // Ajouter le token d'authentification si disponible
+        ...(authToken && { 'Authorization': `Bearer ${authToken}` }),
         ...options.headers
       },
       ...options
     }
 
+    console.log('📡 [API] Requête vers:', endpoint, {
+      method: options.method || 'GET',
+      hasAuthToken: !!authToken,
+      headers: { ...config.headers, Authorization: authToken ? '***Bearer token***' : undefined }
+    })
+
     try {
       const response = await fetch(url, config)
       
+      console.log('📡 [API] Réponse reçue:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok
+      })
+      
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        // Gestion spéciale pour les erreurs 401 (non autorisé)
+        if (response.status === 401) {
+          console.error('🔒 [API] Erreur 401 - Token invalide ou manquant')
+          // Optionnel : nettoyer le localStorage si le token est invalide
+          // localStorage.removeItem('auth_token')
+          // localStorage.removeItem('auth_user')
+        }
+        
+        const errorData = await response.text()
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorData}`)
       }
 
       const data = await response.json()
+      console.log('✅ [API] Réponse JSON:', { success: data.success, endpoint })
       
       // Cache successful GET requests
       if (!options.method || options.method === 'GET') {
@@ -55,11 +84,16 @@ class ApiService {
           data,
           timestamp: Date.now()
         })
+        console.log('📦 [API] Réponse mise en cache pour:', endpoint)
       }
 
       return data
     } catch (error) {
-      console.error('API Request failed:', error)
+      console.error('❌ [API] Erreur de requête:', {
+        endpoint,
+        error: error.message,
+        status: error.status
+      })
       throw error
     }
   }

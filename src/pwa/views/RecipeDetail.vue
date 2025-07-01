@@ -240,8 +240,10 @@ export default {
           emit('update-header', {
             title: recipe.value.title || 'Recette',
             showShare: true,
-            showLike: true,
-            isLiked: userLiked.value,
+            showFavorite: true,
+            favoriteType: 'recipe',
+            favoriteItemId: parseInt(props.id),
+            isContentFavorited: userFavorited.value,
             backPath: '/recipes'
           })
         }
@@ -343,7 +345,7 @@ export default {
           
           // Mettre à jour le statut favori dans le header
           emit('update-header', {
-            isFavorited: userFavorited.value
+            isContentFavorited: userFavorited.value
           })
         }
       } catch (error) {
@@ -674,8 +676,6 @@ p, span, div {
   padding: 0.5rem;
   border-bottom: 1px solid var(--md-sys-color-outline-variant);
 }
-
-
 
 .loading-container,
 .error-state {

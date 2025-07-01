@@ -242,8 +242,10 @@ export default {
           emit('update-header', {
             title: event.value.title || 'Événement',
             showShare: true,
-            showLike: true,
-            isLiked: userLiked.value,
+            showFavorite: true,
+            favoriteType: 'event',
+            favoriteItemId: parseInt(props.id),
+            isContentFavorited: userFavorited.value,
             backPath: '/events'
           })
         }
@@ -342,7 +344,7 @@ export default {
           
           // Mettre à jour le statut favori dans le header
           emit('update-header', {
-            isFavorited: userFavorited.value
+            isContentFavorited: userFavorited.value
           })
         }
       } catch (error) {

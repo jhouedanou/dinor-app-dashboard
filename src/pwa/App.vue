@@ -13,13 +13,16 @@
       <!-- En-tête de l'application simplifié -->
       <AppHeader 
         :title="currentPageTitle"
-        :show-like="showLikeButton"
+        :show-favorite="showFavoriteButton"
+        :favorite-type="favoriteType"
+        :favorite-item-id="favoriteItemId"
+        :initial-favorited="isContentFavorited"
         :show-share="showShareButton"
-        :is-liked="isLiked"
         :back-path="backPath"
-        @like="handleLike"
+        @favorite-updated="handleFavoriteUpdate"
         @share="handleShare"
         @back="handleBack"
+        @auth-required="handleAuthRequired"
       />
       
       <!-- Main Content -->
@@ -46,6 +49,16 @@
         v-model="showShareModal"
         :share-data="currentShareData"
       />
+      
+      <!-- Auth Modal -->
+      <AuthModal v-model="showAuthModal" />
+      
+      <!-- Auth Debugger -->
+      <AuthDebugger 
+        :show-favorite="showFavoriteButton"
+        :favorite-type="favoriteType"
+        :favorite-item-id="favoriteItemId"
+      />
     </div>
   </div>
 </template>
@@ -54,11 +67,14 @@
 import { computed, ref, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useSocialShare } from '@/composables/useSocialShare'
+import { useAuthStore } from '@/stores/auth'
 import AppHeader from '@/components/common/AppHeader.vue'
 import BottomNavigation from '@/components/navigation/BottomNavigation.vue'
 import InstallPrompt from '@/components/common/InstallPrompt.vue'
 import LoadingScreen from '@/components/common/LoadingScreen.vue'
 import ShareModal from '@/components/common/ShareModal.vue'
+import AuthModal from '@/components/common/AuthModal.vue'
+import AuthDebugger from '@/components/common/AuthDebugger.vue'
 
 export default {
   name: 'App',
@@ -67,21 +83,29 @@ export default {
     BottomNavigation,
     InstallPrompt,
     LoadingScreen,
-    ShareModal
+    ShareModal,
+    AuthModal,
+    AuthDebugger
   },
   setup() {
     const route = useRoute()
     const router = useRouter()
     const { share, showShareModal } = useSocialShare()
+    const authStore = useAuthStore()
     
     // Données de partage courantes
     const currentShareData = ref({})
     
+    // État des modales
+    const showAuthModal = ref(false)
+    
     // État pour le header dynamique
     const currentPageTitle = ref('Dinor')
-    const showLikeButton = ref(false)
+    const showFavoriteButton = ref(false)
+    const favoriteType = ref(null)
+    const favoriteItemId = ref(null)
+    const isContentFavorited = ref(false)
     const showShareButton = ref(false)
-    const isLiked = ref(false)
     const backPath = ref(null)
     
     // Show bottom nav only on main pages
@@ -94,52 +118,52 @@ export default {
     const updateTitle = () => {
       if (route.path === '/') {
         currentPageTitle.value = 'Dinor'
-        showLikeButton.value = false
+        showFavoriteButton.value = false
         showShareButton.value = false
         backPath.value = null
       } else if (route.path === '/recipes') {
         currentPageTitle.value = 'Recettes'
-        showLikeButton.value = false
+        showFavoriteButton.value = false
         showShareButton.value = false
         backPath.value = null
       } else if (route.path === '/tips') {
         currentPageTitle.value = 'Astuces'
-        showLikeButton.value = false
+        showFavoriteButton.value = false
         showShareButton.value = false
         backPath.value = null
       } else if (route.path === '/events') {
         currentPageTitle.value = 'Événements'
-        showLikeButton.value = false
+        showFavoriteButton.value = false
         showShareButton.value = false
         backPath.value = null
       } else if (route.path === '/dinor-tv') {
         currentPageTitle.value = 'Dinor TV'
-        showLikeButton.value = false
+        showFavoriteButton.value = false
         showShareButton.value = false
         backPath.value = null
       } else if (route.path === '/pages') {
         currentPageTitle.value = 'Pages'
-        showLikeButton.value = false
+        showFavoriteButton.value = false
         showShareButton.value = false
         backPath.value = null
       } else if (route.path.startsWith('/recipe/')) {
         currentPageTitle.value = 'Recette'
-        showLikeButton.value = true
+        showFavoriteButton.value = true
         showShareButton.value = true
         backPath.value = '/recipes'
       } else if (route.path.startsWith('/tip/')) {
         currentPageTitle.value = 'Astuce'
-        showLikeButton.value = true
+        showFavoriteButton.value = true
         showShareButton.value = true
         backPath.value = '/tips'
       } else if (route.path.startsWith('/event/')) {
         currentPageTitle.value = 'Événement'
-        showLikeButton.value = true
+        showFavoriteButton.value = true
         showShareButton.value = true
         backPath.value = '/events'
       } else {
         currentPageTitle.value = 'Dinor'
-        showLikeButton.value = false
+        showFavoriteButton.value = false
         showShareButton.value = false
         backPath.value = '/'
       }
@@ -151,9 +175,11 @@ export default {
     // Function pour mettre à jour le header depuis les composants enfants
     const updateHeader = (headerData) => {
       if (headerData.title) currentPageTitle.value = headerData.title
-      if (headerData.showLike !== undefined) showLikeButton.value = headerData.showLike
+      if (headerData.showFavorite !== undefined) showFavoriteButton.value = headerData.showFavorite
+      if (headerData.favoriteType !== undefined) favoriteType.value = headerData.favoriteType
+      if (headerData.favoriteItemId !== undefined) favoriteItemId.value = headerData.favoriteItemId
+      if (headerData.isContentFavorited !== undefined) isContentFavorited.value = headerData.isContentFavorited
       if (headerData.showShare !== undefined) showShareButton.value = headerData.showShare
-      if (headerData.isLiked !== undefined) isLiked.value = headerData.isLiked
       if (headerData.backPath !== undefined) backPath.value = headerData.backPath
     }
     
@@ -206,6 +232,21 @@ export default {
       }
     }
     
+    const handleFavoriteUpdate = (updatedFavorite) => {
+      console.log('🌟 [App] Favori mis à jour:', updatedFavorite)
+      isContentFavorited.value = updatedFavorite.isFavorited
+      
+      // Mettre à jour le composant enfant si nécessaire
+      if (currentView.value && currentView.value.handleFavoriteUpdate) {
+        currentView.value.handleFavoriteUpdate(updatedFavorite)
+      }
+    }
+    
+    const handleAuthRequired = () => {
+      console.log('🔒 [App] Authentification requise')
+      showAuthModal.value = true
+    }
+    
     // Initialiser le titre
     updateTitle()
     
@@ -225,19 +266,24 @@ export default {
     return {
       showBottomNav,
       currentPageTitle,
-      showLikeButton,
+      showFavoriteButton,
+      favoriteType,
+      favoriteItemId,
+      isContentFavorited,
       showShareButton,
-      isLiked,
       backPath,
       currentView,
       updateHeader,
       handleLike,
       handleShare,
       handleBack,
+      handleFavoriteUpdate,
+      handleAuthRequired,
       showLoading,
       onLoadingComplete,
       showShareModal,
-      currentShareData
+      currentShareData,
+      showAuthModal
     }
   }
 }
