@@ -53,12 +53,6 @@
       <!-- Auth Modal -->
       <AuthModal v-model="showAuthModal" />
       
-      <!-- Auth Debugger -->
-      <AuthDebugger 
-        :show-favorite="showFavoriteButton"
-        :favorite-type="favoriteType"
-        :favorite-item-id="favoriteItemId"
-      />
     </div>
   </div>
 </template>
@@ -74,7 +68,6 @@ import InstallPrompt from '@/components/common/InstallPrompt.vue'
 import LoadingScreen from '@/components/common/LoadingScreen.vue'
 import ShareModal from '@/components/common/ShareModal.vue'
 import AuthModal from '@/components/common/AuthModal.vue'
-import AuthDebugger from '@/components/common/AuthDebugger.vue'
 
 export default {
   name: 'App',
@@ -84,8 +77,7 @@ export default {
     InstallPrompt,
     LoadingScreen,
     ShareModal,
-    AuthModal,
-    AuthDebugger
+    AuthModal
   },
   setup() {
     const route = useRoute()

@@ -134,13 +134,13 @@ class FavoriteController extends Controller
         }
 
         $request->validate([
-            'favoritable_type' => 'required|string|in:recipe,event,tip,dinor_tv',
-            'favoritable_id' => 'required|integer|min:1'
+            'type' => 'required|string|in:recipe,event,tip,dinor_tv',
+            'id' => 'required|integer|min:1'
         ]);
 
         $userId = Auth::id();
-        $type = $request->input('favoritable_type');
-        $id = $request->input('favoritable_id');
+        $type = $request->input('type');
+        $id = $request->input('id');
 
         $modelClass = $this->getModelClass($type);
         if (!$modelClass) {
@@ -165,14 +165,6 @@ class FavoriteController extends Controller
         $favoritesCount = UserFavorite::where('favoritable_id', $id)
                                      ->where('favoritable_type', $modelClass)
                                      ->count();
-
-        \Log::info('🌟 [Favorites] Toggle favorite:', [
-            'user_id' => $userId,
-            'type' => $type,
-            'id' => $id,
-            'is_favorited' => $isFavorited,
-            'total_favorites' => $favoritesCount
-        ]);
 
         return response()->json([
             'success' => true,

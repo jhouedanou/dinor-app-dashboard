@@ -387,12 +387,23 @@ export default {
 
       loading.value = true
       try {
-        const data = await apiStore.get('/favorites')
+        console.log('🔍 [Profile] Chargement des favoris...')
+        // Utiliser temporairement l'API de test qui retourne les vrais favoris
+        const response = await fetch('/api/test-favorites', {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        })
+        const data = await response.json()
+        console.log('🔍 [Profile] Réponse API favoris:', data)
         if (data.success) {
           favorites.value = data.data
+          console.log('🔍 [Profile] Favoris chargés:', favorites.value.length, 'éléments')
         }
       } catch (error) {
-        console.error('Erreur lors du chargement des favoris:', error)
+        console.error('❌ [Profile] Erreur lors du chargement des favoris:', error)
       } finally {
         loading.value = false
       }

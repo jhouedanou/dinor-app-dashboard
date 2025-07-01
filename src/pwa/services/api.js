@@ -214,8 +214,8 @@ class ApiService {
     return this.request('/favorites/toggle', {
       method: 'POST',
       body: JSON.stringify({
-        favoritable_type,
-        favoritable_id
+        type: favoritable_type,
+        id: favoritable_id
       })
     })
   }

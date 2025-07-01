@@ -27,6 +27,62 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+// Route de test avec vrais favoris (sans authentification)
+Route::get('/test-favorites', function() {
+    try {
+        $favorites = \App\Models\UserFavorite::with('favoritable')
+            ->orderBy('favorited_at', 'desc')
+            ->get();
+        
+        $favoritesData = $favorites->map(function ($favorite) {
+            $favoritable = $favorite->favoritable;
+            if (!$favoritable) return null;
+
+            // Déterminer le type
+            $type = match(get_class($favoritable)) {
+                \App\Models\Recipe::class => 'recipe',
+                \App\Models\Event::class => 'event',
+                \App\Models\Tip::class => 'tip',
+                \App\Models\DinorTv::class => 'dinor_tv',
+                default => 'unknown'
+            };
+
+            return [
+                'id' => $favorite->id,
+                'favorited_at' => $favorite->favorited_at,
+                'type' => $type,
+                'content' => [
+                    'id' => $favoritable->id,
+                    'title' => $favoritable->title,
+                    'description' => $favoritable->description ?? $favoritable->content ?? null,
+                    'image' => $favoritable->image ?? null,
+                    'created_at' => $favoritable->created_at,
+                    'likes_count' => $favoritable->likes_count ?? 0,
+                    'comments_count' => $favoritable->comments_count ?? 0,
+                    'favorites_count' => $favoritable->favorites_count ?? 0,
+                ]
+            ];
+        })->filter()->values();
+
+        return response()->json([
+            'success' => true,
+            'data' => $favoritesData,
+            'pagination' => [
+                'current_page' => 1,
+                'last_page' => 1,
+                'per_page' => 20,
+                'total' => $favoritesData->count()
+            ]
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Erreur lors du chargement des favoris: ' . $e->getMessage(),
+            'data' => []
+        ]);
+    }
+});
+
 // Routes d'authentification
 Route::prefix('v1/auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
@@ -110,6 +166,62 @@ Route::post('/event-categories/check-exists', [App\Http\Controllers\Api\EventCat
     
     // Favorites - Routes publiques (lecture seulement)
     Route::get('/favorites/check', [App\Http\Controllers\Api\FavoriteController::class, 'check']);
+    
+    // Route de test avec vrais favoris de la base de données
+    Route::get('/favorites-real', function() {
+        try {
+            $favorites = \App\Models\UserFavorite::with('favoritable')
+                ->orderBy('favorited_at', 'desc')
+                ->get();
+            
+            $favoritesData = $favorites->map(function ($favorite) {
+                $favoritable = $favorite->favoritable;
+                if (!$favoritable) return null;
+
+                // Déterminer le type
+                $type = match(get_class($favoritable)) {
+                    \App\Models\Recipe::class => 'recipe',
+                    \App\Models\Event::class => 'event',
+                    \App\Models\Tip::class => 'tip',
+                    \App\Models\DinorTv::class => 'dinor_tv',
+                    default => 'unknown'
+                };
+
+                return [
+                    'id' => $favorite->id,
+                    'favorited_at' => $favorite->favorited_at,
+                    'type' => $type,
+                    'content' => [
+                        'id' => $favoritable->id,
+                        'title' => $favoritable->title,
+                        'description' => $favoritable->description ?? $favoritable->content ?? null,
+                        'image' => $favoritable->image ?? null,
+                        'created_at' => $favoritable->created_at,
+                        'likes_count' => $favoritable->likes_count ?? 0,
+                        'comments_count' => $favoritable->comments_count ?? 0,
+                        'favorites_count' => $favoritable->favorites_count ?? 0,
+                    ]
+                ];
+            })->filter()->values();
+
+            return response()->json([
+                'success' => true,
+                'data' => $favoritesData,
+                'pagination' => [
+                    'current_page' => 1,
+                    'last_page' => 1,
+                    'per_page' => 20,
+                    'total' => $favoritesData->count()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors du chargement des favoris: ' . $e->getMessage(),
+                'data' => []
+            ]);
+        }
+    });
     
     // Test route pour debug des commentaires
     Route::get('/test/comments/{id}', function($id) {
@@ -201,8 +313,65 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     
     // Favorites - Routes protégées
     Route::get('/favorites', [App\Http\Controllers\Api\FavoriteController::class, 'index']);
+    Route::get('/favorites/check', [App\Http\Controllers\Api\FavoriteController::class, 'check']);
     Route::post('/favorites/toggle', [App\Http\Controllers\Api\FavoriteController::class, 'toggle']);
     Route::delete('/favorites/{favorite}', [App\Http\Controllers\Api\FavoriteController::class, 'remove']);
+    
+    // Route de test avec vrais favoris de la base de données
+    Route::get('/favorites-real', function() {
+        try {
+            $favorites = \App\Models\UserFavorite::with('favoritable')
+                ->orderBy('favorited_at', 'desc')
+                ->get();
+            
+            $favoritesData = $favorites->map(function ($favorite) {
+                $favoritable = $favorite->favoritable;
+                if (!$favoritable) return null;
+
+                // Déterminer le type
+                $type = match(get_class($favoritable)) {
+                    \App\Models\Recipe::class => 'recipe',
+                    \App\Models\Event::class => 'event',
+                    \App\Models\Tip::class => 'tip',
+                    \App\Models\DinorTv::class => 'dinor_tv',
+                    default => 'unknown'
+                };
+
+                return [
+                    'id' => $favorite->id,
+                    'favorited_at' => $favorite->favorited_at,
+                    'type' => $type,
+                    'content' => [
+                        'id' => $favoritable->id,
+                        'title' => $favoritable->title,
+                        'description' => $favoritable->description ?? $favoritable->content ?? null,
+                        'image' => $favoritable->image ?? null,
+                        'created_at' => $favoritable->created_at,
+                        'likes_count' => $favoritable->likes_count ?? 0,
+                        'comments_count' => $favoritable->comments_count ?? 0,
+                        'favorites_count' => $favoritable->favorites_count ?? 0,
+                    ]
+                ];
+            })->filter()->values();
+
+            return response()->json([
+                'success' => true,
+                'data' => $favoritesData,
+                'pagination' => [
+                    'current_page' => 1,
+                    'last_page' => 1,
+                    'per_page' => 20,
+                    'total' => $favoritesData->count()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors du chargement des favoris: ' . $e->getMessage(),
+                'data' => []
+            ]);
+        }
+    });
     
     // Profile - Routes protégées
     Route::get('/profile', [App\Http\Controllers\Api\ProfileController::class, 'show']);
