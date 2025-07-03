@@ -91,6 +91,7 @@ class Event extends Model
         'meta_keywords',
         'views_count',
         'likes_count',
+        'comments_count',
         'shares_count',
         'favorites_count',
         'rating_average',
@@ -134,6 +135,7 @@ class Event extends Model
         'longitude' => 'decimal:8',
         'views_count' => 'integer',
         'likes_count' => 'integer',
+        'comments_count' => 'integer',
         'shares_count' => 'integer',
         'favorites_count' => 'integer',
         'rating_average' => 'decimal:2',
@@ -142,7 +144,9 @@ class Event extends Model
 
     protected $appends = [
         'featured_image_url',
-        'gallery_urls'
+        'gallery_urls',
+        'current_likes_count',
+        'approved_comments_count'
     ];
 
     public function category()

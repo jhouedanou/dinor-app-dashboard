@@ -11,9 +11,15 @@
           </div>
           
           <div class="auth-modal-content">
-            <!-- Messages d'erreur -->
-            <div v-if="authStore.error" class="error-message">
-              {{ authStore.error }}
+            <!-- Messages d'erreur et d'information -->
+            <div v-if="errorMessage" class="error-message" :class="{ 'info-message': isInfoMessage }">
+              {{ errorMessage }}
+              <div v-if="showCreateAccountSuggestion" class="create-account-suggestion">
+                <p>Ce compte n'existe pas encore.</p>
+                <button @click="switchToRegister" class="create-account-btn">
+                  Créer un compte maintenant
+                </button>
+              </div>
             </div>
             
             <!-- Formulaire de connexion -->
@@ -135,13 +141,17 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 
 const props = defineProps({
   modelValue: {
     type: Boolean,
     default: false
+  },
+  initialMessage: {
+    type: String,
+    default: ''
   }
 })
 
@@ -149,6 +159,8 @@ const emit = defineEmits(['update:modelValue', 'authenticated'])
 
 const authStore = useAuthStore()
 const isLogin = ref(true)
+const showCreateAccountSuggestion = ref(false)
+const userNotFoundEmail = ref('')
 
 const loginForm = reactive({
   email: '',
@@ -162,9 +174,35 @@ const registerForm = reactive({
   password_confirmation: ''
 })
 
+// Message d'erreur intelligent avec suggestion de création de compte
+const errorMessage = computed(() => {
+  if (props.initialMessage) {
+    return props.initialMessage
+  }
+  return authStore.error
+})
+
+const isInfoMessage = computed(() => {
+  return props.initialMessage && !props.initialMessage.includes('erreur')
+})
+
+// Surveiller les erreurs pour détecter les utilisateurs inexistants
+watch(() => authStore.error, (newError) => {
+  if (newError && (
+    newError.includes('utilisateur introuvable') ||
+    newError.includes('email not found') ||
+    newError.includes('Invalid credentials') ||
+    newError.includes('compte n\'existe pas')
+  )) {
+    showCreateAccountSuggestion.value = true
+    userNotFoundEmail.value = loginForm.email
+  } else {
+    showCreateAccountSuggestion.value = false
+  }
+})
+
 const close = () => {
   emit('update:modelValue', false)
-  // Reset forms
   resetForms()
 }
 
@@ -182,6 +220,18 @@ const resetForms = () => {
   registerForm.password = ''
   registerForm.password_confirmation = ''
   authStore.error = null
+  showCreateAccountSuggestion.value = false
+  userNotFoundEmail.value = ''
+}
+
+const switchToRegister = () => {
+  // Pré-remplir l'email si on vient d'une tentative de connexion échouée
+  if (userNotFoundEmail.value) {
+    registerForm.email = userNotFoundEmail.value
+  }
+  isLogin.value = false
+  showCreateAccountSuggestion.value = false
+  authStore.error = null
 }
 
 const handleLogin = async () => {
@@ -193,6 +243,7 @@ const handleLogin = async () => {
     return
   }
   
+  showCreateAccountSuggestion.value = false
   const result = await authStore.login(loginForm)
   
   if (result.success) {
@@ -275,6 +326,40 @@ const handleRegister = async () => {
   margin-bottom: 1rem;
   font-size: 0.875rem;
   border: 1px solid #fcc;
+}
+
+.error-message.info-message {
+  background: #e3f2fd;
+  color: #1976d2;
+  border: 1px solid #bbdefb;
+}
+
+.create-account-suggestion {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #fcc;
+}
+
+.create-account-suggestion p {
+  margin: 0 0 0.75rem 0;
+  font-weight: 500;
+}
+
+.create-account-btn {
+  background: #E53E3E;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.create-account-btn:hover {
+  background: #c53030;
+  transform: translateY(-1px);
 }
 
 .auth-form {

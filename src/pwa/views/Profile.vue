@@ -213,6 +213,18 @@
               </div>
             </form>
           </div>
+
+          <!-- Logout Section -->
+          <div class="form-section logout-section">
+            <h3 class="form-title">Déconnexion</h3>
+            <p class="form-description">
+              Vous serez déconnecté de votre compte sur cet appareil. Vos données seront conservées.
+            </p>
+            <button @click="handleLogout" class="btn-logout-main">
+              <i class="material-icons">logout</i>
+              <span>Se déconnecter</span>
+            </button>
+          </div>
         </div>
 
         <!-- Legal Section -->
@@ -279,18 +291,6 @@
                 {{ deletionForm.message }}
               </div>
             </form>
-          </div>
-
-          <!-- Logout Section -->
-          <div class="form-section">
-            <h3 class="form-title">Déconnexion</h3>
-            <p class="form-description">
-              Vous serez déconnecté de votre compte sur cet appareil.
-            </p>
-            <button @click="authStore.logout()" class="btn-logout-main">
-              <i class="material-icons">logout</i>
-              <span>Se déconnecter</span>
-            </button>
           </div>
         </div>
       </div>
@@ -553,12 +553,13 @@ export default {
       usernameForm.value.message = ''
       
       try {
-        const data = await apiStore.request('/profile/name', {
-          method: 'PUT',
-          body: {
-            name: usernameForm.value.name
-          }
+        console.log('📝 [Profile] Mise à jour du nom:', { name: usernameForm.value.name })
+        
+        const data = await apiStore.put('/profile/name', {
+          name: usernameForm.value.name
         })
+        
+        console.log('✅ [Profile] Réponse mise à jour nom:', data)
         
         if (data.success) {
           usernameForm.value.success = true
@@ -568,8 +569,22 @@ export default {
           usernameForm.value.name = ''
         }
       } catch (error) {
+        console.error('❌ [Profile] Erreur mise à jour nom:', error)
+        console.error('❌ [Profile] Données d\'erreur:', error.response?.data)
+        
         usernameForm.value.success = false
-        usernameForm.value.message = error.response?.data?.message || 'Erreur lors de la mise à jour'
+        
+        // Afficher les erreurs spécifiques si disponibles
+        if (error.response?.data?.errors) {
+          const errors = error.response.data.errors
+          if (errors.name && errors.name.length > 0) {
+            usernameForm.value.message = errors.name[0]
+          } else {
+            usernameForm.value.message = 'Erreur de validation: ' + Object.values(errors).flat().join(', ')
+          }
+        } else {
+          usernameForm.value.message = error.response?.data?.message || error.message || 'Erreur lors de la mise à jour'
+        }
       } finally {
         usernameForm.value.loading = false
       }
@@ -586,14 +601,15 @@ export default {
       passwordForm.value.message = ''
       
       try {
-        const data = await apiStore.request('/profile/password', {
-          method: 'PUT',
-          body: {
-            current_password: passwordForm.value.currentPassword,
-            new_password: passwordForm.value.newPassword,
-            new_password_confirmation: passwordForm.value.confirmPassword
-          }
+        console.log('🔐 [Profile] Mise à jour du mot de passe')
+        
+        const data = await apiStore.put('/profile/password', {
+          current_password: passwordForm.value.currentPassword,
+          new_password: passwordForm.value.newPassword,
+          new_password_confirmation: passwordForm.value.confirmPassword
         })
+        
+        console.log('✅ [Profile] Réponse mise à jour mdp:', data)
         
         if (data.success) {
           passwordForm.value.success = true
@@ -604,8 +620,24 @@ export default {
           passwordForm.value.confirmPassword = ''
         }
       } catch (error) {
+        console.error('❌ [Profile] Erreur mise à jour mdp:', error)
+        console.error('❌ [Profile] Données d\'erreur:', error.response?.data)
+        
         passwordForm.value.success = false
-        passwordForm.value.message = error.response?.data?.message || 'Erreur lors de la mise à jour'
+        
+        // Afficher les erreurs spécifiques si disponibles
+        if (error.response?.data?.errors) {
+          const errors = error.response.data.errors
+          if (errors.current_password && errors.current_password.length > 0) {
+            passwordForm.value.message = errors.current_password[0]
+          } else if (errors.new_password && errors.new_password.length > 0) {
+            passwordForm.value.message = errors.new_password[0]
+          } else {
+            passwordForm.value.message = 'Erreur de validation: ' + Object.values(errors).flat().join(', ')
+          }
+        } else {
+          passwordForm.value.message = error.response?.data?.message || error.message || 'Erreur lors de la mise à jour'
+        }
       } finally {
         passwordForm.value.loading = false
       }
@@ -640,6 +672,19 @@ export default {
         deletionForm.value.message = error.response?.data?.message || 'Erreur lors de la demande'
       } finally {
         deletionForm.value.loading = false
+      }
+    }
+
+    const handleLogout = async () => {
+      if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+        console.log('👋 [Profile] Déconnexion utilisateur')
+        try {
+          await authStore.logout()
+          // Rediriger vers la page d'accueil après déconnexion
+          router.push('/')
+        } catch (error) {
+          console.error('❌ [Profile] Erreur lors de la déconnexion:', error)
+        }
       }
     }
 
@@ -692,7 +737,8 @@ export default {
       handleImageError,
       updateUsername,
       updatePassword,
-      requestDataDeletion
+      requestDataDeletion,
+      handleLogout
     }
   }
 }

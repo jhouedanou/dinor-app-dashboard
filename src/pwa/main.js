@@ -9,6 +9,9 @@ import './assets/styles/main.scss'
 // Importation des stores
 import { useAppStore } from './stores/app'
 
+// Import du service OneSignal
+import { oneSignalService } from './services/oneSignal'
+
 const app = createApp(App)
 const pinia = createPinia()
 
@@ -127,3 +130,9 @@ window.addEventListener('offline', updateOnlineStatus)
 
 // Initialiser le statut
 updateOnlineStatus()
+
+// Initialiser OneSignal après le montage de l'app
+console.log('🔔 [Main] Initialisation du service OneSignal...')
+
+// Exposer le service globalement pour debug
+window.oneSignalService = oneSignalService

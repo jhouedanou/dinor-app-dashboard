@@ -27,6 +27,7 @@ class Tip extends Model
         'slug',
         'views_count',
         'likes_count',
+        'comments_count',
         'favorites_count'
     ];
 
@@ -38,7 +39,15 @@ class Tip extends Model
         'estimated_time' => 'integer',
         'views_count' => 'integer',
         'likes_count' => 'integer',
+        'comments_count' => 'integer',
         'favorites_count' => 'integer'
+    ];
+
+    protected $appends = [
+        'image_url',
+        'gallery_urls',
+        'current_likes_count',
+        'approved_comments_count'
     ];
 
     public function category()

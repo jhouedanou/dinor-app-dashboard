@@ -17,6 +17,7 @@ class Banner extends Model
         'sous_titre',
         'section',
         'image_url',
+        'demo_video_url',
         'background_color',
         'text_color',
         'button_text',

@@ -79,7 +79,15 @@ class BannerResource extends Resource
                             ->label('Titre (Legacy)')
                             ->maxLength(255)
                             ->placeholder('Ex: Bienvenue sur Dinor')
-                            ->helperText('Titre principal affiché sur la bannière (support ancien système)'),
+                            ->helperText('Titre principal affiché sur la bannière (support ancien système)')
+                            ->afterStateHydrated(function ($component, $state) {
+                                if (empty($state)) {
+                                    $component->state('Titre par défaut');
+                                }
+                            })
+                            ->dehydrateStateUsing(function ($state, $get) {
+                                return $state ?: $get('titre') ?: 'Titre par défaut';
+                            }),
 
                         Forms\Components\Textarea::make('description')
                             ->label('Description')
@@ -95,6 +103,13 @@ class BannerResource extends Resource
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                             ->maxSize(2048)
                             ->helperText('Image de fond de la bannière (optionnel)')
+                            ->columnSpanFull(),
+
+                        Forms\Components\TextInput::make('demo_video_url')
+                            ->label('URL Vidéo Demo (optionnel)')
+                            ->url()
+                            ->placeholder('Ex: https://www.youtube.com/watch?v=123abc')
+                            ->helperText('Lien vers une vidéo de démonstration (YouTube, Vimeo, etc.)')
                             ->columnSpanFull(),
                     ])->columns(2),
 

@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
+use App\Models\Comment;
+use App\Observers\CommentObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,6 +25,9 @@ class AppServiceProvider extends ServiceProvider
     {
         // Fix for older MySQL versions
         Schema::defaultStringLength(191);
+        
+        // Register model observers
+        Comment::observe(CommentObserver::class);
     }
 
     /**

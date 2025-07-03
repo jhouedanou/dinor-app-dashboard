@@ -42,9 +42,17 @@
             <p>{{ getShortDescription(item.short_description) }}</p>
             <div class="card-meta">
               <span class="likes">
-                <i class="material-icons">favorite</i>
-                <span class="emoji-fallback">❤️</span>
-                {{ item.likes_count || 0 }}
+                <LikeButton
+                  type="recipe"
+                  :item-id="item.id"
+                  :initial-liked="item.is_liked || false"
+                  :initial-count="item.likes_count || 0"
+                  :show-count="true"
+                  size="small"
+                  variant="minimal"
+                  @auth-required="handleAuthError"
+                  @click.stop=""
+                />
               </span>
               <span class="date">{{ formatDate(item.created_at) }}</span>
             </div>
@@ -176,35 +184,63 @@
     </ContentCarousel>
     
     </div> <!-- Fermer content-area -->
+    
+    <!-- Auth Modal -->
+    <AuthModal 
+      v-model="showAuthModal" 
+      :initial-message="authModalMessage"
+      @update:modelValue="closeAuthModal"
+      @authenticated="handleAuthSuccess"
+    />
   </div> <!-- Fermer home -->
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useRecipes } from '@/composables/useRecipes'
 import { useTips } from '@/composables/useTips'
 import { useEvents } from '@/composables/useEvents'
 import { useDinorTV } from '@/composables/useDinorTV'
 import { useBanners } from '@/composables/useBanners'
+import { useGlobalAuth } from '@/composables/useAuthHandler'
 import ContentCarousel from '@/components/common/ContentCarousel.vue'
 import BannerSection from '@/components/common/BannerSection.vue'
+import LikeButton from '@/components/common/LikeButton.vue'
+import AuthModal from '@/components/common/AuthModal.vue'
 
 export default {
   name: 'Home',
   components: {
     ContentCarousel,
-    BannerSection
+    BannerSection,
+    LikeButton,
+    AuthModal
   },
   setup() {
     const router = useRouter()
+    
+    // Gestion globale de l'authentification
+    const { 
+      showAuthModal, 
+      authModalMessage, 
+      handleAuthError, 
+      closeAuthModal, 
+      handleAuthSuccess 
+    } = useGlobalAuth()
     
     // Composable pour les bannières
     const {
       banners,
       loading: loadingBanners,
-      error: errorBanners
+      error: errorBanners,
+      loadBannersForContentType
     } = useBanners()
+    
+    // Charger uniquement les bannières pour la page d'accueil
+    onMounted(async () => {
+      await loadBannersForContentType('home', true) // Force refresh sans cache
+    })
     
     // Composables optimisés pour récupérer les 4 derniers items de chaque type
     const { 
@@ -252,6 +288,33 @@ export default {
     const latestTips = computed(() => tipsData.value?.data?.slice(0, 4) || [])
     const latestEvents = computed(() => eventsData.value?.data?.slice(0, 4) || [])
     const latestVideos = computed(() => videosData.value?.data?.slice(0, 4) || [])
+    
+    // Écouter les mises à jour de likes
+    const handleLikeUpdate = (event) => {
+      const { type, id, liked, count } = event.detail
+      
+      if (type === 'recipe') {
+        const recipe = latestRecipes.value.find(r => r.id == id)
+        if (recipe) {
+          recipe.is_liked = liked
+          recipe.likes_count = count
+        }
+      } else if (type === 'tip') {
+        const tip = latestTips.value.find(t => t.id == id)
+        if (tip) {
+          tip.is_liked = liked
+          tip.likes_count = count
+        }
+      }
+    }
+    
+    onMounted(() => {
+      window.addEventListener('like-updated', handleLikeUpdate)
+    })
+    
+    onUnmounted(() => {
+      window.removeEventListener('like-updated', handleLikeUpdate)
+    })
     
     // Stats pour le hero
     const stats = computed(() => ({
@@ -397,7 +460,14 @@ export default {
       formatDate,
       getVideoThumbnail,
       formatDuration,
-      getContrastColor
+      getContrastColor,
+      
+      // Auth modal
+      showAuthModal,
+      authModalMessage,
+      handleAuthError,
+      closeAuthModal,
+      handleAuthSuccess
     }
   }
 }

@@ -47,6 +47,11 @@ class ApiService {
       ...options
     }
 
+    // Sérialiser le body en JSON si c'est un objet
+    if (config.body && typeof config.body === 'object') {
+      config.body = JSON.stringify(config.body)
+    }
+
     console.log('📡 [API] Requête vers:', endpoint, {
       method: options.method || 'GET',
       hasAuthToken: !!authToken,

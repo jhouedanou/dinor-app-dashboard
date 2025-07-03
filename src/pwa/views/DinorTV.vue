@@ -1,5 +1,12 @@
 <template>
   <div class="dinor-tv">
+    <!-- Bannières pour Dinor TV -->
+    <BannerSection 
+      type="videos" 
+      section="hero" 
+      :banners="bannersByType"
+    />
+
     <!-- Loading State -->
     <div v-if="loading" class="loading-state">
       <div class="loading-spinner"></div>
@@ -214,16 +221,23 @@
 <script>
 import { ref, computed, onMounted } from 'vue'
 import apiService from '@/services/api'
+import { useBanners } from '@/composables/useBanners'
 import FavoriteButton from '@/components/common/FavoriteButton.vue'
 import AuthModal from '@/components/common/AuthModal.vue'
+import BannerSection from '@/components/common/BannerSection.vue'
 
 export default {
   name: 'DinorTV',
   components: {
     FavoriteButton,
-    AuthModal
+    AuthModal,
+    BannerSection
   },
   setup() {
+    // Banner management
+    const { banners, loadBannersForContentType } = useBanners()
+    const bannersByType = computed(() => banners.value)
+    
     // State
     const videos = ref([])
     const selectedVideo = ref(null)
@@ -356,7 +370,8 @@ export default {
     }
     
     // Lifecycle
-    onMounted(() => {
+    onMounted(async () => {
+      await loadBannersForContentType('videos', true) // Force refresh sans cache
       loadVideos()
     })
     
@@ -369,6 +384,7 @@ export default {
       loading,
       error,
       showAuthModal,
+      bannersByType,
       retry,
       playVideo,
       closeVideo,

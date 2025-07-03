@@ -1,11 +1,11 @@
 <template>
   <section 
-    v-if="banners && banners.length > 0" 
+    v-if="visibleBanners && visibleBanners.length > 0" 
     class="banner-section"
     :class="`banner-section--${section}`"
   >
     <div 
-      v-for="banner in banners" 
+      v-for="banner in visibleBanners" 
       :key="banner.id"
       class="banner-item"
       :style="getBannerStyle(banner)"
@@ -46,6 +46,22 @@
           {{ banner.description }}
         </p>
         
+        <!-- Vidéo demo -->
+        <div 
+          v-if="banner.demo_video_url" 
+          class="banner-video"
+        >
+          <button 
+            @click="playDemoVideo(banner.demo_video_url)"
+            class="video-play-button"
+            :style="{ color: banner.text_color || '#FFFFFF' }"
+          >
+            <span class="material-symbols-outlined">play_circle</span>
+            <span class="emoji-fallback">▶️</span>
+            <span>Voir la démo</span>
+          </button>
+        </div>
+        
         <!-- Bouton d'action -->
         <button 
           v-if="banner.button_text && banner.button_url"
@@ -77,6 +93,12 @@ export default {
     banners: {
       type: Array,
       default: () => []
+    }
+  },
+  computed: {
+    visibleBanners() {
+      // Cacher les bannières sans image d'arrière-plan
+      return this.banners.filter(banner => banner.image_url);
     }
   },
   methods: {
@@ -112,6 +134,12 @@ export default {
       } else {
         // Essayer de naviguer vers la route
         this.$router.push(url);
+      }
+    },
+    playDemoVideo(videoUrl) {
+      // Ouvrir la vidéo demo dans un nouvel onglet
+      if (videoUrl) {
+        window.open(videoUrl, '_blank');
       }
     }
   }
@@ -191,6 +219,51 @@ export default {
 .banner-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Styles pour la vidéo demo */
+.banner-video {
+  margin-bottom: 1rem;
+}
+
+.video-play-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  border: 2px solid currentColor;
+  border-radius: 50px;
+  color: inherit;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.video-play-button:hover {
+  background: rgba(0, 0, 0, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.video-play-button .material-symbols-outlined {
+  font-size: 1.5rem;
+}
+
+.video-play-button .emoji-fallback {
+  font-size: 1.25rem;
+  display: none;
+}
+
+/* Système de fallback pour les icônes */
+html.force-emoji .video-play-button .material-symbols-outlined {
+  display: none !important;
+}
+
+html.force-emoji .video-play-button .emoji-fallback {
+  display: inline-block !important;
 }
 
 /* Variations par section */

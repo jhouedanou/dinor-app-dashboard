@@ -1,1 +1,122 @@
-if(!self.define){let s,e={};const i=(i,l)=>(i=new URL(i+".js",l).href,e[i]||new Promise(e=>{if("document"in self){const s=document.createElement("script");s.src=i,s.onload=e,document.head.appendChild(s)}else s=i,importScripts(i),e()}).then(()=>{let s=e[i];if(!s)throw new Error(`Module ${i} didn’t register its module`);return s}));self.define=(l,n)=>{const r=s||("document"in self?document.currentScript.src:"")||location.href;if(e[r])return;let u={};const t=s=>i(s,r),o={module:{uri:r},exports:u,require:t};e[r]=Promise.all(l.map(s=>o[s]||t(s))).then(s=>(n(...s),u))}}define(["./workbox-e20531c6"],function(s){"use strict";self.skipWaiting(),s.clientsClaim(),s.precacheAndRoute([{url:"assets/api.70uutYeQ.js",revision:null},{url:"assets/api.DeptcIQc.js",revision:null},{url:"assets/AuthModal.CAYITUsz.js",revision:null},{url:"assets/AuthModal.D-0nByVZ.css",revision:null},{url:"assets/Badge.Id9DJ0yZ.css",revision:null},{url:"assets/Badge.QpPmjZQE.js",revision:null},{url:"assets/BannerSection.C33CTeVw.js",revision:null},{url:"assets/BannerSection.Dz-nO0wz.css",revision:null},{url:"assets/CookiePolicy.CBPAEsFF.css",revision:null},{url:"assets/CookiePolicy.CulUy4_5.js",revision:null},{url:"assets/DinorTV.CdpVQ1f6.js",revision:null},{url:"assets/DinorTV.DHqStk5K.css",revision:null},{url:"assets/EventDetail.CybgCc50.js",revision:null},{url:"assets/EventDetail.cYcoOePD.css",revision:null},{url:"assets/EventsList.BACwOh_s.css",revision:null},{url:"assets/EventsList.CSE8Q8-Y.js",revision:null},{url:"assets/FavoriteButton.CJo52RHZ.css",revision:null},{url:"assets/FavoriteButton.D768M--O.js",revision:null},{url:"assets/Home.B9InhKnM.js",revision:null},{url:"assets/Home.DkP1UWmJ.css",revision:null},{url:"assets/index.C1mfdDgG.js",revision:null},{url:"assets/index.Wn4EB9GG.css",revision:null},{url:"assets/PagesList.C8e3BZ9t.css",revision:null},{url:"assets/PagesList.DwfD93fy.js",revision:null},{url:"assets/PrivacyPolicy.DeflSHSI.css",revision:null},{url:"assets/PrivacyPolicy.Z18GvxQY.js",revision:null},{url:"assets/Profile.D7mh7s8f.js",revision:null},{url:"assets/Profile.DShT_eD_.css",revision:null},{url:"assets/RecipeDetail.CiJiuRN5.css",revision:null},{url:"assets/RecipeDetail.Yu3fHSjT.js",revision:null},{url:"assets/RecipesList.CLZVWFhf.css",revision:null},{url:"assets/RecipesList.DpqofXec.js",revision:null},{url:"assets/SearchAndFilters.DJUZlq-5.js",revision:null},{url:"assets/SearchAndFilters.DZO4SIUb.css",revision:null},{url:"assets/TermsOfService.3VImQdNN.js",revision:null},{url:"assets/TermsOfService.DiEZV5Dq.css",revision:null},{url:"assets/TipDetail.Be77O-Oh.js",revision:null},{url:"assets/TipDetail.Di1r9Gd0.css",revision:null},{url:"assets/TipsList.DE80GiZj.js",revision:null},{url:"assets/TipsList.DQfZKMXs.css",revision:null},{url:"assets/useApi.XzjE-Aek.js",revision:null},{url:"assets/utils.l0sNRNKZ.js",revision:null},{url:"assets/vendor.BeqKZlTx.js",revision:null},{url:"assets/WebEmbed.CKL2zDmX.css",revision:null},{url:"assets/WebEmbed.DnJ4TAy4.js",revision:null},{url:"index.html",revision:"d9fe0da782ab26139ed1807237d549ba"},{url:"registerSW.js",revision:"4c7de12ec96cf65ca8076fa75c098bf9"},{url:"manifest.webmanifest",revision:"33839ebbad69569bcfaa929012fa5165"}],{}),s.cleanupOutdatedCaches(),s.registerRoute(new s.NavigationRoute(s.createHandlerBoundToURL("index.html"))),s.registerRoute(/^https:\/\/.*\/api\//,new s.NetworkFirst({cacheName:"api-cache",plugins:[new s.ExpirationPlugin({maxEntries:100,maxAgeSeconds:600})]}),"GET"),s.registerRoute(/\.(?:png|jpg|jpeg|svg|gif|webp)$/,new s.CacheFirst({cacheName:"images-cache",plugins:[new s.ExpirationPlugin({maxEntries:50,maxAgeSeconds:2592e3})]}),"GET")});
+// Service Worker pour PWA Dinor avec OneSignal
+console.log('Service Worker: Initialisation');
+
+const CACHE_NAME = 'dinor-pwa-v1';
+const urlsToCache = [
+  '/',
+  '/pwa/',
+  '/pwa/index.html'
+];
+
+// Installation du service worker
+self.addEventListener('install', (event) => {
+  console.log('Service Worker: Installation');
+  self.skipWaiting();
+  
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then((cache) => {
+        console.log('Service Worker: Cache ouvert');
+        return cache.addAll(urlsToCache);
+      })
+      .catch((error) => {
+        console.log('Service Worker: Erreur lors de la mise en cache:', error);
+      })
+  );
+});
+
+// Activation du service worker
+self.addEventListener('activate', (event) => {
+  console.log('Service Worker: Activation');
+  self.clients.claim();
+  
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('Service Worker: Suppression cache obsolète', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
+});
+
+// Interception des requêtes
+self.addEventListener('fetch', (event) => {
+  // Ne pas intercepter les requêtes API
+  if (event.request.url.includes('/api/')) {
+    return;
+  }
+  
+  event.respondWith(
+    caches.match(event.request)
+      .then((response) => {
+        // Retourner la réponse en cache si elle existe
+        if (response) {
+          return response;
+        }
+        // Sinon, faire la requête réseau
+        return fetch(event.request);
+      })
+      .catch(() => {
+        // En cas d'erreur, retourner une page d'erreur ou une page par défaut
+        if (event.request.destination === 'document') {
+          return caches.match('/pwa/index.html');
+        }
+      })
+  );
+});
+
+// Configuration OneSignal pour le développement local
+// Pour éviter les erreurs de restriction d'origine en développement
+try {
+  // Importation du SDK OneSignal seulement si on n'est pas en localhost
+  if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+    importScripts('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDKWorker.js');
+    console.log('Service Worker: OneSignal SDK chargé');
+  } else {
+    console.log('Service Worker: OneSignal désactivé en développement local');
+  }
+} catch (error) {
+  console.log('Service Worker: OneSignal SDK non disponible:', error);
+}
+
+// Gestionnaire pour les notifications push (OneSignal)
+self.addEventListener('push', (event) => {
+  console.log('Service Worker: Notification push reçue', event);
+  
+  if (event.data) {
+    const data = event.data.json();
+    const options = {
+      body: data.body || 'Nouvelle notification de Dinor',
+      icon: '/pwa/icons/icon-192x192.png',
+      badge: '/pwa/icons/icon-96x96.png',
+      vibrate: [200, 100, 200],
+      data: {
+        url: data.url || '/pwa/'
+      }
+    };
+    
+    event.waitUntil(
+      self.registration.showNotification(data.title || 'Dinor', options)
+    );
+  }
+});
+
+// Gestionnaire pour le clic sur notification
+self.addEventListener('notificationclick', (event) => {
+  console.log('Service Worker: Clic sur notification', event);
+  
+  event.notification.close();
+  
+  const url = event.notification.data?.url || '/pwa/';
+  
+  event.waitUntil(
+    clients.openWindow(url)
+  );
+});
+
+console.log('Service Worker: Configuration terminée');

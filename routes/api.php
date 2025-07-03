@@ -108,6 +108,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/banners', [BannerController::class, 'index']);
     Route::get('/banners/{id}', [BannerController::class, 'show']);
     Route::get('/banners/type/{type}', [BannerController::class, 'getByType']);
+    Route::post('/banners/clear-cache', [BannerController::class, 'clearCache']);
     
     // PWA Menu Items
     Route::get('/pwa-menu-items', [PwaMenuItemController::class, 'index']);

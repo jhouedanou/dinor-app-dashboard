@@ -60,13 +60,14 @@ class AdminPanelProvider extends PanelProvider
                     950 => '#450a0a',
                 ],
             ])
-            ->spa()
+            // ->spa() // Désactivé temporairement pour éviter les rechargements multiples
             ->darkMode()
             ->resources([
                 \App\Filament\Resources\RecipeResource::class,
                 \App\Filament\Resources\CategoryResource::class,
                 \App\Filament\Resources\TipResource::class,
                 \App\Filament\Resources\EventResource::class,
+                \App\Filament\Resources\EventCategoryResource::class,
                 \App\Filament\Resources\PageResource::class,
                 \App\Filament\Resources\DinorTvResource::class,
                 \App\Filament\Resources\UserResource::class,
@@ -75,8 +76,8 @@ class AdminPanelProvider extends PanelProvider
                 \App\Filament\Resources\LikeResource::class,
                 \App\Filament\Resources\CommentResource::class,
                 \App\Filament\Resources\BannerResource::class,
-                \App\Filament\Resources\BannerMockResource::class,
                 \App\Filament\Resources\PwaMenuItemResource::class,
+                \App\Filament\Resources\PushNotificationResource::class,
             ])
             ->discoverResources(app_path('Filament/Resources'), 'App\\Filament\\Resources')
             ->discoverPages(app_path('Filament/Pages'), 'App\\Filament\\Pages')
@@ -105,6 +106,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->navigationGroups([
                 'Contenu',
+                'Communication',
                 'Administration', 
                 'Interactions',
                 'Gestion',

@@ -53,6 +53,7 @@ class Recipe extends Model
         'chef_notes',
         'views_count',
         'likes_count',
+        'comments_count',
         'favorites_count',
         'rating_average',
         'rating_count'
@@ -78,6 +79,7 @@ class Recipe extends Model
         'fiber_grams' => 'decimal:2',
         'views_count' => 'integer',
         'likes_count' => 'integer',
+        'comments_count' => 'integer',
         'favorites_count' => 'integer',
         'rating_average' => 'decimal:2',
         'rating_count' => 'integer'
@@ -86,7 +88,9 @@ class Recipe extends Model
     protected $appends = [
         'featured_image_url',
         'gallery_urls',
-        'video_thumbnail_url'
+        'video_thumbnail_url',
+        'current_likes_count',
+        'approved_comments_count'
     ];
 
     public function category()

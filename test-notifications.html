@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Notifications Push - Dinor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #E1251B;
+            text-align: center;
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #E1251B;
+            padding-bottom: 10px;
+        }
+        button {
+            background: #E1251B;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #c01f17;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border-left: 4px solid #E1251B;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔔 Test des Notifications Push - Dinor</h1>
+    
+    <div class="container">
+        <h2>ℹ️ Instructions</h2>
+        <p>Ce fichier vous permet de tester les notifications push OneSignal pour votre application Dinor.</p>
+        <p><strong>⚠️ Important :</strong> Remplacez <code>YOUR_ONESIGNAL_APP_ID</code> par votre vrai App ID OneSignal dans le code JavaScript ci-dessous.</p>
+    </div>
+
+    <div class="container">
+        <h2>1. Configuration OneSignal</h2>
+        <p>Vérifiez que OneSignal est correctement configuré.</p>
+        <button onclick="checkOneSignal()">Vérifier OneSignal</button>
+        <div id="onesignal-status" class="status" style="display:none;"></div>
+    </div>
+
+    <div class="container">
+        <h2>2. Permissions de notification</h2>
+        <p>Gérez les permissions pour les notifications push.</p>
+        <button onclick="checkPermission()">Vérifier les permissions</button>
+        <button onclick="requestPermission()">Demander les permissions</button>
+        <div id="permission-status" class="status" style="display:none;"></div>
+    </div>
+
+    <div class="container">
+        <h2>3. Inscription aux notifications</h2>
+        <p>Inscrivez-vous pour recevoir des notifications push.</p>
+        <button onclick="subscribeToNotifications()">S'inscrire aux notifications</button>
+        <div id="subscription-status" class="status" style="display:none;"></div>
+    </div>
+
+    <div class="container">
+        <h2>4. Test d'envoi de notification</h2>
+        <p>Testez l'envoi d'une notification depuis votre backend Laravel.</p>
+        <button onclick="sendTestNotification()">Envoyer une notification test</button>
+        <div id="send-status" class="status" style="display:none;"></div>
+    </div>
+
+    <div class="container">
+        <h2>5. Informations utilisateur</h2>
+        <p>Obtenez l'ID utilisateur OneSignal.</p>
+        <button onclick="getUserInfo()">Obtenir les infos utilisateur</button>
+        <div id="user-info" class="status" style="display:none;"></div>
+    </div>
+
+    <div class="container">
+        <h2>6. Configuration nécessaire</h2>
+        <p>Voici ce que vous devez configurer dans votre fichier <code>.env</code> :</p>
+        <pre>
+ONESIGNAL_APP_ID=your_app_id_here
+ONESIGNAL_REST_API_KEY=your_rest_api_key_here
+        </pre>
+        <p>Et dans votre dashboard Laravel, assurez-vous d'avoir la route :</p>
+        <pre>
+Route::post('/push-notifications', [PushNotificationController::class, 'send']);
+        </pre>
+    </div>
+
+    <script src="https://cdn.onesignal.com/sdks/OneSignalSDK.js" async=""></script>
+    <script>
+        // ⚠️ IMPORTANT: Remplacez YOUR_ONESIGNAL_APP_ID par votre vrai App ID
+        const ONESIGNAL_APP_ID = "YOUR_ONESIGNAL_APP_ID";
+        
+        // Initialisation OneSignal
+        window.OneSignal = window.OneSignal || [];
+        OneSignal.push(function() {
+            OneSignal.init({
+                appId: ONESIGNAL_APP_ID,
+                safari_web_id: "web.onesignal.auto.xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+                notifyButton: {
+                    enable: false
+                },
+                allowLocalhostAsSecureOrigin: true
+            });
+        });
+
+        function showStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = message;
+            element.className = `status ${type}`;
+            element.style.display = 'block';
+        }
+
+        function checkOneSignal() {
+            if (ONESIGNAL_APP_ID === "YOUR_ONESIGNAL_APP_ID") {
+                showStatus('onesignal-status', '❌ Vous devez remplacer YOUR_ONESIGNAL_APP_ID par votre vrai App ID OneSignal', 'error');
+                return;
+            }
+            
+            if (window.OneSignal) {
+                showStatus('onesignal-status', '✅ OneSignal est chargé et disponible', 'success');
+            } else {
+                showStatus('onesignal-status', '❌ OneSignal n\'est pas disponible', 'error');
+            }
+        }
+
+        function checkPermission() {
+            if ('Notification' in window) {
+                const permission = Notification.permission;
+                let message = '';
+                let type = '';
+
+                switch (permission) {
+                    case 'granted':
+                        message = '✅ Permissions accordées pour les notifications';
+                        type = 'success';
+                        break;
+                    case 'denied':
+                        message = '❌ Permissions refusées pour les notifications';
+                        type = 'error';
+                        break;
+                    case 'default':
+                        message = '⚠️ Permissions non demandées pour les notifications';
+                        type = 'warning';
+                        break;
+                }
+
+                showStatus('permission-status', message, type);
+            } else {
+                showStatus('permission-status', '❌ Les notifications ne sont pas supportées par ce navigateur', 'error');
+            }
+        }
+
+        function requestPermission() {
+            if ('Notification' in window) {
+                Notification.requestPermission().then(function(permission) {
+                    if (permission === 'granted') {
+                        showStatus('permission-status', '✅ Permissions accordées pour les notifications', 'success');
+                    } else {
+                        showStatus('permission-status', '❌ Permissions refusées pour les notifications', 'error');
+                    }
+                });
+            } else {
+                showStatus('permission-status', '❌ Les notifications ne sont pas supportées par ce navigateur', 'error');
+            }
+        }
+
+        function subscribeToNotifications() {
+            if (ONESIGNAL_APP_ID === "YOUR_ONESIGNAL_APP_ID") {
+                showStatus('subscription-status', '❌ Configurez d\'abord votre App ID OneSignal', 'error');
+                return;
+            }
+            
+            OneSignal.push(function() {
+                OneSignal.showNativePrompt()
+                    .then(function(result) {
+                        if (result) {
+                            showStatus('subscription-status', '✅ Inscription aux notifications réussie', 'success');
+                        } else {
+                            showStatus('subscription-status', '❌ Inscription aux notifications refusée', 'error');
+                        }
+                    })
+                    .catch(function(error) {
+                        showStatus('subscription-status', '❌ Erreur lors de l\'inscription: ' + error, 'error');
+                    });
+            });
+        }
+
+        function sendTestNotification() {
+            // Ceci doit être fait depuis votre backend Laravel
+            fetch('/api/v1/push-notifications', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                },
+                body: JSON.stringify({
+                    title: 'Test Notification',
+                    message: 'Ceci est une notification de test depuis Dinor! 🍽️',
+                    type: 'test'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showStatus('send-status', '✅ Notification envoyée avec succès', 'success');
+                } else {
+                    showStatus('send-status', '❌ Erreur lors de l\'envoi: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showStatus('send-status', '❌ Erreur réseau: ' + error + '<br/>Assurez-vous que votre backend Laravel est en cours d\'exécution', 'error');
+            });
+        }
+
+        function getUserInfo() {
+            if (ONESIGNAL_APP_ID === "YOUR_ONESIGNAL_APP_ID") {
+                showStatus('user-info', '❌ Configurez d\'abord votre App ID OneSignal', 'error');
+                return;
+            }
+            
+            OneSignal.push(function() {
+                OneSignal.getUserId().then(function(userId) {
+                    if (userId) {
+                        showStatus('user-info', `✅ User ID: ${userId}`, 'success');
+                    } else {
+                        showStatus('user-info', '❌ Pas d\'utilisateur inscrit', 'error');
+                    }
+                });
+            });
+        }
+
+        // Test automatique au chargement de la page
+        window.onload = function() {
+            setTimeout(() => {
+                checkOneSignal();
+                checkPermission();
+            }, 1000);
+        };
+    </script>
+</body>
+</html> 

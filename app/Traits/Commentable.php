@@ -47,7 +47,7 @@ trait Commentable
      */
     public function addComment(array $data)
     {
-        return $this->comments()->create([
+        $comment = $this->comments()->create([
             'user_id' => $data['user_id'] ?? null,
             'author_name' => $data['author_name'] ?? null,
             'author_email' => $data['author_email'] ?? null,
@@ -57,6 +57,23 @@ trait Commentable
             'user_agent' => $data['user_agent'] ?? null,
             'parent_id' => $data['parent_id'] ?? null,
         ]);
+
+        // Update comments count if the comment is approved
+        if ($comment && ($data['is_approved'] ?? false)) {
+            $this->updateCommentsCount();
+        }
+
+        return $comment;
+    }
+
+    /**
+     * Update the comments count
+     */
+    public function updateCommentsCount()
+    {
+        $count = $this->comments()->approved()->count();
+        $this->update(['comments_count' => $count]);
+        return $count;
     }
 
     /**

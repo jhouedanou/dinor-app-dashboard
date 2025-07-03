@@ -8,7 +8,7 @@ export function useBanners() {
   const loading = ref(false)
   const error = ref(null)
 
-  const loadBanners = async (filters = {}) => {
+  const loadBanners = async (filters = {}, forceRefresh = false) => {
     loading.value = true
     error.value = null
     
@@ -18,16 +18,23 @@ export function useBanners() {
       if (filters.type_contenu) params.type_contenu = filters.type_contenu
       if (filters.section) params.section = filters.section
       
-      const data = await request('/banners', { params })
+      console.log('🌐 [useBanners] Requête API /banners avec params:', params)
+      
+      // Forcer le rechargement sans cache si demandé
+      const options = forceRefresh ? { forceRefresh: true } : {}
+      const data = await request('/banners', { params, ...options })
+      console.log('📦 [useBanners] Réponse API:', data)
       
       if (data.success) {
         banners.value = data.data
+        console.log(`✅ [useBanners] ${data.data.length} bannières chargées`)
       } else {
         error.value = data.message || 'Erreur lors du chargement des bannières'
+        console.error('❌ [useBanners] Erreur:', error.value)
       }
     } catch (err) {
       error.value = 'Impossible de charger les bannières'
-      console.error('Erreur bannières:', err)
+      console.error('❌ [useBanners] Exception:', err)
     } finally {
       loading.value = false
     }
@@ -91,10 +98,25 @@ export function useBanners() {
     )
   }
 
-  // Auto-charge les bannières au montage
-  onMounted(() => {
-    loadBanners({ position: 'home' })
-  })
+  // Fonction pour charger les bannières par type de contenu
+  const loadBannersForContentType = async (contentType, forceRefresh = false) => {
+    console.log(`🎯 [useBanners] Chargement des bannières pour type: ${contentType}`)
+    return await loadBanners({ 
+      type_contenu: contentType,
+      position: contentType === 'home' ? 'home' : 'content'
+    }, forceRefresh)
+  }
+
+  // Fonction pour vider le cache des bannières
+  const clearBannersCache = () => {
+    console.log('🗑️ [useBanners] Vidage du cache des bannières')
+    banners.value = []
+    // Force le rechargement de toutes les bannières sans cache
+    return loadBanners({}, true)
+  }
+
+  // Auto-charge les bannières au montage UNIQUEMENT pour la page d'accueil
+  // Les autres pages devront appeler loadBannersForContentType() explicitement
 
   return {
     banners,
@@ -102,6 +124,8 @@ export function useBanners() {
     error,
     loadBanners,
     loadBannersByType,
+    loadBannersForContentType, // Nouvelle fonction
+    clearBannersCache, // Nouvelle fonction pour vider le cache
     getBanner,
     getActiveBanners,
     getBannersByPosition,

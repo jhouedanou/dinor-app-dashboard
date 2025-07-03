@@ -100,7 +100,75 @@ export const useApiStore = defineStore('api', () => {
       
       if (!response.ok) {
         console.error('❌ [API Store] Erreur HTTP:', response.status, response.statusText)
-        throw new Error(`HTTP error! status: ${response.status}`)
+        
+        // Gestion spécifique des erreurs 401 (non autorisé)
+        if (response.status === 401) {
+          console.warn('🔐 [API Store] Erreur 401 - Session expirée ou utilisateur non connecté')
+          
+          // Effacer l'authentification si elle existe
+          if (authStore.token) {
+            console.log('🗑️ [API Store] Suppression de la session expirée')
+            authStore.clearAuth()
+          }
+          
+          // Créer une erreur explicite pour guider l'utilisateur
+          const authError = new Error('Vous devez être connecté pour effectuer cette action. Veuillez vous connecter ou créer un compte.')
+          authError.type = 'AUTH_REQUIRED'
+          authError.status = 401
+          authError.actionRequired = 'LOGIN_OR_REGISTER'
+          
+          throw authError
+        }
+        
+        // Pour les erreurs 422, on doit récupérer les détails de validation
+        let errorData = null
+        try {
+          errorData = await response.json()
+          console.log('📄 [API Store] Données d\'erreur détaillées:', errorData)
+        } catch (jsonError) {
+          console.warn('⚠️ [API Store] Impossible de parser les données d\'erreur JSON')
+        }
+        
+        // Gestion des autres erreurs HTTP
+        let errorMessage = `Erreur ${response.status}`
+        
+        switch (response.status) {
+          case 403:
+            errorMessage = 'Accès non autorisé. Vous n\'avez pas les permissions nécessaires.'
+            break
+          case 404:
+            errorMessage = 'Ressource non trouvée.'
+            break
+          case 422:
+            if (errorData?.message) {
+              errorMessage = errorData.message
+            } else {
+              errorMessage = 'Données invalides. Veuillez vérifier vos informations.'
+            }
+            break
+          case 429:
+            errorMessage = 'Trop de requêtes. Veuillez patienter avant de réessayer.'
+            break
+          case 500:
+            errorMessage = 'Erreur du serveur. Veuillez réessayer plus tard.'
+            break
+          case 503:
+            errorMessage = 'Service temporairement indisponible. Veuillez réessayer plus tard.'
+            break
+          default:
+            errorMessage = `Erreur de connexion (${response.status}). Veuillez vérifier votre connexion internet.`
+        }
+        
+        const httpError = new Error(errorMessage)
+        httpError.status = response.status
+        httpError.type = 'HTTP_ERROR'
+        
+        // Ajouter les données d'erreur détaillées pour les erreurs de validation
+        if (errorData) {
+          httpError.response = { data: errorData }
+        }
+        
+        throw httpError
       }
 
       console.log('🔄 [API Store] Parsing JSON...')

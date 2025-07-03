@@ -144,6 +144,31 @@
               <p class="md3-body-medium dinor-text-gray">Aucun commentaire pour le moment.</p>
             </div>
           </div>
+
+          <!-- Recipe Header Actions -->
+          <div class="recipe-header-actions">
+            <!-- Like Button standardisé -->
+            <LikeButton 
+              :type="'recipe'"
+              :item-id="recipe.id"
+              :initial-liked="userLiked"
+              :initial-count="recipe.likes_count || 0"
+              :show-count="true"
+              size="medium"
+              @auth-required="showAuthModal = true"
+              @update:liked="handleLikeUpdate"
+              @update:count="handleLikeCountUpdate"
+            />
+            
+            <!-- Share Button -->
+            <button 
+              @click="callShare"
+              class="share-button"
+              title="Partager cette recette"
+            >
+              <i class="material-icons">share</i>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -173,15 +198,18 @@
 </template>
 
 <script>
-import { ref, onMounted, computed, defineExpose } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, computed, defineExpose, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useApiStore } from '@/stores/api'
 import { useAuthStore } from '@/stores/auth'
 import { useSocialShare } from '@/composables/useSocialShare'
+import { useShare } from '@/composables/useShare'
+import { useComments } from '@/composables/useComments'
 import Badge from '@/components/common/Badge.vue'
 import ShareModal from '@/components/common/ShareModal.vue'
 import AuthModal from '@/components/common/AuthModal.vue'
 import FavoriteButton from '@/components/common/FavoriteButton.vue'
+import LikeButton from '@/components/common/LikeButton.vue'
 
 export default {
   name: 'RecipeDetail',
@@ -190,7 +218,8 @@ export default {
     Badge,
     ShareModal,
     AuthModal,
-    FavoriteButton
+    FavoriteButton,
+    LikeButton
   },
   props: {
     id: {
@@ -203,9 +232,10 @@ export default {
     const apiStore = useApiStore()
     const authStore = useAuthStore()
     const { share, showShareModal, updateOpenGraphTags } = useSocialShare()
+    const { share: shareSocial } = useShare()
+    const { comments, loadComments, loadCommentsFresh, canDeleteComment, deleteComment } = useComments()
     
     const recipe = ref(null)
-    const comments = ref([])
     const loading = ref(true)
     const userLiked = ref(false)
     const userFavorited = ref(false)
@@ -251,40 +281,6 @@ export default {
         console.error('Erreur lors du chargement de la recette:', error)
       } finally {
         loading.value = false
-      }
-    }
-
-    const loadComments = async () => {
-      try {
-        console.log('🔄 [Comments] Chargement des commentaires pour recipe ID:', props.id)
-        const data = await apiStore.get(`/comments`, { 
-          commentable_type: 'App\\Models\\Recipe', 
-          commentable_id: props.id 
-        })
-        console.log('📥 [Comments] Réponse reçue:', data)
-        if (data.success) {
-          comments.value = data.data
-          console.log('✅ [Comments] Commentaires chargés:', comments.value.length, 'commentaires')
-        }
-      } catch (error) {
-        console.error('❌ [Comments] Erreur lors du chargement des commentaires:', error)
-      }
-    }
-
-    const loadCommentsFresh = async () => {
-      try {
-        console.log('🔄 [Comments] Rechargement FRAIS des commentaires pour recipe ID:', props.id)
-        const data = await apiStore.getFresh(`/comments`, { 
-          commentable_type: 'App\\Models\\Recipe', 
-          commentable_id: props.id 
-        })
-        console.log('📥 [Comments] Réponse fraîche reçue:', data)
-        if (data.success) {
-          comments.value = data.data
-          console.log('✅ [Comments] Commentaires frais chargés:', comments.value.length, 'commentaires')
-        }
-      } catch (error) {
-        console.error('❌ [Comments] Erreur lors du rechargement frais des commentaires:', error)
       }
     }
 
@@ -389,40 +385,6 @@ export default {
       }
     }
 
-    const canDeleteComment = (comment) => {
-      if (!authStore.isAuthenticated) return false
-      
-      // L'utilisateur peut supprimer ses propres commentaires
-      if (comment.user_id && comment.user_id === authStore.user?.id) return true
-      
-      // Si pas d'user_id, vérifier par l'IP/session (pour les commentaires anonymes)
-      // Pour l'instant, on ne permet que la suppression des commentaires avec user_id
-      return false
-    }
-
-    const deleteComment = async (commentId) => {
-      if (!confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?')) {
-        return
-      }
-
-      try {
-        console.log('🗑️ [Comments] Suppression du commentaire ID:', commentId)
-        
-        const data = await apiStore.request(`/comments/${commentId}`, {
-          method: 'DELETE'
-        })
-        
-        if (data.success) {
-          console.log('✅ [Comments] Commentaire supprimé avec succès')
-          // Recharger les commentaires avec des données fraîches
-          await loadCommentsFresh()
-        }
-      } catch (error) {
-        console.error('❌ [Comments] Erreur lors de la suppression du commentaire:', error)
-        alert('Erreur lors de la suppression du commentaire')
-      }
-    }
-
     const handleAuthenticated = () => {
       // Utilisateur connecté, on peut maintenant essayer d'ajouter le commentaire
       showAuthModal.value = false
@@ -433,7 +395,7 @@ export default {
 
     // Composable pour le partage social
     const callShare = () => {
-      share(shareData.value)
+      shareSocial(shareData.value)
     }
     
     const goBack = () => {
@@ -503,6 +465,19 @@ export default {
       return videoUrl
     }
 
+    // Gestion des likes via le composant LikeButton
+    const handleLikeUpdate = (liked) => {
+      userLiked.value = liked
+      console.log('❤️ [RecipeDetail] Like mis à jour:', liked)
+    }
+    
+    const handleLikeCountUpdate = (count) => {
+      if (recipe.value) {
+        recipe.value.likes_count = count
+      }
+      console.log('🔢 [RecipeDetail] Compteur likes mis à jour:', count)
+    }
+
     onMounted(() => {
       loadRecipe()
     })
@@ -516,27 +491,32 @@ export default {
     // Exposer les méthodes et les refs nécessaires au template et au parent
     return {
       recipe,
-      comments,
       loading,
-      userLiked,
-      userFavorited,
+      showAuthModal,
+      comments,
       newComment,
       authStore,
-      showAuthModal,
-      toggleLike,
-      toggleFavorite,
+      userLiked,
+      userFavorited,
+      shareData,
+      goBack,
+      goHome,
       addComment,
       canDeleteComment,
       deleteComment,
-      handleAuthenticated,
-      goBack,
-      getDifficultyLabel,
-      formatDate,
+      callShare,
+      handleLikeUpdate,
+      handleLikeCountUpdate,
       handleImageError,
+      formatIngredients,
       formatInstructions,
+      getDifficultyColor,
+      formatDate,
+      formatCookingTime,
+      getDifficultyLabel,
       getEmbedUrl,
       showShareModal,
-      shareData
+      handleAuthenticated
     }
   }
 }
@@ -696,5 +676,33 @@ p, span, div {
 
 .md3-icon-button.liked {
   color: var(--md-sys-color-error);
+}
+
+.recipe-header-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.share-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: 50%;
+  padding: 8px;
+  transition: all 0.2s ease;
+  color: var(--md-sys-color-on-surface-variant, #49454f);
+}
+
+.share-button:hover {
+  background: var(--md-sys-color-surface-variant, #e7e0ec);
+  transform: scale(1.05);
+}
+
+.share-button i {
+  font-size: 20px;
 }
 </style> 

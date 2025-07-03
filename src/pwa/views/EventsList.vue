@@ -1,5 +1,12 @@
 <template>
   <div class="events-list">
+    <!-- Bannières pour les événements -->
+    <BannerSection 
+      type="events" 
+      section="hero" 
+      :banners="bannersByType"
+    />
+
     <!-- Toggle Filters Button -->
     <div class="filters-toggle">
       <button @click="showFilters = !showFilters" class="toggle-btn">
@@ -134,15 +141,22 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import apiService from '@/services/api'
+import { useBanners } from '@/composables/useBanners'
 import SearchAndFilters from '@/components/common/SearchAndFilters.vue'
+import BannerSection from '@/components/common/BannerSection.vue'
 
 export default {
   name: 'EventsList',
   components: {
-    SearchAndFilters
+    SearchAndFilters,
+    BannerSection
   },
   setup() {
     const router = useRouter()
+    
+    // Banner management
+    const { banners, loadBannersForContentType } = useBanners()
+    const bannersByType = computed(() => banners.value)
     
     // State
     const events = ref([])
@@ -379,7 +393,8 @@ export default {
     }
     
     // Lifecycle
-    onMounted(() => {
+    onMounted(async () => {
+      await loadBannersForContentType('events', true) // Force refresh sans cache
       loadEvents()
       loadCategories()
     })
@@ -396,6 +411,7 @@ export default {
       hasActiveFilters,
       eventFilters,
       showFilters,
+      bannersByType,
       goToEvent,
       retry,
       updateAdditionalFilter,

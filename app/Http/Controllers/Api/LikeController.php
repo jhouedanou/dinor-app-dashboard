@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Recipe;
 use App\Models\Event;
 use App\Models\DinorTv;
+use App\Models\Tip;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -28,12 +29,37 @@ class LikeController extends Controller
             ], 401);
         }
 
-        $request->validate([
-            'type' => 'required|in:recipe,event,dinor_tv',
-            'id' => 'required|integer|exists:' . $this->getTableName($request->type) . ',id'
+        // Récupérer les données du JSON body ou des paramètres
+        $jsonData = $request->json()->all() ?: [];
+        $type = $jsonData['type'] ?? $request->input('type');
+        $id = $jsonData['id'] ?? $request->input('id');
+
+        // Vérification préalable des données avant validation
+        if (!$type || !$id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Paramètres manquants: type et id sont requis'
+            ], 422);
+        }
+
+        // Valider les données
+        $validator = validator([
+            'type' => $type,
+            'id' => $id
+        ], [
+            'type' => 'required|in:recipe,event,dinor_tv,tip',
+            'id' => 'required|integer|exists:' . $this->getTableName($type) . ',id'
         ]);
 
-        $model = $this->getModel($request->type, $request->id);
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Données invalides',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $model = $this->getModel($type, $id);
         
         if (!$model) {
             return response()->json([
@@ -48,15 +74,27 @@ class LikeController extends Controller
 
         $result = $model->toggleLike($userId, $ipAddress, $userAgent);
 
-        // Recalculer et mettre à jour le compteur réel
+        // Toggle également le favori pour l'utilisateur connecté
+        $favoriteResult = null;
+        if ($userId) {
+            $favoriteResult = $model->toggleFavorite($userId);
+        }
+
+        // Recalculer et mettre à jour les compteurs réels
         $actualCount = $model->likes()->count();
-        $model->update(['likes_count' => $actualCount]);
+        $actualFavoritesCount = $model->favorites()->count();
+        $model->update([
+            'likes_count' => $actualCount,
+            'favorites_count' => $actualFavoritesCount
+        ]);
 
         return response()->json([
             'success' => true,
             'action' => $result['action'],
             'likes_count' => $actualCount,
-            'message' => $result['action'] === 'liked' ? 'Contenu aimé' : 'Like retiré'
+            'favorites_count' => $actualFavoritesCount,
+            'favorite_action' => $favoriteResult ? $favoriteResult['action'] : null,
+            'message' => $result['action'] === 'liked' ? 'Contenu aimé et ajouté aux favoris' : 'Like et favori retirés'
         ]);
     }
 
@@ -65,12 +103,37 @@ class LikeController extends Controller
      */
     public function check(Request $request): JsonResponse
     {
-        $request->validate([
-            'type' => 'required|in:recipe,event,dinor_tv',
-            'id' => 'required|integer|exists:' . $this->getTableName($request->type) . ',id'
+        // Récupérer les données du JSON body ou des paramètres
+        $jsonData = $request->json()->all() ?: [];
+        $type = $jsonData['type'] ?? $request->input('type');
+        $id = $jsonData['id'] ?? $request->input('id');
+
+        // Vérification préalable des données avant validation
+        if (!$type || !$id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Paramètres manquants: type et id sont requis'
+            ], 422);
+        }
+
+        // Valider les données
+        $validator = validator([
+            'type' => $type,
+            'id' => $id
+        ], [
+            'type' => 'required|in:recipe,event,dinor_tv,tip',
+            'id' => 'required|integer|exists:' . $this->getTableName($type) . ',id'
         ]);
 
-        $model = $this->getModel($request->type, $request->id);
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Données invalides',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $model = $this->getModel($type, $id);
         
         if (!$model) {
             return response()->json([
@@ -98,12 +161,37 @@ class LikeController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $request->validate([
-            'type' => 'required|in:recipe,event,dinor_tv',
-            'id' => 'required|integer|exists:' . $this->getTableName($request->type) . ',id'
+        // Récupérer les données du JSON body ou des paramètres
+        $jsonData = $request->json()->all() ?: [];
+        $type = $jsonData['type'] ?? $request->input('type');
+        $id = $jsonData['id'] ?? $request->input('id');
+
+        // Vérification préalable des données avant validation
+        if (!$type || !$id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Paramètres manquants: type et id sont requis'
+            ], 422);
+        }
+
+        // Valider les données
+        $validator = validator([
+            'type' => $type,
+            'id' => $id
+        ], [
+            'type' => 'required|in:recipe,event,dinor_tv,tip',
+            'id' => 'required|integer|exists:' . $this->getTableName($type) . ',id'
         ]);
 
-        $model = $this->getModel($request->type, $request->id);
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Données invalides',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $model = $this->getModel($type, $id);
         
         if (!$model) {
             return response()->json([
@@ -138,6 +226,7 @@ class LikeController extends Controller
             'recipe' => Recipe::find($id),
             'event' => Event::find($id),
             'dinor_tv' => DinorTv::find($id),
+            'tip' => Tip::find($id),
             default => null
         };
     }
@@ -151,6 +240,7 @@ class LikeController extends Controller
             'recipe' => 'recipes',
             'event' => 'events',
             'dinor_tv' => 'dinor_tv',
+            'tip' => 'tips',
             default => ''
         };
     }

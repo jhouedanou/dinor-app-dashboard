@@ -113,9 +113,22 @@
             
             <div class="recipe-stats">
               <div class="stat">
-                <span class="material-symbols-outlined">favorite</span>
-                <span class="emoji-fallback">❤️</span>
-                <span>{{ recipe.likes_count || 0 }}</span>
+                <LikeButton
+                  type="recipe"
+                  :item-id="recipe.id"
+                  :initial-liked="recipe.is_liked || false"
+                  :initial-count="recipe.likes_count || 0"
+                  :show-count="true"
+                  size="small"
+                  variant="minimal"
+                  @auth-required="showAuthModal = true"
+                  @click.stop=""
+                />
+              </div>
+              <div class="stat">
+                <span class="material-symbols-outlined">comment</span>
+                <span class="emoji-fallback">💬</span>
+                <span>{{ recipe.comments_count || 0 }}</span>
               </div>
               <div v-if="recipe.servings" class="stat">
                 <span class="material-symbols-outlined">group</span>
@@ -132,11 +145,14 @@
         </article>
       </div>
     </div>
+    
+    <!-- Auth Modal -->
+    <AuthModal v-model="showAuthModal" />
   </div>
 </template>
 
 <script>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useRecipesStore } from '@/stores/recipes'
 import { useAppStore } from '@/stores/app'
@@ -144,12 +160,16 @@ import { useBanners } from '@/composables/useBanners'
 import apiService from '@/services/api'
 import BannerSection from '@/components/common/BannerSection.vue'
 import SearchAndFilters from '@/components/common/SearchAndFilters.vue'
+import LikeButton from '@/components/common/LikeButton.vue'
+import AuthModal from '@/components/common/AuthModal.vue'
 
 export default {
   name: 'RecipesList',
   components: {
     BannerSection,
-    SearchAndFilters
+    SearchAndFilters,
+    LikeButton,
+    AuthModal
   },
   setup() {
     const router = useRouter()
@@ -157,13 +177,13 @@ export default {
     const appStore = useAppStore()
     
     // Banner management
-    const { loadBannersByType } = useBanners()
-    const bannersByType = ref([])
+    const { banners, loadBannersForContentType } = useBanners()
+    const bannersByType = computed(() => banners.value)
     
     const loadBanners = async () => {
       try {
-        const banners = await loadBannersByType('recipes')
-        bannersByType.value = banners
+        console.log('🍳 [RecipesList] Chargement bannières pour type: recipes')
+        await loadBannersForContentType('recipes', true) // Force refresh sans cache
       } catch (error) {
         console.error('Error loading banners:', error)
       }
@@ -171,6 +191,9 @@ export default {
     
     // Filters visibility toggle
     const showFilters = ref(true)
+    
+    // Auth modal
+    const showAuthModal = ref(false)
     
     // Categories management
     const categories = ref([])
@@ -317,6 +340,18 @@ export default {
       return prepTime + cookTime + restTime
     }
     
+    // Écouter les mises à jour de likes
+    const handleLikeUpdate = (event) => {
+      const { type, id, liked, count } = event.detail
+      if (type === 'recipe') {
+        const recipe = filteredRecipes.value.find(r => r.id == id)
+        if (recipe) {
+          recipe.is_liked = liked
+          recipe.likes_count = count
+        }
+      }
+    }
+
     // Lifecycle
     onMounted(() => {
       loadRecipes()
@@ -324,6 +359,11 @@ export default {
       loadCategories()
       appStore.initializePWAListeners()
       appStore.initializeNetworkListeners()
+      window.addEventListener('like-updated', handleLikeUpdate)
+    })
+    
+    onUnmounted(() => {
+      window.removeEventListener('like-updated', handleLikeUpdate)
     })
     
     // Watchers

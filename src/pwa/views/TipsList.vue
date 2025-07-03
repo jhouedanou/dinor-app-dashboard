@@ -1,5 +1,12 @@
 <template>
   <div class="tips-list">
+    <!-- Bannières pour les astuces -->
+    <BannerSection 
+      type="tips" 
+      section="hero" 
+      :banners="bannersByType"
+    />
+
     <!-- Loading State -->
     <div v-if="loading" class="loading-state">
       <div class="loading-spinner"></div>
@@ -64,9 +71,17 @@
             <!-- Tip Stats -->
             <div class="tip-stats">
               <div class="stat">
-                <span class="material-symbols-outlined">thumb_up</span>
-                <span class="emoji-fallback">👍</span>
-                <span>{{ tip.likes_count || 0 }}</span>
+                <LikeButton
+                  type="tip"
+                  :item-id="tip.id"
+                  :initial-liked="tip.is_liked || false"
+                  :initial-count="tip.likes_count || 0"
+                  :show-count="true"
+                  size="small"
+                  variant="minimal"
+                  @auth-required="showAuthModal = true"
+                  @click.stop=""
+                />
               </div>
               <div class="stat">
                 <FavoriteButton
@@ -100,20 +115,29 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import apiService from '@/services/api'
+import { useBanners } from '@/composables/useBanners'
 import FavoriteButton from '@/components/common/FavoriteButton.vue'
+import LikeButton from '@/components/common/LikeButton.vue'
 import AuthModal from '@/components/common/AuthModal.vue'
+import BannerSection from '@/components/common/BannerSection.vue'
 
 export default {
   name: 'TipsList',
   components: {
     FavoriteButton,
-    AuthModal
+    LikeButton,
+    AuthModal,
+    BannerSection
   },
   setup() {
     const router = useRouter()
+    
+    // Banner management
+    const { banners, loadBannersForContentType } = useBanners()
+    const bannersByType = computed(() => banners.value)
     
     // State
     const tips = ref([])
@@ -172,9 +196,27 @@ export default {
       return new Date(date).toLocaleDateString(undefined, options)
     }
     
+    // Écouter les mises à jour de likes
+    const handleLikeUpdate = (event) => {
+      const { type, id, liked, count } = event.detail
+      if (type === 'tip') {
+        const tip = tips.value.find(t => t.id == id)
+        if (tip) {
+          tip.is_liked = liked
+          tip.likes_count = count
+        }
+      }
+    }
+
     // Lifecycle
-    onMounted(() => {
+    onMounted(async () => {
+      await loadBannersForContentType('tips', true) // Force refresh sans cache
       loadTips()
+      window.addEventListener('like-updated', handleLikeUpdate)
+    })
+    
+    onUnmounted(() => {
+      window.removeEventListener('like-updated', handleLikeUpdate)
     })
     
     return {
@@ -182,6 +224,7 @@ export default {
       loading,
       error,
       showAuthModal,
+      bannersByType,
       goToTip,
       retry,
       getDifficultyLabel,
