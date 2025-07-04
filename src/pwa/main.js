@@ -100,7 +100,7 @@ app.config.errorHandler = (error, instance, errorInfo) => {
 
 // Support PWA avec détection automatique du device
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js')
+  navigator.serviceWorker.register('/pwa/dist/sw.js')
     .then(registration => {
       console.log('Service Worker registered:', registration)
     })

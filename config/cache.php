@@ -48,6 +48,13 @@ return [
             'lock_connection' => 'default',
         ],
 
+        // Cache spécialisé pour Filament avec support des tags
+        'filament' => [
+            'driver' => 'file',
+            'path' => storage_path('framework/cache/filament'),
+            'prefix' => 'filament_cache',
+        ],
+
         'dynamodb' => [
             'driver' => 'dynamodb',
             'key' => env('AWS_ACCESS_KEY_ID'),

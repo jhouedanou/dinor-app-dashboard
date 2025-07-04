@@ -117,6 +117,30 @@ const routes = [
     meta: { title: 'Politique des Cookies' }
   },
   {
+    path: '/predictions',
+    name: 'predictions',
+    component: () => import('@/views/Predictions.vue'),
+    meta: { title: 'Pronostics' }
+  },
+  {
+    path: '/predictions/teams',
+    name: 'predictions-teams',
+    component: () => import('@/views/PredictionsTeams.vue'),
+    meta: { title: 'Équipes' }
+  },
+  {
+    path: '/predictions/leaderboard',
+    name: 'predictions-leaderboard',
+    component: () => import('@/views/PredictionsLeaderboard.vue'),
+    meta: { title: 'Classement' }
+  },
+  {
+    path: '/predictions/tournaments',
+    name: 'predictions-tournaments',
+    component: () => import('@/views/Tournaments.vue'),
+    meta: { title: 'Tournois' }
+  },
+  {
     path: '/:pathMatch(.*)*',
     redirect: '/'
   }

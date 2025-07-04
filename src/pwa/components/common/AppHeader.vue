@@ -40,6 +40,9 @@
       </div>
       
       <div class="md3-app-bar-actions">
+        <!-- Dev only refresh button -->
+        <CacheRefreshButton v-if="isDevelopment" size="small" />
+        
         <slot name="actions">
           <button 
             v-if="showFavorite" 
@@ -76,9 +79,13 @@ import { useRouter, useRoute } from 'vue-router'
 import { computed, ref, watch, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import apiService from '@/services/api'
+import CacheRefreshButton from './CacheRefreshButton.vue'
 
 export default {
   name: 'AppHeader',
+  components: {
+    CacheRefreshButton
+  },
   props: {
     title: {
       type: String,
@@ -113,6 +120,8 @@ export default {
     const router = useRouter()
     const route = useRoute()
     const authStore = useAuthStore()
+    
+    const isDevelopment = computed(() => import.meta.env.DEV)
     
     // URL du logo (avec fallback)
     const logoSrc = ref('/images/LOGO_DINOR_monochrome.svg')
@@ -414,7 +423,8 @@ export default {
       handleFavoriteToggle,
       handleShare,
       handleLogoError,
-      logoSrc
+      logoSrc,
+      isDevelopment
     }
   }
 }

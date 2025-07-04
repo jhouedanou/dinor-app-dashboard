@@ -45,8 +45,8 @@
                     @error="handleImageError"
                   />
                   <div class="card-overlay">
-                    <span v-if="item.preparation_time || item.estimated_time" class="time-badge">
-                      {{ item.preparation_time || item.estimated_time }}min
+                    <span v-if="getTotalTime(item)" class="time-badge">
+                      {{ getTotalTime(item) }}min
                     </span>
                     <span v-if="item.status" :class="getStatusClass(item.status)" class="status-badge">
                       {{ getStatusLabel(item.status) }}
@@ -294,6 +294,20 @@ export default {
       }
       return icons[props.contentType] || 'info'
     }
+
+    const getTotalTime = (item) => {
+      // Pour les recettes, calculer le temps total
+      if (props.contentType === 'recipes') {
+        const prepTime = item.preparation_time || 0
+        const cookTime = item.cooking_time || 0
+        const restTime = item.resting_time || 0
+        const total = prepTime + cookTime + restTime
+        return total > 0 ? total : null
+      }
+      
+      // Pour les autres types, utiliser le temps estimé
+      return item.estimated_time || item.preparation_time || null
+    }
     
     const getDefaultImage = () => {
       const images = {
@@ -353,6 +367,7 @@ export default {
       getStatusClass,
       getItemClass,
       getTypeIcon,
+      getTotalTime,
       getDefaultImage,
       getVideoThumbnail,
       handleImageError

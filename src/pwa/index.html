@@ -48,7 +48,7 @@
     
     <!-- OneSignal SDK -->
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-    <script src="/onesignal-config.js" defer></script>
+    <script src="./onesignal-config.js" defer></script>
     
     <!-- CSS pour forcer l'affichage des icônes -->
     <style>
@@ -122,9 +122,13 @@
       }
     </style>
     
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Styles globaux -->
+    <link rel="stylesheet" href="./assets/styles/main.css">
 </head>
 <body>
     <div id="app"></div>
-    <script type="module" src="/main.js"></script>
+    <script type="module" src="./main.js"></script>
 </body>
 </html>

@@ -10,7 +10,7 @@ export function useApi() {
     post: apiStore.post,
     put: apiStore.put,
     del: apiStore.del,
-    invalidateCache: apiStore.invalidateCache,
+    // invalidateCache: apiStore.invalidateCache, // Cache désactivé
     preload: apiStore.preload,
     isLoading: apiStore.isLoading,
     getError: apiStore.getError,
@@ -45,7 +45,7 @@ export function useApiCall(endpoint, params = {}, options = {}) {
   }
   
   const refresh = () => {
-    apiStore.invalidateCache(cacheKey.value)
+    // apiStore.invalidateCache(cacheKey.value) // Cache désactivé
     return execute()
   }
   
@@ -98,10 +98,10 @@ export function useApiMutation(endpoint, options = {}) {
       
       data.value = result
       
-      // Invalider le cache related si spécifié
-      if (options.invalidatePattern) {
-        apiStore.invalidateCache(options.invalidatePattern)
-      }
+      // Cache désactivé - pas d'invalidation nécessaire
+      // if (options.invalidatePattern) {
+      //   apiStore.invalidateCache(options.invalidatePattern)
+      // }
       
       return result
     } catch (err) {
@@ -174,7 +174,7 @@ export function useApiPagination(endpoint, initialParams = {}, options = {}) {
   }
   
   const refresh = () => {
-    apiStore.invalidateCache(endpoint)
+    // apiStore.invalidateCache(endpoint) // Cache désactivé
     return loadPage(1, false)
   }
   
@@ -230,6 +230,45 @@ export function useApiCache() {
   return {
     preloadRoutes,
     warmCache,
-    invalidateCache: apiStore.invalidateCache
+    // invalidateCache: apiStore.invalidateCache // Cache désactivé
+  }
+}
+
+export function useRecipes(params = {}, options = {}) {
+  const {
+    data: recipes,
+    error,
+    loading,
+    execute,
+    refresh
+  } = useApiCall('/recipes', params, {
+    cacheTTL: 5 * 60 * 1000, // 5 minutes
+    ...options
+  })
+
+  const featuredRecipes = computed(() => {
+    return recipes.value?.data?.filter(recipe => recipe.is_featured) || []
+  })
+
+  const popularRecipes = computed(() => {
+    return recipes.value?.data?.sort((a, b) => (b.likes_count || 0) - (a.likes_count || 0)) || []
+  })
+
+  // Fonction pour forcer le rafraîchissement
+  const refreshFresh = async () => {
+    console.log('🔄 [useRecipes] Rafraîchissement forcé des recettes')
+    // Cache désactivé - recharger directement
+    await refresh()
+  }
+
+  return {
+    recipes,
+    featuredRecipes,
+    popularRecipes,
+    error,
+    loading,
+    execute,
+    refresh,
+    refreshFresh
   }
 }

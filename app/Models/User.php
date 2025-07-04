@@ -70,6 +70,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the predictions made by this user
+     */
+    public function predictions()
+    {
+        return $this->hasMany(Prediction::class);
+    }
+
+    /**
      * Check if user is admin
      */
     public function isAdmin(): bool

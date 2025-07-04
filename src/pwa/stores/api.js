@@ -1,11 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { useCacheStore } from './cache'
+import { useCacheStore } from './cache.js'
 import { useAuthStore } from './auth'
 
 export const useApiStore = defineStore('api', () => {
   // State
-  const loading = ref(new Set())
+  const loading = ref(new Map())
   const errors = ref(new Map())
   const baseURL = ref(getBaseURL())
   
@@ -22,52 +22,46 @@ export const useApiStore = defineStore('api', () => {
     return `${window.location.origin}/api/v1`
   }
 
+  // Getters
+  const isLoading = computed(() => (endpoint) => loading.value.get(endpoint) || false)
+  const getError = computed(() => (endpoint) => errors.value.get(endpoint) || null)
+
   // Actions
-  function setLoading(key, isLoading) {
-    if (isLoading) {
-      loading.value.add(key)
+  function setLoading(endpoint, value) {
+    if (value) {
+      loading.value.set(endpoint, true)
     } else {
-      loading.value.delete(key)
+      loading.value.delete(endpoint)
     }
   }
 
-  function setError(key, error) {
+  function setError(endpoint, error) {
     if (error) {
-      errors.value.set(key, error)
+      errors.value.set(endpoint, error)
     } else {
-      errors.value.delete(key)
+      errors.value.delete(endpoint)
     }
-  }
-
-  function isLoading(key) {
-    return loading.value.has(key)
-  }
-
-  function getError(key) {
-    return errors.value.get(key)
-  }
-
-  function clearError(key) {
-    errors.value.delete(key)
   }
 
   async function request(endpoint, options = {}) {
     const cacheKey = `${endpoint}_${JSON.stringify(options)}`
     console.log('🌐 [API Store] Nouvelle requête:', { endpoint, options, cacheKey })
     
-    // Vérifier le cache PWA d'abord (sauf pour POST/PUT/DELETE ou si forceRefresh est activé)
-    if ((!options.method || options.method === 'GET') && !options.forceRefresh) {
-      console.log('🔍 [API Store] Vérification du cache PWA...')
-      const cached = await checkPWACache(endpoint, options)
-      if (cached) {
-        console.log('⚡ [API Store] Données trouvées dans le cache PWA:', cached)
-        return cached
-      } else {
-        console.log('❌ [API Store] Aucune donnée dans le cache PWA')
-      }
-    } else if (options.forceRefresh) {
-      console.log('🔄 [API Store] Rechargement forcé - cache ignoré')
-    }
+    // Cache désactivé - communication directe avec l'API
+    // if ((!options.method || options.method === 'GET') && !options.forceRefresh) {
+    //   console.log('🔍 [API Store] Vérification du cache PWA...')
+    //   const cached = await checkPWACache(endpoint, options)
+    //   if (cached) {
+    //     console.log('⚡ [API Store] Données trouvées dans le cache PWA:', cached)
+    //     return cached
+    //   } else {
+    //     console.log('❌ [API Store] Aucune donnée dans le cache PWA')
+    //   }
+    // } else if (options.forceRefresh) {
+    //   console.log('🔄 [API Store] Rechargement forcé - cache ignoré')
+    // }
+    
+    console.log('🌐 [API Store] Communication directe avec l\'API (cache désactivé)')
 
     setLoading(cacheKey, true)
     setError(cacheKey, null)
@@ -175,11 +169,11 @@ export const useApiStore = defineStore('api', () => {
       const data = await response.json()
       console.log('✅ [API Store] Données JSON reçues:', data)
       
-      // Mettre en cache les requêtes GET réussies dans le cache PWA
-      if (!options.method || options.method === 'GET') {
-        console.log('💾 [API Store] Mise en cache PWA...')
-        await setPWACache(endpoint, data, options)
-      }
+      // Cache désactivé - pas de mise en cache PWA
+      // if (!options.method || options.method === 'GET') {
+      //   console.log('💾 [API Store] Mise en cache PWA...')
+      //   await setPWACache(endpoint, data, options)
+      // }
 
       return data
     } catch (error) {
@@ -267,13 +261,13 @@ export const useApiStore = defineStore('api', () => {
     return request(fullEndpoint, { ...options, method: 'GET' })
   }
 
-  // Méthode GET qui force le rechargement sans cache
+  // Méthode GET qui force le rechargement sans cache - désactivé car plus de cache
   async function getFresh(endpoint, params = {}, options = {}) {
     const queryString = new URLSearchParams(params).toString()
     const fullEndpoint = queryString ? `${endpoint}?${queryString}` : endpoint
-    // Invalider le cache avant de faire la requête
-    invalidateCache(endpoint)
-    return request(fullEndpoint, { ...options, method: 'GET', forceRefresh: true })
+    // Cache désactivé - pas d'invalidation nécessaire
+    // invalidateCache(endpoint)
+    return request(fullEndpoint, { ...options, method: 'GET' })
   }
 
   async function post(endpoint, data, options = {}) {
@@ -299,24 +293,71 @@ export const useApiStore = defineStore('api', () => {
     })
   }
 
-  // Invalider le cache pour un pattern donné
+  // Invalider le cache pour un pattern donné - désactivé car plus de cache
   function invalidateCache(pattern) {
-    const cacheInfo = cacheStore.getCacheInfo()
-    const keysToRemove = cacheInfo.keys.filter(key => 
-      key.includes(pattern) || new RegExp(pattern).test(key)
-    )
+    console.log('🗑️ [API Store] Invalidation du cache:', pattern, '- Cache désactivé, requête directe à l\'API')
     
-    keysToRemove.forEach(key => cacheStore.remove(key))
+    // const cacheInfo = cacheStore.getCacheInfo()
+    // const keysToRemove = cacheInfo.keys.filter(key => 
+    //   key.includes(pattern) || new RegExp(pattern).test(key)
+    // )
+    
+    // keysToRemove.forEach(key => cacheStore.remove(key))
+    
+    // Invalider le cache PWA via Service Worker
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({
+        type: 'INVALIDATE_CACHE',
+        pattern: pattern
+      })
+    }
   }
 
-  // Précharger des données
-  async function preload(endpoints) {
-    const promises = endpoints.map(({ endpoint, params, options }) => 
-      get(endpoint, params, { ...options, priority: 'low' }).catch(() => null)
-    )
+  // Forcer le rechargement complet - désactivé car plus de cache local
+  function forceRefresh() {
+    console.log('🔄 [API Store] Rechargement forcé demandé - Cache désactivé, requête directe à l\'API')
     
-    return Promise.allSettled(promises)
+    // Vider tous les caches locaux - désactivé
+    // cacheStore.clear()
+    
+    // Forcer le rechargement via Service Worker
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({
+        type: 'FORCE_REFRESH'
+      })
+    }
   }
+
+  // Supprimer tout le cache - désactivé car plus de cache local
+  function clearAllCache() {
+    console.log('🗑️ [API Store] Suppression de tout le cache - Cache désactivé, requête directe à l\'API')
+    
+    // Vider tous les caches locaux - désactivé
+    // cacheStore.clear()
+    
+    // Supprimer tout le cache via Service Worker
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({
+        type: 'CLEAR_ALL_CACHE'
+      })
+    }
+  }
+
+  // Écouter les messages du Service Worker pour invalider le cache
+  function setupServiceWorkerListener() {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'CACHE_INVALIDATED') {
+          console.log('🔄 [API Store] Cache invalidé par le Service Worker:', event.data)
+          const pattern = event.data.pattern || ''
+          invalidateCache(pattern)
+        }
+      })
+    }
+  }
+
+  // Initialiser l'écouteur du Service Worker
+  setupServiceWorkerListener()
 
   return {
     // State
@@ -331,7 +372,6 @@ export const useApiStore = defineStore('api', () => {
     // Actions
     setLoading,
     setError,
-    clearError,
     request,
     get,
     getFresh,
@@ -339,6 +379,9 @@ export const useApiStore = defineStore('api', () => {
     put,
     del,
     invalidateCache,
-    preload
+    forceRefresh,
+    clearAllCache,
+    checkPWACache,
+    setPWACache
   }
 })

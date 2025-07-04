@@ -164,7 +164,7 @@ export default {
     const loading = ref(false)
     const error = ref(null)
     const searchQuery = ref('')
-    const showFilters = ref(true)
+    const showFilters = ref(false)
     const selectedCategory = ref(null)
     const selectedFilters = ref({
       eventType: null,
@@ -536,6 +536,7 @@ p, span, div {
 .events-container {
   display: grid;
   gap: 16px;
+  margin-bottom: 2em;
 }
 
 .event-card {

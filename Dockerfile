@@ -83,7 +83,7 @@ RUN chmod -R 775 /var/www/html/bootstrap/cache
 ENV CACHE_DRIVER=file
 ENV SESSION_DRIVER=file
 ENV APP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
-RUN composer install --optimize-autoloader --no-scripts
+RUN composer install --optimize-autoloader --no-scripts --no-dev
 
 # Install npm dependencies
 RUN npm install

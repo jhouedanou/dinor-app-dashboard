@@ -89,7 +89,7 @@ export default {
     }
     
     const loadLikeStatus = async () => {
-      if (!authStore.isAuthenticated) {
+      if (!authStore.isAuthenticated || !props.itemId) {
         isLiked.value = false
         return
       }

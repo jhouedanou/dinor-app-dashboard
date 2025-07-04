@@ -319,8 +319,8 @@ class RecipeResource extends Resource
                     ->query(function (Builder $query) {
                         return $query->where('is_published', true);
                     }),
-
             ])
+            ->defaultSort('created_at', 'desc')
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make()

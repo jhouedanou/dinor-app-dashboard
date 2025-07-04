@@ -10,6 +10,16 @@
       :banners="banners"
     />
 
+    <!-- Bouton d'actualisation du cache -->
+    <div class="cache-controls">
+      <CacheRefreshButton 
+        variant="full"
+        size="medium"
+        @refresh="handleCacheRefresh"
+        @error="handleCacheError"
+      />
+    </div>
+
     <!-- Recettes - 4 dernières -->
     <ContentCarousel
       title="Dernières Recettes"
@@ -29,8 +39,8 @@
               loading="lazy"
             />
             <div class="card-overlay">
-              <span v-if="getTotalTime(item)" class="time-badge">
-                {{ getTotalTime(item) }}min
+              <span v-if="getPreparationTime(item)" class="time-badge">
+                {{ getPreparationTime(item) }}min
               </span>
               <span v-if="item.difficulty" class="difficulty-badge">
                 {{ getDifficultyLabel(item.difficulty) }}
@@ -204,10 +214,12 @@ import { useEvents } from '@/composables/useEvents'
 import { useDinorTV } from '@/composables/useDinorTV'
 import { useBanners } from '@/composables/useBanners'
 import { useGlobalAuth } from '@/composables/useAuthHandler'
+import { useRefresh } from '@/composables/useRefresh'
 import ContentCarousel from '@/components/common/ContentCarousel.vue'
 import BannerSection from '@/components/common/BannerSection.vue'
 import LikeButton from '@/components/common/LikeButton.vue'
 import AuthModal from '@/components/common/AuthModal.vue'
+import CacheRefreshButton from '@/components/common/CacheRefreshButton.vue'
 
 export default {
   name: 'Home',
@@ -215,7 +227,8 @@ export default {
     ContentCarousel,
     BannerSection,
     LikeButton,
-    AuthModal
+    AuthModal,
+    CacheRefreshButton
   },
   setup() {
     const router = useRouter()
@@ -289,6 +302,9 @@ export default {
     const latestEvents = computed(() => eventsData.value?.data?.slice(0, 4) || [])
     const latestVideos = computed(() => videosData.value?.data?.slice(0, 4) || [])
     
+    // Système de rafraîchissement
+    const { refreshContentType, onRefresh } = useRefresh()
+    
     // Écouter les mises à jour de likes
     const handleLikeUpdate = (event) => {
       const { type, id, liked, count } = event.detail
@@ -308,12 +324,55 @@ export default {
       }
     }
     
+    // Écouter les événements de rafraîchissement
+    const handleContentRefresh = (event) => {
+      const { type } = event.detail
+      console.log(`🔄 [Home] Rafraîchissement détecté pour: ${type}`)
+      
+      // Forcer le rechargement des données selon le type
+      switch(type) {
+        case 'recipes':
+          console.log('🔄 [Home] Rechargement des recettes...')
+          recipesData.value = null // Force un nouveau chargement
+          break
+        case 'tips':
+          console.log('🔄 [Home] Rechargement des tips...')
+          tipsData.value = null // Force un nouveau chargement
+          break
+        case 'events':
+          console.log('🔄 [Home] Rechargement des événements...')
+          eventsData.value = null // Force un nouveau chargement
+          break
+        case 'dinor_tv':
+          console.log('🔄 [Home] Rechargement des vidéos...')
+          videosData.value = null // Force un nouveau chargement
+          break
+      }
+    }
+    
+    // Fonction pour rafraîchir toutes les données
+    const refreshAllData = () => {
+      console.log('🔄 [Home] Rafraîchissement global des données')
+      refreshContentType('recipes')
+      refreshContentType('tips')
+      refreshContentType('events')
+      refreshContentType('dinor_tv')
+    }
+    
+    let cleanupRefresh = null
+    
     onMounted(() => {
       window.addEventListener('like-updated', handleLikeUpdate)
+      
+      // Écouter les événements de rafraîchissement
+      cleanupRefresh = onRefresh(handleContentRefresh, { global: true })
     })
     
     onUnmounted(() => {
       window.removeEventListener('like-updated', handleLikeUpdate)
+      if (cleanupRefresh) {
+        cleanupRefresh()
+      }
     })
     
     // Stats pour le hero
@@ -340,6 +399,21 @@ export default {
     const handleVideoClick = (video) => {
       router.push(`/video/${video.id}`)
     }
+
+    const handleCacheRefresh = (result) => {
+      console.log('Cache actualisé:', result)
+      // Recharger les données après l'actualisation du cache
+      if (result.success) {
+        // Recharger les données des carousels
+        setTimeout(() => {
+          window.location.reload()
+        }, 1000)
+      }
+    }
+
+    const handleCacheError = (error) => {
+      console.error('Erreur lors de l\'actualisation du cache:', error)
+    }
     
     const getShortDescription = (text) => {
       if (!text) return ''
@@ -357,6 +431,10 @@ export default {
         'hard': 'Difficile'
       }
       return labels[difficulty] || difficulty
+    }
+    
+    const getPreparationTime = (item) => {
+      return item.preparation_time || 0
     }
     
     const getTotalTime = (item) => {
@@ -450,10 +528,13 @@ export default {
       handleTipClick,
       handleEventClick,
       handleVideoClick,
+      handleCacheRefresh,
+      handleCacheError,
       
       // Utilitaires
       getShortDescription,
       getDifficultyLabel,
+      getPreparationTime,
       getTotalTime,
       getStatusClass,
       getStatusLabel,
@@ -485,6 +566,14 @@ export default {
   background: #FFFFFF; /* Grande zone blanche/gris clair */
   min-height: calc(100vh - 200px);
   padding: 20px 16px;
+}
+
+/* Contrôles de cache */
+.cache-controls {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0;
+  padding: 8px;
 }
 
 /* Suppression de l'ancienne section hero - maintenant gérée par AppHeader */

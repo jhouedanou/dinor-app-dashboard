@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Traits\HasPwaRebuild;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class PwaContentObserver
 {
@@ -49,18 +50,29 @@ class PwaContentObserver
         try {
             $modelClass = get_class($model);
             $modelName = class_basename($modelClass);
+            $contentType = $this->getContentType($modelClass);
             
             // Log de l'action pour debugging
             Log::info("PWA Content Change: {$action} {$modelName}", [
                 'model' => $modelName,
                 'action' => $action,
+                'content_type' => $contentType,
                 'id' => $model->id ?? null
             ]);
             
             // Vérifier si le modèle affecte la PWA
             if ($this->shouldTriggerPwaRebuild($model, $action)) {
-                Log::info("Triggering PWA rebuild for {$modelName} {$action}");
-                static::triggerPwaRebuild();
+                Log::info("Triggering PWA cache invalidation for {$modelName} {$action}");
+                
+                // Invalider le cache spécifique au type de contenu
+                if ($contentType) {
+                    static::invalidateContentCache($contentType);
+                }
+                
+                // Déclencher le rebuild complet si nécessaire
+                if ($this->shouldTriggerFullRebuild($action, $model)) {
+                    static::triggerPwaRebuild();
+                }
             }
             
         } catch (\Exception $e) {
@@ -128,5 +140,71 @@ class PwaContentObserver
         }
         
         return false;
+    }
+    
+    /**
+     * Détermine si un rebuild complet est nécessaire
+     */
+    private function shouldTriggerFullRebuild(string $action, $model): bool
+    {
+        // Rebuild complet pour les suppressions et créations
+        if (in_array($action, ['created', 'deleted'])) {
+            return true;
+        }
+        
+        // Rebuild complet si des champs critiques changent
+        if ($action === 'updated' && method_exists($model, 'wasChanged')) {
+            $criticalFields = ['is_published', 'is_featured', 'title', 'name'];
+            
+            foreach ($criticalFields as $field) {
+                if ($model->wasChanged($field)) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Obtient le type de contenu à partir de la classe du modèle
+     */
+    private function getContentType(string $modelClass): ?string
+    {
+        return match($modelClass) {
+            \App\Models\Recipe::class => 'recipes',
+            \App\Models\Event::class => 'events',
+            \App\Models\Tip::class => 'tips',
+            \App\Models\DinorTv::class => 'videos',
+            \App\Models\Page::class => 'pages',
+            \App\Models\PwaMenuItem::class => 'pwa-menu',
+            \App\Models\Banner::class => 'banners',
+            \App\Models\Category::class => 'categories',
+            default => null
+        };
+    }
+
+    /**
+     * Invalide le cache pour un type de contenu spécifique
+     */
+    public static function invalidateContentCache(string $contentType): void
+    {
+        try {
+            // Appeler l'endpoint d'invalidation du cache
+            $response = \Illuminate\Support\Facades\Http::post(config('app.url') . '/api/v1/cache/invalidate-content', [
+                'content_types' => [$contentType]
+            ]);
+
+            if ($response->successful()) {
+                Log::info("Cache invalidé pour le type de contenu: {$contentType}");
+            } else {
+                Log::warning("Échec de l'invalidation du cache pour: {$contentType}", [
+                    'status' => $response->status(),
+                    'response' => $response->body()
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error("Erreur lors de l'invalidation du cache pour {$contentType}: " . $e->getMessage());
+        }
     }
 }

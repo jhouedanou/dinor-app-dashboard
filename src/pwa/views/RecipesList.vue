@@ -15,6 +15,10 @@
         <i class="material-icons">{{ showFilters ? 'expand_less' : 'expand_more' }}</i>
         <span>{{ showFilters ? 'Masquer les filtres' : 'Afficher les filtres' }}</span>
       </button>
+      <button @click="forceRefresh" class="refresh-btn" title="Actualiser les données" :disabled="loading">
+        <i class="material-icons" :class="{ 'spinning': loading }">refresh</i>
+        <span>Actualiser</span>
+      </button>
     </div>
 
     <!-- Search and Filters -->
@@ -189,8 +193,8 @@ export default {
       }
     }
     
-    // Filters visibility toggle
-    const showFilters = ref(true)
+    // Filters visibility toggle - masquer par défaut
+    const showFilters = ref(false)
     
     // Auth modal
     const showAuthModal = ref(false)
@@ -320,8 +324,29 @@ export default {
       loadRecipes()
     }
     
-    const loadRecipes = async () => {
-      await recipesStore.fetchRecipes()
+    const loadRecipes = async (forceRefresh = false) => {
+      if (forceRefresh) {
+        console.log('🔄 [RecipesList] Rechargement forcé des recettes')
+        recipesStore.clearCache()
+        // Aussi vider le cache du service API
+        await apiService.clearCache()
+      }
+      await recipesStore.fetchRecipesFresh()
+    }
+
+    const forceRefresh = async () => {
+      console.log('🔄 [RecipesList] Rechargement forcé demandé')
+      try {
+        // Invalider tous les caches
+        await apiService.clearCache()
+        recipesStore.clearCache()
+        
+        // Recharger avec les données fraîches
+        await recipesStore.fetchRecipesFresh()
+        console.log('✅ [RecipesList] Rechargement forcé terminé')
+      } catch (error) {
+        console.error('❌ [RecipesList] Erreur lors du rechargement forcé:', error)
+      }
     }
     
     const getDifficultyLabel = (difficulty) => {
@@ -331,6 +356,11 @@ export default {
         'hard': 'Difficile'
       }
       return labels[difficulty] || difficulty
+    }
+    
+    // Corriger pour afficher le temps de préparation spécifiquement
+    const getPreparationTime = (recipe) => {
+      return recipe.preparation_time || 0
     }
     
     const getTotalTime = (recipe) => {
@@ -389,8 +419,11 @@ export default {
       updateAdditionalFilter,
       clearAllFilters,
       retry,
+      forceRefresh,
       getDifficultyLabel,
-      getTotalTime
+      getPreparationTime,
+      getTotalTime,
+      showAuthModal
     }
   }
 }
@@ -407,9 +440,14 @@ export default {
 .filters-toggle {
   padding: 16px;
   border-bottom: 1px solid #E2E8F0;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.toggle-btn {
+.toggle-btn,
+.refresh-btn {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -419,9 +457,18 @@ export default {
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
-  width: 100%;
   font-size: 14px;
   color: #2D3748;
+}
+
+.toggle-btn {
+  flex: 1;
+}
+
+.refresh-btn {
+  background: #4A5568;
+  color: #FFFFFF;
+  border-color: #4A5568;
 }
 
 .toggle-btn:hover {
@@ -429,9 +476,35 @@ export default {
   border-color: #CBD5E0;
 }
 
-.toggle-btn i {
+.refresh-btn:hover {
+  background: #2D3748;
+  border-color: #2D3748;
+}
+
+.refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.toggle-btn i,
+.refresh-btn i {
   font-size: 20px;
   color: #E53E3E;
+}
+
+.refresh-btn i {
+  color: #FFFFFF;
+}
+
+/* Animation de rotation pour le bouton refresh */
+.spinning {
+  animation: spin-refresh 1s linear infinite;
+}
+
+@keyframes spin-refresh {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .filters-container {
@@ -589,6 +662,7 @@ export default {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 16px;
+  margin-bottom: 2em; /* Ajouter margin-bottom de 2em */
 }
 
 .recipe-card {
@@ -643,7 +717,8 @@ export default {
   display: flex;
   align-items: center;
   gap: 4px;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(255, 255, 255, 0.9); /* Fond blanc semi-transparent */
+  color: #2D3748; /* Texte foncé pour contraste */
   padding: 4px 8px;
   border-radius: 12px;
 }

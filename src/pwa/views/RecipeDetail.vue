@@ -13,15 +13,15 @@
         <!-- Hero Image -->
         <div class="recipe-hero">
           <img 
-            :src="recipe.image || '/images/default-recipe.jpg'" 
+            :src="recipe.featured_image_url || '/images/default-recipe.jpg'" 
             :alt="recipe.title"
             class="recipe-hero-image"
             @error="handleImageError">
           <div class="recipe-overlay dinor-gradient-primary">
             <div class="recipe-badges">
               <Badge 
-                v-if="recipe.difficulty_level"
-                :text="getDifficultyLabel(recipe.difficulty_level)"
+                v-if="recipe.difficulty"
+                :text="getDifficultyLabel(recipe.difficulty)"
                 icon="restaurant"
                 variant="secondary"
                 size="medium"
@@ -160,6 +160,16 @@
               @update:count="handleLikeCountUpdate"
             />
             
+            <!-- Refresh Button -->
+            <button 
+              @click="forceRefresh"
+              class="refresh-button"
+              title="Actualiser les données"
+              :disabled="loading"
+            >
+              <i class="material-icons" :class="{ 'spinning': loading }">refresh</i>
+            </button>
+            
             <!-- Share Button -->
             <button 
               @click="callShare"
@@ -198,7 +208,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed, defineExpose, watch } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useApiStore } from '@/stores/api'
 import { useAuthStore } from '@/stores/auth'
@@ -233,7 +243,7 @@ export default {
     const authStore = useAuthStore()
     const { share, showShareModal, updateOpenGraphTags } = useSocialShare()
     const { share: shareSocial } = useShare()
-    const { comments, loadComments, loadCommentsFresh, canDeleteComment, deleteComment } = useComments()
+    const { comments, loadComments, loadCommentsFresh, canDeleteComment, deleteComment, setContext, addComment: addCommentFromComposable } = useComments()
     
     const recipe = ref(null)
     const loading = ref(true)
@@ -248,17 +258,25 @@ export default {
         title: recipe.value.title,
         text: recipe.value.description || `Découvrez cette délicieuse recette : ${recipe.value.title}`,
         url: window.location.href,
-        image: recipe.value.image,
+        image: recipe.value.featured_image_url,
         type: 'recipe',
         id: recipe.value.id
       }
     })
 
-    const loadRecipe = async () => {
+    const loadRecipe = async (forceRefresh = false) => {
       try {
-        const data = await apiStore.get(`/recipes/${props.id}`)
+        console.log('🔄 [RecipeDetail] Chargement recette ID:', props.id, 'ForceRefresh:', forceRefresh)
+        
+        // Utiliser forceRefresh pour récupérer les données fraîches
+        const data = forceRefresh 
+          ? await apiStore.request(`/recipes/${props.id}`, { forceRefresh: true })
+          : await apiStore.get(`/recipes/${props.id}`)
+          
         if (data.success) {
           recipe.value = data.data
+          // Définir le contexte pour les commentaires
+          setContext('Recipe', props.id)
           await loadComments()
           await checkUserLike()
           await checkUserFavorite()
@@ -359,27 +377,18 @@ export default {
       }
       
       try {
-        const commentData = {
-          commentable_type: 'App\\Models\\Recipe',
-          commentable_id: parseInt(props.id),
-          content: newComment.value
-        }
+        console.log('📝 [Comments] Envoi du commentaire pour Recipe:', props.id)
         
-        console.log('📝 [Comments] Envoi du commentaire:', commentData)
+        // Utiliser la fonction du composable
+        await addCommentFromComposable('Recipe', props.id, newComment.value)
         
-        const data = await apiStore.post('/comments', commentData)
-        
-        if (data.success) {
-          console.log('✅ [Comments] Commentaire ajouté avec succès')
-          // Recharger les commentaires avec des données fraîches
-          await loadCommentsFresh()
-          newComment.value = ''
-        }
+        console.log('✅ [Comments] Commentaire ajouté avec succès')
+        newComment.value = ''
       } catch (error) {
         console.error('❌ [Comments] Erreur lors de l\'ajout du commentaire:', error)
         
         // Si erreur 401, demander connexion
-        if (error.message.includes('401')) {
+        if (error.message.includes('401') || error.message.includes('connecté')) {
           showAuthModal.value = true
         }
       }
@@ -400,6 +409,17 @@ export default {
     
     const goBack = () => {
       router.push('/recipes')
+    }
+
+    const forceRefresh = async () => {
+      console.log('🔄 [RecipeDetail] Rechargement forcé demandé')
+      loading.value = true
+      try {
+        await loadRecipe(true) // Force refresh
+        console.log('✅ [RecipeDetail] Rechargement forcé terminé')
+      } catch (error) {
+        console.error('❌ [RecipeDetail] Erreur lors du rechargement forcé:', error)
+      }
     }
 
     const getDifficultyLabel = (level) => {
@@ -482,11 +502,47 @@ export default {
       loadRecipe()
     })
 
-    // Exposer la fonction share pour le composant parent
-    defineExpose({
-      share: callShare,
-      toggleLike
-    })
+    // Fonctions manquantes
+    const goHome = () => {
+      router.push('/')
+    }
+
+    const formatIngredients = (ingredients) => {
+      if (!ingredients) return ''
+      
+      if (typeof ingredients === 'string') return ingredients
+      
+      if (Array.isArray(ingredients)) {
+        return ingredients.map((ingredient, index) => {
+          if (typeof ingredient === 'object' && ingredient.name) {
+            return `<div class="ingredient-item">
+              <span class="md3-body-medium">${ingredient.quantity || ''} ${ingredient.unit || ''} ${ingredient.name}</span>
+            </div>`
+          } else if (typeof ingredient === 'string') {
+            return `<div class="ingredient-item">
+              <span class="md3-body-medium">${ingredient}</span>
+            </div>`
+          }
+          return `<div class="ingredient-item"><span class="md3-body-medium">${ingredient}</span></div>`
+        }).join('')
+      }
+      
+      return ingredients.toString()
+    }
+
+    const getDifficultyColor = (level) => {
+      const colors = {
+        'beginner': '#4CAF50',
+        'intermediate': '#FF9800', 
+        'advanced': '#F44336'
+      }
+      return colors[level] || '#4CAF50'
+    }
+
+    const formatCookingTime = (time) => {
+      if (!time) return 'N/A'
+      return `${time} min`
+    }
 
     // Exposer les méthodes et les refs nécessaires au template et au parent
     return {
@@ -501,6 +557,7 @@ export default {
       shareData,
       goBack,
       goHome,
+      forceRefresh,
       addComment,
       canDeleteComment,
       deleteComment,
@@ -684,6 +741,7 @@ p, span, div {
   margin-top: 16px;
 }
 
+.refresh-button,
 .share-button {
   display: inline-flex;
   align-items: center;
@@ -697,12 +755,30 @@ p, span, div {
   color: var(--md-sys-color-on-surface-variant, #49454f);
 }
 
+.refresh-button:hover,
 .share-button:hover {
   background: var(--md-sys-color-surface-variant, #e7e0ec);
   transform: scale(1.05);
 }
 
+.refresh-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.refresh-button i,
 .share-button i {
   font-size: 20px;
+}
+
+/* Animation de rotation pour le bouton refresh */
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 </style> 

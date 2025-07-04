@@ -41,7 +41,7 @@
           >
             <div class="video-thumbnail">
               <img
-                :src="video.thumbnail_url || getVideoThumbnail(video.video_url)"
+                :src="getVideoThumbnail(video.video_url)"
                 :alt="video.title"
                 loading="lazy"
               />
@@ -96,7 +96,7 @@
           <div v-if="featuredVideo" class="featured-video md3-card">
             <div class="video-thumbnail" @click="playVideo(featuredVideo)">
               <img 
-                :src="featuredVideo.thumbnail || '/images/default-video-thumbnail.jpg'" 
+                :src="getVideoThumbnail(featuredVideo.video_url) || '/images/default-video-thumbnail.jpg'" 
                 :alt="featuredVideo.title"
                 @error="handleImageError">
               <div class="play-overlay">
@@ -118,7 +118,7 @@
                 <div class="views-count">
                   <span class="material-symbols-outlined">visibility</span>
                   <span class="emoji-fallback">👁️</span>
-                  <span>{{ formatViews(featuredVideo.views_count) }}</span>
+                  <span>{{ formatViews(featuredVideo.view_count) }}</span>
                 </div>
                 <div class="video-date">
                   <span>{{ formatDate(featuredVideo.created_at) }}</span>
@@ -146,7 +146,7 @@
             >
               <div class="video-thumbnail">
                 <img 
-                  :src="video.thumbnail || '/images/default-video-thumbnail.jpg'" 
+                  :src="getVideoThumbnail(video.video_url) || '/images/default-video-thumbnail.jpg'" 
                   :alt="video.title"
                   @error="handleImageError">
                 <div class="play-overlay">
@@ -155,9 +155,6 @@
                     <span class="emoji-fallback">▶️</span>
                   </div>
                 </div>
-                <div class="video-duration" v-if="video.duration">
-                  {{ formatDuration(video.duration) }}
-                </div>
               </div>
               <div class="video-info">
                 <h3 class="video-title md3-title-small">{{ video.title }}</h3>
@@ -165,7 +162,7 @@
                   <div class="views-count">
                     <span class="material-symbols-outlined">visibility</span>
                     <span class="emoji-fallback">👁️</span>
-                    <span>{{ formatViews(video.views_count) }}</span>
+                    <span>{{ formatViews(video.view_count) }}</span>
                   </div>
                   <div class="video-date">
                     <span>{{ formatDate(video.created_at) }}</span>
@@ -328,17 +325,6 @@ export default {
       return text.length > 100 ? text.substring(0, 100) + '...' : text
     }
     
-    const formatDuration = (seconds) => {
-      if (!seconds) return ''
-      const hours = Math.floor(seconds / 3600)
-      const minutes = Math.floor((seconds % 3600) / 60)
-      const secs = seconds % 60
-      
-      if (hours > 0) {
-        return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
-      }
-      return `${minutes}:${secs.toString().padStart(2, '0')}`
-    }
     
     const formatDate = (dateString) => {
       if (!dateString) return ''
@@ -391,7 +377,6 @@ export default {
       getVideoThumbnail,
       getEmbedUrl,
       getShortDescription,
-      formatDuration,
       formatDate,
       formatTime,
       formatViews,
@@ -470,6 +455,7 @@ export default {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 16px;
+  margin-bottom: 2em;
 }
 
 .video-card {

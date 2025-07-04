@@ -9,20 +9,36 @@ export function useComments() {
   const comments = ref([])
   const loading = ref(false)
   const error = ref(null)
+  const currentType = ref(null)
+  const currentId = ref(null)
 
   /**
    * Charger les commentaires pour un contenu donné
    */
-  const loadComments = async (type, id) => {
+  const loadComments = async (type = null, id = null) => {
     loading.value = true
     error.value = null
     
+    // Si des paramètres sont fournis, les utiliser
+    if (type && id) {
+      currentType.value = type
+      currentId.value = id
+    }
+    
+    // Vérifier qu'on a les paramètres nécessaires
+    if (!currentType.value || !currentId.value) {
+      console.error('❌ [Comments] Type ou ID manquant pour charger les commentaires')
+      error.value = 'Paramètres manquants pour charger les commentaires'
+      loading.value = false
+      return
+    }
+    
     try {
-      console.log(`💬 [Comments] Chargement des commentaires pour ${type}:${id}`)
+      console.log(`💬 [Comments] Chargement des commentaires pour ${currentType.value}:${currentId.value}`)
       
       const data = await apiStore.get('/comments', { 
-        commentable_type: `App\\Models\\${type}`,
-        commentable_id: id 
+        commentable_type: `App\\Models\\${currentType.value}`,
+        commentable_id: currentId.value 
       })
       
       if (data.success) {
@@ -38,6 +54,59 @@ export function useComments() {
     } finally {
       loading.value = false
     }
+  }
+
+  /**
+   * Charger les commentaires avec des données fraîches (sans cache)
+   */
+  const loadCommentsFresh = async (type = null, id = null) => {
+    loading.value = true
+    error.value = null
+    
+    // Si des paramètres sont fournis, les utiliser
+    if (type && id) {
+      currentType.value = type
+      currentId.value = id
+    }
+    
+    // Vérifier qu'on a les paramètres nécessaires
+    if (!currentType.value || !currentId.value) {
+      console.error('❌ [Comments] Type ou ID manquant pour charger les commentaires')
+      error.value = 'Paramètres manquants pour charger les commentaires'
+      loading.value = false
+      return
+    }
+    
+    try {
+      console.log(`💬 [Comments] Chargement frais des commentaires pour ${currentType.value}:${currentId.value}`)
+      
+      const data = await apiStore.getFresh('/comments', { 
+        commentable_type: `App\\Models\\${currentType.value}`,
+        commentable_id: currentId.value 
+      })
+      
+      if (data.success) {
+        comments.value = data.data || []
+        console.log(`✅ [Comments] ${comments.value.length} commentaires chargés (frais)`)
+      } else {
+        comments.value = []
+      }
+    } catch (err) {
+      console.error('❌ [Comments] Erreur lors du chargement frais:', err)
+      error.value = err.message
+      comments.value = []
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * Définir le contexte pour les commentaires
+   */
+  const setContext = (type, id) => {
+    currentType.value = type
+    currentId.value = id
+    console.log(`💬 [Comments] Contexte défini: ${type}:${id}`)
   }
 
   /**
@@ -166,6 +235,17 @@ export function useComments() {
     return comment.user_id === authStore.user?.id || authStore.user?.role === 'admin'
   }
 
+  /**
+   * Vérifier si l'utilisateur peut supprimer un commentaire
+   */
+  const canDeleteComment = (comment) => {
+    if (!authStore.isAuthenticated || !comment) return false
+    
+    // L'utilisateur peut supprimer son propre commentaire
+    // ou si c'est un admin (à implémenter selon vos besoins)
+    return comment.user_id === authStore.user?.id || authStore.user?.role === 'admin'
+  }
+
   return {
     // État
     comments,
@@ -174,11 +254,14 @@ export function useComments() {
     
     // Actions
     loadComments,
+    loadCommentsFresh,
     addComment,
     deleteComment,
     
     // Utilitaires
     formatCommentDate,
-    canEditComment
+    canEditComment,
+    canDeleteComment,
+    setContext
   }
 } 

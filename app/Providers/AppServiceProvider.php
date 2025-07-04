@@ -28,6 +28,21 @@ class AppServiceProvider extends ServiceProvider
         
         // Register model observers
         Comment::observe(CommentObserver::class);
+        
+        // Forcer la désactivation des tags de cache pour éviter les erreurs
+        $this->disableCacheTaggingForFilament();
+    }
+    
+    /**
+     * Désactiver le cache tagging pour Filament
+     */
+    private function disableCacheTaggingForFilament(): void
+    {
+        // Override la méthode tags pour retourner le cache normal
+        \Illuminate\Support\Facades\Cache::macro('tags', function ($tags = []) {
+            // Retourner l'instance de cache normale sans tags
+            return \Illuminate\Support\Facades\Cache::store();
+        });
     }
 
     /**
@@ -35,6 +50,11 @@ class AppServiceProvider extends ServiceProvider
      */
     private function registerDevelopmentPackages(): void
     {
+        // Spatie Ignition - maintenant en production aussi
+        if (class_exists(\Spatie\LaravelIgnition\IgnitionServiceProvider::class)) {
+            $this->app->register(\Spatie\LaravelIgnition\IgnitionServiceProvider::class);
+        }
+
         // Collision (gestion d'erreurs améliorée) - seulement en développement
         if ($this->app->environment('local', 'testing') && class_exists(\NunoMaduro\Collision\Adapters\Laravel\CollisionServiceProvider::class)) {
             $this->app->register(\NunoMaduro\Collision\Adapters\Laravel\CollisionServiceProvider::class);

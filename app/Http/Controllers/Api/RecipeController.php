@@ -4,11 +4,15 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Recipe;
+use App\Traits\HasPwaRebuild;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class RecipeController extends Controller
 {
+    use HasPwaRebuild;
+
     public function index(Request $request)
     {
         // Par défaut, ne retourner que les recettes publiées et non supprimées
@@ -20,8 +24,6 @@ class RecipeController extends Controller
         if ($request->has('include_unpublished') && $request->boolean('include_unpublished')) {
             $query = Recipe::with('category')->orderBy('created_at', 'desc');
         }
-
-
 
         // Filtres optionnels
         if ($request->has('category_id')) {
@@ -184,6 +186,9 @@ class RecipeController extends Controller
             
             $recipe->delete();
             
+            // Invalider le cache après suppression
+            $this->invalidateRecipeCache();
+            
             return response()->json([
                 'success' => true,
                 'message' => 'Recette supprimée avec succès'
@@ -193,6 +198,27 @@ class RecipeController extends Controller
                 'success' => false,
                 'message' => 'Erreur lors de la suppression: ' . $e->getMessage()
             ], 500);
+        }
+    }
+    
+    /**
+     * Invalider le cache des recettes
+     */
+    private function invalidateRecipeCache(): void
+    {
+        try {
+            // Invalider le cache serveur
+            Cache::tags(['pwa', 'recipes'])->flush();
+            
+            // Invalider les caches spécifiques
+            Cache::forget('api_recipes_cache');
+            Cache::forget('api_recipes_featured_cache');
+            
+            // Déclencher l'invalidation côté client PWA
+            static::invalidateContentCache('recipes');
+            
+        } catch (\Exception $e) {
+            \Log::error('Erreur lors de l\'invalidation du cache des recettes: ' . $e->getMessage());
         }
     }
 } 

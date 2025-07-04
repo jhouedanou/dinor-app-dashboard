@@ -105,9 +105,9 @@ export default defineConfig({
     devSourcemap: true
   },
   root: 'src/pwa',
-  base: '/pwa/dist/',
+  base: '/pwa/',
   build: {
-    outDir: '../../public/pwa/dist',
+    outDir: '../../public/pwa',
     emptyOutDir: true,
     sourcemap: false,
     minify: 'terser',

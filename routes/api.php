@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\CacheController;
 use App\Http\Controllers\Api\ShareController;
+use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\PWA\CacheController as PWACacheController;
 use App\Http\Controllers\PWA\PwaMenuItemController;
 
@@ -110,6 +111,12 @@ Route::prefix('v1')->group(function () {
     Route::get('/banners/type/{type}', [BannerController::class, 'getByType']);
     Route::post('/banners/clear-cache', [BannerController::class, 'clearCache']);
     
+    // Cache PWA
+    Route::post('/cache/invalidate-content', [CacheController::class, 'invalidateContent']);
+    Route::post('/cache/clear-all', [CacheController::class, 'clearAll']);
+    Route::get('/cache/stats', [CacheController::class, 'stats']);
+    Route::get('/cache/status', [CacheController::class, 'status']);
+    
     // PWA Menu Items
     Route::get('/pwa-menu-items', [PwaMenuItemController::class, 'index']);
     
@@ -167,6 +174,24 @@ Route::post('/event-categories/check-exists', [App\Http\Controllers\Api\EventCat
     
     // Favorites - Routes publiques (lecture seulement)
     Route::get('/favorites/check', [App\Http\Controllers\Api\FavoriteController::class, 'check']);
+    
+    // Pronostics - Routes publiques
+    Route::get('/teams', [App\Http\Controllers\Api\TeamController::class, 'index']);
+    Route::get('/teams/{team}', [App\Http\Controllers\Api\TeamController::class, 'show']);
+    
+    Route::get('/matches', [App\Http\Controllers\Api\FootballMatchController::class, 'index']);
+    Route::get('/matches/{footballMatch}', [App\Http\Controllers\Api\FootballMatchController::class, 'show']);
+    Route::get('/matches/upcoming/list', [App\Http\Controllers\Api\FootballMatchController::class, 'upcoming']);
+    Route::get('/matches/current/match', [App\Http\Controllers\Api\FootballMatchController::class, 'current']);
+    
+    Route::get('/leaderboard', [App\Http\Controllers\Api\LeaderboardController::class, 'index']);
+    Route::get('/leaderboard/top', [App\Http\Controllers\Api\LeaderboardController::class, 'top']);
+    
+    // Tournois - Routes publiques
+    Route::get('/tournaments', [App\Http\Controllers\Api\TournamentController::class, 'index']);
+    Route::get('/tournaments/featured', [App\Http\Controllers\Api\TournamentController::class, 'featured']);
+    Route::get('/tournaments/{tournament}', [App\Http\Controllers\Api\TournamentController::class, 'show']);
+    Route::get('/tournaments/{tournament}/leaderboard', [App\Http\Controllers\Api\TournamentController::class, 'leaderboard']);
     
     // Route de test avec vrais favoris de la base de données
     Route::get('/favorites-real', function() {
@@ -242,6 +267,10 @@ Route::post('/event-categories/check-exists', [App\Http\Controllers\Api\EventCat
     // Shares - Tracking des partages
     Route::post('/shares/track', [ShareController::class, 'track']);
     
+    // Recherche - Routes publiques
+    Route::get('/search', [SearchController::class, 'index']);
+    Route::get('/search/suggestions', [SearchController::class, 'suggestions']);
+    
     // Dashboard global pour l'app
     Route::get('/dashboard', function() {
         return response()->json([
@@ -310,13 +339,31 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     // Comments - Routes protégées
     Route::post('/comments', [CommentController::class, 'store']);
     Route::put('/comments/{comment}', [CommentController::class, 'update']);
-    Route::delete('/comments/{comment}', [CommentController::class, 'destroy']);
+    Route::delete('/comments/{id}', [CommentController::class, 'destroy']);
     
     // Favorites - Routes protégées
     Route::get('/favorites', [App\Http\Controllers\Api\FavoriteController::class, 'index']);
     Route::get('/favorites/check', [App\Http\Controllers\Api\FavoriteController::class, 'check']);
     Route::post('/favorites/toggle', [App\Http\Controllers\Api\FavoriteController::class, 'toggle']);
     Route::delete('/favorites/{favorite}', [App\Http\Controllers\Api\FavoriteController::class, 'remove']);
+    
+    // Prédictions - Routes protégées
+    Route::get('/predictions', [App\Http\Controllers\Api\PredictionController::class, 'index']);
+    Route::post('/predictions', [App\Http\Controllers\Api\PredictionController::class, 'store']);
+    Route::get('/predictions/{prediction}', [App\Http\Controllers\Api\PredictionController::class, 'show']);
+    Route::put('/predictions/{prediction}', [App\Http\Controllers\Api\PredictionController::class, 'update']);
+    Route::get('/predictions/match/{matchId}', [App\Http\Controllers\Api\PredictionController::class, 'getUserPredictionForMatch']);
+    Route::get('/predictions/my-recent', [App\Http\Controllers\Api\PredictionController::class, 'userRecentPredictions']);
+    
+    // Leaderboard - Routes protégées utilisateur
+    Route::get('/leaderboard/my-stats', [App\Http\Controllers\Api\LeaderboardController::class, 'userStats']);
+    Route::get('/leaderboard/my-rank', [App\Http\Controllers\Api\LeaderboardController::class, 'userRank']);
+    Route::post('/leaderboard/refresh', [App\Http\Controllers\Api\LeaderboardController::class, 'refresh']);
+    
+    // Tournois - Routes protégées
+    Route::post('/tournaments/{tournament}/register', [App\Http\Controllers\Api\TournamentController::class, 'register']);
+    Route::delete('/tournaments/{tournament}/register', [App\Http\Controllers\Api\TournamentController::class, 'unregister']);
+    Route::get('/tournaments/my-tournaments', [App\Http\Controllers\Api\TournamentController::class, 'myTournaments']);
     
     // Route de test avec vrais favoris de la base de données
     Route::get('/favorites-real', function() {
@@ -429,7 +476,7 @@ Route::prefix('test')->group(function () {
     });
 });
 
-// Routes pour le cache PWA uniquement (pas pour Filament)
+// Routes pour la gestion du cache PWA
 Route::prefix('pwa/cache')->group(function () {
     Route::post('set', [CacheController::class, 'set']);
     Route::post('get', [CacheController::class, 'get']);
@@ -437,4 +484,8 @@ Route::prefix('pwa/cache')->group(function () {
     Route::post('clear', [CacheController::class, 'clear']);
     Route::get('stats', [CacheController::class, 'stats']);
     Route::post('warmup', [CacheController::class, 'warmup']);
+    
+    // Nouvel endpoint pour vérifier l'état du cache et les invalidations
+    Route::get('status', [CacheController::class, 'getStatus']);
+    Route::post('invalidate-content', [CacheController::class, 'invalidateContent']);
 }); 
