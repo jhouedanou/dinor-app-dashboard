@@ -65,6 +65,32 @@ export const useRecipesStore = defineStore('recipes', () => {
     }
   }
 
+  // Nouvelle méthode pour forcer le rafraîchissement
+  async function fetchRecipesFresh(params = {}) {
+    loading.value = true
+    error.value = null
+
+    try {
+      console.log('🔄 [RecipesStore] Rafraîchissement forcé des recettes')
+      const response = await apiService.getRecipesFresh(params)
+      
+      if (response.success) {
+        recipes.value = response.data
+        if (response.meta) {
+          pagination.value = response.meta
+        }
+        console.log('✅ [RecipesStore] Recettes rafraîchies:', response.data.length)
+      } else {
+        throw new Error(response.message || 'Failed to fetch recipes')
+      }
+    } catch (err) {
+      error.value = err.message
+      console.error('Error fetching recipes:', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
   async function fetchRecipe(id) {
     loading.value = true
     error.value = null
@@ -74,6 +100,29 @@ export const useRecipesStore = defineStore('recipes', () => {
       
       if (response.success) {
         currentRecipe.value = response.data
+      } else {
+        throw new Error(response.message || 'Failed to fetch recipe')
+      }
+    } catch (err) {
+      error.value = err.message
+      console.error('Error fetching recipe:', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Nouvelle méthode pour forcer le rafraîchissement d'une recette
+  async function fetchRecipeFresh(id) {
+    loading.value = true
+    error.value = null
+
+    try {
+      console.log('🔄 [RecipesStore] Rafraîchissement forcé de la recette:', id)
+      const response = await apiService.getRecipeFresh(id)
+      
+      if (response.success) {
+        currentRecipe.value = response.data
+        console.log('✅ [RecipesStore] Recette rafraîchie:', response.data.title)
       } else {
         throw new Error(response.message || 'Failed to fetch recipe')
       }
@@ -148,7 +197,9 @@ export const useRecipesStore = defineStore('recipes', () => {
     
     // Actions
     fetchRecipes,
+    fetchRecipesFresh,
     fetchRecipe,
+    fetchRecipeFresh,
     toggleLike,
     setSearchQuery,
     setSelectedCategory,

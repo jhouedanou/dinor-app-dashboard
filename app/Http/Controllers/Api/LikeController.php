@@ -76,8 +76,11 @@ class LikeController extends Controller
 
         // Toggle également le favori pour l'utilisateur connecté
         $favoriteResult = null;
+        $favoriteAction = null;
         if ($userId) {
-            $favoriteResult = $model->toggleFavorite($userId);
+            $favoriteToggleResult = $model->toggleFavorite($userId);
+            // Convertir le booléen en action string
+            $favoriteAction = $favoriteToggleResult ? 'favorited' : 'unfavorited';
         }
 
         // Recalculer et mettre à jour les compteurs réels
@@ -93,7 +96,7 @@ class LikeController extends Controller
             'action' => $result['action'],
             'likes_count' => $actualCount,
             'favorites_count' => $actualFavoritesCount,
-            'favorite_action' => $favoriteResult ? $favoriteResult['action'] : null,
+            'favorite_action' => $favoriteAction,
             'message' => $result['action'] === 'liked' ? 'Contenu aimé et ajouté aux favoris' : 'Like et favori retirés'
         ]);
     }

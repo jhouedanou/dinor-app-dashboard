@@ -128,6 +128,142 @@
         </div>
         </div>
 
+        <!-- Predictions Section -->
+        <div v-if="activeSection === 'predictions'" class="section-content">
+          <h2 class="section-title">Mes Pronostics</h2>
+          
+          <!-- Loading -->
+          <div v-if="predictionsLoading" class="loading-container">
+            <div class="md3-circular-progress"></div>
+            <p>Chargement de vos statistiques...</p>
+          </div>
+
+          <!-- User Predictions Stats -->
+          <div v-else-if="userPredictionsStats" class="predictions-overview">
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+              <div class="stat-card points">
+                <div class="stat-icon">
+                  <i class="material-icons">star</i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-value">{{ userPredictionsStats.total_points }}</div>
+                  <div class="stat-label">Points totaux</div>
+                </div>
+              </div>
+              
+              <div class="stat-card rank">
+                <div class="stat-icon">
+                  <i class="material-icons">leaderboard</i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-value">{{ userPredictionsStats.current_rank || 'N/A' }}</div>
+                  <div class="stat-label">Classement</div>
+                </div>
+              </div>
+              
+              <div class="stat-card predictions">
+                <div class="stat-icon">
+                  <i class="material-icons">sports_soccer</i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-value">{{ userPredictionsStats.total_predictions }}</div>
+                  <div class="stat-label">Pronostics</div>
+                </div>
+              </div>
+              
+              <div class="stat-card accuracy">
+                <div class="stat-icon">
+                  <i class="material-icons">accuracy</i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-value">{{ userPredictionsStats.accuracy_percentage }}%</div>
+                  <div class="stat-label">Précision</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="predictions-actions">
+              <router-link to="/predictions" class="action-link">
+                <i class="material-icons">add</i>
+                <span>Nouveau pronostic</span>
+              </router-link>
+              
+              <router-link to="/predictions/leaderboard" class="action-link">
+                <i class="material-icons">trophy</i>
+                <span>Voir le classement</span>
+              </router-link>
+            </div>
+
+            <!-- Recent Predictions -->
+            <div v-if="recentPredictions.length" class="recent-predictions">
+              <h3 class="subsection-title">Pronostics récents</h3>
+              <div class="predictions-list">
+                <div 
+                  v-for="prediction in recentPredictions" 
+                  :key="prediction.id" 
+                  class="prediction-item"
+                  :class="{ calculated: prediction.is_calculated }"
+                >
+                  <div class="prediction-match">
+                    <div class="teams">
+                      <span class="team">{{ prediction.football_match.home_team.name }}</span>
+                      <span class="vs">vs</span>
+                      <span class="team">{{ prediction.football_match.away_team.name }}</span>
+                    </div>
+                    <div class="match-date">
+                      {{ formatDate(prediction.football_match.match_date) }}
+                    </div>
+                  </div>
+                  
+                  <div class="prediction-details">
+                    <div class="predicted-score">
+                      {{ prediction.predicted_home_score }} - {{ prediction.predicted_away_score }}
+                    </div>
+                    <div class="prediction-status">
+                      <span v-if="prediction.is_calculated" class="points-earned">
+                        {{ prediction.points_earned }} point{{ prediction.points_earned > 1 ? 's' : '' }}
+                      </span>
+                      <span v-else class="pending">En attente</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="view-all-link">
+                <router-link to="/predictions/my-predictions" class="btn-secondary">
+                  Voir tous mes pronostics
+                </router-link>
+              </div>
+            </div>
+
+            <!-- No Predictions -->
+            <div v-else class="no-predictions">
+              <div class="empty-icon">
+                <i class="material-icons">sports_soccer</i>
+              </div>
+              <h3>Aucun pronostic</h3>
+              <p>Vous n'avez pas encore fait de pronostic. Commencez dès maintenant!</p>
+              <router-link to="/predictions" class="btn-primary">
+                Faire mon premier pronostic
+              </router-link>
+            </div>
+          </div>
+
+          <!-- Error State -->
+          <div v-else class="error-state">
+            <div class="error-icon">
+              <i class="material-icons">error_outline</i>
+            </div>
+            <h3>Erreur de chargement</h3>
+            <p>Impossible de charger vos statistiques de pronostics.</p>
+            <button @click="loadPredictionsData" class="btn-secondary">
+              Réessayer
+            </button>
+          </div>
+        </div>
+
         <!-- Account Section -->
         <div v-if="activeSection === 'account'" class="section-content">
           <h2 class="section-title">Mon Compte</h2>
@@ -323,6 +459,11 @@ export default {
     const favorites = ref([])
     const selectedFilter = ref('all')
     const activeSection = ref('favorites')
+    
+    // Predictions data
+    const predictionsLoading = ref(false)
+    const userPredictionsStats = ref(null)
+    const recentPredictions = ref([])
 
     // Form states
     const usernameForm = ref({
@@ -351,6 +492,7 @@ export default {
 
     const profileSections = ref([
       { key: 'favorites', label: 'Favoris', icon: 'favorite' },
+      { key: 'predictions', label: 'Pronostics', icon: 'sports_soccer' },
       { key: 'account', label: 'Compte', icon: 'person' },
       { key: 'security', label: 'Sécurité', icon: 'security' },
       { key: 'legal', label: 'Légal', icon: 'gavel' }
@@ -406,6 +548,38 @@ export default {
         console.error('❌ [Profile] Erreur lors du chargement des favoris:', error)
       } finally {
         loading.value = false
+      }
+    }
+
+    const loadPredictionsData = async () => {
+      if (!authStore.isAuthenticated) return
+
+      predictionsLoading.value = true
+      try {
+        console.log('🏆 [Profile] Chargement des données de pronostics...')
+        
+        // Load user predictions stats and recent predictions in parallel
+        const [statsData, recentData] = await Promise.all([
+          apiStore.get('/v1/leaderboard/my-stats'),
+          apiStore.get('/v1/predictions/my-recent?limit=5')
+        ])
+        
+        if (statsData.success) {
+          userPredictionsStats.value = statsData.data
+          console.log('🏆 [Profile] Stats utilisateur chargées:', userPredictionsStats.value)
+        }
+        
+        if (recentData.success) {
+          recentPredictions.value = recentData.data
+          console.log('🏆 [Profile] Pronostics récents chargés:', recentPredictions.value.length, 'éléments')
+        }
+      } catch (error) {
+        console.error('❌ [Profile] Erreur lors du chargement des données de pronostics:', error)
+        // If stats endpoint fails, reset to null to show error state
+        userPredictionsStats.value = null
+        recentPredictions.value = []
+      } finally {
+        predictionsLoading.value = false
       }
     }
 
@@ -692,14 +866,25 @@ export default {
     watch(() => authStore.isAuthenticated, (isAuth) => {
       if (isAuth) {
         loadFavorites()
+        loadPredictionsData()
       } else {
         favorites.value = []
+        userPredictionsStats.value = null
+        recentPredictions.value = []
       }
     }, { immediate: true })
+
+    // Watch active section changes to load predictions data when needed
+    watch(() => activeSection.value, (section) => {
+      if (section === 'predictions' && authStore.isAuthenticated && !userPredictionsStats.value) {
+        loadPredictionsData()
+      }
+    })
 
     onMounted(() => {
       if (authStore.isAuthenticated) {
         loadFavorites()
+        loadPredictionsData()
         // Initialize username form with current name
         usernameForm.value.name = authStore.user?.name || ''
         
@@ -724,6 +909,11 @@ export default {
       usernameForm,
       passwordForm,
       deletionForm,
+      // Predictions data
+      predictionsLoading,
+      userPredictionsStats,
+      recentPredictions,
+      loadPredictionsData,
       removeFavorite,
       goToContent,
       getTypeIcon,
@@ -1464,6 +1654,293 @@ export default {
   margin-bottom: 16px;
 }
 
+/* Predictions Section Styles */
+.predictions-overview {
+  padding: 0;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card.points {
+  border-color: #F4D03F;
+}
+
+.stat-card.rank {
+  border-color: #F39C12;
+}
+
+.stat-card.predictions {
+  border-color: #3498DB;
+}
+
+.stat-card.accuracy {
+  border-color: #27AE60;
+}
+
+.stat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+}
+
+.stat-card.points .stat-icon {
+  background: #F4D03F;
+}
+
+.stat-card.rank .stat-icon {
+  background: #F39C12;
+}
+
+.stat-card.predictions .stat-icon {
+  background: #3498DB;
+}
+
+.stat-card.accuracy .stat-icon {
+  background: #27AE60;
+}
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2D3748;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #6B7280;
+  font-weight: 500;
+}
+
+.predictions-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.action-link {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  background: #F4D03F;
+  color: #2D3748;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.action-link:hover {
+  background: #F1C40F;
+  transform: translateY(-2px);
+}
+
+.action-link i {
+  font-size: 18px;
+}
+
+.recent-predictions {
+  margin-top: 24px;
+}
+
+.subsection-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2D3748;
+  margin-bottom: 16px;
+}
+
+.predictions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.prediction-item {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.prediction-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.prediction-item.calculated {
+  border-color: #10B981;
+  background: #F0FDF4;
+}
+
+.prediction-match {
+  flex: 1;
+}
+
+.teams {
+  font-weight: 600;
+  color: #2D3748;
+  margin-bottom: 4px;
+}
+
+.vs {
+  color: #F4D03F;
+  margin: 0 8px;
+}
+
+.match-date {
+  font-size: 12px;
+  color: #6B7280;
+}
+
+.prediction-details {
+  text-align: right;
+}
+
+.predicted-score {
+  font-size: 18px;
+  font-weight: 700;
+  color: #F4D03F;
+  margin-bottom: 4px;
+}
+
+.prediction-status {
+  font-size: 12px;
+}
+
+.points-earned {
+  color: #10B981;
+  font-weight: 600;
+}
+
+.pending {
+  color: #F59E0B;
+  font-weight: 500;
+}
+
+.view-all-link {
+  text-align: center;
+}
+
+.no-predictions {
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.no-predictions .empty-icon {
+  width: 80px;
+  height: 80px;
+  background: #F7FAFC;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.no-predictions .empty-icon i {
+  font-size: 32px;
+  color: #9CA3AF;
+}
+
+.no-predictions h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2D3748;
+  margin-bottom: 8px;
+}
+
+.no-predictions p {
+  font-size: 14px;
+  color: #6B7280;
+  margin-bottom: 24px;
+}
+
+.error-state {
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.error-icon {
+  width: 80px;
+  height: 80px;
+  background: #FEF2F2;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.error-icon i {
+  font-size: 32px;
+  color: #EF4444;
+}
+
+.error-state h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2D3748;
+  margin-bottom: 8px;
+}
+
+.error-state p {
+  font-size: 14px;
+  color: #6B7280;
+  margin-bottom: 24px;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.loading-container .md3-circular-progress {
+  margin-bottom: 16px;
+}
+
 /* Responsive Design for New Elements */
 @media (max-width: 768px) {
   .profile-navigation {
@@ -1485,6 +1962,27 @@ export default {
   
   .legal-link {
     padding: 12px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .predictions-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .prediction-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .prediction-details {
+    text-align: left;
+    width: 100%;
   }
 }
 

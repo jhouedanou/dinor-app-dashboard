@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             IngredientsSeeder::class,
             ProductionDataSeeder::class,
             BannerSeeder::class,
+            FootballTestDataSeeder::class,
         ]);
 
         // Créer des catégories
