@@ -204,7 +204,6 @@ import { useEvents } from '@/composables/useEvents'
 import { useDinorTV } from '@/composables/useDinorTV'
 import { useBanners } from '@/composables/useBanners'
 import { useGlobalAuth } from '@/composables/useAuthHandler'
-import { useRefresh } from '@/composables/useRefresh'
 import ContentCarousel from '@/components/common/ContentCarousel.vue'
 import BannerSection from '@/components/common/BannerSection.vue'
 import LikeButton from '@/components/common/LikeButton.vue'
@@ -290,9 +289,6 @@ export default {
     const latestEvents = computed(() => eventsData.value?.data?.slice(0, 4) || [])
     const latestVideos = computed(() => videosData.value?.data?.slice(0, 4) || [])
     
-    // Système de rafraîchissement
-    const { refreshContentType, onRefresh } = useRefresh()
-    
     // Écouter les mises à jour de likes
     const handleLikeUpdate = (event) => {
       const { type, id, liked, count } = event.detail
@@ -312,55 +308,12 @@ export default {
       }
     }
     
-    // Écouter les événements de rafraîchissement
-    const handleContentRefresh = (event) => {
-      const { type } = event.detail
-      console.log(`🔄 [Home] Rafraîchissement détecté pour: ${type}`)
-      
-      // Forcer le rechargement des données selon le type
-      switch(type) {
-        case 'recipes':
-          console.log('🔄 [Home] Rechargement des recettes...')
-          recipesData.value = null // Force un nouveau chargement
-          break
-        case 'tips':
-          console.log('🔄 [Home] Rechargement des tips...')
-          tipsData.value = null // Force un nouveau chargement
-          break
-        case 'events':
-          console.log('🔄 [Home] Rechargement des événements...')
-          eventsData.value = null // Force un nouveau chargement
-          break
-        case 'dinor_tv':
-          console.log('🔄 [Home] Rechargement des vidéos...')
-          videosData.value = null // Force un nouveau chargement
-          break
-      }
-    }
-    
-    // Fonction pour rafraîchir toutes les données
-    const refreshAllData = () => {
-      console.log('🔄 [Home] Rafraîchissement global des données')
-      refreshContentType('recipes')
-      refreshContentType('tips')
-      refreshContentType('events')
-      refreshContentType('dinor_tv')
-    }
-    
-    let cleanupRefresh = null
-    
     onMounted(() => {
       window.addEventListener('like-updated', handleLikeUpdate)
-      
-      // Écouter les événements de rafraîchissement
-      cleanupRefresh = onRefresh(handleContentRefresh, { global: true })
     })
     
     onUnmounted(() => {
       window.removeEventListener('like-updated', handleLikeUpdate)
-      if (cleanupRefresh) {
-        cleanupRefresh()
-      }
     })
     
     // Stats pour le hero

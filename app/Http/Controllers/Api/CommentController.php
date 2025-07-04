@@ -223,50 +223,13 @@ class CommentController extends Controller
     /**
      * Delete a comment
      */
-    public function destroy(Request $request, $id): JsonResponse
+    public function destroy(Request $request, Comment $comment): JsonResponse
     {
-        // Log pour debug
-        \Log::info('🗑️ [Comments] Tentative de suppression:', [
-            'comment_id' => $id,
-            'user_id' => Auth::id(),
-            'user_authenticated' => Auth::check(),
-            'request_data' => $request->all()
-        ]);
-
-        // Vérifier que l'utilisateur est connecté
-        if (!Auth::check()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Vous devez être connecté pour supprimer un commentaire'
-            ], 401);
-        }
-
-        // Trouver le commentaire manuellement
-        $comment = Comment::find($id);
-        
-        if (!$comment) {
-            \Log::warning('❌ [Comments] Commentaire non trouvé:', ['comment_id' => $id]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Commentaire non trouvé'
-            ], 404);
-        }
-
         $userId = Auth::id();
         $ipAddress = $request->ip();
 
-        \Log::info('🔍 [Comments] Vérification des permissions:', [
-            'comment_user_id' => $comment->user_id,
-            'current_user_id' => $userId,
-            'can_modify' => $comment->canModify($userId, $ipAddress)
-        ]);
-
         // Vérifier que l'utilisateur peut supprimer ce commentaire
         if (!$comment->canModify($userId, $ipAddress)) {
-            \Log::warning('❌ [Comments] Permission refusée pour la suppression:', [
-                'comment_id' => $id,
-                'user_id' => $userId
-            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Vous n\'êtes pas autorisé à supprimer ce commentaire'
@@ -274,8 +237,6 @@ class CommentController extends Controller
         }
 
         $comment->delete();
-
-        \Log::info('✅ [Comments] Commentaire supprimé avec succès:', ['comment_id' => $id]);
 
         return response()->json([
             'success' => true,

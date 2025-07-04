@@ -179,12 +179,11 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, defineExpose } from 'vue'
 import { useRouter } from 'vue-router'
 import { useApiStore } from '@/stores/api'
 import { useAuthStore } from '@/stores/auth'
 import { useSocialShare } from '@/composables/useSocialShare'
-import { useComments } from '@/composables/useComments'
 import ShareModal from '@/components/common/ShareModal.vue'
 import AuthModal from '@/components/common/AuthModal.vue'
 
@@ -206,9 +205,9 @@ export default {
     const apiStore = useApiStore()
     const authStore = useAuthStore()
     const { share, showShareModal, updateOpenGraphTags } = useSocialShare()
-    const { comments, loadComments, loadCommentsFresh, canDeleteComment, deleteComment, setContext, addComment: addCommentFromComposable } = useComments()
     
     const event = ref(null)
+    const comments = ref([])
     const loading = ref(true)
     const userLiked = ref(false)
     const userFavorited = ref(false)
@@ -232,8 +231,6 @@ export default {
         const data = await apiStore.get(`/events/${props.id}`)
         if (data.success) {
           event.value = data.data
-          // Définir le contexte pour les commentaires
-          setContext('Event', props.id)
           await loadComments()
           await checkUserLike()
           await checkUserFavorite()
@@ -259,7 +256,39 @@ export default {
       }
     }
 
+    const loadComments = async () => {
+      try {
+        console.log('🔄 [Comments] Chargement des commentaires pour event ID:', props.id)
+        const data = await apiStore.get(`/comments`, { 
+          commentable_type: 'App\\Models\\Event', 
+          commentable_id: props.id 
+        })
+        console.log('📥 [Comments] Réponse reçue:', data)
+        if (data.success) {
+          comments.value = data.data
+          console.log('✅ [Comments] Commentaires chargés:', comments.value.length, 'commentaires')
+        }
+      } catch (error) {
+        console.error('❌ [Comments] Erreur lors du chargement des commentaires:', error)
+      }
+    }
 
+    const loadCommentsFresh = async () => {
+      try {
+        console.log('🔄 [Comments] Rechargement FRAIS des commentaires pour event ID:', props.id)
+        const data = await apiStore.getFresh(`/comments`, { 
+          commentable_type: 'App\\Models\\Event', 
+          commentable_id: props.id 
+        })
+        console.log('📥 [Comments] Réponse fraîche reçue:', data)
+        if (data.success) {
+          comments.value = data.data
+          console.log('✅ [Comments] Commentaires frais chargés:', comments.value.length, 'commentaires')
+        }
+      } catch (error) {
+        console.error('❌ [Comments] Erreur lors du rechargement frais des commentaires:', error)
+      }
+    }
 
     const checkUserLike = async () => {
       try {
@@ -332,24 +361,65 @@ export default {
       }
       
       try {
-        console.log('📝 [Comments] Envoi du commentaire pour Event:', props.id)
+        const commentData = {
+          commentable_type: 'App\\Models\\Event',
+          commentable_id: parseInt(props.id),
+          content: newComment.value
+        }
         
-        // Utiliser la fonction du composable
-        await addCommentFromComposable('Event', props.id, newComment.value)
+        console.log('📝 [Comments] Envoi du commentaire:', commentData)
         
-        console.log('✅ [Comments] Commentaire ajouté avec succès')
-        newComment.value = ''
+        const data = await apiStore.post('/comments', commentData)
+        
+        if (data.success) {
+          console.log('✅ [Comments] Commentaire ajouté avec succès')
+          // Recharger les commentaires avec des données fraîches
+          await loadCommentsFresh()
+          newComment.value = ''
+        }
       } catch (error) {
         console.error('❌ [Comments] Erreur lors de l\'ajout du commentaire:', error)
         
         // Si erreur 401, demander connexion
-        if (error.message.includes('401') || error.message.includes('connecté')) {
+        if (error.message.includes('401')) {
           showAuthModal.value = true
         }
       }
     }
 
+    const canDeleteComment = (comment) => {
+      if (!authStore.isAuthenticated) return false
+      
+      // L'utilisateur peut supprimer ses propres commentaires
+      if (comment.user_id && comment.user_id === authStore.user?.id) return true
+      
+      // Si pas d'user_id, vérifier par l'IP/session (pour les commentaires anonymes)
+      // Pour l'instant, on ne permet que la suppression des commentaires avec user_id
+      return false
+    }
 
+    const deleteComment = async (commentId) => {
+      if (!confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?')) {
+        return
+      }
+
+      try {
+        console.log('🗑️ [Comments] Suppression du commentaire ID:', commentId)
+        
+        const data = await apiStore.request(`/comments/${commentId}`, {
+          method: 'DELETE'
+        })
+        
+        if (data.success) {
+          console.log('✅ [Comments] Commentaire supprimé avec succès')
+          // Recharger les commentaires avec des données fraîches
+          await loadCommentsFresh()
+        }
+      } catch (error) {
+        console.error('❌ [Comments] Erreur lors de la suppression du commentaire:', error)
+        alert('Erreur lors de la suppression du commentaire')
+      }
+    }
 
     // Composable pour le partage social
     const callShare = () => {
@@ -464,6 +534,12 @@ export default {
 
     onMounted(() => {
       loadEvent()
+    })
+
+    // Exposer la fonction share pour le composant parent
+    defineExpose({
+      share: callShare,
+      toggleLike
     })
 
     return {

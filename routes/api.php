@@ -14,7 +14,6 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\CacheController;
 use App\Http\Controllers\Api\ShareController;
-use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\PWA\CacheController as PWACacheController;
 use App\Http\Controllers\PWA\PwaMenuItemController;
 
@@ -169,18 +168,6 @@ Route::post('/event-categories/check-exists', [App\Http\Controllers\Api\EventCat
     // Favorites - Routes publiques (lecture seulement)
     Route::get('/favorites/check', [App\Http\Controllers\Api\FavoriteController::class, 'check']);
     
-    // Pronostics - Routes publiques
-    Route::get('/teams', [App\Http\Controllers\Api\TeamController::class, 'index']);
-    Route::get('/teams/{team}', [App\Http\Controllers\Api\TeamController::class, 'show']);
-    
-    Route::get('/matches', [App\Http\Controllers\Api\FootballMatchController::class, 'index']);
-    Route::get('/matches/{footballMatch}', [App\Http\Controllers\Api\FootballMatchController::class, 'show']);
-    Route::get('/matches/upcoming/list', [App\Http\Controllers\Api\FootballMatchController::class, 'upcoming']);
-    Route::get('/matches/current/match', [App\Http\Controllers\Api\FootballMatchController::class, 'current']);
-    
-    Route::get('/leaderboard', [App\Http\Controllers\Api\LeaderboardController::class, 'index']);
-    Route::get('/leaderboard/top', [App\Http\Controllers\Api\LeaderboardController::class, 'top']);
-    
     // Route de test avec vrais favoris de la base de données
     Route::get('/favorites-real', function() {
         try {
@@ -255,10 +242,6 @@ Route::post('/event-categories/check-exists', [App\Http\Controllers\Api\EventCat
     // Shares - Tracking des partages
     Route::post('/shares/track', [ShareController::class, 'track']);
     
-    // Recherche - Routes publiques
-    Route::get('/search', [SearchController::class, 'index']);
-    Route::get('/search/suggestions', [SearchController::class, 'suggestions']);
-    
     // Dashboard global pour l'app
     Route::get('/dashboard', function() {
         return response()->json([
@@ -327,26 +310,13 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     // Comments - Routes protégées
     Route::post('/comments', [CommentController::class, 'store']);
     Route::put('/comments/{comment}', [CommentController::class, 'update']);
-    Route::delete('/comments/{id}', [CommentController::class, 'destroy']);
+    Route::delete('/comments/{comment}', [CommentController::class, 'destroy']);
     
     // Favorites - Routes protégées
     Route::get('/favorites', [App\Http\Controllers\Api\FavoriteController::class, 'index']);
     Route::get('/favorites/check', [App\Http\Controllers\Api\FavoriteController::class, 'check']);
     Route::post('/favorites/toggle', [App\Http\Controllers\Api\FavoriteController::class, 'toggle']);
     Route::delete('/favorites/{favorite}', [App\Http\Controllers\Api\FavoriteController::class, 'remove']);
-    
-    // Prédictions - Routes protégées
-    Route::get('/predictions', [App\Http\Controllers\Api\PredictionController::class, 'index']);
-    Route::post('/predictions', [App\Http\Controllers\Api\PredictionController::class, 'store']);
-    Route::get('/predictions/{prediction}', [App\Http\Controllers\Api\PredictionController::class, 'show']);
-    Route::put('/predictions/{prediction}', [App\Http\Controllers\Api\PredictionController::class, 'update']);
-    Route::get('/predictions/match/{matchId}', [App\Http\Controllers\Api\PredictionController::class, 'getUserPredictionForMatch']);
-    Route::get('/predictions/my-recent', [App\Http\Controllers\Api\PredictionController::class, 'userRecentPredictions']);
-    
-    // Leaderboard - Routes protégées utilisateur
-    Route::get('/leaderboard/my-stats', [App\Http\Controllers\Api\LeaderboardController::class, 'userStats']);
-    Route::get('/leaderboard/my-rank', [App\Http\Controllers\Api\LeaderboardController::class, 'userRank']);
-    Route::post('/leaderboard/refresh', [App\Http\Controllers\Api\LeaderboardController::class, 'refresh']);
     
     // Route de test avec vrais favoris de la base de données
     Route::get('/favorites-real', function() {

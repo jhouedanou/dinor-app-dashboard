@@ -112,94 +112,6 @@ class ApiService {
     }
   }
 
-  // Invalider le cache pour un endpoint spécifique
-  invalidateCache(pattern) {
-    const keysToDelete = []
-    for (const key of this.cache.keys()) {
-      if (key.includes(pattern)) {
-        keysToDelete.push(key)
-      }
-    }
-    keysToDelete.forEach(key => this.cache.delete(key))
-    console.log('🗑️ [API] Cache invalidé pour le pattern:', pattern, 'Clés supprimées:', keysToDelete.length)
-  }
-
-  // Requête forcée sans cache
-  async requestFresh(endpoint, options = {}) {
-    // Invalider le cache d'abord
-    this.invalidateCache(endpoint)
-    
-    // Ajouter un flag pour éviter la lecture du cache
-    const freshOptions = { ...options, _skipCache: true }
-    
-    const url = `${this.baseURL}${endpoint}`
-    const cacheKey = `${url}_${JSON.stringify(freshOptions)}`
-    
-    // Récupérer le token d'authentification du localStorage
-    const authToken = localStorage.getItem('auth_token')
-    console.log('🔄 [API] Requête fraîche vers:', endpoint)
-
-    const config = {
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        // Ajouter un en-tête pour éviter le cache du navigateur
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0',
-        ...(authToken && { 'Authorization': `Bearer ${authToken}` }),
-        ...options.headers
-      },
-      ...options
-    }
-
-    // Sérialiser le body en JSON si c'est un objet
-    if (config.body && typeof config.body === 'object') {
-      config.body = JSON.stringify(config.body)
-    }
-
-    try {
-      const response = await fetch(url, config)
-      
-      console.log('📡 [API] Réponse fraîche reçue:', {
-        status: response.status,
-        statusText: response.statusText,
-        ok: response.ok
-      })
-      
-      if (!response.ok) {
-        if (response.status === 401) {
-          console.error('🔒 [API] Erreur 401 - Token invalide ou manquant')
-        }
-        
-        const errorData = await response.text()
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorData}`)
-      }
-
-      const data = await response.json()
-      console.log('✅ [API] Réponse fraîche JSON:', { success: data.success, endpoint })
-      
-      // Mettre en cache la nouvelle réponse
-      if (!options.method || options.method === 'GET') {
-        this.cache.set(cacheKey, {
-          data,
-          timestamp: Date.now()
-        })
-        console.log('📦 [API] Nouvelle réponse mise en cache pour:', endpoint)
-      }
-
-      return data
-    } catch (error) {
-      console.error('❌ [API] Erreur de requête fraîche:', {
-        endpoint,
-        error: error.message,
-        status: error.status
-      })
-      throw error
-    }
-  }
-
   // Recipes
   async getRecipes(params = {}) {
     const queryString = new URLSearchParams(params).toString()
@@ -209,17 +121,6 @@ class ApiService {
 
   async getRecipe(id) {
     return this.request(`/recipes/${id}`)
-  }
-
-  // Méthodes fraîches pour les recettes
-  async getRecipesFresh(params = {}) {
-    const queryString = new URLSearchParams(params).toString()
-    const endpoint = `/recipes${queryString ? `?${queryString}` : ''}`
-    return this.requestFresh(endpoint)
-  }
-
-  async getRecipeFresh(id) {
-    return this.requestFresh(`/recipes/${id}`)
   }
 
   // Tips
@@ -233,17 +134,6 @@ class ApiService {
     return this.request(`/tips/${id}`)
   }
 
-  // Méthodes fraîches pour les tips
-  async getTipsFresh(params = {}) {
-    const queryString = new URLSearchParams(params).toString()
-    const endpoint = `/tips${queryString ? `?${queryString}` : ''}`
-    return this.requestFresh(endpoint)
-  }
-
-  async getTipFresh(id) {
-    return this.requestFresh(`/tips/${id}`)
-  }
-
   // Events
   async getEvents(params = {}) {
     const queryString = new URLSearchParams(params).toString()
@@ -253,17 +143,6 @@ class ApiService {
 
   async getEvent(id) {
     return this.request(`/events/${id}`)
-  }
-
-  // Méthodes fraîches pour les events
-  async getEventsFresh(params = {}) {
-    const queryString = new URLSearchParams(params).toString()
-    const endpoint = `/events${queryString ? `?${queryString}` : ''}`
-    return this.requestFresh(endpoint)
-  }
-
-  async getEventFresh(id) {
-    return this.requestFresh(`/events/${id}`)
   }
 
   // Pages
@@ -288,32 +167,11 @@ class ApiService {
     return this.request(`/dinor-tv/${id}`)
   }
 
-  // Méthodes fraîches pour les videos
-  async getVideosFresh(params = {}) {
-    const queryString = new URLSearchParams(params).toString()
-    const endpoint = `/dinor-tv${queryString ? `?${queryString}` : ''}`
-    return this.requestFresh(endpoint)
-  }
-
-  async getVideoFresh(id) {
-    return this.requestFresh(`/dinor-tv/${id}`)
-  }
-
   // Likes
   async toggleLike(type, id) {
-    const result = await this.request(`/${type}/${id}/like`, {
+    return this.request(`/${type}/${id}/like`, {
       method: 'POST'
     })
-    
-    // Invalider le cache pour ce type de contenu
-    this.invalidateCache(`/${type}`)
-    this.invalidateCache(`/recipes`) // Pour la page d'accueil
-    this.invalidateCache(`/tips`)    // Pour la page d'accueil
-    this.invalidateCache(`/events`)  // Pour la page d'accueil
-    this.invalidateCache(`/dinor-tv`) // Pour la page d'accueil
-    
-    console.log('🔄 [API] Cache invalidé après toggle like pour:', type, id)
-    return result
   }
 
   // Comments
