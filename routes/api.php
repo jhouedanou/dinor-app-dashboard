@@ -184,9 +184,6 @@ Route::post('/event-categories/check-exists', [App\Http\Controllers\Api\EventCat
     Route::get('/matches/upcoming/list', [App\Http\Controllers\Api\FootballMatchController::class, 'upcoming']);
     Route::get('/matches/current/match', [App\Http\Controllers\Api\FootballMatchController::class, 'current']);
     
-    Route::get('/leaderboard', [App\Http\Controllers\Api\LeaderboardController::class, 'index']);
-    Route::get('/leaderboard/top', [App\Http\Controllers\Api\LeaderboardController::class, 'top']);
-    
     // Tournois - Routes publiques
     Route::get('/tournaments', [App\Http\Controllers\Api\TournamentController::class, 'index']);
     Route::get('/tournaments/featured', [App\Http\Controllers\Api\TournamentController::class, 'featured']);
@@ -350,10 +347,10 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     // Prédictions - Routes protégées
     Route::get('/predictions', [App\Http\Controllers\Api\PredictionController::class, 'index']);
     Route::post('/predictions', [App\Http\Controllers\Api\PredictionController::class, 'store']);
+    Route::get('/predictions/my-recent', [App\Http\Controllers\Api\PredictionController::class, 'userRecentPredictions']);
+    Route::get('/predictions/match/{matchId}', [App\Http\Controllers\Api\PredictionController::class, 'getUserPredictionForMatch']);
     Route::get('/predictions/{prediction}', [App\Http\Controllers\Api\PredictionController::class, 'show']);
     Route::put('/predictions/{prediction}', [App\Http\Controllers\Api\PredictionController::class, 'update']);
-    Route::get('/predictions/match/{matchId}', [App\Http\Controllers\Api\PredictionController::class, 'getUserPredictionForMatch']);
-    Route::get('/predictions/my-recent', [App\Http\Controllers\Api\PredictionController::class, 'userRecentPredictions']);
     
     // Leaderboard - Routes protégées utilisateur
     Route::get('/leaderboard/my-stats', [App\Http\Controllers\Api\LeaderboardController::class, 'userStats']);
@@ -361,9 +358,9 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     Route::post('/leaderboard/refresh', [App\Http\Controllers\Api\LeaderboardController::class, 'refresh']);
     
     // Tournois - Routes protégées
+    Route::get('/tournaments/my-tournaments', [App\Http\Controllers\Api\TournamentController::class, 'myTournaments']);
     Route::post('/tournaments/{tournament}/register', [App\Http\Controllers\Api\TournamentController::class, 'register']);
     Route::delete('/tournaments/{tournament}/register', [App\Http\Controllers\Api\TournamentController::class, 'unregister']);
-    Route::get('/tournaments/my-tournaments', [App\Http\Controllers\Api\TournamentController::class, 'myTournaments']);
     
     // Route de test avec vrais favoris de la base de données
     Route::get('/favorites-real', function() {
