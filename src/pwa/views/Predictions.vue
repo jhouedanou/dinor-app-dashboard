@@ -126,6 +126,45 @@
           </div>
         </div>
 
+        <!-- No Current Match - Improved Fallback -->
+        <div v-else class="no-match-section">
+          <div class="no-match-card">
+            <div class="no-match-icon">
+              <i class="material-icons">sports_soccer</i>
+            </div>
+            <h2 class="md3-title-medium">Aucun match en cours</h2>
+            <p class="md3-body-medium dinor-text-gray">
+              Il n'y a pas de match disponible pour le moment, mais vous pouvez :
+            </p>
+            
+            <div class="suggestions-grid">
+              <div class="suggestion-card" @click="$router.push('/predictions/tournaments')">
+                <div class="suggestion-icon">
+                  <i class="material-icons">emoji_events</i>
+                </div>
+                <h3 class="suggestion-title">Explorer les tournois</h3>
+                <p class="suggestion-desc">Rejoignez des tournois et participez aux compétitions</p>
+              </div>
+              
+              <div class="suggestion-card" @click="$router.push('/predictions/leaderboard')">
+                <div class="suggestion-icon">
+                  <i class="material-icons">leaderboard</i>
+                </div>
+                <h3 class="suggestion-title">Voir le classement</h3>
+                <p class="suggestion-desc">Consultez les performances des autres joueurs</p>
+              </div>
+              
+              <div class="suggestion-card" @click="$router.push('/predictions/my-predictions')">
+                <div class="suggestion-icon">
+                  <i class="material-icons">history</i>
+                </div>
+                <h3 class="suggestion-title">Historique</h3>
+                <p class="suggestion-desc">Revoyez vos anciens pronostics et statistiques</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Tournaments Section -->
         <div class="tournaments-section">
           <div class="section-header">
@@ -191,69 +230,74 @@
             </div>
           </div>
           
-          <div v-else class="no-tournaments">
-            <i class="material-icons">emoji_events</i>
-            <p>Aucun tournoi disponible pour le moment</p>
+          <!-- Enhanced No Tournaments Fallback -->
+          <div v-else class="no-tournaments-enhanced">
+            <div class="no-tournaments-icon">
+              <i class="material-icons">emoji_events</i>
+            </div>
+            <h3 class="md3-title-medium">Aucun tournoi disponible</h3>
+            <p class="md3-body-medium dinor-text-gray">
+              Les tournois apparaîtront ici dès qu'ils seront disponibles.
+            </p>
+            
+            <div class="fallback-actions">
+              <div class="fallback-info">
+                <h4 class="md3-title-small">En attendant :</h4>
+                <ul class="fallback-list">
+                  <li>
+                    <i class="material-icons">notifications</i>
+                    <span>Activez les notifications pour être prévenu des nouveaux tournois</span>
+                  </li>
+                  <li>
+                    <i class="material-icons">schedule</i>
+                    <span>Revenez régulièrement pour ne manquer aucune compétition</span>
+                  </li>
+                  <li v-if="!authStore.isAuthenticated">
+                    <i class="material-icons">person</i>
+                    <span>Créez un compte pour participer aux prochains tournois</span>
+                  </li>
+                </ul>
+              </div>
+              
+              <div class="fallback-cta">
+                <button 
+                  v-if="!authStore.isAuthenticated" 
+                  @click="showAuthModal = true" 
+                  class="btn-primary"
+                >
+                  <i class="material-icons">person_add</i>
+                  <span>Créer un compte</span>
+                </button>
+                <button 
+                  v-else
+                  @click="loadFeaturedTournaments" 
+                  class="btn-secondary"
+                >
+                  <i class="material-icons">refresh</i>
+                  <span>Actualiser</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
         <!-- Quick Actions -->
         <div class="quick-actions">
-          <router-link to="/predictions/tournaments" class="action-card">
-            <i class="material-icons">emoji_events</i>
-            <span>Tous les tournois</span>
-          </router-link>
-          
-          <router-link to="/predictions/teams" class="action-card">
-            <i class="material-icons">groups</i>
-            <span>Équipes</span>
-          </router-link>
-          
-          <router-link to="/predictions/matches" class="action-card">
-            <i class="material-icons">sports_soccer</i>
-            <span>Matchs</span>
-          </router-link>
-          
-          <router-link to="/predictions/leaderboard" class="action-card">
+          <router-link to="/predictions/leaderboard" class="quick-action-card">
             <i class="material-icons">leaderboard</i>
-            <span>Classement global</span>
+            <div class="action-text">
+              <h3 class="md3-title-small">Classement</h3>
+              <p class="md3-body-small">Voir les meilleurs pronostiqueurs</p>
+            </div>
           </router-link>
-        </div>
-
-        <!-- Rules Section -->
-        <div class="rules-section">
-          <h2 class="md3-title-medium dinor-text-primary">Règles du jeu</h2>
-          <div class="rules-grid">
-            <div class="rule-item">
-              <div class="rule-icon">
-                <i class="material-icons">star</i>
-              </div>
-              <div class="rule-content">
-                <h3 class="md3-title-small">Score exact</h3>
-                <p class="md3-body-small">3 points pour un score exact</p>
-              </div>
+          
+          <router-link to="/predictions/my-predictions" class="quick-action-card">
+            <i class="material-icons">history</i>
+            <div class="action-text">
+              <h3 class="md3-title-small">Mes prédictions</h3>
+              <p class="md3-body-small">Historique et statistiques</p>
             </div>
-            
-            <div class="rule-item">
-              <div class="rule-icon">
-                <i class="material-icons">thumb_up</i>
-              </div>
-              <div class="rule-content">
-                <h3 class="md3-title-small">Bon gagnant</h3>
-                <p class="md3-body-small">1 point pour le bon gagnant uniquement</p>
-              </div>
-            </div>
-            
-            <div class="rule-item">
-              <div class="rule-icon">
-                <i class="material-icons">emoji_events</i>
-              </div>
-              <div class="rule-content">
-                <h3 class="md3-title-small">Score + Gagnant</h3>
-                <p class="md3-body-small">3 points au total (même règle)</p>
-              </div>
-            </div>
-          </div>
+          </router-link>
         </div>
       </div>
     </main>
@@ -878,7 +922,7 @@ export default {
   margin-bottom: 2rem;
 }
 
-.action-card {
+.quick-action-card {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -891,15 +935,19 @@ export default {
   transition: all 0.2s ease;
 }
 
-.action-card:hover {
+.quick-action-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.action-card i {
+.quick-action-card i {
   font-size: 2rem;
   margin-bottom: 0.5rem;
   color: #F4D03F;
+}
+
+.action-text {
+  text-align: center;
 }
 
 .rules-section {
@@ -944,8 +992,168 @@ export default {
   text-align: center;
 }
 
+/* No Match Section Styles */
+.no-match-section {
+  margin-bottom: 2rem;
+}
+
+.no-match-card {
+  background: #F8F9FA;
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+}
+
+.no-match-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+}
+
+.no-match-icon i {
+  font-size: 36px;
+  color: #6B7280;
+}
+
+.suggestions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.suggestion-card {
+  background: #FFFFFF;
+  border-radius: 12px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid #E2E8F0;
+  text-align: center;
+}
+
+.suggestion-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: #F4D03F;
+}
+
+.suggestion-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #FEF3C7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
+
+.suggestion-icon i {
+  font-size: 24px;
+  color: #F59E0B;
+}
+
+.suggestion-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2D3748;
+  margin: 0 0 0.5rem 0;
+}
+
+.suggestion-desc {
+  font-size: 0.9rem;
+  color: #6B7280;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Enhanced No Tournaments Styles */
+.no-tournaments-enhanced {
+  background: #F8F9FA;
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+}
+
+.no-tournaments-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #FEF3C7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+}
+
+.no-tournaments-icon i {
+  font-size: 36px;
+  color: #F59E0B;
+}
+
+.fallback-actions {
+  margin-top: 2rem;
+  text-align: left;
+}
+
+.fallback-info h4 {
+  color: #2D3748;
+  margin: 0 0 1rem 0;
+}
+
+.fallback-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem 0;
+}
+
+.fallback-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.fallback-list li:last-child {
+  border-bottom: none;
+}
+
+.fallback-list i {
+  color: #F4D03F;
+  font-size: 20px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.fallback-list span {
+  color: #6B7280;
+  line-height: 1.4;
+}
+
+.fallback-cta {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.fallback-cta button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 @media (max-width: 768px) {
   .quick-actions {
+    grid-template-columns: 1fr;
+  }
+  
+  .suggestions-grid {
     grid-template-columns: 1fr;
   }
   

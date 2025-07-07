@@ -17,6 +17,7 @@ class Leaderboard extends Model
         'correct_winners',
         'perfect_predictions',
         'accuracy_percentage',
+        'rank',
         'current_rank',
         'previous_rank',
         'last_updated'
@@ -122,7 +123,8 @@ class Leaderboard extends Model
             $newRank = $index + 1;
             $leaderboard->update([
                 'previous_rank' => $leaderboard->current_rank,
-                'current_rank' => $newRank
+                'current_rank' => $newRank,
+                'rank' => $newRank
             ]);
         }
     }

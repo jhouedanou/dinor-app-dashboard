@@ -20,6 +20,7 @@ return new class extends Migration
             $table->integer('correct_winners')->default(0); // Prédictions avec bon gagnant seulement
             $table->integer('perfect_predictions')->default(0); // Score exact + gagnant
             $table->decimal('accuracy_percentage', 5, 2)->default(0.00);
+            $table->integer('rank')->nullable(); // Rang actuel dans le classement global
             $table->integer('current_rank')->nullable();
             $table->integer('previous_rank')->nullable();
             $table->date('last_updated')->nullable();
