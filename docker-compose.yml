@@ -1,17 +1,13 @@
-version: '3.8'
-
-# Use BuildKit for faster builds
-x-build-args: &build-args
-  BUILDKIT_INLINE_CACHE: 1 
-
 services:
   app:
     build:
       context: .
       dockerfile: Dockerfile
-      cache_from:
-        - dinor-dashboard:latest
-      <<: *build-args
+      cache_to:
+        - type=local,dest=/tmp/.buildx-cache-new,mode=max
+      target: production
+      args:
+        BUILDKIT_INLINE_CACHE: 1
     image: dinor-dashboard
     container_name: dinor-app
     restart: unless-stopped

@@ -1,17 +1,16 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
+import vue from '@vitejs/plugin-vue';
 
 export default defineConfig({
     plugins: [
+        vue(),
         laravel({
             input: [
                 'resources/scss/app.scss',
                 'resources/css/dinor-optimized.css',
                 'resources/js/app.js',
                 'resources/css/filament/admin/theme.css',
-                // PWA assets
-                'public/pwa/app.js',
-                'public/pwa/style.css',
             ],
             refresh: true,
         }),

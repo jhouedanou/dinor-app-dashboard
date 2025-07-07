@@ -1,9 +1,10 @@
-FROM php:8.2-fpm
+# Multi-stage build pour optimiser le cache BuildKit
+FROM php:8.2-fpm as base
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Install system dependencies and Node.js in a single layer
+# Install system dependencies (layer stable - rarement modifié)
 RUN apt-get update && apt-get install -y \
     build-essential \
     libpng-dev \
@@ -32,28 +33,36 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /tmp/* \
     && rm -rf /var/tmp/*
 
-# Install PHP extensions and Redis in a single layer
+# Install PHP extensions (layer stable - rarement modifié)
 RUN docker-php-ext-install pdo_mysql pdo_pgsql mbstring exif pcntl bcmath gd zip intl \
     && pecl install redis \
     && docker-php-ext-enable redis \
     && rm -rf /tmp/pear
 
-# Install Composer
+# Install Composer (layer stable)
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy configuration files first (better layer caching)
+# Copy configuration files (layer stable - rarement modifié)
 COPY docker/nginx/default.conf /etc/nginx/sites-available/default
 COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Copy package files first for better caching
+# Dependencies stage - optimisé pour le cache
+FROM base as dependencies
+
+# Copy package files first for better caching (invalidé seulement si dependencies changent)
 COPY composer.json composer.lock ./
 COPY package.json package-lock.json ./
 
-# Install dependencies before copying source code
-RUN composer install --optimize-autoloader --no-scripts --no-dev --no-interaction \
-    && npm ci --production
+# Install dependencies with cache mounts pour BuildKit
+RUN --mount=type=cache,target=/root/.composer/cache \
+    --mount=type=cache,target=/root/.npm \
+    composer install --optimize-autoloader --no-scripts --no-dev --no-interaction \
+    && npm ci
 
-# Copy source code
+# Production stage
+FROM dependencies as production
+
+# Copy source code (layer invalidé seulement quand le code change)
 COPY --chown=www-data:www-data . /var/www/html
 
 # Create .env file from example if it doesn't exist
@@ -66,7 +75,7 @@ RUN sed -i 's/CACHE_DRIVER=redis/CACHE_DRIVER=file/' .env || echo "CACHE_DRIVER=
 # Add git safe directory configuration
 RUN git config --global --add safe.directory /var/www/html || true
 
-# Create necessary directories, set permissions, and build assets in one layer
+# Create necessary directories and set permissions
 RUN mkdir -p /var/www/html/storage/framework/{cache/data,sessions,views} \
     && mkdir -p /var/www/html/bootstrap/cache \
     && mkdir -p /var/log/supervisor \
@@ -80,18 +89,18 @@ ENV CACHE_DRIVER=file \
     SESSION_DRIVER=file \
     APP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
 
-# Build assets
-RUN npm run build && npm prune --production
+# Build assets with cache mount pour optimiser les builds
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci && npm run build && npm run pwa:build && npm prune --production
 
 # Create entrypoint script
 RUN echo '#!/bin/bash\n\
 # Start supervisor with all services (nginx, php-fpm, and vite)\n\
-exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf' > /usr/local/bin/entrypoint.sh
-
-RUN chmod +x /usr/local/bin/entrypoint.sh
+exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf' > /usr/local/bin/entrypoint.sh \
+    && chmod +x /usr/local/bin/entrypoint.sh
 
 # Expose port 80
 EXPOSE 80
 
 # Use the entrypoint script
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"] 
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
