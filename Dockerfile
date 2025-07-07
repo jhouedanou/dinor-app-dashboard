@@ -3,7 +3,7 @@ FROM php:8.2-fpm
 # Set working directory
 WORKDIR /var/www/html
 
-# Install system dependencies
+# Install system dependencies and Node.js in a single layer
 RUN apt-get update && apt-get install -y \
     build-essential \
     libpng-dev \
@@ -24,72 +24,64 @@ RUN apt-get update && apt-get install -y \
     supervisor \
     nginx \
     gnupg \
-    apt-transport-https
+    apt-transport-https \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /tmp/* \
+    && rm -rf /var/tmp/*
 
-# Install Node.js 20.x
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs
-
-# Clear cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Install PHP extensions
-RUN docker-php-ext-install pdo_mysql pdo_pgsql mbstring exif pcntl bcmath gd zip intl
-
-# Install Redis extension
-RUN pecl install redis && docker-php-ext-enable redis
+# Install PHP extensions and Redis in a single layer
+RUN docker-php-ext-install pdo_mysql pdo_pgsql mbstring exif pcntl bcmath gd zip intl \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && rm -rf /tmp/pear
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy nginx configuration
+# Copy configuration files first (better layer caching)
 COPY docker/nginx/default.conf /etc/nginx/sites-available/default
-
-# Copy supervisor configuration
 COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Copy existing application directory contents
-COPY . /var/www/html
+# Copy package files first for better caching
+COPY composer.json composer.lock ./
+COPY package.json package-lock.json ./
 
-# Copy existing application directory permissions
+# Install dependencies before copying source code
+RUN composer install --optimize-autoloader --no-scripts --no-dev --no-interaction \
+    && npm ci --production
+
+# Copy source code
 COPY --chown=www-data:www-data . /var/www/html
 
 # Create .env file from example if it doesn't exist
 RUN if [ ! -f .env ]; then cp .env.example .env; fi
 
 # Set cache driver to file for build process to avoid Redis dependency
-RUN sed -i 's/CACHE_DRIVER=redis/CACHE_DRIVER=file/' .env || echo "CACHE_DRIVER=file" >> .env
-RUN sed -i 's/SESSION_DRIVER=redis/SESSION_DRIVER=file/' .env || echo "SESSION_DRIVER=file" >> .env
+RUN sed -i 's/CACHE_DRIVER=redis/CACHE_DRIVER=file/' .env || echo "CACHE_DRIVER=file" >> .env && \
+    sed -i 's/SESSION_DRIVER=redis/SESSION_DRIVER=file/' .env || echo "SESSION_DRIVER=file" >> .env
 
 # Add git safe directory configuration
 RUN git config --global --add safe.directory /var/www/html || true
 
-# Create necessary cache directories
-RUN mkdir -p /var/www/html/storage/framework/cache/data
-RUN mkdir -p /var/www/html/storage/framework/sessions
-RUN mkdir -p /var/www/html/storage/framework/views
-RUN mkdir -p /var/www/html/bootstrap/cache
+# Create necessary directories, set permissions, and build assets in one layer
+RUN mkdir -p /var/www/html/storage/framework/{cache/data,sessions,views} \
+    && mkdir -p /var/www/html/bootstrap/cache \
+    && mkdir -p /var/log/supervisor \
+    && chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html \
+    && chmod -R 775 /var/www/html/storage \
+    && chmod -R 775 /var/www/html/bootstrap/cache
 
-# Create log directories for supervisor
-RUN mkdir -p /var/log/supervisor
+# Set environment variables for build
+ENV CACHE_DRIVER=file \
+    SESSION_DRIVER=file \
+    APP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
 
-# Set proper permissions
-RUN chown -R www-data:www-data /var/www/html
-RUN chmod -R 755 /var/www/html
-RUN chmod -R 775 /var/www/html/storage
-RUN chmod -R 775 /var/www/html/bootstrap/cache
-
-# Install dependencies (force environment variables for cache during build)
-ENV CACHE_DRIVER=file
-ENV SESSION_DRIVER=file
-ENV APP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
-RUN composer install --optimize-autoloader --no-scripts --no-dev
-
-# Install npm dependencies
-RUN npm install
-
-# Build assets initially (can be overridden in dev mode)
-RUN npm run build
+# Build assets
+RUN npm run build && npm prune --production
 
 # Create entrypoint script
 RUN echo '#!/bin/bash\n\
