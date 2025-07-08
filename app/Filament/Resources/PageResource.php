@@ -104,6 +104,13 @@ class PageResource extends Resource
                     ->native(false),
             ])
             ->actions([
+                Tables\Actions\Action::make('preview_iframe')
+                    ->label('Prévisualiser')
+                    ->icon('heroicon-o-eye')
+                    ->color('info')
+                    ->url(fn (Page $record): string => static::getUrl('iframe', ['record' => $record]))
+                    ->visible(fn (Page $record): bool => !empty($record->url)),
+
                 Tables\Actions\Action::make('open_url')
                     ->label('Ouvrir')
                     ->icon('heroicon-o-arrow-top-right-on-square')
@@ -214,6 +221,7 @@ class PageResource extends Resource
             'index' => Pages\ListPages::route('/'),
             'view' => Pages\ViewPage::route('/{record}'),
             'edit' => Pages\EditPage::route('/{record}/edit'),
+            'iframe' => Pages\ViewPageInIframe::route('/{record}/iframe'),
         ];
     }
     

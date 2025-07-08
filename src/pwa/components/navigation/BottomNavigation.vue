@@ -1,71 +1,184 @@
 <template>
   <nav class="bottom-navigation">
     <div class="nav-items">
-      <router-link 
-        v-for="item in navItems" 
+      <a 
+        v-for="item in menuItems" 
         :key="item.name"
-        :to="item.path"
+        @click.prevent="handleItemClick(item)"
         class="nav-item"
-        :class="{ 'active': isActive(item.path) }"
+        :class="{ 'active': isActive(item) }"
+        href="#"
       >
         <div class="nav-icon">
-          <i class="material-icons">{{ item.icon }}</i>
+          <span class="material-symbols-outlined">{{ item.icon }}</span>
           <span class="emoji-fallback">{{ getEmojiForIcon(item.icon) }}</span>
         </div>
         <span class="nav-label">{{ item.label }}</span>
-      </router-link>
+      </a>
     </div>
   </nav>
+
+  <!-- Auth Modal -->
+  <AuthModal 
+    v-model="showAuthModal" 
+    :initial-message="authModalMessage"
+    @authenticated="onAuthSuccess"
+  />
 </template>
 
 <script>
 import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useApiStore } from '@/stores/api'
+import { useAuthHandler } from '@/composables/useAuthHandler'
+import AuthModal from '@/components/common/AuthModal.vue'
 
 export default {
   name: 'BottomNavigation',
+  components: {
+    AuthModal
+  },
   setup() {
     const route = useRoute()
     const router = useRouter()
+    const apiStore = useApiStore()
+    const { requireAuth, showAuthModal, authModalMessage, closeAuthModal, handleAuthSuccess } = useAuthHandler()
     
-    // Navigation avec les onglets demandés par l'utilisateur
-    const navItems = ref([
-      { name: 'all', path: '/', icon: 'apps', label: 'Accueil' },
-      { name: 'recipes', path: '/recipes', icon: 'restaurant', label: 'Recettes' },
-      { name: 'tips', path: '/tips', icon: 'lightbulb', label: 'Astuces' },
-      { name: 'events', path: '/events', icon: 'event', label: 'Événements' },
-      { name: 'dinor-tv', path: '/dinor-tv', icon: 'play_circle', label: 'DinorTV' },
-      { name: 'pages', path: '/pages', icon: 'web', label: 'Web' },
-      { name: 'profile', path: '/profile', icon: 'person', label: 'Profil' }
-    ])
+    const menuItems = ref([])
+    const loading = ref(true)
     
-    const isActive = (path) => {
-      return route.path === path || (path !== '/' && route.path.startsWith(path))
+    // Fallback navigation si l'API échoue
+    const fallbackNavItems = [
+      { name: 'all', path: '/', icon: 'apps', label: 'Accueil', action_type: 'route' },
+      { name: 'recipes', path: '/recipes', icon: 'restaurant', label: 'Recettes', action_type: 'route' },
+      { name: 'tips', path: '/tips', icon: 'lightbulb', label: 'Astuces', action_type: 'route' },
+      { name: 'events', path: '/events', icon: 'event', label: 'Événements', action_type: 'route' },
+      { name: 'dinor-tv', path: '/dinor-tv', icon: 'play_circle', label: 'DinorTV', action_type: 'route' },
+      { name: 'profile', path: '/profile', icon: 'person', label: 'Profil', action_type: 'route' }
+    ]
+
+    const loadMenuItems = async () => {
+      try {
+        // Chargement des éléments de menu
+        const data = await apiStore.get('/pwa-menu-items')
+        
+        if (data.success && Array.isArray(data.data)) {
+          // Filtrer seulement les éléments actifs et les trier par ordre
+          menuItems.value = data.data
+            .filter(item => item.is_active)
+            .sort((a, b) => (a.order || 0) - (b.order || 0))
+            .slice(0, 7) // Limiter à 7 éléments max pour la navigation mobile
+          
+          // Menu items chargés
+        } else {
+          // Réponse API invalide, utilisation du fallback
+          menuItems.value = fallbackNavItems
+        }
+      } catch (error) {
+        // Erreur lors du chargement du menu
+        menuItems.value = fallbackNavItems
+      } finally {
+        loading.value = false
+      }
+    }
+
+    const handleItemClick = (item) => {
+      // Vérifier l'authentification pour le profil
+      if (item.name === 'profile') {
+        if (!requireAuth('accéder à votre profil')) {
+          return // Le modal d'auth s'ouvrira automatiquement
+        }
+      }
+      
+      switch (item.action_type) {
+        case 'route':
+          // Navigation interne standard
+          if (item.path) {
+            router.push(item.path)
+          }
+          break
+          
+        case 'web_embed':
+          // Charger la dernière page depuis le système Pages dans WebEmbed
+          router.push('/web-embed')
+          break
+          
+        case 'external_link':
+          // Ouvrir dans un nouvel onglet
+          if (item.web_url) {
+            window.open(item.web_url, '_blank', 'noopener,noreferrer')
+          } else {
+            // Aucune web_url définie
+          }
+          break
+          
+        default:
+          // Type d'action non géré
+          // Fallback vers navigation route si définie
+          if (item.path) {
+            router.push(item.path)
+          }
+      }
     }
     
+    const isActive = (item) => {
+      // Pour les routes normales
+      if (item.action_type === 'route' && item.path) {
+        return route.path === item.path || (item.path !== '/' && route.path.startsWith(item.path))
+      }
+      
+      // Pour web_embed, vérifier si nous sommes sur /web-embed
+      if (item.action_type === 'web_embed') {
+        return route.path === '/web-embed'
+      }
+      
+      return false
+    }
+    
+    // Émojis de fallback pour les icônes Material Design
     const getEmojiForIcon = (icon) => {
       const emojiMap = {
         'apps': '🏠',
         'home': '🏠',
-        'restaurant': '🍴',
+        'restaurant': '🍽️',
         'lightbulb': '💡',
         'event': '📅',
-        'calendar_today': '📅',
-        'tv': '📺',
         'play_circle': '📺',
+        'public': '🌐',
         'web': '🌐',
         'person': '👤',
-        'menu_book': '📖',
-        'info': 'ℹ️',
-        'settings': '⚙️'
+        'favorite': '❤️',
+        'star': '⭐',
+        'search': '🔍',
+        'settings': '⚙️',
+        'notifications': '🔔',
+        'menu': '☰'
       }
-      return emojiMap[icon] || '•'
+      return emojiMap[icon] || '📱'
     }
-    
+
+    // Gestion de l'authentification réussie
+    const onAuthSuccess = (user) => {
+      // Authentification réussie, redirection vers le profil
+      handleAuthSuccess(user)
+      router.push('/profile')
+    }
+
+    // Charger les éléments de menu au montage
+    onMounted(() => {
+      loadMenuItems()
+    })
+
     return {
-      navItems,
+      menuItems,
+      loading,
+      handleItemClick,
       isActive,
-      getEmojiForIcon
+      getEmojiForIcon,
+      showAuthModal,
+      authModalMessage,
+      closeAuthModal,
+      onAuthSuccess
     }
   }
 }
@@ -137,12 +250,12 @@ export default {
   margin-bottom: 4px;
 }
 
-.nav-icon .material-icons {
+.nav-icon .material-symbols-outlined {
   font-size: 24px;
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
-.nav-item.active .nav-icon .material-icons {
+.nav-item.active .nav-icon .material-symbols-outlined {
   font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24;
 }
 
@@ -190,7 +303,7 @@ export default {
     font-size: 13px; /* Label légèrement plus grand sur desktop */
   }
   
-  .nav-icon .material-icons {
+  .nav-icon .material-symbols-outlined {
     font-size: 26px; /* Icônes légèrement plus grandes sur desktop */
   }
 }
@@ -211,12 +324,12 @@ export default {
   display: none; /* Masqué par défaut */
 }
 
-.material-icons {
+.material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
 /* UNIQUEMENT quand .force-emoji est présent sur html, afficher les emoji */
-html.force-emoji .material-icons {
+html.force-emoji .material-symbols-outlined {
   display: none !important;
 }
 
@@ -224,7 +337,7 @@ html.force-emoji .emoji-fallback {
   display: inline-block !important;
 }
 
-.nav-icon .material-icons {
+.nav-icon .material-symbols-outlined {
   font-size: 24px;
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
@@ -233,7 +346,7 @@ html.force-emoji .emoji-fallback {
   font-size: 20px;
 }
 
-.nav-item.active .nav-icon .material-icons {
+.nav-item.active .nav-icon .material-symbols-outlined {
   font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24;
 }
 
@@ -244,7 +357,7 @@ html.force-emoji .emoji-fallback {
 
 /* Responsive pour petit écran */
 @media (max-width: 480px) {
-  .nav-icon .material-icons {
+  .nav-icon .material-symbols-outlined {
     font-size: 20px;
   }
 

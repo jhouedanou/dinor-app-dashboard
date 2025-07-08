@@ -55,65 +55,62 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Interception des requêtes - cache désactivé pour communication directe avec l'API
+// Interception SELECTIVE - seulement pour les assets statiques
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Ignorer les requêtes non-http (ex: chrome-extension://)
+  // RÈGLE #1: Ignorer les requêtes non-http
   if (!url.protocol.startsWith('http')) {
     return;
   }
   
-  // Ignorer le manifest.json et les ressources de dev Vite
-  if (url.pathname === '/manifest.json' || 
-      url.pathname.startsWith('/@vite') || 
+  // RÈGLE #2: JAMAIS intercepter les pages de navigation PWA
+  if (request.destination === 'document' || 
+      request.mode === 'navigate' ||
+      (url.pathname.startsWith('/pwa/') && !url.pathname.includes('.'))) {
+    return; // Laisser le navigateur gérer la navigation
+  }
+  
+  // RÈGLE #3: JAMAIS intercepter les APIs
+  if (url.pathname.includes('/api/')) {
+    return; // Laisser l'API tranquille
+  }
+  
+  // RÈGLE #4: Ignorer les ressources de développement
+  if (url.pathname.startsWith('/@vite') || 
       url.pathname.startsWith('/@fs') ||
       url.pathname.includes('/resources/css/filament/') ||
-      url.hostname === 'localhost' && url.port === '5173') {
-    return; // Laisser le navigateur gérer ces requêtes
-  }
-
-  // Communication directe avec l'API - pas de cache
-  if (url.pathname.includes('/api/')) {
-    console.log('🌐 [SW] Communication directe avec l\'API (cache désactivé):', url.pathname);
-    // Laisser le navigateur gérer la requête directement
+      (url.hostname === 'localhost' && url.port === '5173')) {
     return;
   }
 
-  // Stratégie "Network First" pour les autres requêtes (assets statiques, etc.)
+  // RÈGLE #5: SEULEMENT intercepter les assets statiques (CSS, JS, images, etc.)
+  const isStaticAsset = /\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$/i.test(url.pathname) ||
+                       url.pathname.includes('/assets/') ||
+                       url.pathname.includes('/icons/') ||
+                       url.pathname.includes('/images/');
+
+  if (!isStaticAsset) {
+    return; // Laisser le navigateur gérer tout le reste
+  }
+
+  // SEULEMENT pour les assets statiques : Cache First avec fallback réseau
   event.respondWith(
-    fetch(request).then((networkResponse) => {
-      console.log('🌐 [SW] Requête réseau pour asset:', url.pathname);
-      
-      // IMPORTANT: Cloner la réponse AVANT toute utilisation pour éviter "Response body is already used"
-      const responseClone = networkResponse.clone();
-      
-      // Optionnel: mettre en cache les nouvelles ressources statiques seulement
-      if (networkResponse.ok && !url.pathname.includes('/api/')) {
-        caches.open(STATIC_CACHE_NAME).then((cache) => {
-          cache.put(request, responseClone);
-        }).catch(error => {
-          console.warn('⚠️ [SW] Erreur lors de la mise en cache:', error);
-        });
+    caches.match(request).then((cachedResponse) => {
+      if (cachedResponse) {
+        return cachedResponse; // Utiliser le cache si disponible
       }
       
-      return networkResponse;
-    }).catch(() => {
-      // Fallback: chercher dans le cache seulement si le réseau échoue
-      return caches.match(request).then((response) => {
-        if (response) {
-          console.log('⚡ [SW] Fallback cache pour asset:', url.pathname);
-          return response;
+      // Sinon, aller chercher sur le réseau et mettre en cache
+      return fetch(request).then((networkResponse) => {
+        if (networkResponse.ok) {
+          const responseClone = networkResponse.clone();
+          caches.open(STATIC_CACHE_NAME).then((cache) => {
+            cache.put(request, responseClone);
+          });
         }
-        
-        // Fallback pour la navigation hors ligne
-        if (request.destination === 'document') {
-          return caches.match('/pwa/index.html');
-        }
-        
-        // Sinon, laisser l'erreur se propager
-        throw new Error('Réseau indisponible et pas de cache disponible');
+        return networkResponse;
       });
     })
   );
@@ -122,23 +119,17 @@ self.addEventListener('fetch', (event) => {
 // Écouter les messages de l'application pour invalider le cache
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'INVALIDATE_CACHE') {
-    console.log('🔄 [SW] Invalidation du cache demandée');
     invalidateCache(event.data.pattern || '');
   } else if (event.data && event.data.type === 'FORCE_REFRESH') {
-    console.log('🔄 [SW] Rechargement forcé demandé');
     forceRefresh();
   } else if (event.data && event.data.type === 'CLEAR_ALL_CACHE') {
-    console.log('🗑️ [SW] Suppression de tout le cache demandée');
     clearAllCache();
   }
 });
 
-// Fonction pour invalider le cache - désactivé car plus de cache API
+// Fonction pour invalider le cache statique
 async function invalidateCache(pattern = '') {
   try {
-    console.log('🗑️ [SW] Invalidation du cache demandée:', pattern, '- Cache API désactivé');
-    
-    // Seulement nettoyer le cache statique si nécessaire
     if (pattern && !pattern.includes('/api/')) {
       const staticCache = await caches.open(STATIC_CACHE_NAME);
       const keys = await staticCache.keys();
@@ -147,7 +138,6 @@ async function invalidateCache(pattern = '') {
         const url = new URL(request.url);
         if (!pattern || url.pathname.includes(pattern)) {
           await staticCache.delete(request);
-          console.log('🗑️ [SW] Cache statique supprimé:', url.pathname);
         }
       }
     }
@@ -164,14 +154,13 @@ async function invalidateCache(pattern = '') {
     });
     
   } catch (error) {
-    console.error('❌ [SW] Erreur lors de l\'invalidation du cache:', error);
+    console.error('❌ [SW] Erreur invalidation cache:', error);
   }
 }
 
 // Fonction pour forcer le rechargement
 async function forceRefresh() {
   try {
-    // Vider tous les caches
     await clearAllCache();
     
     // Notifier les clients de forcer le rechargement
@@ -183,10 +172,8 @@ async function forceRefresh() {
         });
       });
     });
-    
-    console.log('🔄 [SW] Rechargement forcé effectué');
   } catch (error) {
-    console.error('❌ [SW] Erreur lors du rechargement forcé:', error);
+    console.error('❌ [SW] Erreur rechargement forcé:', error);
   }
 }
 
@@ -195,15 +182,10 @@ async function clearAllCache() {
   try {
     const cacheNames = await caches.keys();
     await Promise.all(
-      cacheNames.map(cacheName => {
-        console.log('🗑️ [SW] Suppression du cache:', cacheName);
-        return caches.delete(cacheName);
-      })
+      cacheNames.map(cacheName => caches.delete(cacheName))
     );
-    
-    console.log('✅ [SW] Tous les caches supprimés');
   } catch (error) {
-    console.error('❌ [SW] Erreur lors de la suppression du cache:', error);
+    console.error('❌ [SW] Erreur suppression cache:', error);
   }
 }
 

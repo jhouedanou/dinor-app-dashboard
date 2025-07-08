@@ -78,19 +78,19 @@ define(['./workbox-fb107ff4'], (function (workbox) { 'use strict';
    * See https://goo.gl/S9QRab
    */
   workbox.precacheAndRoute([{
-    "url": "assets/Badge.D27q8s8N.js",
+    "url": "assets/Badge.CXisTyMs.js",
     "revision": null
   }, {
     "url": "assets/Badge.Id9DJ0yZ.css",
     "revision": null
   }, {
-    "url": "assets/BannerSection.BsL1syxE.js",
+    "url": "assets/BannerSection.Bq1H5INP.js",
     "revision": null
   }, {
     "url": "assets/BannerSection.hXsewFe2.css",
     "revision": null
   }, {
-    "url": "assets/CookiePolicy.BAWQKCrQ.js",
+    "url": "assets/CookiePolicy.Bu7eMONf.js",
     "revision": null
   }, {
     "url": "assets/CookiePolicy.CBPAEsFF.css",
@@ -99,143 +99,149 @@ define(['./workbox-fb107ff4'], (function (workbox) { 'use strict';
     "url": "assets/DinorTV.B_QjgwLu.css",
     "revision": null
   }, {
-    "url": "assets/DinorTV.DBil5wgM.js",
+    "url": "assets/DinorTV.DRGfjRG2.js",
     "revision": null
   }, {
-    "url": "assets/EventDetail.Bnc6hQw4.css",
+    "url": "assets/EventDetail.42WhEGqo.css",
     "revision": null
   }, {
-    "url": "assets/EventDetail.CeymsJ6h.js",
+    "url": "assets/EventDetail.qv7aunyV.js",
     "revision": null
   }, {
-    "url": "assets/EventsList.9Hp24YRR.js",
+    "url": "assets/EventsList.D0Dw3tkF.css",
     "revision": null
   }, {
-    "url": "assets/EventsList.CbJQnL3v.css",
+    "url": "assets/EventsList.D2jOQEiz.js",
     "revision": null
   }, {
     "url": "assets/FavoriteButton.CJo52RHZ.css",
     "revision": null
   }, {
-    "url": "assets/FavoriteButton.x5U2yDW7.js",
+    "url": "assets/FavoriteButton.sKB478OO.js",
     "revision": null
   }, {
-    "url": "assets/Home.BQTJSwcD.css",
+    "url": "assets/Home.Bdrq75d2.js",
     "revision": null
   }, {
-    "url": "assets/Home.DQvbsA56.js",
+    "url": "assets/Home.DeS83HLX.css",
     "revision": null
   }, {
-    "url": "assets/index.5t7qZfv1.css",
+    "url": "assets/index.BKoYGVuX.css",
     "revision": null
   }, {
-    "url": "assets/index.bcfXHu_Y.js",
+    "url": "assets/index.BzhA8_-u.js",
+    "revision": null
+  }, {
+    "url": "assets/LikeButton.BGUCNK33.js",
     "revision": null
   }, {
     "url": "assets/LikeButton.Cxg4SQ2v.css",
     "revision": null
   }, {
-    "url": "assets/LikeButton.Dz9y04Uc.js",
+    "url": "assets/PagesList.BUj1o5xS.js",
     "revision": null
   }, {
     "url": "assets/PagesList.C8e3BZ9t.css",
     "revision": null
   }, {
-    "url": "assets/PagesList.DrT4ecrE.js",
+    "url": "assets/Predictions.Ccc_wFpF.css",
     "revision": null
   }, {
-    "url": "assets/Predictions.C04acH9k.css",
+    "url": "assets/Predictions.D13KKuV4.js",
     "revision": null
   }, {
-    "url": "assets/Predictions.DIAFb2pc.js",
+    "url": "assets/PredictionsLeaderboard.6cp9vVfC.css",
     "revision": null
   }, {
-    "url": "assets/PredictionsLeaderboard.DuLj1F0l.css",
+    "url": "assets/PredictionsLeaderboard.FZ0uj4Sk.js",
     "revision": null
   }, {
-    "url": "assets/PredictionsLeaderboard.KHMI3Gvm.js",
+    "url": "assets/PredictionsTeams.B4nF0aVF.css",
     "revision": null
   }, {
-    "url": "assets/PredictionsTeams.Bxaa6x5e.css",
+    "url": "assets/PredictionsTeams.BQ4wOqmD.js",
     "revision": null
   }, {
-    "url": "assets/PredictionsTeams.o-du-Yaz.js",
-    "revision": null
-  }, {
-    "url": "assets/PrivacyPolicy.C24H1HRc.js",
+    "url": "assets/PrivacyPolicy.CJ6wmyGh.js",
     "revision": null
   }, {
     "url": "assets/PrivacyPolicy.DeflSHSI.css",
     "revision": null
   }, {
-    "url": "assets/Profile.DEgjqc1S.css",
+    "url": "assets/Profile.BRhpA67H.css",
     "revision": null
   }, {
-    "url": "assets/Profile.mErm3sQn.js",
+    "url": "assets/Profile.DFAYpZR4.js",
     "revision": null
   }, {
-    "url": "assets/RecipeDetail.BqFIIdLW.js",
+    "url": "assets/RecipeDetail.BGfISsQv.css",
     "revision": null
   }, {
-    "url": "assets/RecipeDetail.DdAzDlS4.css",
+    "url": "assets/RecipeDetail.D-T_BjEX.js",
     "revision": null
   }, {
-    "url": "assets/RecipesList.B1eUzoRy.css",
+    "url": "assets/RecipesList.CBXzT_R2.css",
     "revision": null
   }, {
-    "url": "assets/RecipesList.DGhxCPG2.js",
+    "url": "assets/RecipesList.eUJL5Pjy.js",
     "revision": null
   }, {
-    "url": "assets/SearchAndFilters.BtyA_H3d.css",
+    "url": "assets/SearchAndFilters.BHT7mAes.css",
     "revision": null
   }, {
-    "url": "assets/SearchAndFilters.DLYOGuxJ.js",
+    "url": "assets/SearchAndFilters.DEu3bWKw.js",
     "revision": null
   }, {
-    "url": "assets/TermsOfService.C_Ljy423.js",
+    "url": "assets/TermsOfService.CzdbB02e.js",
     "revision": null
   }, {
     "url": "assets/TermsOfService.DiEZV5Dq.css",
     "revision": null
   }, {
-    "url": "assets/TipDetail.BWKwkpZi.js",
+    "url": "assets/TipDetail.DmWKKydn.css",
     "revision": null
   }, {
-    "url": "assets/TipDetail.Lgfflgvx.css",
+    "url": "assets/TipDetail.OoIVwJrq.js",
+    "revision": null
+  }, {
+    "url": "assets/TipsList.CloCXjh8.js",
     "revision": null
   }, {
     "url": "assets/TipsList.Cubx72i1.css",
     "revision": null
   }, {
-    "url": "assets/TipsList.DHHAgcPt.js",
+    "url": "assets/TournamentBetting.BokqVoOm.js",
     "revision": null
   }, {
-    "url": "assets/Tournaments.D85W8BP-.css",
+    "url": "assets/TournamentBetting.CBsS1oMN.css",
     "revision": null
   }, {
-    "url": "assets/Tournaments.YPDheTqq.js",
+    "url": "assets/Tournaments.BdIiPO3L.js",
     "revision": null
   }, {
-    "url": "assets/useApi.BSdzpHU-.js",
+    "url": "assets/Tournaments.DXBB89nw.css",
     "revision": null
   }, {
-    "url": "assets/useComments.CSuc2tb9.js",
+    "url": "assets/useApi.BWVZTY0A.js",
+    "revision": null
+  }, {
+    "url": "assets/useComments.QSzaAg6j.js",
     "revision": null
   }, {
     "url": "assets/utils.l0sNRNKZ.js",
     "revision": null
   }, {
-    "url": "assets/vendor.CgTKjNNK.js",
+    "url": "assets/vendor.Ckj8GOAf.js",
     "revision": null
   }, {
-    "url": "assets/WebEmbed.CKL2zDmX.css",
+    "url": "assets/WebEmbed.CcOeVZaS.css",
     "revision": null
   }, {
-    "url": "assets/WebEmbed.Dd7zrZaT.js",
+    "url": "assets/WebEmbed.CyOgl884.js",
     "revision": null
   }, {
     "url": "index.html",
-    "revision": "5c5d75814d9d8970cd05f808fba6a902"
+    "revision": "45c2a6003bd5702e3e28efca27adfcc5"
   }, {
     "url": "registerSW.js",
     "revision": "36a8c3eb862bdcf4382e8845651d1c5f"

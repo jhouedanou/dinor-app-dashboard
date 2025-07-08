@@ -76,14 +76,26 @@ class PwaMenuItemSeeder extends Seeder
             [
                 'name' => 'web',
                 'label' => 'Web',
-                'icon' => 'public',
+                'icon' => 'web',
                 'route' => 'web',
                 'path' => null,
                 'action_type' => 'web_embed',
-                'web_url' => 'https://www.google.com',
+                'web_url' => null,
                 'is_active' => true,
                 'order' => 6,
-                'description' => 'Accès au contenu web externe'
+                'description' => 'Accès au contenu web depuis les Pages Filament'
+            ],
+            [
+                'name' => 'profile',
+                'label' => 'Profil',
+                'icon' => 'person',
+                'route' => 'profile',
+                'path' => '/profile',
+                'action_type' => 'route',
+                'web_url' => null,
+                'is_active' => true,
+                'order' => 7,
+                'description' => 'Profil utilisateur et paramètres'
             ]
         ];
 

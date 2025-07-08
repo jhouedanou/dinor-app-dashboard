@@ -5,7 +5,7 @@
       <!-- Error State -->
       <div v-if="error" class="error-state">
         <div class="error-icon">
-          <i class="material-icons">error_outline</i>
+          <span class="material-symbols-outlined">error</span>
         </div>
         <h2 class="md3-title-large">Erreur de chargement</h2>
         <p class="md3-body-large dinor-text-gray">{{ errorMessage }}</p>
@@ -281,7 +281,6 @@ export default {
       
       if (queryUrl) {
         // Utiliser l'URL de query parameter
-        console.log('🎯 [WebEmbed] Utilisation de l\'URL du query parameter')
         
         // Vérifier si l'URL peut être chargée en iframe
         if (!canLoadInIframe(queryUrl)) {
@@ -294,7 +293,7 @@ export default {
         
         embedUrl.value = queryUrl
         pageTitle.value = 'Page Web'
-        console.log('🎯 [WebEmbed] URL définie:', embedUrl.value)
+        // URL définie
         
         // Attendre le rendu puis arrêter le loading
         await nextTick()

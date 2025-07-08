@@ -20,7 +20,7 @@
           <div class="user-stats-header">
             <h2 class="md3-title-medium">Vos statistiques</h2>
             <div class="user-rank-badge" :class="getRankClass(userStats.current_position)">
-              <i class="material-icons">star</i>
+              <span class="material-symbols-outlined">star</span>
               <span>{{ userStats.current_position ? `#${userStats.current_position}` : 'Non classé' }}</span>
             </div>
           </div>
@@ -45,8 +45,8 @@
           </div>
           
           <div v-if="userStats.rank_change !== 0" class="rank-change">
-            <i v-if="userStats.rank_change > 0" class="material-icons rank-up">trending_up</i>
-            <i v-else class="material-icons rank-down">trending_down</i>
+            <span v-if="userStats.rank_change > 0" class="material-symbols-outlined rank-up">trending_up</span>
+            <span v-else class="material-symbols-outlined rank-down">trending_down</span>
             <span>{{ Math.abs(userStats.rank_change) }} position{{ Math.abs(userStats.rank_change) > 1 ? 's' : '' }}</span>
           </div>
         </div>
@@ -54,7 +54,7 @@
         <!-- Auth Prompt -->
         <div v-else-if="!authStore.isAuthenticated" class="auth-prompt">
           <div class="auth-prompt-content">
-            <i class="material-icons">account_circle</i>
+            <span class="material-symbols-outlined">account_circle</span>
             <h3 class="md3-title-medium">Connectez-vous</h3>
             <p class="md3-body-medium">Connectez-vous pour voir vos statistiques et votre position dans le classement</p>
             <button @click="showAuthModal = true" class="btn-primary">
@@ -71,7 +71,7 @@
             <!-- Podium Top 3 -->
             <div v-for="(player, index) in topPlayers.slice(0, 3)" :key="player.id" class="podium-item" :class="`rank-${index + 1}`">
               <div class="podium-rank">
-                <i class="material-icons">{{ getPodiumIcon(index + 1) }}</i>
+                <span class="material-symbols-outlined">{{ getPodiumIcon(index + 1) }}</span>
               </div>
               <div class="podium-info">
                 <div class="player-name">{{ player.user.name }}</div>
@@ -105,8 +105,8 @@
               </div>
               
               <div v-if="player.rank_change" class="rank-change-indicator">
-                <i v-if="player.rank_change > 0" class="material-icons rank-up">keyboard_arrow_up</i>
-                <i v-else class="material-icons rank-down">keyboard_arrow_down</i>
+                <span v-if="player.rank_change > 0" class="material-symbols-outlined rank-up">keyboard_arrow_up</span>
+                <span v-else class="material-symbols-outlined rank-down">keyboard_arrow_down</span>
                 <span>{{ Math.abs(player.rank_change) }}</span>
               </div>
             </div>
@@ -115,7 +115,7 @@
           <!-- Empty State -->
           <div v-else class="empty-leaderboard">
             <div class="empty-icon">
-              <i class="material-icons">leaderboard</i>
+              <span class="material-symbols-outlined">leaderboard</span>
             </div>
             <h3 class="md3-title-medium">Aucun classement</h3>
             <p class="md3-body-medium dinor-text-gray">Le classement apparaîtra dès que les premiers pronostics seront faits.</p>
@@ -129,7 +129,7 @@
             :disabled="refreshing"
             class="btn-secondary refresh-btn"
           >
-            <i class="material-icons">refresh</i>
+            <span class="material-symbols-outlined">refresh</span>
             <span v-if="refreshing">Mise à jour...</span>
             <span v-else>Actualiser le classement</span>
           </button>
@@ -592,10 +592,41 @@ export default {
   .player-details {
     flex-direction: column;
     gap: 0.25rem;
+    font-size: 0.75rem;
+  }
+  
+  .player-details .detail-item {
+    color: #4A5568;
+    font-weight: 500;
+  }
+  
+  .leaderboard-item {
+    padding: 0.75rem;
+  }
+  
+  .player-stats {
+    min-width: 60px;
+    margin-right: 0.5rem;
+  }
+  
+  .points {
+    font-size: 0.85rem;
+  }
+  
+  .accuracy {
+    font-size: 0.75rem;
+    color: #4A5568;
   }
   
   .rank-change-indicator {
-    display: none;
+    flex-direction: row;
+    gap: 0.25rem;
+    font-size: 0.6rem;
+    margin-left: 0.5rem;
+  }
+  
+  .rank-change-indicator .material-symbols-outlined {
+    font-size: 0.9rem;
   }
 }
 </style>

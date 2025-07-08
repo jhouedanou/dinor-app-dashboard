@@ -7,9 +7,9 @@
     </div>
 
     <!-- Not Authenticated State -->
-    <div v-else-if="!authStore.isAuthenticated" class="auth-required">
+    <div v-else-if="!authStore?.isAuthenticated" class="auth-required">
       <div class="auth-icon">
-        <i class="material-icons">person</i>
+        <span class="material-symbols-outlined">person</span>
       </div>
       <h2 class="md3-title-large">Profil utilisateur</h2>
       <p class="md3-body-large">Connectez-vous pour voir votre profil et vos favoris</p>
@@ -23,7 +23,7 @@
       <!-- User Info Section -->
       <div class="user-info-section">
         <div class="user-avatar">
-          <i class="material-icons">person</i>
+          <span class="material-symbols-outlined">person</span>
         </div>
         <div class="user-details">
           <h1 class="user-name">{{ authStore.userName }}</h1>
@@ -41,7 +41,7 @@
           class="nav-button"
           :class="{ active: activeSection === section.key }"
         >
-          <i class="material-icons">{{ section.icon }}</i>
+          <span class="material-symbols-outlined">{{ section.icon }}</span>
           <span>{{ section.label }}</span>
         </button>
       </div>
@@ -60,7 +60,7 @@
               class="filter-tab"
               :class="{ active: selectedFilter === tab.key }"
             >
-              <i class="material-icons">{{ tab.icon }}</i>
+              <span class="material-symbols-outlined">{{ tab.icon }}</span>
               <span>{{ tab.label }}</span>
             </button>
           </div>
@@ -81,7 +81,7 @@
                 @error="handleImageError"
               >
               <div class="favorite-type-badge">
-                <i class="material-icons">{{ getTypeIcon(favorite.type) }}</i>
+                <span class="material-symbols-outlined">{{ getTypeIcon(favorite.type) }}</span>
               </div>
             </div>
             <div class="favorite-info">
@@ -95,11 +95,11 @@
                 </span>
                 <div class="favorite-stats">
                   <span class="stat">
-                    <i class="material-icons">favorite</i>
+                    <span class="material-symbols-outlined">favorite</span>
                     {{ favorite.content.likes_count || 0 }}
                   </span>
                   <span class="stat">
-                    <i class="material-icons">comment</i>
+                    <span class="material-symbols-outlined">comment</span>
                     {{ favorite.content.comments_count || 0 }}
                   </span>
                 </div>
@@ -110,7 +110,7 @@
               class="remove-favorite"
               title="Retirer des favoris"
             >
-              <i class="material-icons">close</i>
+              <span class="material-symbols-outlined">close</span>
             </button>
           </div>
         </div>
@@ -118,7 +118,7 @@
         <!-- Empty State -->
         <div v-else class="empty-favorites">
           <div class="empty-icon">
-            <i class="material-icons">favorite_border</i>
+            <span class="material-symbols-outlined">favorite_border</span>
           </div>
           <h3>{{ getEmptyMessage() }}</h3>
           <p>{{ getEmptyDescription() }}</p>
@@ -138,9 +138,73 @@
             <p>Chargement de vos statistiques...</p>
           </div>
 
-          <!-- Predictions Tabs -->
-          <div v-else-if="userPredictionsStats" class="predictions-section">
-            <!-- Sub-navigation for predictions -->
+          <!-- Main Predictions Dashboard -->
+          <div v-else-if="userPredictionsStats" class="predictions-dashboard">
+            
+            <!-- Quick Stats & Actions -->
+            <div class="predictions-overview">
+              <div class="stats-grid">
+                <div class="stat-card total-predictions">
+                  <div class="stat-icon">
+                    <span class="material-symbols-outlined">sports_soccer</span>
+                  </div>
+                  <div class="stat-content">
+                    <span class="stat-value">{{ userPredictionsStats.total_predictions }}</span>
+                    <span class="stat-label">Total prédictions</span>
+                  </div>
+                </div>
+                
+                <div class="stat-card total-points">
+                  <div class="stat-icon">
+                    <span class="material-symbols-outlined">emoji_events</span>
+                  </div>
+                  <div class="stat-content">
+                    <span class="stat-value">{{ userPredictionsStats.total_points }}</span>
+                    <span class="stat-label">Points gagnés</span>
+                  </div>
+                </div>
+                
+                <div class="stat-card accuracy">
+                  <div class="stat-icon">
+                    <span class="material-symbols-outlined">target</span>
+                  </div>
+                  <div class="stat-content">
+                    <span class="stat-value">{{ userPredictionsStats.accuracy_percentage }}%</span>
+                    <span class="stat-label">Précision</span>
+                  </div>
+                </div>
+                
+                <div class="stat-card ranking" v-if="userPredictionsStats.current_rank">
+                  <div class="stat-icon">
+                    <span class="material-symbols-outlined">leaderboard</span>
+                  </div>
+                  <div class="stat-content">
+                    <span class="stat-value">#{{ userPredictionsStats.current_rank }}</span>
+                    <span class="stat-label">Classement</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quick Actions -->
+              <div class="quick-actions">
+                <button @click="goToPredictions" class="action-button primary">
+                  <span class="material-symbols-outlined">add_circle</span>
+                  <span>Faire un pronostic</span>
+                </button>
+                
+                <button @click="switchPredictionsTab('my-ranking')" class="action-button secondary">
+                  <span class="material-symbols-outlined">leaderboard</span>
+                  <span>Voir le classement</span>
+                </button>
+                
+                <button @click="switchPredictionsTab('active-tournaments')" class="action-button secondary">
+                  <span class="material-symbols-outlined">emoji_events</span>
+                  <span>Tournois actifs</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Sub-navigation for detailed views -->
             <div class="sub-tabs">
               <button
                 v-for="tab in predictionsTabs"
@@ -148,74 +212,64 @@
                 @click="switchPredictionsTab(tab.key)"
                 :class="['sub-tab', { active: activePredictionsTab === tab.key }]"
               >
-                <i class="material-icons">{{ tab.icon }}</i>
+                <span class="material-symbols-outlined">{{ tab.icon }}</span>
                 <span>{{ tab.label }}</span>
               </button>
             </div>
 
-            <!-- Mes prédictions Tab -->
+            <!-- My Predictions Tab -->
             <div v-if="activePredictionsTab === 'my-predictions'" class="tab-content">
-              <div class="predictions-header">
-                <h3 class="tab-title">Mes prédictions</h3>
-                <div class="predictions-stats">
-                  <div class="stat-item">
-                    <span class="stat-value">{{ userPredictionsStats.total_predictions }}</span>
-                    <span class="stat-label">Total</span>
-                  </div>
-                  <div class="stat-item">
-                    <span class="stat-value">{{ userPredictionsStats.total_points }}</span>
-                    <span class="stat-label">Points</span>
-                  </div>
-                  <div class="stat-item">
-                    <span class="stat-value">{{ userPredictionsStats.accuracy_percentage }}%</span>
-                    <span class="stat-label">Précision</span>
+              <!-- Recent Predictions Preview -->
+              <div v-if="recentPredictions.length" class="recent-predictions-preview">
+                <h3 class="subsection-title">Pronostics récents</h3>
+                <div class="predictions-list compact">
+                  <div 
+                    v-for="prediction in recentPredictions.slice(0, 3)" 
+                    :key="prediction.id" 
+                    class="prediction-card compact"
+                    :class="{ calculated: prediction.is_calculated }"
+                  >
+                    <div class="prediction-match">
+                      <div class="teams">
+                        <span class="team">{{ prediction.football_match.home_team.short_name || prediction.football_match.home_team.name }}</span>
+                        <span class="vs">vs</span>
+                        <span class="team">{{ prediction.football_match.away_team.short_name || prediction.football_match.away_team.name }}</span>
+                      </div>
+                      <div class="match-info">
+                        <span class="predicted-score">{{ prediction.predicted_home_score }} - {{ prediction.predicted_away_score }}</span>
+                        <span v-if="prediction.is_calculated" class="points-earned" :class="{ 'points-positive': prediction.points_earned > 0 }">
+                          {{ prediction.points_earned }} pt{{ prediction.points_earned > 1 ? 's' : '' }}
+                        </span>
+                        <span v-else class="pending">En attente</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
+                
+                <button @click="loadAllUserPredictions" class="btn-secondary show-all-btn">
+                  Voir tous mes pronostics ({{ userPredictionsStats.total_predictions }})
+                </button>
               </div>
 
-              <!-- Liste complète des prédictions -->
-              <div v-if="userAllPredictions.length" class="predictions-list">
-                <div 
-                  v-for="prediction in userAllPredictions" 
-                  :key="prediction.id" 
-                  class="prediction-card"
-                  :class="{ calculated: prediction.is_calculated }"
-                >
-                  <div class="prediction-match">
-                    <div class="teams">
-                      <span class="team">{{ prediction.football_match.home_team.name }}</span>
-                      <span class="vs">vs</span>
-                      <span class="team">{{ prediction.football_match.away_team.name }}</span>
-                    </div>
-                    <div class="match-date">
-                      {{ formatDate(prediction.football_match.match_date) }}
-                    </div>
-                  </div>
-                  
-                  <div class="prediction-details">
-                    <div class="predicted-score">
-                      {{ prediction.predicted_home_score }} - {{ prediction.predicted_away_score }}
-                    </div>
-                    <div v-if="prediction.football_match.is_finished" class="actual-score">
-                      Résultat: {{ prediction.football_match.home_score }} - {{ prediction.football_match.away_score }}
-                    </div>
-                    <div class="prediction-status">
-                      <span v-if="prediction.is_calculated" class="points-earned" :class="{ 'points-positive': prediction.points_earned > 0 }">
-                        {{ prediction.points_earned }} point{{ prediction.points_earned > 1 ? 's' : '' }}
-                      </span>
-                      <span v-else class="pending">En attente</span>
-                    </div>
+              <!-- Complete Predictions List (when loaded) -->
+              <div v-if="userAllPredictions.length" class="all-predictions">
+                <div class="predictions-header">
+                  <h3 class="subsection-title">Tous mes pronostics</h3>
+                  <div class="predictions-filters">
+                    <select v-model="predictionsFilter" class="filter-select">
+                      <option value="all">Tous</option>
+                      <option value="calculated">Terminés</option>
+                      <option value="pending">En attente</option>
+                      <option value="won">Gagnants</option>
+                    </select>
                   </div>
                 </div>
-              </div>
-              
-              <!-- Récents pronostics si pas de liste complète -->
-              <div v-else-if="recentPredictions.length" class="recent-predictions">
+                
                 <div class="predictions-list">
                   <div 
-                    v-for="prediction in recentPredictions" 
+                    v-for="prediction in filteredPredictions" 
                     :key="prediction.id" 
-                    class="prediction-card"
+                    class="prediction-card detailed"
                     :class="{ calculated: prediction.is_calculated }"
                   >
                     <div class="prediction-match">
@@ -230,192 +284,124 @@
                     </div>
                     
                     <div class="prediction-details">
-                      <div class="predicted-score">
-                        {{ prediction.predicted_home_score }} - {{ prediction.predicted_away_score }}
+                      <div class="prediction-scores">
+                        <div class="predicted">
+                          <span class="label">Pronostic:</span>
+                          <span class="score">{{ prediction.predicted_home_score }} - {{ prediction.predicted_away_score }}</span>
+                        </div>
+                        <div v-if="prediction.football_match.is_finished" class="actual">
+                          <span class="label">Résultat:</span>
+                          <span class="score">{{ prediction.football_match.home_score }} - {{ prediction.football_match.away_score }}</span>
+                        </div>
                       </div>
-                      <div class="prediction-status">
-                        <span v-if="prediction.is_calculated" class="points-earned">
+                      <div class="prediction-result">
+                        <span v-if="prediction.is_calculated" class="points-earned" :class="getPointsClass(prediction.points_earned)">
                           {{ prediction.points_earned }} point{{ prediction.points_earned > 1 ? 's' : '' }}
                         </span>
-                        <span v-else class="pending">En attente</span>
+                        <span v-else class="pending">En attente du résultat</span>
                       </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- No Predictions State -->
+              <div v-if="!recentPredictions.length && !userAllPredictions.length" class="empty-predictions">
+                <div class="empty-icon">
+                  <span class="material-symbols-outlined">sports_soccer</span>
+                </div>
+                <h3>Aucun pronostic pour le moment</h3>
+                <p>Commencez à faire des pronostics pour gagner des points et grimper dans le classement !</p>
+                <button @click="goToPredictions" class="btn-primary">
+                  Faire mon premier pronostic
+                </button>
+              </div>
+            </div>
+
+            <!-- My Ranking Tab -->
+            <div v-if="activePredictionsTab === 'my-ranking'" class="tab-content">
+              <div class="ranking-section">
+                <h3 class="subsection-title">Mon classement</h3>
+                
+                <!-- Personal Ranking Card -->
+                <div v-if="userPredictionsStats.current_rank" class="my-rank-card">
+                  <div class="rank-badge" :class="getRankClass(userPredictionsStats.current_rank)">
+                    #{{ userPredictionsStats.current_rank }}
+                  </div>
+                  <div class="rank-info">
+                    <h4>{{ authStore.user?.name || 'Vous' }}</h4>
+                    <p>{{ userPredictionsStats.total_points }} points • {{ userPredictionsStats.accuracy_percentage }}% de réussite</p>
+                    <div v-if="userPredictionsStats.rank_change" class="rank-change" :class="{ positive: userPredictionsStats.rank_change > 0, negative: userPredictionsStats.rank_change < 0 }">
+                      <span class="material-symbols-outlined">
+                        {{ userPredictionsStats.rank_change > 0 ? 'trending_up' : 'trending_down' }}
+                      </span>
+                      {{ Math.abs(userPredictionsStats.rank_change) }} place{{ Math.abs(userPredictionsStats.rank_change) > 1 ? 's' : '' }}
                     </div>
                   </div>
                 </div>
                 
-                <button @click="loadAllUserPredictions" class="btn-secondary load-more-btn">
-                  Charger toutes mes prédictions
+                <button @click="goToLeaderboard" class="btn-secondary">
+                  Voir le classement complet
                 </button>
-              </div>
-
-              <!-- No Predictions -->
-              <div v-else class="no-predictions">
-                <div class="empty-icon">
-                  <i class="material-icons">sports_soccer</i>
-                </div>
-                <h3>Aucun pronostic</h3>
-                <p>Vous n'avez pas encore fait de pronostic. Commencez dès maintenant!</p>
-                <router-link to="/predictions" class="btn-primary">
-                  Faire mon premier pronostic
-                </router-link>
               </div>
             </div>
 
-            <!-- Mon classement Tab -->
-            <div v-if="activePredictionsTab === 'my-ranking'" class="tab-content">
-              <div class="ranking-header">
-                <h3 class="tab-title">Mon classement</h3>
-              </div>
-
-              <!-- Stats globales -->
-              <div class="global-ranking">
-                <h4 class="subsection-title">Classement global</h4>
-                <div class="ranking-card global">
-                  <div class="ranking-info">
-                    <div class="rank-badge" :class="getRankClass(userPredictionsStats.current_rank)">
-                      <i class="material-icons">star</i>
-                      <span>{{ userPredictionsStats.current_rank ? `#${userPredictionsStats.current_rank}` : 'Non classé' }}</span>
-                    </div>
-                    <div class="ranking-stats">
-                      <div class="stat-item">
-                        <span class="stat-value">{{ userPredictionsStats.total_points }}</span>
-                        <span class="stat-label">Points totaux</span>
-                      </div>
-                      <div class="stat-item">
-                        <span class="stat-value">{{ userPredictionsStats.accuracy_percentage }}%</span>
-                        <span class="stat-label">Précision</span>
-                      </div>
-                      <div class="stat-item">
-                        <span class="stat-value">{{ userPredictionsStats.correct_scores || 0 }}</span>
-                        <span class="stat-label">Scores exacts</span>
-                      </div>
-                    </div>
-                  </div>
-                  <router-link to="/predictions/leaderboard" class="view-leaderboard-btn">
-                    Voir le classement complet
-                  </router-link>
-                </div>
-              </div>
-
-              <!-- Classement par tournoi -->
-              <div v-if="userTournaments.length" class="tournaments-ranking">
-                <h4 class="subsection-title">Mes tournois</h4>
-                <div class="tournaments-list">
+            <!-- Active Tournaments Tab -->
+            <div v-if="activePredictionsTab === 'active-tournaments'" class="tab-content">
+              <div class="tournaments-section">
+                <h3 class="subsection-title">Tournois en cours</h3>
+                
+                <div v-if="activeTournaments.length" class="tournaments-list">
                   <div 
-                    v-for="tournamentData in userTournaments" 
-                    :key="tournamentData.tournament.id" 
-                    class="tournament-ranking-card"
+                    v-for="tournament in activeTournaments" 
+                    :key="tournament.id" 
+                    class="tournament-card"
                   >
                     <div class="tournament-header">
-                      <h5 class="tournament-name">{{ tournamentData.tournament.name }}</h5>
-                      <span :class="['tournament-status', tournamentData.tournament.status]">
-                        {{ tournamentData.tournament.status_label }}
+                      <h4>{{ tournament.name }}</h4>
+                      <span class="tournament-status" :class="tournament.status">
+                        {{ getTournamentStatusLabel(tournament.status) }}
                       </span>
                     </div>
                     
-                    <div class="tournament-ranking">
-                      <div class="rank-badge" :class="getRankClass(tournamentData.user_rank)">
-                        <span>{{ tournamentData.user_rank ? `#${tournamentData.user_rank}` : 'N/A' }}</span>
+                    <div class="tournament-info">
+                      <div v-if="tournament.total_prize" class="prize">
+                        <span class="material-symbols-outlined">emoji_events</span>
+                        <span>{{ formatPrize(tournament.total_prize) }}</span>
                       </div>
-                      <div class="tournament-stats">
-                        <div class="stat-item">
-                          <span class="stat-value">{{ tournamentData.user_points }}</span>
-                          <span class="stat-label">Points</span>
-                        </div>
-                        <div class="stat-item">
-                          <span class="stat-value">{{ tournamentData.user_predictions }}</span>
-                          <span class="stat-label">Prédictions</span>
-                        </div>
-                        <div class="stat-item">
-                          <span class="stat-value">{{ tournamentData.user_accuracy }}%</span>
-                          <span class="stat-label">Précision</span>
-                        </div>
+                      <div class="participants">
+                        <span class="material-symbols-outlined">group</span>
+                        <span>{{ tournament.participants_count || 0 }} participant{{ (tournament.participants_count || 0) > 1 ? 's' : '' }}</span>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- No Tournaments -->
-              <div v-else class="no-tournaments-ranking">
-                <div class="empty-icon">
-                  <i class="material-icons">emoji_events</i>
-                </div>
-                <h4>Aucun tournoi actif</h4>
-                <p>Participez à des tournois pour voir votre classement.</p>
-                <router-link to="/predictions/tournaments" class="btn-secondary">
-                  Découvrir les tournois
-                </router-link>
-              </div>
-            </div>
-
-            <!-- En cours Tab -->
-            <div v-if="activePredictionsTab === 'active-tournaments'" class="tab-content">
-              <div class="active-tournaments-header">
-                <h3 class="tab-title">Tournois en cours</h3>
-                <p class="tab-description">Tournois où vous pouvez faire des prédictions</p>
-              </div>
-
-              <!-- Liste des tournois actifs -->
-              <div v-if="activeTournaments.length" class="active-tournaments-list">
-                <div 
-                  v-for="tournament in activeTournaments" 
-                  :key="tournament.id" 
-                  class="active-tournament-card"
-                  @click="openTournamentModal(tournament)"
-                >
-                  <div class="tournament-info">
-                    <h4 class="tournament-name">{{ tournament.name }}</h4>
-                    <p v-if="tournament.description" class="tournament-description">{{ tournament.description }}</p>
-                    <div class="tournament-meta">
-                      <span :class="['tournament-status', tournament.status]">
-                        {{ tournament.status_label }}
-                      </span>
-                      <span v-if="tournament.participants_count" class="participants-count">
-                        {{ tournament.participants_count }} participant{{ tournament.participants_count > 1 ? 's' : '' }}
-                      </span>
+                    
+                    <div class="tournament-actions">
+                      <button 
+                        v-if="tournament.can_register && !tournament.user_is_participant"
+                        @click="registerToTournament(tournament)"
+                        :disabled="registering === tournament.id"
+                        class="btn-secondary"
+                      >
+                        {{ registering === tournament.id ? 'Inscription...' : 'S\'inscrire' }}
+                      </button>
+                      
+                      <button 
+                        v-if="tournament.user_is_participant"
+                        @click="goToPredictions(tournament)"
+                        class="btn-primary"
+                      >
+                        Faire mes pronostics
+                      </button>
                     </div>
                   </div>
-                  
-                  <div class="tournament-actions">
-                    <div class="tournament-prize" v-if="tournament.prize_pool">
-                      {{ formatPrize(tournament.prize_pool, tournament.currency) }}
-                    </div>
-                    <button 
-                      v-if="tournament.can_register && !tournament.user_is_participant"
-                      @click.stop="registerToTournament(tournament)" 
-                      class="btn-primary tournament-action-btn"
-                    >
-                      S'inscrire
-                    </button>
-                    <button 
-                      v-else-if="tournament.user_is_participant && tournament.can_predict"
-                      @click.stop="goToPredictions(tournament)" 
-                      class="btn-secondary tournament-action-btn"
-                    >
-                      Prédire
-                    </button>
-                    <span v-else class="tournament-status-text">
-                      {{ tournament.user_is_participant ? 'Inscrit' : 'Complet' }}
-                    </span>
+                </div>
+                
+                <div v-else class="empty-tournaments">
+                  <div class="empty-icon">
+                    <span class="material-symbols-outlined">emoji_events</span>
                   </div>
-                </div>
-              </div>
-
-              <!-- No Active Tournaments -->
-              <div v-else class="no-active-tournaments">
-                <div class="empty-icon">
-                  <i class="material-icons">schedule</i>
-                </div>
-                <h4>Aucun tournoi ouvert</h4>
-                <p>Il n'y a pas de tournoi ouvert aux prédictions pour le moment. Revenez bientôt!</p>
-                <div class="suggestions">
-                  <router-link to="/predictions" class="btn-secondary">
-                    Faire des prédictions
-                  </router-link>
-                  <button @click="loadActiveTournaments" class="btn-outline">
-                    Actualiser
-                  </button>
+                  <h4>Aucun tournoi actif</h4>
+                  <p>Les nouveaux tournois apparaîtront ici dès qu'ils seront disponibles.</p>
                 </div>
               </div>
             </div>
@@ -424,13 +410,11 @@
           <!-- Error State -->
           <div v-else class="error-state">
             <div class="error-icon">
-              <i class="material-icons">error_outline</i>
+              <span class="material-symbols-outlined">error</span>
             </div>
-            <h3>Erreur de chargement</h3>
-            <p>Impossible de charger vos statistiques de pronostics.</p>
-            <button @click="loadPredictionsData" class="btn-secondary">
-              Réessayer
-            </button>
+            <h3>Impossible de charger vos pronostics</h3>
+            <p>Vérifiez votre connexion et réessayez.</p>
+            <button @click="loadPredictionsData" class="btn-secondary">Réessayer</button>
           </div>
         </div>
 
@@ -527,7 +511,7 @@
               Vous serez déconnecté de votre compte sur cet appareil. Vos données seront conservées.
             </p>
             <button @click="handleLogout" class="btn-logout-main">
-              <i class="material-icons">logout</i>
+              <span class="material-symbols-outlined">logout</span>
               <span>Se déconnecter</span>
             </button>
           </div>
@@ -542,19 +526,19 @@
             <h3 class="form-title">Conditions d'utilisation</h3>
             <div class="legal-links">
               <a href="/terms" class="legal-link">
-                <i class="material-icons">description</i>
+                <span class="material-symbols-outlined">description</span>
                 <span>Conditions générales d'utilisation</span>
-                <i class="material-icons">arrow_forward_ios</i>
+                <span class="material-symbols-outlined">arrow_forward_ios</span>
               </a>
               <a href="/privacy" class="legal-link">
-                <i class="material-icons">privacy_tip</i>
+                <span class="material-symbols-outlined">privacy_tip</span>
                 <span>Politique de confidentialité</span>
-                <i class="material-icons">arrow_forward_ios</i>
+                <span class="material-symbols-outlined">arrow_forward_ios</span>
               </a>
               <a href="/cookies" class="legal-link">
-                <i class="material-icons">cookie</i>
+                <span class="material-symbols-outlined">cookie</span>
                 <span>Politique des cookies</span>
-                <i class="material-icons">arrow_forward_ios</i>
+                <span class="material-symbols-outlined">arrow_forward_ios</span>
               </a>
             </div>
           </div>
@@ -624,6 +608,12 @@ export default {
     const authStore = useAuthStore()
     const apiStore = useApiStore()
 
+    // S'assurer que authStore est correctement initialisé
+    if (!authStore) {
+      console.error('❌ [Profile] AuthStore non initialisé')
+      return {}
+    }
+
     const loading = ref(false)
     const showAuthModal = ref(false)
     const favorites = ref([])
@@ -639,12 +629,13 @@ export default {
     const activePredictionsTab = ref('my-predictions')
     const activeTournaments = ref([])
     const userAllPredictions = ref([])
+    const predictionsFilter = ref('all')
 
     // Predictions sub-tabs
     const predictionsTabs = ref([
       { key: 'my-predictions', label: 'Mes prédictions', icon: 'sports_soccer' },
       { key: 'my-ranking', label: 'Mon classement', icon: 'leaderboard' },
-      { key: 'active-tournaments', label: 'En cours', icon: 'emoji_events' }
+      { key: 'active-tournaments', label: 'Tournois actifs', icon: 'emoji_events' }
     ])
 
     // Form states
@@ -707,7 +698,7 @@ export default {
     })
 
     const loadFavorites = async () => {
-      if (!authStore.isAuthenticated) return
+      if (!authStore?.isAuthenticated) return
 
       loading.value = true
       try {
@@ -734,7 +725,7 @@ export default {
     }
 
     const loadPredictionsData = async () => {
-      if (!authStore.isAuthenticated) return
+      if (!authStore?.isAuthenticated) return
 
       predictionsLoading.value = true
       try {
@@ -773,7 +764,7 @@ export default {
     }
 
     const loadAllUserPredictions = async () => {
-      if (!authStore.isAuthenticated) return
+      if (!authStore?.isAuthenticated) return
 
       try {
         const data = await apiStore.get('/predictions')
@@ -786,7 +777,7 @@ export default {
     }
 
     const loadActiveTournaments = async () => {
-      if (!authStore.isAuthenticated) return
+      if (!authStore?.isAuthenticated) return
 
       try {
         const data = await apiStore.get('/tournaments/featured')
@@ -928,6 +919,8 @@ export default {
       }
     }
 
+
+
     const formatMemberSince = (date) => {
       if (!date) return 'Date inconnue'
       
@@ -968,8 +961,9 @@ export default {
         if (data.success) {
           usernameForm.value.success = true
           usernameForm.value.message = 'Nom d\'utilisateur mis à jour avec succès'
-          // Update auth store
-          authStore.user.name = data.data.name
+          // Update auth store with the new user data
+          const updatedUser = { ...authStore.user, name: data.data.name }
+          authStore.setUser(updatedUser)
           usernameForm.value.name = ''
         }
       } catch (error) {
@@ -1116,8 +1110,14 @@ export default {
     }
 
     const goToPredictions = (tournament) => {
-      console.log('🏆 [Profile] Aller aux prédictions:', tournament.name)
+      console.log('🏆 [Profile] Aller aux prédictions:', tournament?.name || 'global')
       router.push('/predictions')
+    }
+
+    const goToLeaderboard = () => {
+      console.log('🏆 [Profile] Aller au classement')
+      // Pour l'instant, garder dans l'onglet ranking
+      switchPredictionsTab('my-ranking')
     }
 
     const formatPrize = (amount, currency = 'XOF') => {
@@ -1137,8 +1137,41 @@ export default {
       return ''
     }
 
+    const getPointsClass = (points) => {
+      if (points > 0) return 'points-positive'
+      if (points === 0) return 'points-neutral'
+      return 'points-negative'
+    }
+
+    const getTournamentStatusLabel = (status) => {
+      const labels = {
+        'registration_open': 'Inscriptions ouvertes',
+        'registration_closed': 'Inscriptions fermées',
+        'active': 'En cours',
+        'finished': 'Terminé',
+        'cancelled': 'Annulé'
+      }
+      return labels[status] || status
+    }
+
+    // Computed for filtered predictions
+    const filteredPredictions = computed(() => {
+      if (!userAllPredictions.value.length) return []
+      
+      switch (predictionsFilter.value) {
+        case 'calculated':
+          return userAllPredictions.value.filter(p => p.is_calculated)
+        case 'pending':
+          return userAllPredictions.value.filter(p => !p.is_calculated)
+        case 'won':
+          return userAllPredictions.value.filter(p => p.is_calculated && p.points_earned > 0)
+        default:
+          return userAllPredictions.value
+      }
+    })
+
     // Watch auth state changes
-    watch(() => authStore.isAuthenticated, (isAuth) => {
+    watch(() => authStore?.isAuthenticated, (isAuth) => {
       if (isAuth) {
         loadFavorites()
         loadPredictionsData()
@@ -1151,13 +1184,13 @@ export default {
 
     // Watch active section changes to load predictions data when needed
     watch(() => activeSection.value, (section) => {
-      if (section === 'predictions' && authStore.isAuthenticated && !userPredictionsStats.value) {
+      if (section === 'predictions' && authStore?.isAuthenticated && !userPredictionsStats.value) {
         loadPredictionsData()
       }
     })
 
     onMounted(() => {
-      if (authStore.isAuthenticated) {
+      if (authStore?.isAuthenticated) {
         loadFavorites()
         loadPredictionsData()
         // Initialize username form with current name
@@ -1170,57 +1203,70 @@ export default {
     })
 
     return {
+      authStore,
+      
+      // Main state
       loading,
+      activeSection,
       showAuthModal,
+      
+      // Favorites
       favorites,
       selectedFilter,
-      activeSection,
+      favoriteOptions: filterTabs, // Fix pour favoriteOptions manquant
+      filteredFavorites,
+      loadFavorites,
+      removeFavorite,
+      goToContent,
       profileSections,
       filterTabs,
       totalFavorites,
       favoritesStats,
-      filteredFavorites,
-      authStore,
+      formatMemberSince,
+      handleImageError,
+      
+      // Forms
       usernameForm,
       passwordForm,
       deletionForm,
-      // Predictions data
+      updateUsername,
+      updatePassword,
+      requestDataDeletion,
+      handleLogout,
+      openTournament,
+      openTournamentModal,
+      
+      // Predictions
       predictionsLoading,
       userPredictionsStats,
       recentPredictions,
+      userTournaments,
+      predictionsTabs,
+      activePredictionsTab,
+      activeTournaments,
+      userAllPredictions,
+      predictionsFilter,
+      filteredPredictions,
       loadPredictionsData,
-      removeFavorite,
-      goToContent,
+      loadAllUserPredictions,
+      loadActiveTournaments,
+      switchPredictionsTab,
+      registerToTournament,
+      goToPredictions,
+      goToLeaderboard,
+      getPointsClass,
+      getTournamentStatusLabel,
+      formatPrize,
+      getRankClass,
+      
+      // Utilities
+      formatDate,
       getTypeIcon,
       getDefaultImage,
       getShortDescription,
       getEmptyMessage,
       getEmptyDescription,
-      getExploreLink,
-      formatDate,
-      formatMemberSince,
-      handleImageError,
-      updateUsername,
-      updatePassword,
-      requestDataDeletion,
-      handleLogout,
-      // Tournaments data
-      userTournaments,
-      tournamentsLoading,
-      openTournament,
-      // New predictions tabs data
-      activePredictionsTab,
-      predictionsTabs,
-      userAllPredictions,
-      activeTournaments,
-      switchPredictionsTab,
-      loadAllUserPredictions,
-      loadActiveTournaments,
-      openTournamentModal,
-      registerToTournament,
-      goToPredictions,
-      formatPrize,
-      getRankClass
+      getExploreLink
     }
   }
 }
@@ -2916,6 +2962,393 @@ export default {
   .suggestions {
     flex-direction: column;
     gap: 8px;
+  }
+}
+
+/* Predictions Dashboard Styles */
+.predictions-dashboard {
+  .predictions-overview {
+    margin-bottom: 2rem;
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+
+      .stat-card {
+        background: var(--md-sys-color-surface-variant);
+        border-radius: 12px;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: all 0.2s ease;
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-icon {
+          background: var(--md-sys-color-primary);
+          color: var(--md-sys-color-on-primary);
+          border-radius: 8px;
+          padding: 0.5rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          .material-symbols-outlined {
+            font-size: 1.5rem;
+          }
+        }
+
+        .stat-content {
+          display: flex;
+          flex-direction: column;
+
+          .stat-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--md-sys-color-on-surface);
+          }
+
+          .stat-label {
+            font-size: 0.875rem;
+            color: var(--md-sys-color-on-surface-variant);
+          }
+        }
+      }
+    }
+
+    .quick-actions {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+
+      .action-button {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        border: none;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &.primary {
+          background: var(--md-sys-color-primary);
+          color: var(--md-sys-color-on-primary);
+
+          &:hover {
+            background: var(--md-sys-color-primary-container);
+          }
+        }
+
+        &.secondary {
+          background: var(--md-sys-color-secondary-container);
+          color: var(--md-sys-color-on-secondary-container);
+
+          &:hover {
+            background: var(--md-sys-color-secondary);
+            color: var(--md-sys-color-on-secondary);
+          }
+        }
+
+        .material-symbols-outlined {
+          font-size: 1.25rem;
+        }
+      }
+    }
+  }
+
+  .predictions-list {
+    .prediction-card {
+      background: var(--md-sys-color-surface-variant);
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      transition: all 0.2s ease;
+
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      &.compact {
+        padding: 0.75rem;
+
+        .prediction-match {
+          .teams {
+            font-size: 0.875rem;
+          }
+
+          .match-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+
+            .predicted-score {
+              font-weight: 600;
+            }
+          }
+        }
+      }
+
+      &.detailed {
+        .prediction-scores {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+          margin-bottom: 0.5rem;
+
+          .predicted, .actual {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+
+            .label {
+              font-size: 0.875rem;
+              color: var(--md-sys-color-on-surface-variant);
+            }
+
+            .score {
+              font-weight: 600;
+              color: var(--md-sys-color-on-surface);
+            }
+          }
+        }
+      }
+
+      .prediction-match {
+        .teams {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          margin-bottom: 0.25rem;
+
+          .team {
+            font-weight: 500;
+          }
+
+          .vs {
+            color: var(--md-sys-color-on-surface-variant);
+            font-size: 0.875rem;
+          }
+        }
+
+        .match-date {
+          font-size: 0.875rem;
+          color: var(--md-sys-color-on-surface-variant);
+        }
+      }
+
+      .points-earned {
+        &.points-positive {
+          color: var(--md-sys-color-tertiary);
+          font-weight: 600;
+        }
+
+        &.points-neutral {
+          color: var(--md-sys-color-on-surface-variant);
+        }
+
+        &.points-negative {
+          color: var(--md-sys-color-error);
+        }
+      }
+
+      .pending {
+        color: var(--md-sys-color-on-surface-variant);
+        font-style: italic;
+      }
+    }
+  }
+
+  .recent-predictions-preview {
+    margin-bottom: 1.5rem;
+
+    .show-all-btn {
+      width: 100%;
+      margin-top: 1rem;
+    }
+  }
+
+  .predictions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+
+    .predictions-filters {
+      .filter-select {
+        padding: 0.5rem;
+        border: 1px solid var(--md-sys-color-outline-variant);
+        border-radius: 6px;
+        background: var(--md-sys-color-surface);
+        color: var(--md-sys-color-on-surface);
+      }
+    }
+  }
+
+  .my-rank-card {
+    background: var(--md-sys-color-primary-container);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+
+    .rank-badge {
+      background: var(--md-sys-color-primary);
+      color: var(--md-sys-color-on-primary);
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      font-weight: 700;
+
+      &.rank-gold {
+        background: #FFD700;
+        color: #1a1a1a;
+      }
+
+      &.rank-silver {
+        background: #C0C0C0;
+        color: #1a1a1a;
+      }
+
+      &.rank-bronze {
+        background: #CD7F32;
+        color: white;
+      }
+    }
+
+    .rank-info {
+      flex: 1;
+
+      h4 {
+        margin: 0 0 0.25rem 0;
+        color: var(--md-sys-color-on-primary-container);
+      }
+
+      p {
+        margin: 0 0 0.5rem 0;
+        color: var(--md-sys-color-on-primary-container);
+        opacity: 0.8;
+      }
+
+      .rank-change {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.875rem;
+
+        &.positive {
+          color: var(--md-sys-color-tertiary);
+        }
+
+        &.negative {
+          color: var(--md-sys-color-error);
+        }
+      }
+    }
+  }
+
+  .tournament-card {
+    background: var(--md-sys-color-surface-variant);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+
+    .tournament-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+
+      h4 {
+        margin: 0;
+        color: var(--md-sys-color-on-surface);
+      }
+
+      .tournament-status {
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 500;
+
+        &.registration_open {
+          background: var(--md-sys-color-tertiary-container);
+          color: var(--md-sys-color-on-tertiary-container);
+        }
+
+        &.active {
+          background: var(--md-sys-color-primary-container);
+          color: var(--md-sys-color-on-primary-container);
+        }
+      }
+    }
+
+    .tournament-info {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+
+      .prize, .participants {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.875rem;
+        color: var(--md-sys-color-on-surface-variant);
+
+        .material-symbols-outlined {
+          font-size: 1rem;
+        }
+      }
+    }
+
+    .tournament-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+  }
+
+  .empty-predictions, .empty-tournaments {
+    text-align: center;
+    padding: 2rem;
+
+    .empty-icon {
+      .material-symbols-outlined {
+        font-size: 3rem;
+        color: var(--md-sys-color-on-surface-variant);
+        opacity: 0.5;
+      }
+    }
+
+    h3, h4 {
+      margin: 1rem 0 0.5rem 0;
+      color: var(--md-sys-color-on-surface);
+    }
+
+    p {
+      color: var(--md-sys-color-on-surface-variant);
+      margin-bottom: 1.5rem;
+    }
+  }
+
+  .subsection-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+    margin: 0 0 1rem 0;
   }
 }
 </style>

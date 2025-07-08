@@ -6,7 +6,7 @@
     :class="{ 'loading': loading }"
     :title="tooltip"
   >
-    <i class="material-icons">{{ icon }}</i>
+    <span class="material-symbols-outlined">{{ icon }}</span>
     <span v-if="showText" class="btn-text">{{ buttonText }}</span>
     <div v-if="loading" class="loading-spinner"></div>
   </button>
@@ -247,12 +247,12 @@ export default {
 }
 
 /* Icône */
-.cache-refresh-btn .material-icons {
+.cache-refresh-btn .material-symbols-outlined {
   font-size: 18px;
   transition: transform 0.3s ease;
 }
 
-.cache-refresh-btn.loading .material-icons {
+.cache-refresh-btn.loading .material-symbols-outlined {
   animation: spin 1s linear infinite;
 }
 

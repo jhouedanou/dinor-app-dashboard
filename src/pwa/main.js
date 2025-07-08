@@ -98,14 +98,14 @@ app.config.errorHandler = (error, instance, errorInfo) => {
   console.error('Global error:', error, errorInfo)
 }
 
-// Support PWA avec détection automatique du device
+// Support PWA avec service worker CORRIGÉ (n'interfère plus avec la navigation)
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/pwa/sw.js')
     .then(registration => {
-      console.log('Service Worker registered:', registration)
+      console.log('✅ Service Worker correctement enregistré:', registration.scope)
     })
     .catch(error => {
-      console.error('Service Worker registration failed:', error)
+      console.error('❌ Erreur enregistrement Service Worker:', error)
     })
 }
 
