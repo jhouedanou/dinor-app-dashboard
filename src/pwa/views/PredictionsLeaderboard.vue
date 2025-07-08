@@ -191,7 +191,7 @@ export default {
       if (!authStore.isAuthenticated) return
       
       try {
-        const data = await apiStore.get('/v1/leaderboard/my-stats')
+        const data = await apiStore.get('/leaderboard/my-stats')
         if (data.success) {
           userStats.value = data.data
         }
@@ -203,7 +203,7 @@ export default {
     const refreshLeaderboard = async () => {
       refreshing.value = true
       try {
-        const data = await apiStore.post('/v1/leaderboard/refresh')
+        const data = await apiStore.post('/leaderboard/refresh')
         if (data.success) {
           await loadData()
         }

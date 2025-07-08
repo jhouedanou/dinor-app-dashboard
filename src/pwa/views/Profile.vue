@@ -742,9 +742,9 @@ export default {
         
         // Load user predictions stats, recent predictions and tournaments in parallel
         const [statsData, recentData, tournamentsData] = await Promise.all([
-          apiStore.get('/v1/leaderboard/my-stats'),
-          apiStore.get('/v1/predictions/my-recent?limit=5'),
-          apiStore.get('/v1/tournaments/my-tournaments')
+          apiStore.get('/leaderboard/my-stats'),
+          apiStore.get('/predictions/my-recent?limit=5'),
+          apiStore.get('/tournaments/my-tournaments')
         ])
         
         if (statsData.success) {
@@ -776,7 +776,7 @@ export default {
       if (!authStore.isAuthenticated) return
 
       try {
-        const data = await apiStore.get('/v1/predictions')
+        const data = await apiStore.get('/predictions')
         if (data.success) {
           userAllPredictions.value = data.data
         }
@@ -1105,7 +1105,7 @@ export default {
     const registerToTournament = async (tournament) => {
       console.log('🏆 [Profile] Inscription au tournoi:', tournament.name)
       try {
-        const data = await apiStore.post(`/v1/tournaments/${tournament.id}/register`)
+        const data = await apiStore.post(`/tournaments/${tournament.id}/register`)
         if (data.success) {
           tournament.user_is_participant = true
           tournament.can_register = false

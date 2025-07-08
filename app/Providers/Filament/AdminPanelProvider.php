@@ -114,7 +114,34 @@ class AdminPanelProvider extends PanelProvider
                 'Configuration PWA',
             ])
             ->databaseNotifications()
-            ->viteTheme('resources/css/filament/admin/theme.css')
-            ->spa(false); // Désactiver SPA et utiliser les assets compilés
+            ->spa(false) // Désactiver SPA et utiliser les assets compilés
+            ->renderHook('panels::styles', fn (): string => '
+                <link rel="stylesheet" href="/build/assets/theme-DZOiOpSO.css">
+                <style>
+                    /* Forcer le chargement correct des styles */
+                    body { font-family: "Inter", system-ui, sans-serif !important; }
+                </style>
+            ')
+            ->renderHook('panels::scripts', fn (): string => '
+                <script>
+                    // Désactiver complètement Vite/HMR
+                    if (typeof window !== "undefined") {
+                        window.__vite_is_modern_browser = false;
+                        window.__vite_plugin_react_preamble_installed__ = true;
+                        // Bloquer les connexions vers le port 5173
+                        if (window.WebSocket) {
+                            const originalWebSocket = window.WebSocket;
+                            window.WebSocket = function(url, protocols) {
+                                if (url && url.includes(":5173")) {
+                                    console.log("🚫 Connexion Vite bloquée:", url);
+                                    return { close: () => {}, addEventListener: () => {} };
+                                }
+                                return new originalWebSocket(url, protocols);
+                            };
+                        }
+                    }
+                </script>
+                <script src="/clean-sw-button.js"></script>
+            ');
     }
 } 

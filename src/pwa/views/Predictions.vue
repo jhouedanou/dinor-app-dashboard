@@ -367,7 +367,7 @@ export default {
       if (!authStore.isAuthenticated || !currentMatch.value) return
       
       try {
-        const data = await apiStore.get(`/v1/predictions/match/${currentMatch.value.id}`)
+        const data = await apiStore.get(`/predictions/match/${currentMatch.value.id}`)
         if (data.success && data.data) {
           userPrediction.value = data.data
           prediction.value = {
@@ -394,9 +394,9 @@ export default {
         
         let data
         if (userPrediction.value) {
-          data = await apiStore.put(`/v1/predictions/${userPrediction.value.id}`, payload)
+          data = await apiStore.put(`/predictions/${userPrediction.value.id}`, payload)
         } else {
-          data = await apiStore.post('/v1/predictions', payload)
+          data = await apiStore.post('/predictions', payload)
         }
         
         if (data.success) {
