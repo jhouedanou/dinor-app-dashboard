@@ -16,14 +16,14 @@ class ProfileController extends Controller
      */
     public function show(): JsonResponse
     {
-        if (!Auth::check()) {
+        $user = Auth::guard('sanctum')->user();
+        
+        if (!$user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Vous devez être connecté'
             ], 401);
         }
-
-        $user = Auth::user();
 
         return response()->json([
             'success' => true,
@@ -42,7 +42,9 @@ class ProfileController extends Controller
      */
     public function updateName(Request $request): JsonResponse
     {
-        if (!Auth::check()) {
+        $user = Auth::guard('sanctum')->user();
+        
+        if (!$user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Vous devez être connecté'
@@ -52,8 +54,6 @@ class ProfileController extends Controller
         $request->validate([
             'name' => 'required|string|min:2|max:255',
         ]);
-
-        $user = Auth::user();
         $oldName = $user->name;
         
         $user->update([
@@ -80,7 +80,9 @@ class ProfileController extends Controller
      */
     public function updatePassword(Request $request): JsonResponse
     {
-        if (!Auth::check()) {
+        $user = Auth::guard('sanctum')->user();
+        
+        if (!$user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Vous devez être connecté'
@@ -92,8 +94,6 @@ class ProfileController extends Controller
             'new_password' => ['required', 'string', Password::min(8)->letters()->numbers(), 'confirmed'],
             'new_password_confirmation' => 'required|string'
         ]);
-
-        $user = Auth::user();
 
         // Vérifier le mot de passe actuel
         if (!Hash::check($request->current_password, $user->password)) {
@@ -127,7 +127,9 @@ class ProfileController extends Controller
      */
     public function requestDataDeletion(Request $request): JsonResponse
     {
-        if (!Auth::check()) {
+        $user = Auth::guard('sanctum')->user();
+        
+        if (!$user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Vous devez être connecté'
@@ -138,8 +140,6 @@ class ProfileController extends Controller
             'reason' => 'sometimes|string|max:500',
             'confirm' => 'required|boolean|accepted'
         ]);
-
-        $user = Auth::user();
 
         // Log de la demande de suppression pour traitement manuel
         \Log::warning('🗑️ [Profile] Demande de suppression de données:', [
@@ -169,14 +169,14 @@ class ProfileController extends Controller
      */
     public function getStats(): JsonResponse
     {
-        if (!Auth::check()) {
+        $user = Auth::guard('sanctum')->user();
+        
+        if (!$user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Vous devez être connecté'
             ], 401);
         }
-
-        $user = Auth::user();
 
         // Compter les favoris par type
         $favoritesStats = \DB::table('user_favorites')

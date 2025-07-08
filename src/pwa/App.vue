@@ -100,10 +100,10 @@ export default {
     const showShareButton = ref(false)
     const backPath = ref(null)
     
-    // Show bottom nav only on main pages
+    // Show bottom nav on all pages except specific excluded ones
     const showBottomNav = computed(() => {
-      const mainRoutes = ['/', '/recipes', '/tips', '/events', '/pages', '/dinor-tv']
-      return mainRoutes.some(routePath => route.path === routePath || (routePath !== '/' && route.path.startsWith(routePath)))
+      const excludedRoutes = ['/login', '/register', '/auth-error', '/404']
+      return !excludedRoutes.some(excludedPath => route.path === excludedPath || route.path.startsWith(excludedPath))
     })
     
     // Titre dynamique selon la route

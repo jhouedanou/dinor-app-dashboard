@@ -13,8 +13,8 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Générer un mot de passe sécurisé pour les comptes de test
-        $testPassword = env('TEST_USER_PASSWORD', bin2hex(random_bytes(8)));
+        // Utiliser un mot de passe fixe pour les tests en développement
+        $testPassword = env('TEST_USER_PASSWORD', 'password123');
         
         $users = [
             [
@@ -85,7 +85,8 @@ class UserSeeder extends Seeder
         $this->command->info('Utilisateurs créés avec succès!');
         $this->command->info('Comptes de test disponibles:');
         $this->command->info("- Chef: chef.aya@dinor.app / {$testPassword}");
+        $this->command->info("- Fatima: fatima.traore@example.com / {$testPassword}");
         $this->command->info("- Utilisateur test: marie.adjoua@example.com / {$testPassword}");
-        $this->command->warn('⚠️ Mot de passe de test généré - changez-le en production!');
+        $this->command->warn('⚠️ Mot de passe de test fixe - changez-le en production!');
     }
 }
