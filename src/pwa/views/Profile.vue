@@ -968,8 +968,9 @@ export default {
         if (data.success) {
           usernameForm.value.success = true
           usernameForm.value.message = 'Nom d\'utilisateur mis à jour avec succès'
-          // Update auth store
-          authStore.user.name = data.data.name
+          // Update auth store with the new user data
+          const updatedUser = { ...authStore.user, name: data.data.name }
+          authStore.setUser(updatedUser)
           usernameForm.value.name = ''
         }
       } catch (error) {

@@ -19,6 +19,8 @@ class TournamentResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-trophy';
     
+    protected static ?string $navigationGroup = 'Pronostics';
+    
     protected static ?string $navigationLabel = 'Tournois';
 
     public static function form(Form $form): Form
