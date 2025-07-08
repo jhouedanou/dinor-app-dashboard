@@ -70,36 +70,36 @@
         font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
       }
 
-      /* Système de fallback amélioré */
+      /* Système de fallback intelligent */
       .emoji-fallback {
-        display: none !important;
-      }
-
-      /* Test spécifique pour détecter si Material Symbols ne charge pas */
-      @supports (font-variation-settings: normal) {
-        .material-symbols-outlined:after {
-          content: '';
-          font-family: 'Material Symbols Outlined';
-        }
-      }
-
-      /* Masquer emoji par défaut, les afficher seulement si icônes vides */
-      .icon-container .emoji-fallback {
         display: none;
-        position: absolute;
-        left: 0;
-        top: 0;
+        font-size: 20px;
+        line-height: 1;
       }
 
-      /* Si l'icône Material Symbols est complètement vide ou ne charge pas */
-      .material-symbols-outlined:empty ~ .emoji-fallback,
-      .force-emoji .material-symbols-outlined ~ .emoji-fallback {
+      /* Test automatique pour détecter les icônes manquantes */
+      .icon-test {
+        position: relative;
+        display: inline-block;
+      }
+
+      /* Afficher emoji si Material Symbols ne charge pas */
+      .material-symbols-outlined:empty + .emoji-fallback {
         display: inline-block !important;
       }
 
-      .material-symbols-outlined:empty,
+      /* Masquer l'icône Material si elle est vide */
+      .material-symbols-outlined:empty {
+        display: none !important;
+      }
+
+      /* Forcer l'affichage des emojis en cas de problème */
       .force-emoji .material-symbols-outlined {
         display: none !important;
+      }
+
+      .force-emoji .emoji-fallback {
+        display: inline-block !important;
       }
     </style>
     
@@ -111,5 +111,67 @@
 <body>
     <div id="app"></div>
     <script type="module" src="./main.js"></script>
+    
+    <!-- Script pour détecter et corriger les icônes manquantes -->
+    <script>
+      // Fonction pour vérifier si Material Symbols est chargé
+      function checkMaterialSymbols() {
+        const testElement = document.createElement('span');
+        testElement.className = 'material-symbols-outlined';
+        testElement.textContent = 'home';
+        testElement.style.visibility = 'hidden';
+        testElement.style.position = 'absolute';
+        document.body.appendChild(testElement);
+        
+        const computedStyle = window.getComputedStyle(testElement);
+        const fontFamily = computedStyle.fontFamily;
+        
+        document.body.removeChild(testElement);
+        
+        return fontFamily.includes('Material Symbols Outlined');
+      }
+      
+      // Fonction pour activer les fallbacks emoji
+      function activateEmojisFallbacks() {
+        const icons = document.querySelectorAll('.material-symbols-outlined');
+        icons.forEach(icon => {
+          // Vérifier si l'icône est vide ou ne s'affiche pas
+          const rect = icon.getBoundingClientRect();
+          if (rect.width === 0 || rect.height === 0) {
+            const parent = icon.closest('.icon-test') || icon.parentElement;
+            if (parent) {
+              parent.classList.add('force-emoji');
+            }
+          }
+        });
+      }
+      
+      // Vérifier au chargement de la page
+      window.addEventListener('load', function() {
+        setTimeout(() => {
+          if (!checkMaterialSymbols()) {
+            console.warn('Material Symbols non chargé, activation des emojis fallback');
+            document.body.classList.add('force-emoji');
+          }
+          activateEmojisFallbacks();
+        }, 1000);
+      });
+      
+      // Observer les changements DOM pour les nouvelles icônes
+      const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          if (mutation.type === 'childList') {
+            setTimeout(activateEmojisFallbacks, 100);
+          }
+        });
+      });
+      
+      document.addEventListener('DOMContentLoaded', function() {
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true
+        });
+      });
+    </script>
 </body>
 </html>

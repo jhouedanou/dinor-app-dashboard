@@ -210,7 +210,7 @@
               
               <div class="tournament-actions">
                 <button 
-                  v-if="tournament.can_register" 
+                  v-if="tournament.can_register && !tournament.user_is_participant" 
                   @click.stop="registerToTournament(tournament)"
                   :disabled="registering === tournament.id"
                   class="btn-primary btn-small"
@@ -223,6 +223,7 @@
                   @click.stop="viewTournamentLeaderboard(tournament)"
                   class="btn-secondary btn-small"
                 >
+                  <span class="material-symbols-outlined">check_circle</span>
                   Mon classement
                 </button>
                 <span v-else class="tournament-closed">Inscriptions fermées</span>
@@ -472,6 +473,12 @@ export default {
         return
       }
       
+      // Vérification supplémentaire côté client
+      if (tournament.user_is_participant) {
+        console.log('Utilisateur déjà inscrit au tournoi')
+        return
+      }
+      
       registering.value = tournament.id
       
       try {
@@ -484,7 +491,13 @@ export default {
         }
       } catch (error) {
         console.error('Erreur lors de l\'inscription:', error)
-        if (error.message?.includes('401')) {
+        
+        // Gestion spécifique de l'erreur d'inscription
+        if (error.message?.includes('Inscription impossible') || error.message?.includes('REGISTRATION_NOT_ALLOWED')) {
+          console.log('Utilisateur probablement déjà inscrit, mise à jour de l\'état')
+          tournament.user_is_participant = true
+          tournament.can_register = false
+        } else if (error.message?.includes('401')) {
           showAuthModal.value = true
         }
       } finally {

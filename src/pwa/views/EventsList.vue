@@ -10,8 +10,10 @@
     <!-- Toggle Filters Button -->
     <div class="filters-toggle">
       <button @click="showFilters = !showFilters" class="toggle-btn">
-        <span class="material-symbols-outlined">{{ showFilters ? 'expand_less' : 'expand_more' }}</span>
-        <span class="emoji-fallback">{{ showFilters ? '▲' : '▼' }}</span>
+        <span class="icon-test">
+          <span class="material-symbols-outlined">{{ showFilters ? 'expand_less' : 'expand_more' }}</span>
+          <span class="emoji-fallback">{{ showFilters ? '▲' : '▼' }}</span>
+        </span>
         <span>{{ showFilters ? 'Masquer les filtres' : 'Afficher les filtres' }}</span>
       </button>
     </div>
@@ -39,7 +41,7 @@
 
     <!-- Error State -->
     <div v-else-if="error" class="error-state">
-      <div class="error-icon">
+      <div class="error-icon icon-test">
         <span class="material-symbols-outlined">error</span>
         <span class="emoji-fallback">⚠️</span>
       </div>
@@ -53,7 +55,7 @@
     <div v-else class="content">
       <!-- Empty State -->
       <div v-if="!filteredEvents.length && !loading" class="empty-state">
-        <div class="empty-icon">
+        <div class="empty-icon icon-test">
           <span class="material-symbols-outlined">calendar_today</span>
           <span class="emoji-fallback">📅</span>
         </div>
@@ -104,29 +106,29 @@
             </p>
             
             <div class="event-details">
-              <div class="detail">
+              <div class="detail icon-test">
                 <span class="material-symbols-outlined">calendar_today</span>
                 <span class="emoji-fallback">📅</span>
                 <span>{{ formatDate(event.start_date) }}</span>
               </div>
-              <div v-if="event.start_time" class="detail">
+              <div v-if="event.start_time" class="detail icon-test">
                 <span class="material-symbols-outlined">schedule</span>
                 <span class="emoji-fallback">⏰</span>
                 <span>{{ formatTime(event.start_time) }}</span>
               </div>
-              <div v-if="event.location" class="detail">
+              <div v-if="event.location" class="detail icon-test">
                 <span class="material-symbols-outlined">location_on</span>
                 <span class="emoji-fallback">📍</span>
                 <span>{{ event.location }}</span>
               </div>
-              <div v-if="event.event_type" class="detail">
+              <div v-if="event.event_type" class="detail icon-test">
                 <span class="material-symbols-outlined">category</span>
                 <span class="emoji-fallback">🏷️</span>
                 <span>{{ getEventTypeLabel(event.event_type) }}</span>
               </div>
             </div>
             
-            <div v-if="event.max_participants" class="participants-info">
+            <div v-if="event.max_participants" class="participants-info icon-test">
               <span class="material-symbols-outlined">group</span>
               <span class="emoji-fallback">👥</span>
               <span>{{ event.participants_count || 0 }} / {{ event.max_participants }} participants</span>

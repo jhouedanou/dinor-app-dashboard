@@ -219,16 +219,93 @@
 
             <!-- My Predictions Tab -->
             <div v-if="activePredictionsTab === 'my-predictions'" class="tab-content">
+              <!-- Predictions Stats Overview -->
+              <div v-if="userPredictionsStats" class="predictions-stats-overview">
+                <div class="stats-grid">
+                  <div class="stat-card">
+                    <div class="stat-icon">
+                      <span class="material-symbols-outlined">sports_soccer</span>
+                    </div>
+                    <div class="stat-info">
+                      <span class="stat-value">{{ userPredictionsStats.total_predictions || 0 }}</span>
+                      <span class="stat-label">Pronostics</span>
+                    </div>
+                  </div>
+                  <div class="stat-card">
+                    <div class="stat-icon accuracy">
+                      <span class="material-symbols-outlined">target</span>
+                    </div>
+                    <div class="stat-info">
+                      <span class="stat-value">{{ userPredictionsStats.accuracy_percentage || 0 }}%</span>
+                      <span class="stat-label">Précision</span>
+                    </div>
+                  </div>
+                  <div class="stat-card">
+                    <div class="stat-icon points">
+                      <span class="material-symbols-outlined">emoji_events</span>
+                    </div>
+                    <div class="stat-info">
+                      <span class="stat-value">{{ userPredictionsStats.total_points || 0 }}</span>
+                      <span class="stat-label">Points</span>
+                    </div>
+                  </div>
+                  <div class="stat-card" v-if="userPredictionsStats.current_rank">
+                    <div class="stat-icon ranking">
+                      <span class="material-symbols-outlined">leaderboard</span>
+                    </div>
+                    <div class="stat-info">
+                      <span class="stat-value">#{{ userPredictionsStats.current_rank }}</span>
+                      <span class="stat-label">Classement</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <!-- Recent Predictions Preview -->
               <div v-if="recentPredictions.length" class="recent-predictions-preview">
-                <h3 class="subsection-title">Pronostics récents</h3>
+                <div class="section-header-with-action">
+                  <h3 class="subsection-title">
+                    <span class="material-symbols-outlined">history</span>
+                    Pronostics récents
+                  </h3>
+                  <div class="predictions-filter-mini">
+                    <button 
+                      @click="predictionsFilterMini = 'all'"
+                      :class="['filter-btn', { active: predictionsFilterMini === 'all' }]"
+                    >
+                      Tous
+                    </button>
+                    <button 
+                      @click="predictionsFilterMini = 'pending'"
+                      :class="['filter-btn', { active: predictionsFilterMini === 'pending' }]"
+                    >
+                      En attente
+                    </button>
+                    <button 
+                      @click="predictionsFilterMini = 'calculated'"
+                      :class="['filter-btn', { active: predictionsFilterMini === 'calculated' }]"
+                    >
+                      Terminés
+                    </button>
+                  </div>
+                </div>
                 <div class="predictions-list compact">
                   <div 
-                    v-for="prediction in recentPredictions.slice(0, 3)" 
+                    v-for="prediction in getFilteredRecentPredictions()" 
                     :key="prediction.id" 
                     class="prediction-card compact"
-                    :class="{ calculated: prediction.is_calculated }"
+                    :class="{ 
+                      calculated: prediction.is_calculated,
+                      'positive-result': prediction.is_calculated && prediction.points_earned > 0,
+                      'negative-result': prediction.is_calculated && prediction.points_earned === 0
+                    }"
                   >
+                    <div class="prediction-status-indicator">
+                      <span v-if="prediction.is_calculated" class="material-symbols-outlined">
+                        {{ prediction.points_earned > 0 ? 'check_circle' : 'cancel' }}
+                      </span>
+                      <span v-else class="material-symbols-outlined pending-icon">schedule</span>
+                    </div>
                     <div class="prediction-match">
                       <div class="teams">
                         <span class="team">{{ prediction.football_match.home_team.short_name || prediction.football_match.home_team.name }}</span>
@@ -238,15 +315,19 @@
                       <div class="match-info">
                         <span class="predicted-score">{{ prediction.predicted_home_score }} - {{ prediction.predicted_away_score }}</span>
                         <span v-if="prediction.is_calculated" class="points-earned" :class="{ 'points-positive': prediction.points_earned > 0 }">
-                          {{ prediction.points_earned }} pt{{ prediction.points_earned > 1 ? 's' : '' }}
+                          {{ prediction.points_earned > 0 ? '+' : '' }}{{ prediction.points_earned }} pt{{ prediction.points_earned > 1 ? 's' : '' }}
                         </span>
                         <span v-else class="pending">En attente</span>
                       </div>
+                    </div>
+                    <div class="prediction-date">
+                      {{ formatRelativeTime(prediction.created_at) }}
                     </div>
                   </div>
                 </div>
                 
                 <button @click="loadAllUserPredictions" class="btn-secondary show-all-btn">
+                  <span class="material-symbols-outlined">visibility</span>
                   Voir tous mes pronostics ({{ userPredictionsStats.total_predictions }})
                 </button>
               </div>
@@ -254,51 +335,101 @@
               <!-- Complete Predictions List (when loaded) -->
               <div v-if="userAllPredictions.length" class="all-predictions">
                 <div class="predictions-header">
-                  <h3 class="subsection-title">Tous mes pronostics</h3>
+                  <h3 class="subsection-title">
+                    <span class="material-symbols-outlined">list</span>
+                    Tous mes pronostics
+                  </h3>
                   <div class="predictions-filters">
-                    <select v-model="predictionsFilter" class="filter-select">
-                      <option value="all">Tous</option>
-                      <option value="calculated">Terminés</option>
-                      <option value="pending">En attente</option>
-                      <option value="won">Gagnants</option>
-                    </select>
+                    <div class="filter-chips">
+                      <button 
+                        @click="predictionsFilter = 'all'"
+                        :class="['filter-chip', { active: predictionsFilter === 'all' }]"
+                      >
+                        <span class="material-symbols-outlined">select_all</span>
+                        Tous ({{ userAllPredictions.length }})
+                      </button>
+                      <button 
+                        @click="predictionsFilter = 'pending'"
+                        :class="['filter-chip', { active: predictionsFilter === 'pending' }]"
+                      >
+                        <span class="material-symbols-outlined">schedule</span>
+                        En attente ({{ getPredictionsCountByStatus('pending') }})
+                      </button>
+                      <button 
+                        @click="predictionsFilter = 'calculated'"
+                        :class="['filter-chip', { active: predictionsFilter === 'calculated' }]"
+                      >
+                        <span class="material-symbols-outlined">check_circle</span>
+                        Terminés ({{ getPredictionsCountByStatus('calculated') }})
+                      </button>
+                      <button 
+                        @click="predictionsFilter = 'won'"
+                        :class="['filter-chip', { active: predictionsFilter === 'won' }]"
+                      >
+                        <span class="material-symbols-outlined">emoji_events</span>
+                        Gagnants ({{ getPredictionsCountByStatus('won') }})
+                      </button>
+                    </div>
                   </div>
                 </div>
                 
-                <div class="predictions-list">
-                  <div 
-                    v-for="prediction in filteredPredictions" 
-                    :key="prediction.id" 
-                    class="prediction-card detailed"
-                    :class="{ calculated: prediction.is_calculated }"
-                  >
-                    <div class="prediction-match">
-                      <div class="teams">
-                        <span class="team">{{ prediction.football_match.home_team.name }}</span>
-                        <span class="vs">vs</span>
-                        <span class="team">{{ prediction.football_match.away_team.name }}</span>
-                      </div>
-                      <div class="match-date">
-                        {{ formatDate(prediction.football_match.match_date) }}
-                      </div>
+                <div class="predictions-list grouped">
+                  <div v-for="group in groupedPredictions" :key="group.date" class="predictions-group">
+                    <div class="group-header">
+                      <span class="group-date">{{ group.date }}</span>
+                      <span class="group-count">{{ group.predictions.length }} pronostic{{ group.predictions.length > 1 ? 's' : '' }}</span>
                     </div>
-                    
-                    <div class="prediction-details">
-                      <div class="prediction-scores">
-                        <div class="predicted">
-                          <span class="label">Pronostic:</span>
-                          <span class="score">{{ prediction.predicted_home_score }} - {{ prediction.predicted_away_score }}</span>
+                    <div class="group-predictions">
+                      <div 
+                        v-for="prediction in group.predictions" 
+                        :key="prediction.id" 
+                        class="prediction-card detailed"
+                        :class="{ 
+                          calculated: prediction.is_calculated,
+                          'positive-result': prediction.is_calculated && prediction.points_earned > 0,
+                          'negative-result': prediction.is_calculated && prediction.points_earned === 0
+                        }"
+                      >
+                        <div class="prediction-status-indicator">
+                          <span v-if="prediction.is_calculated" class="material-symbols-outlined">
+                            {{ prediction.points_earned > 0 ? 'check_circle' : 'cancel' }}
+                          </span>
+                          <span v-else class="material-symbols-outlined pending-icon">schedule</span>
                         </div>
-                        <div v-if="prediction.football_match.is_finished" class="actual">
-                          <span class="label">Résultat:</span>
-                          <span class="score">{{ prediction.football_match.home_score }} - {{ prediction.football_match.away_score }}</span>
+                        
+                        <div class="prediction-match">
+                          <div class="teams">
+                            <span class="team">{{ prediction.football_match.home_team.name }}</span>
+                            <span class="vs">vs</span>
+                            <span class="team">{{ prediction.football_match.away_team.name }}</span>
+                          </div>
+                          <div class="match-date">
+                            {{ formatTime(prediction.football_match.match_date) }}
+                          </div>
                         </div>
-                      </div>
-                      <div class="prediction-result">
-                        <span v-if="prediction.is_calculated" class="points-earned" :class="getPointsClass(prediction.points_earned)">
-                          {{ prediction.points_earned }} point{{ prediction.points_earned > 1 ? 's' : '' }}
-                        </span>
-                        <span v-else class="pending">En attente du résultat</span>
+                        
+                        <div class="prediction-details">
+                          <div class="prediction-scores">
+                            <div class="predicted">
+                              <span class="label">Mon pronostic</span>
+                              <span class="score highlight">{{ prediction.predicted_home_score }} - {{ prediction.predicted_away_score }}</span>
+                            </div>
+                            <div v-if="prediction.football_match.is_finished" class="actual">
+                              <span class="label">Résultat final</span>
+                              <span class="score">{{ prediction.football_match.home_score }} - {{ prediction.football_match.away_score }}</span>
+                            </div>
+                          </div>
+                          <div class="prediction-result">
+                            <span v-if="prediction.is_calculated" class="points-earned" :class="getPointsClass(prediction.points_earned)">
+                              <span class="material-symbols-outlined">{{ prediction.points_earned > 0 ? 'add' : 'remove' }}</span>
+                              {{ prediction.points_earned }} point{{ prediction.points_earned > 1 ? 's' : '' }}
+                            </span>
+                            <span v-else class="pending">
+                              <span class="material-symbols-outlined">schedule</span>
+                              En attente du résultat
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -307,42 +438,83 @@
 
               <!-- No Predictions State -->
               <div v-if="!recentPredictions.length && !userAllPredictions.length" class="empty-predictions">
-                <div class="empty-icon">
-                  <span class="material-symbols-outlined">sports_soccer</span>
+                <div class="empty-illustration">
+                  <div class="empty-icon">
+                    <span class="material-symbols-outlined">sports_soccer</span>
+                  </div>
+                  <div class="empty-pattern"></div>
                 </div>
                 <h3>Aucun pronostic pour le moment</h3>
                 <p>Commencez à faire des pronostics pour gagner des points et grimper dans le classement !</p>
-                <button @click="goToPredictions" class="btn-primary">
-                  Faire mon premier pronostic
-                </button>
+                <div class="empty-actions">
+                  <button @click="goToPredictions" class="btn-primary">
+                    <span class="material-symbols-outlined">add</span>
+                    Faire mon premier pronostic
+                  </button>
+                  <button @click="switchPredictionsTab('active-tournaments')" class="btn-secondary">
+                    <span class="material-symbols-outlined">emoji_events</span>
+                    Voir les tournois
+                  </button>
+                </div>
               </div>
             </div>
 
             <!-- My Ranking Tab -->
             <div v-if="activePredictionsTab === 'my-ranking'" class="tab-content">
               <div class="ranking-section">
-                <h3 class="subsection-title">Mon classement</h3>
+                <h3 class="subsection-title">
+                  <span class="material-symbols-outlined">leaderboard</span>
+                  Mon classement
+                </h3>
                 
                 <!-- Personal Ranking Card -->
-                <div v-if="userPredictionsStats.current_rank" class="my-rank-card">
+                <div v-if="userPredictionsStats.current_rank" class="my-rank-card enhanced">
                   <div class="rank-badge" :class="getRankClass(userPredictionsStats.current_rank)">
-                    #{{ userPredictionsStats.current_rank }}
+                    <span class="material-symbols-outlined">emoji_events</span>
+                    <span class="rank-number">#{{ userPredictionsStats.current_rank }}</span>
                   </div>
                   <div class="rank-info">
                     <h4>{{ authStore.user?.name || 'Vous' }}</h4>
-                    <p>{{ userPredictionsStats.total_points }} points • {{ userPredictionsStats.accuracy_percentage }}% de réussite</p>
+                    <div class="rank-stats">
+                      <div class="stat-item">
+                        <span class="material-symbols-outlined">star</span>
+                        <span>{{ userPredictionsStats.total_points }} points</span>
+                      </div>
+                      <div class="stat-item">
+                        <span class="material-symbols-outlined">target</span>
+                        <span>{{ userPredictionsStats.accuracy_percentage }}% de réussite</span>
+                      </div>
+                    </div>
                     <div v-if="userPredictionsStats.rank_change" class="rank-change" :class="{ positive: userPredictionsStats.rank_change > 0, negative: userPredictionsStats.rank_change < 0 }">
                       <span class="material-symbols-outlined">
                         {{ userPredictionsStats.rank_change > 0 ? 'trending_up' : 'trending_down' }}
                       </span>
-                      {{ Math.abs(userPredictionsStats.rank_change) }} place{{ Math.abs(userPredictionsStats.rank_change) > 1 ? 's' : '' }}
+                      {{ userPredictionsStats.rank_change > 0 ? '+' : '' }}{{ userPredictionsStats.rank_change }} place{{ Math.abs(userPredictionsStats.rank_change) > 1 ? 's' : '' }}
                     </div>
                   </div>
                 </div>
                 
-                <button @click="goToLeaderboard" class="btn-secondary">
-                  Voir le classement complet
-                </button>
+                <!-- Progress to next rank -->
+                <div v-if="userPredictionsStats.points_to_next_rank" class="progress-card">
+                  <h4>Progression</h4>
+                  <div class="progress-info">
+                    <span>{{ userPredictionsStats.points_to_next_rank }} points pour le prochain rang</span>
+                    <div class="progress-bar">
+                      <div class="progress-fill" :style="{ width: getProgressPercentage() + '%' }"></div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="ranking-actions">
+                  <button @click="goToLeaderboard" class="btn-primary">
+                    <span class="material-symbols-outlined">leaderboard</span>
+                    Voir le classement complet
+                  </button>
+                  <button @click="switchPredictionsTab('active-tournaments')" class="btn-secondary">
+                    <span class="material-symbols-outlined">emoji_events</span>
+                    Rejoindre un tournoi
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -630,6 +802,7 @@ export default {
     const activeTournaments = ref([])
     const userAllPredictions = ref([])
     const predictionsFilter = ref('all')
+    const predictionsFilterMini = ref('all')
 
     // Predictions sub-tabs
     const predictionsTabs = ref([
@@ -731,6 +904,29 @@ export default {
       try {
         console.log('🏆 [Profile] Chargement des données de pronostics...')
         
+        // Check cache first
+        const cacheKey = `dinor_predictions_${authStore.user?.id}`
+        const cachedData = localStorage.getItem(cacheKey)
+        
+        if (cachedData) {
+          try {
+            const parsed = JSON.parse(cachedData)
+            const now = Date.now()
+            
+            // Use cache if less than 5 minutes old
+            if (now - parsed.timestamp < 5 * 60 * 1000) {
+              userPredictionsStats.value = parsed.stats
+              recentPredictions.value = parsed.recent
+              userTournaments.value = parsed.tournaments
+              predictionsLoading.value = false
+              console.log('🏆 [Profile] Données chargées depuis le cache')
+              return
+            }
+          } catch (e) {
+            localStorage.removeItem(cacheKey)
+          }
+        }
+        
         // Load user predictions stats, recent predictions and tournaments in parallel
         const [statsData, recentData, tournamentsData] = await Promise.all([
           apiStore.get('/leaderboard/my-stats'),
@@ -752,6 +948,16 @@ export default {
           userTournaments.value = tournamentsData.data
           console.log('🏆 [Profile] Tournois utilisateur chargés:', userTournaments.value.length, 'éléments')
         }
+        
+        // Cache the data
+        const cacheData = {
+          timestamp: Date.now(),
+          stats: userPredictionsStats.value,
+          recent: recentPredictions.value,
+          tournaments: userTournaments.value
+        }
+        localStorage.setItem(cacheKey, JSON.stringify(cacheData))
+        
       } catch (error) {
         console.error('❌ [Profile] Erreur lors du chargement des données de pronostics:', error)
         // If stats endpoint fails, reset to null to show error state
@@ -765,11 +971,39 @@ export default {
 
     const loadAllUserPredictions = async () => {
       if (!authStore?.isAuthenticated) return
+      if (userAllPredictions.value.length > 0) return
 
       try {
+        // Check cache first
+        const cacheKey = `dinor_all_predictions_${authStore.user?.id}`
+        const cachedData = localStorage.getItem(cacheKey)
+        
+        if (cachedData) {
+          try {
+            const parsed = JSON.parse(cachedData)
+            const now = Date.now()
+            
+            // Use cache if less than 10 minutes old
+            if (now - parsed.timestamp < 10 * 60 * 1000) {
+              userAllPredictions.value = parsed.data
+              console.log('🏆 [Profile] Toutes les prédictions chargées depuis le cache')
+              return
+            }
+          } catch (e) {
+            localStorage.removeItem(cacheKey)
+          }
+        }
+        
         const data = await apiStore.get('/predictions')
         if (data.success) {
           userAllPredictions.value = data.data
+          
+          // Cache the data
+          const cacheData = {
+            timestamp: Date.now(),
+            data: data.data
+          }
+          localStorage.setItem(cacheKey, JSON.stringify(cacheData))
         }
       } catch (error) {
         console.error('❌ [Profile] Erreur lors du chargement de toutes les prédictions:', error)
@@ -1154,6 +1388,48 @@ export default {
       return labels[status] || status
     }
 
+    // Helper functions for predictions
+    const formatRelativeTime = (date) => {
+      const now = new Date()
+      const predictionDate = new Date(date)
+      const diffInHours = Math.floor((now - predictionDate) / (1000 * 60 * 60))
+      
+      if (diffInHours < 1) return 'Il y a moins d\'une heure'
+      if (diffInHours < 24) return `Il y a ${diffInHours}h`
+      if (diffInHours < 48) return 'Hier'
+      
+      const diffInDays = Math.floor(diffInHours / 24)
+      if (diffInDays < 7) return `Il y a ${diffInDays} jour${diffInDays > 1 ? 's' : ''}`
+      
+      return formatDate(date)
+    }
+    
+    const formatTime = (date) => {
+      return new Date(date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+    }
+    
+    const getFilteredRecentPredictions = () => {
+      const predictions = recentPredictions.value.slice(0, 5)
+      if (predictionsFilterMini.value === 'all') return predictions
+      if (predictionsFilterMini.value === 'pending') return predictions.filter(p => !p.is_calculated)
+      if (predictionsFilterMini.value === 'calculated') return predictions.filter(p => p.is_calculated)
+      return predictions
+    }
+    
+    const getPredictionsCountByStatus = (status) => {
+      if (status === 'pending') return userAllPredictions.value.filter(p => !p.is_calculated).length
+      if (status === 'calculated') return userAllPredictions.value.filter(p => p.is_calculated).length
+      if (status === 'won') return userAllPredictions.value.filter(p => p.is_calculated && p.points_earned > 0).length
+      return userAllPredictions.value.length
+    }
+    
+    const getProgressPercentage = () => {
+      if (!userPredictionsStats.value?.points_to_next_rank) return 0
+      const currentPoints = userPredictionsStats.value.total_points || 0
+      const pointsToNext = userPredictionsStats.value.points_to_next_rank || 100
+      return Math.min(100, (currentPoints / (currentPoints + pointsToNext)) * 100)
+    }
+    
     // Computed for filtered predictions
     const filteredPredictions = computed(() => {
       if (!userAllPredictions.value.length) return []
@@ -1168,6 +1444,35 @@ export default {
         default:
           return userAllPredictions.value
       }
+    })
+    
+    const groupedPredictions = computed(() => {
+      const groups = {}
+      
+      filteredPredictions.value.forEach(prediction => {
+        const date = new Date(prediction.football_match.match_date)
+        const dateKey = date.toLocaleDateString('fr-FR', { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        })
+        
+        if (!groups[dateKey]) {
+          groups[dateKey] = {
+            date: dateKey,
+            predictions: []
+          }
+        }
+        
+        groups[dateKey].predictions.push(prediction)
+      })
+      
+      return Object.values(groups).sort((a, b) => {
+        const dateA = new Date(a.predictions[0].football_match.match_date)
+        const dateB = new Date(b.predictions[0].football_match.match_date)
+        return dateB - dateA
+      })
     })
 
     // Watch auth state changes
@@ -1199,6 +1504,18 @@ export default {
         // Debug user data
         console.log('🔍 [Profile] Données utilisateur:', authStore.user)
         console.log('🔍 [Profile] Date création:', authStore.user?.created_at)
+      }
+      
+      // Restore user preferences
+      const savedFilter = localStorage.getItem('dinor_predictions_filter')
+      const savedMiniFilter = localStorage.getItem('dinor_predictions_filter_mini')
+      
+      if (savedFilter) {
+        predictionsFilter.value = savedFilter
+      }
+      
+      if (savedMiniFilter) {
+        predictionsFilterMini.value = savedMiniFilter
       }
     })
 
@@ -1246,6 +1563,13 @@ export default {
       activeTournaments,
       userAllPredictions,
       predictionsFilter,
+      predictionsFilterMini,
+      formatRelativeTime,
+      formatTime,
+      getFilteredRecentPredictions,
+      getPredictionsCountByStatus,
+      getProgressPercentage,
+      groupedPredictions,
       filteredPredictions,
       loadPredictionsData,
       loadAllUserPredictions,
@@ -2515,11 +2839,12 @@ export default {
 
 .sub-tabs {
   display: flex;
-  background: #F8F9FA;
-  border-radius: 12px;
-  padding: 4px;
-  margin-bottom: 24px;
-  gap: 4px;
+  background: #F1F5F9;
+  border-radius: 16px;
+  padding: 6px;
+  margin-bottom: 32px;
+  gap: 6px;
+  border: 2px solid #E2E8F0;
 }
 
 .sub-tab {
@@ -2527,31 +2852,36 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 12px 16px;
+  gap: 10px;
+  padding: 14px 20px;
   border: none;
   background: transparent;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #6B7280;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #64748B;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  position: relative;
 }
 
 .sub-tab.active {
   background: #FFFFFF;
-  color: #F4D03F;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: #E53E3E;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 2px solid #FCA5A5;
+  transform: translateY(-1px);
 }
 
 .sub-tab:hover:not(.active) {
-  background: rgba(244, 208, 63, 0.1);
-  color: #F4D03F;
+  background: rgba(229, 62, 62, 0.1);
+  color: #E53E3E;
+  transform: translateY(-1px);
 }
 
-.sub-tab i {
-  font-size: 18px;
+.sub-tab .material-symbols-outlined {
+  font-size: 20px;
+  font-weight: 600;
 }
 
 .tab-content {
@@ -2965,58 +3295,96 @@ export default {
   }
 }
 
-/* Predictions Dashboard Styles */
+/* Predictions Dashboard Styles - Improved Readability */
 .predictions-dashboard {
   .predictions-overview {
     margin-bottom: 2rem;
 
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1.25rem;
       margin-bottom: 1.5rem;
 
       .stat-card {
-        background: var(--md-sys-color-surface-variant);
-        border-radius: 12px;
-        padding: 1rem;
+        background: #FFFFFF;
+        border: 2px solid #E2E8F0;
+        border-radius: 16px;
+        padding: 1.25rem;
         display: flex;
         align-items: center;
-        gap: 0.75rem;
-        transition: all 0.2s ease;
+        gap: 1rem;
+        transition: all 0.3s ease;
+        position: relative;
 
         &:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          transform: translateY(-3px);
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+          border-color: #F4D03F;
+        }
+
+        &.total-predictions {
+          .stat-icon {
+            background: linear-gradient(135deg, #3B82F6, #2563EB);
+            color: #FFFFFF;
+          }
+        }
+
+        &.total-points {
+          .stat-icon {
+            background: linear-gradient(135deg, #F59E0B, #D97706);
+            color: #FFFFFF;
+          }
+        }
+
+        &.accuracy {
+          .stat-icon {
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: #FFFFFF;
+          }
+        }
+
+        &.ranking {
+          .stat-icon {
+            background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+            color: #FFFFFF;
+          }
         }
 
         .stat-icon {
-          background: var(--md-sys-color-primary);
-          color: var(--md-sys-color-on-primary);
-          border-radius: 8px;
-          padding: 0.5rem;
+          width: 48px;
+          height: 48px;
+          border-radius: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
+          flex-shrink: 0;
 
           .material-symbols-outlined {
-            font-size: 1.5rem;
+            font-size: 24px;
+            font-weight: 600;
           }
         }
 
         .stat-content {
           display: flex;
           flex-direction: column;
+          min-width: 0;
 
           .stat-value {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--md-sys-color-on-surface);
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1F2937;
+            line-height: 1.2;
+            margin-bottom: 2px;
           }
 
           .stat-label {
             font-size: 0.875rem;
-            color: var(--md-sys-color-on-surface-variant);
+            color: #6B7280;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
           }
         }
       }
@@ -3024,36 +3392,45 @@ export default {
 
     .quick-actions {
       display: flex;
-      gap: 0.75rem;
+      gap: 1rem;
       flex-wrap: wrap;
 
       .action-button {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        padding: 0.75rem 1rem;
-        border-radius: 8px;
+        gap: 0.75rem;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
         border: none;
-        font-weight: 500;
+        font-weight: 600;
+        font-size: 0.9rem;
         cursor: pointer;
         transition: all 0.2s ease;
+        flex: 1;
+        min-width: 150px;
+        justify-content: center;
 
         &.primary {
-          background: var(--md-sys-color-primary);
-          color: var(--md-sys-color-on-primary);
+          background: linear-gradient(135deg, #E53E3E, #C53030);
+          color: #FFFFFF;
+          box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
 
           &:hover {
-            background: var(--md-sys-color-primary-container);
+            background: linear-gradient(135deg, #C53030, #9C1D1D);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(229, 62, 62, 0.4);
           }
         }
 
         &.secondary {
-          background: var(--md-sys-color-secondary-container);
-          color: var(--md-sys-color-on-secondary-container);
+          background: #F7FAFC;
+          color: #2D3748;
+          border: 2px solid #E2E8F0;
 
           &:hover {
-            background: var(--md-sys-color-secondary);
-            color: var(--md-sys-color-on-secondary);
+            background: #EDF2F7;
+            border-color: #CBD5E0;
+            transform: translateY(-2px);
           }
         }
 
@@ -3066,35 +3443,89 @@ export default {
 
   .predictions-list {
     .prediction-card {
-      background: var(--md-sys-color-surface-variant);
+      background: #FFFFFF;
+      border: 2px solid #E2E8F0;
       border-radius: 12px;
-      padding: 1rem;
+      padding: 1.25rem;
       margin-bottom: 1rem;
-      transition: all 0.2s ease;
+      transition: all 0.3s ease;
+      position: relative;
 
       &:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+        border-color: #CBD5E0;
+      }
+
+      &.calculated {
+        border-left: 4px solid #10B981;
+        background: linear-gradient(to right, #F0FDF4 0%, #FFFFFF 8%);
+      }
+
+      &.positive-result {
+        border-left: 4px solid #10B981;
+        background: linear-gradient(to right, #ECFDF5 0%, #FFFFFF 10%);
+        
+        .prediction-status-indicator {
+          background: #D1FAE5;
+          color: #065F46;
+        }
+      }
+
+      &.negative-result {
+        border-left: 4px solid #EF4444;
+        background: linear-gradient(to right, #FEF2F2 0%, #FFFFFF 10%);
+        
+        .prediction-status-indicator {
+          background: #FEE2E2;
+          color: #DC2626;
+        }
       }
 
       &.compact {
-        padding: 0.75rem;
+        padding: 1rem;
 
         .prediction-match {
           .teams {
-            font-size: 0.875rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #1F2937;
           }
 
           .match-info {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            font-size: 0.875rem;
+            gap: 0.75rem;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
 
             .predicted-score {
+              font-weight: 700;
+              color: #E53E3E;
+              font-size: 1rem;
+            }
+
+            .pending {
+              color: #F59E0B;
+              font-weight: 500;
+              font-style: italic;
+            }
+
+            .points-earned {
               font-weight: 600;
+              
+              &.points-positive {
+                color: #059669;
+              }
             }
           }
+        }
+
+        .prediction-date {
+          font-size: 0.8rem;
+          color: #9CA3AF;
+          margin-top: 0.5rem;
+          text-align: right;
         }
       }
 
@@ -3102,22 +3533,29 @@ export default {
         .prediction-scores {
           display: flex;
           flex-direction: column;
-          gap: 0.25rem;
-          margin-bottom: 0.5rem;
+          gap: 0.5rem;
+          margin-bottom: 1rem;
 
           .predicted, .actual {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.75rem;
 
             .label {
               font-size: 0.875rem;
-              color: var(--md-sys-color-on-surface-variant);
+              color: #6B7280;
+              font-weight: 500;
+              min-width: 100px;
             }
 
             .score {
-              font-weight: 600;
-              color: var(--md-sys-color-on-surface);
+              font-weight: 700;
+              color: #1F2937;
+              font-size: 1.1rem;
+              
+              &.highlight {
+                color: #E53E3E;
+              }
             }
           }
         }
@@ -3127,43 +3565,122 @@ export default {
         .teams {
           display: flex;
           align-items: center;
-          gap: 0.5rem;
-          margin-bottom: 0.25rem;
+          gap: 0.75rem;
+          margin-bottom: 0.5rem;
 
           .team {
-            font-weight: 500;
+            font-weight: 600;
+            font-size: 1rem;
+            color: #1F2937;
+            background: #F8FAFC;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            border: 1px solid #E2E8F0;
           }
 
           .vs {
-            color: var(--md-sys-color-on-surface-variant);
+            color: #9CA3AF;
             font-size: 0.875rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
           }
         }
 
         .match-date {
           font-size: 0.875rem;
-          color: var(--md-sys-color-on-surface-variant);
+          color: #6B7280;
+          font-weight: 500;
+        }
+
+        .match-info {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          margin-top: 0.5rem;
+
+          .predicted-score {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #E53E3E;
+            background: #FEF2F2;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            border: 1px solid #FCA5A5;
+          }
+        }
+      }
+
+      .prediction-status-indicator {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #F3F4F6;
+        border: 2px solid #E5E7EB;
+
+        .material-symbols-outlined {
+          font-size: 18px;
+        }
+
+        .pending-icon {
+          color: #F59E0B;
         }
       }
 
       .points-earned {
+        font-weight: 700;
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+
         &.points-positive {
-          color: var(--md-sys-color-tertiary);
-          font-weight: 600;
+          color: #065F46;
+          background: #D1FAE5;
+          border: 1px solid #6EE7B7;
         }
 
         &.points-neutral {
-          color: var(--md-sys-color-on-surface-variant);
+          color: #6B7280;
+          background: #F3F4F6;
+          border: 1px solid #D1D5DB;
         }
 
         &.points-negative {
-          color: var(--md-sys-color-error);
+          color: #DC2626;
+          background: #FEE2E2;
+          border: 1px solid #FCA5A5;
+        }
+
+        .material-symbols-outlined {
+          font-size: 16px;
         }
       }
 
       .pending {
-        color: var(--md-sys-color-on-surface-variant);
+        color: #F59E0B;
         font-style: italic;
+        font-weight: 500;
+        background: #FEF3C7;
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
+        border: 1px solid #FCD34D;
+        font-size: 0.875rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+
+        .material-symbols-outlined {
+          font-size: 16px;
+        }
       }
     }
   }
@@ -3351,4 +3868,642 @@ export default {
     margin: 0 0 1rem 0;
   }
 }
+
+/* === PREDICTIONS ENHANCEMENTS === */
+
+/* Predictions Statistics Overview */
+.predictions-stats-overview {
+  margin-bottom: 32px;
+  background: #FAFBFC;
+  border-radius: 16px;
+  padding: 24px;
+  border: 2px solid #F1F5F9;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: #FFFFFF;
+  border: 2px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(135deg, #E53E3E, #F56565);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  border-color: #F4D03F;
+}
+
+.stat-card:hover::before {
+  transform: scaleX(1);
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  background: #F7FAFC;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px auto;
+  color: #4A5568;
+  border: 2px solid #E2E8F0;
+}
+
+.stat-icon.accuracy {
+  background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
+  color: #059669;
+  border-color: #6EE7B7;
+}
+
+.stat-icon.points {
+  background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+  color: #D97706;
+  border-color: #FCD34D;
+}
+
+.stat-icon.ranking {
+  background: linear-gradient(135deg, #E0E7FF, #C7D2FE);
+  color: #7C3AED;
+  border-color: #A5B4FC;
+}
+
+.stat-value {
+  display: block;
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #1F2937;
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #6B7280;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Section Headers with Actions */
+.section-header-with-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #F1F5F9;
+}
+
+.subsection-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1F2937;
+  margin: 0;
+}
+
+.subsection-title .material-symbols-outlined {
+  font-size: 24px;
+  color: #E53E3E;
+  background: #FEF2F2;
+  padding: 4px;
+  border-radius: 8px;
+}
+
+/* Mini Filter Buttons */
+.predictions-filter-mini {
+  display: flex;
+  gap: 6px;
+}
+
+.filter-btn {
+  padding: 8px 16px;
+  background: #FFFFFF;
+  border: 2px solid #E2E8F0;
+  border-radius: 24px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #64748B;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  text-transform: capitalize;
+}
+
+.filter-btn.active {
+  background: #E53E3E;
+  color: #FFFFFF;
+  border-color: #E53E3E;
+  box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
+  transform: translateY(-1px);
+}
+
+.filter-btn:hover:not(.active) {
+  background: #F8FAFC;
+  border-color: #CBD5E0;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced Prediction Cards */
+.prediction-card {
+  position: relative;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: all 0.2s ease;
+}
+
+.prediction-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.prediction-card.positive-result {
+  border-left: 4px solid #38A169;
+  background: linear-gradient(to right, #F0FFF4, #FFFFFF);
+}
+
+.prediction-card.negative-result {
+  border-left: 4px solid #E53E3E;
+  background: linear-gradient(to right, #FFF5F5, #FFFFFF);
+}
+
+.prediction-status-indicator {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.prediction-status-indicator .material-symbols-outlined {
+  font-size: 16px;
+}
+
+.prediction-card.positive-result .prediction-status-indicator .material-symbols-outlined {
+  color: #38A169;
+}
+
+.prediction-card.negative-result .prediction-status-indicator .material-symbols-outlined {
+  color: #E53E3E;
+}
+
+.pending-icon {
+  color: #F6AD55 !important;
+}
+
+.prediction-date {
+  font-size: 11px;
+  color: #718096;
+  margin-top: 8px;
+  text-align: right;
+}
+
+/* Filter Chips */
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filter-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #F7FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #4A5568;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-chip.active {
+  background: #E53E3E;
+  color: #FFFFFF;
+  border-color: #E53E3E;
+}
+
+.filter-chip:hover:not(.active) {
+  background: #EDF2F7;
+}
+
+.filter-chip .material-symbols-outlined {
+  font-size: 14px;
+}
+
+/* Grouped Predictions */
+.predictions-list.grouped {
+  margin-top: 16px;
+}
+
+.predictions-group {
+  margin-bottom: 24px;
+}
+
+.group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  background: #F7FAFC;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.group-date {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1A202C;
+  text-transform: capitalize;
+}
+
+.group-count {
+  font-size: 12px;
+  color: #718096;
+}
+
+.group-predictions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Enhanced Ranking Card */
+.my-rank-card.enhanced {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #FFFFFF;
+  border: none;
+  padding: 24px;
+  border-radius: 16px;
+  margin-bottom: 24px;
+}
+
+.my-rank-card.enhanced .rank-badge {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 12px;
+}
+
+.rank-number {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.rank-stats {
+  display: flex;
+  gap: 16px;
+  margin: 12px 0;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.stat-item .material-symbols-outlined {
+  font-size: 16px;
+}
+
+/* Progress Card */
+.progress-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.progress-card h4 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1A202C;
+}
+
+.progress-info {
+  font-size: 14px;
+  color: #4A5568;
+  margin-bottom: 8px;
+}
+
+.progress-bar {
+  height: 8px;
+  background: #E2E8F0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #38A169, #48BB78);
+  transition: width 0.3s ease;
+}
+
+/* Ranking Actions */
+.ranking-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ranking-actions .btn-primary,
+.ranking-actions .btn-secondary {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* Enhanced Empty State */
+.empty-predictions {
+  text-align: center;
+  padding: 48px 16px;
+}
+
+.empty-illustration {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 24px;
+}
+
+.empty-icon {
+  width: 80px;
+  height: 80px;
+  background: #F7FAFC;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.empty-icon .material-symbols-outlined {
+  font-size: 40px;
+  color: #A0AEC0;
+}
+
+.empty-pattern {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 20px;
+  height: 20px;
+  background: #E53E3E;
+  border-radius: 50%;
+  opacity: 0.3;
+}
+
+.empty-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 24px;
+}
+
+.empty-actions .btn-primary,
+.empty-actions .btn-secondary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Show All Button */
+.show-all-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
+  padding: 12px 24px;
+  background: #F8FAFC;
+  border: 2px solid #E2E8F0;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.show-all-btn:hover {
+  background: #FFFFFF;
+  border-color: #E53E3E;
+  color: #E53E3E;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.show-all-btn .material-symbols-outlined {
+  font-size: 20px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .predictions-dashboard {
+    .predictions-overview {
+      .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      
+      .stat-card {
+        padding: 16px;
+        
+        .stat-icon {
+          width: 40px;
+          height: 40px;
+        }
+        
+        .stat-value {
+          font-size: 1.5rem;
+        }
+      }
+      
+      .quick-actions {
+        flex-direction: column;
+        gap: 12px;
+        
+        .action-button {
+          min-width: unset;
+          padding: 12px 16px;
+        }
+      }
+    }
+  }
+  
+  .sub-tabs {
+    flex-direction: column;
+    gap: 4px;
+    
+    .sub-tab {
+      padding: 12px 16px;
+      font-size: 0.9rem;
+    }
+  }
+  
+  .section-header-with-action {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    
+    .subsection-title {
+      font-size: 1.125rem;
+    }
+    
+    .predictions-filter-mini {
+      width: 100%;
+      justify-content: flex-start;
+    }
+  }
+  
+  .predictions-stats-overview {
+    padding: 16px;
+    
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+  }
+  
+  .prediction-card {
+    &.compact {
+      padding: 12px;
+      
+      .prediction-match {
+        .teams {
+          font-size: 0.9rem;
+          flex-wrap: wrap;
+          
+          .team {
+            padding: 0.2rem 0.4rem;
+            font-size: 0.85rem;
+          }
+        }
+        
+        .match-info {
+          margin-top: 8px;
+          
+          .predicted-score {
+            font-size: 0.95rem;
+            padding: 0.2rem 0.4rem;
+          }
+        }
+      }
+      
+      .prediction-status-indicator {
+        width: 28px;
+        height: 28px;
+        top: 8px;
+        right: 8px;
+        
+        .material-symbols-outlined {
+          font-size: 16px;
+        }
+      }
+    }
+  }
+  
+  .show-all-btn {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+  }
+  
+  .filter-chips {
+    flex-wrap: wrap;
+  }
+  
+  .rank-stats {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .ranking-actions {
+    flex-direction: column;
+  }
+  
+  .empty-actions {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .predictions-dashboard {
+    .predictions-overview {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  }
+  
+  .predictions-stats-overview {
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  .prediction-card {
+    &.compact {
+      .prediction-match {
+        .teams {
+          .team {
+            font-size: 0.8rem;
+          }
+          
+          .vs {
+            font-size: 0.75rem;
+          }
+        }
+      }
+    }
+  }
+}
+
 </style>
