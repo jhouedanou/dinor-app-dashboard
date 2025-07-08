@@ -141,6 +141,12 @@ const routes = [
     meta: { title: 'Tournois' }
   },
   {
+    path: '/predictions/betting',
+    name: 'tournament-betting',
+    component: () => import('@/views/TournamentBetting.vue'),
+    meta: { title: 'Paris de Tournois' }
+  },
+  {
     path: '/:pathMatch(.*)*',
     redirect: '/'
   }

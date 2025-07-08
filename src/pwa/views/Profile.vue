@@ -9,7 +9,7 @@
     <!-- Not Authenticated State -->
     <div v-else-if="!authStore.isAuthenticated" class="auth-required">
       <div class="auth-icon">
-        <i class="material-icons">person</i>
+        <span class="material-symbols-outlined">person</span>
       </div>
       <h2 class="md3-title-large">Profil utilisateur</h2>
       <p class="md3-body-large">Connectez-vous pour voir votre profil et vos favoris</p>
@@ -23,7 +23,7 @@
       <!-- User Info Section -->
       <div class="user-info-section">
         <div class="user-avatar">
-          <i class="material-icons">person</i>
+          <span class="material-symbols-outlined">person</span>
         </div>
         <div class="user-details">
           <h1 class="user-name">{{ authStore.userName }}</h1>
@@ -41,7 +41,7 @@
           class="nav-button"
           :class="{ active: activeSection === section.key }"
         >
-          <i class="material-icons">{{ section.icon }}</i>
+          <span class="material-symbols-outlined">{{ section.icon }}</span>
           <span>{{ section.label }}</span>
         </button>
       </div>
@@ -60,7 +60,7 @@
               class="filter-tab"
               :class="{ active: selectedFilter === tab.key }"
             >
-              <i class="material-icons">{{ tab.icon }}</i>
+              <span class="material-symbols-outlined">{{ tab.icon }}</span>
               <span>{{ tab.label }}</span>
             </button>
           </div>
@@ -81,7 +81,7 @@
                 @error="handleImageError"
               >
               <div class="favorite-type-badge">
-                <i class="material-icons">{{ getTypeIcon(favorite.type) }}</i>
+                <span class="material-symbols-outlined">{{ getTypeIcon(favorite.type) }}</span>
               </div>
             </div>
             <div class="favorite-info">
@@ -95,11 +95,11 @@
                 </span>
                 <div class="favorite-stats">
                   <span class="stat">
-                    <i class="material-icons">favorite</i>
+                    <span class="material-symbols-outlined">favorite</span>
                     {{ favorite.content.likes_count || 0 }}
                   </span>
                   <span class="stat">
-                    <i class="material-icons">comment</i>
+                    <span class="material-symbols-outlined">comment</span>
                     {{ favorite.content.comments_count || 0 }}
                   </span>
                 </div>
@@ -110,7 +110,7 @@
               class="remove-favorite"
               title="Retirer des favoris"
             >
-              <i class="material-icons">close</i>
+              <span class="material-symbols-outlined">close</span>
             </button>
           </div>
         </div>
@@ -118,7 +118,7 @@
         <!-- Empty State -->
         <div v-else class="empty-favorites">
           <div class="empty-icon">
-            <i class="material-icons">favorite_border</i>
+            <span class="material-symbols-outlined">favorite_border</span>
           </div>
           <h3>{{ getEmptyMessage() }}</h3>
           <p>{{ getEmptyDescription() }}</p>
@@ -148,7 +148,7 @@
                 @click="switchPredictionsTab(tab.key)"
                 :class="['sub-tab', { active: activePredictionsTab === tab.key }]"
               >
-                <i class="material-icons">{{ tab.icon }}</i>
+                <span class="material-symbols-outlined">{{ tab.icon }}</span>
                 <span>{{ tab.label }}</span>
               </button>
             </div>
@@ -251,7 +251,7 @@
               <!-- No Predictions -->
               <div v-else class="no-predictions">
                 <div class="empty-icon">
-                  <i class="material-icons">sports_soccer</i>
+                  <span class="material-symbols-outlined">sports_soccer</span>
                 </div>
                 <h3>Aucun pronostic</h3>
                 <p>Vous n'avez pas encore fait de pronostic. Commencez dès maintenant!</p>
@@ -273,7 +273,7 @@
                 <div class="ranking-card global">
                   <div class="ranking-info">
                     <div class="rank-badge" :class="getRankClass(userPredictionsStats.current_rank)">
-                      <i class="material-icons">star</i>
+                      <span class="material-symbols-outlined">star</span>
                       <span>{{ userPredictionsStats.current_rank ? `#${userPredictionsStats.current_rank}` : 'Non classé' }}</span>
                     </div>
                     <div class="ranking-stats">
@@ -339,7 +339,7 @@
               <!-- No Tournaments -->
               <div v-else class="no-tournaments-ranking">
                 <div class="empty-icon">
-                  <i class="material-icons">emoji_events</i>
+                  <span class="material-symbols-outlined">emoji_events</span>
                 </div>
                 <h4>Aucun tournoi actif</h4>
                 <p>Participez à des tournois pour voir votre classement.</p>
@@ -405,7 +405,7 @@
               <!-- No Active Tournaments -->
               <div v-else class="no-active-tournaments">
                 <div class="empty-icon">
-                  <i class="material-icons">schedule</i>
+                  <span class="material-symbols-outlined">schedule</span>
                 </div>
                 <h4>Aucun tournoi ouvert</h4>
                 <p>Il n'y a pas de tournoi ouvert aux prédictions pour le moment. Revenez bientôt!</p>
@@ -424,7 +424,7 @@
           <!-- Error State -->
           <div v-else class="error-state">
             <div class="error-icon">
-              <i class="material-icons">error_outline</i>
+              <span class="material-symbols-outlined">error</span>
             </div>
             <h3>Erreur de chargement</h3>
             <p>Impossible de charger vos statistiques de pronostics.</p>
@@ -527,7 +527,7 @@
               Vous serez déconnecté de votre compte sur cet appareil. Vos données seront conservées.
             </p>
             <button @click="handleLogout" class="btn-logout-main">
-              <i class="material-icons">logout</i>
+              <span class="material-symbols-outlined">logout</span>
               <span>Se déconnecter</span>
             </button>
           </div>
@@ -542,19 +542,19 @@
             <h3 class="form-title">Conditions d'utilisation</h3>
             <div class="legal-links">
               <a href="/terms" class="legal-link">
-                <i class="material-icons">description</i>
+                <span class="material-symbols-outlined">description</span>
                 <span>Conditions générales d'utilisation</span>
-                <i class="material-icons">arrow_forward_ios</i>
+                <span class="material-symbols-outlined">arrow_forward_ios</span>
               </a>
               <a href="/privacy" class="legal-link">
-                <i class="material-icons">privacy_tip</i>
+                <span class="material-symbols-outlined">privacy_tip</span>
                 <span>Politique de confidentialité</span>
-                <i class="material-icons">arrow_forward_ios</i>
+                <span class="material-symbols-outlined">arrow_forward_ios</span>
               </a>
               <a href="/cookies" class="legal-link">
-                <i class="material-icons">cookie</i>
+                <span class="material-symbols-outlined">cookie</span>
                 <span>Politique des cookies</span>
-                <i class="material-icons">arrow_forward_ios</i>
+                <span class="material-symbols-outlined">arrow_forward_ios</span>
               </a>
             </div>
           </div>
@@ -968,8 +968,9 @@ export default {
         if (data.success) {
           usernameForm.value.success = true
           usernameForm.value.message = 'Nom d\'utilisateur mis à jour avec succès'
-          // Update auth store
-          authStore.user.name = data.data.name
+          // Update auth store with the new user data
+          const updatedUser = { ...authStore.user, name: data.data.name }
+          authStore.setUser(updatedUser)
           usernameForm.value.name = ''
         }
       } catch (error) {

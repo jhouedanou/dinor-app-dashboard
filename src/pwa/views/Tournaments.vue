@@ -47,22 +47,22 @@
             <div class="tournament-info">
               <div class="info-row">
                 <div class="info-item">
-                  <i class="material-icons">group</i>
+                  <span class="material-symbols-outlined">group</span>
                   <span>{{ tournament.participants_count }} participants</span>
                 </div>
                 <div class="info-item" v-if="tournament.prize_pool > 0">
-                  <i class="material-icons">emoji_events</i>
+                  <span class="material-symbols-outlined">emoji_events</span>
                   <span>{{ formatPrize(tournament.prize_pool, tournament.currency) }}</span>
                 </div>
               </div>
               
               <div class="info-row">
                 <div class="info-item">
-                  <i class="material-icons">schedule</i>
+                  <span class="material-symbols-outlined">schedule</span>
                   <span>Fin: {{ formatDate(tournament.end_date) }}</span>
                 </div>
                 <div class="info-item" v-if="tournament.entry_fee > 0">
-                  <i class="material-icons">payment</i>
+                  <span class="material-symbols-outlined">payments</span>
                   <span>{{ formatPrize(tournament.entry_fee, tournament.currency) }}</span>
                 </div>
               </div>
@@ -95,21 +95,21 @@
                 @click.stop="viewTournamentLeaderboard(tournament)"
                 class="btn-secondary btn-small"
               >
-                <i class="material-icons">leaderboard</i>
+                <span class="material-symbols-outlined">leaderboard</span>
                 Mon classement
               </button>
               
               <div v-else class="tournament-status-info">
                 <span v-if="tournament.status === 'upcoming'" class="status-text">
-                  <i class="material-icons">schedule</i>
+                  <span class="material-symbols-outlined">schedule</span>
                   À venir
                 </span>
                 <span v-else-if="tournament.status === 'finished'" class="status-text">
-                  <i class="material-icons">flag</i>
+                  <span class="material-symbols-outlined">flag</span>
                   Terminé
                 </span>
                 <span v-else class="status-text">
-                  <i class="material-icons">block</i>
+                  <span class="material-symbols-outlined">block</span>
                   Inscriptions fermées
                 </span>
               </div>
@@ -119,7 +119,7 @@
 
         <!-- Empty State -->
         <div v-else class="empty-state">
-          <i class="material-icons">emoji_events</i>
+          <span class="material-symbols-outlined">emoji_events</span>
           <h3>Aucun tournoi disponible</h3>
           <p>Les tournois apparaîtront ici quand ils seront disponibles.</p>
         </div>

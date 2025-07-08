@@ -37,23 +37,28 @@
         <div class="event-info">
           <div class="event-stats">
             <div class="stat-item" v-if="event.start_date">
-              <i class="material-icons dinor-text-secondary">event</i>
+              <span class="material-symbols-outlined dinor-text-secondary">calendar_today</span>
+              <span class="emoji-fallback">📅</span>
               <span class="md3-body-medium">{{ formatEventDate(event.start_date) }}</span>
             </div>
             <div class="stat-item" v-if="event.start_time">
-              <i class="material-icons dinor-text-secondary">schedule</i>
+              <span class="material-symbols-outlined dinor-text-secondary">schedule</span>
+              <span class="emoji-fallback">⏰</span>
               <span class="md3-body-medium">{{ formatTime(event.start_time) }}</span>
             </div>
             <div class="stat-item" v-if="event.location">
-              <i class="material-icons dinor-text-secondary">place</i>
+              <span class="material-symbols-outlined dinor-text-secondary">place</span>
+              <span class="emoji-fallback">📍</span>
               <span class="md3-body-medium">{{ event.location }}</span>
             </div>
             <div class="stat-item">
-              <i class="material-icons dinor-text-secondary">favorite</i>
+              <span class="material-symbols-outlined dinor-text-secondary">favorite</span>
+              <span class="emoji-fallback">❤️</span>
               <span class="md3-body-medium">{{ event.likes_count || 0 }}</span>
             </div>
             <div class="stat-item">
-              <i class="material-icons dinor-text-secondary">comment</i>
+              <span class="material-symbols-outlined dinor-text-secondary">comment</span>
+              <span class="emoji-fallback">💬</span>
               <span class="md3-body-medium">{{ event.comments_count || 0 }}</span>
             </div>
           </div>
@@ -75,6 +80,23 @@
             <div v-if="event.location" class="detail-item">
               <h3 class="md3-title-small dinor-text-primary">Lieu</h3>
               <p class="md3-body-medium">{{ event.location }}</p>
+            </div>
+          </div>
+
+          <!-- Calendar Links -->
+          <div class="calendar-links">
+            <h3 class="md3-title-small dinor-text-primary">Ajouter à votre agenda</h3>
+            <div class="calendar-buttons">
+              <button @click="addToGoogleCalendar" class="calendar-button google-calendar">
+                <span class="material-symbols-outlined">event</span>
+                <span class="emoji-fallback">📅</span>
+                Google Calendar
+              </button>
+              <button @click="addToIcal" class="calendar-button ical">
+                <span class="material-symbols-outlined">calendar_month</span>
+                <span class="emoji-fallback">🗓️</span>
+                iCal / Outlook
+              </button>
             </div>
           </div>
 
@@ -138,7 +160,8 @@
                   </div>
                   <div v-if="canDeleteComment(comment)" class="comment-actions">
                     <button @click="deleteComment(comment.id)" class="btn-delete" title="Supprimer le commentaire">
-                      <i class="material-icons">delete</i>
+                      <span class="material-symbols-outlined">delete</span>
+                      <span class="emoji-fallback">🗑️</span>
                     </button>
                   </div>
                 </div>
@@ -155,7 +178,7 @@
       <!-- Error State -->
       <div v-else class="error-state">
         <div class="error-icon">
-          <span class="material-symbols-outlined">error_outline</span>
+          <span class="material-symbols-outlined">error</span>
           <span class="emoji-fallback">⚠️</span>
         </div>
         <h2 class="md3-title-large">Événement introuvable</h2>
@@ -462,6 +485,63 @@ export default {
       return content.toString()
     }
 
+    const formatDateForCalendar = (date, time) => {
+      if (!date) return ''
+      const dateObj = new Date(date)
+      if (time) {
+        const [hours, minutes] = time.split(':')
+        dateObj.setHours(parseInt(hours), parseInt(minutes))
+      }
+      return dateObj.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
+    }
+
+    const addToGoogleCalendar = () => {
+      if (!event.value) return
+      
+      const title = encodeURIComponent(event.value.title)
+      const description = encodeURIComponent(event.value.content ? event.value.content.replace(/<[^>]*>/g, '') : '')
+      const location = encodeURIComponent(event.value.location || '')
+      const startDate = formatDateForCalendar(event.value.start_date, event.value.start_time)
+      const endDate = formatDateForCalendar(event.value.end_date || event.value.start_date, event.value.end_time || event.value.start_time)
+      
+      const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startDate}/${endDate}&details=${description}&location=${location}&sf=true&output=xml`
+      
+      window.open(url, '_blank')
+    }
+
+    const addToIcal = () => {
+      if (!event.value) return
+      
+      const title = event.value.title
+      const description = event.value.content ? event.value.content.replace(/<[^>]*>/g, '') : ''
+      const location = event.value.location || ''
+      const startDate = formatDateForCalendar(event.value.start_date, event.value.start_time)
+      const endDate = formatDateForCalendar(event.value.end_date || event.value.start_date, event.value.end_time || event.value.start_time)
+      
+      const icalContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Dinor//Event//EN
+BEGIN:VEVENT
+UID:${event.value.id}@dinor.com
+DTSTART:${startDate}
+DTEND:${endDate}
+SUMMARY:${title}
+DESCRIPTION:${description}
+LOCATION:${location}
+END:VEVENT
+END:VCALENDAR`
+      
+      const blob = new Blob([icalContent], { type: 'text/calendar;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `${title.replace(/[^a-zA-Z0-9]/g, '_')}.ics`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    }
+
     onMounted(() => {
       loadEvent()
     })
@@ -490,7 +570,9 @@ export default {
       showShareModal,
       shareData,
       authStore,
-      showAuthModal
+      showAuthModal,
+      addToGoogleCalendar,
+      addToIcal
     }
   }
 }
@@ -750,7 +832,7 @@ html.force-emoji .emoji-fallback {
 }
 
 /* Styles spécifiques pour les icônes */
-.event-stats .material-icons {
+.event-stats .material-symbols-outlined {
   font-size: 20px;
   margin-right: 8px;
 }
@@ -806,6 +888,80 @@ html.force-emoji .emoji-fallback {
   .error-actions button {
     width: 100%;
     max-width: 200px;
+  }
+}
+
+/* Calendar Links Styles */
+.calendar-links {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: #F8F9FA;
+  border-radius: 12px;
+  border: 1px solid #E2E8F0;
+}
+
+.calendar-links h3 {
+  margin-bottom: 1rem;
+  color: #2D3748;
+}
+
+.calendar-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.calendar-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background: #FFFFFF;
+  color: #2D3748;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.calendar-button.google-calendar {
+  background: #4285F4;
+  color: white;
+}
+
+.calendar-button.google-calendar:hover {
+  background: #3367D6;
+}
+
+.calendar-button.ical {
+  background: #FF6900;
+  color: white;
+}
+
+.calendar-button.ical:hover {
+  background: #E55A00;
+}
+
+.calendar-button .material-symbols-outlined {
+  font-size: 1.1rem;
+}
+
+@media (max-width: 480px) {
+  .calendar-buttons {
+    flex-direction: column;
+  }
+  
+  .calendar-button {
+    width: 100%;
+    justify-content: center;
   }
 }
 </style> 
