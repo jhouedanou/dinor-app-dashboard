@@ -359,14 +359,6 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     Route::get('/predictions/{prediction}', [App\Http\Controllers\Api\PredictionController::class, 'show']);
     Route::put('/predictions/{prediction}', [App\Http\Controllers\Api\PredictionController::class, 'update']);
     
-    // Paris de Tournois - Routes protégées
-    Route::get('/tournaments/betting-available', [App\Http\Controllers\Api\BettingController::class, 'getAvailableTournaments']);
-    Route::get('/tournaments/{tournament}/matches/betting', [App\Http\Controllers\Api\BettingController::class, 'getTournamentBettingMatches']);
-    Route::get('/tournaments/{tournament}/my-bets', [App\Http\Controllers\Api\BettingController::class, 'getUserTournamentBets']);
-    Route::post('/matches/{match}/bet', [App\Http\Controllers\Api\BettingController::class, 'placeBet']);
-    Route::get('/betting/my-stats', [App\Http\Controllers\Api\BettingController::class, 'getUserBettingStats']);
-    Route::get('/betting/trending', [App\Http\Controllers\Api\BettingController::class, 'getTrendingStats']);
-    
     // Leaderboard - Routes protégées utilisateur
     Route::get('/leaderboard/my-stats', [App\Http\Controllers\Api\LeaderboardController::class, 'userStats']);
     Route::get('/leaderboard/my-rank', [App\Http\Controllers\Api\LeaderboardController::class, 'userRank']);

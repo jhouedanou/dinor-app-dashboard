@@ -3,7 +3,7 @@
     <!-- Search Bar -->
     <div class="search-container">
       <div class="search-input-wrapper">
-        <span class="material-symbols-outlined search-icon">search</span>
+        <span class="material-icons search-icon">search</span>
         <span class="emoji-fallback search-icon">🔍</span>
         <input
           :value="searchQuery"
@@ -18,7 +18,7 @@
           class="clear-search"
           aria-label="Effacer la recherche"
         >
-          <span class="material-symbols-outlined">close</span>
+          <i class="material-icons">close</i>
           <span class="emoji-fallback">✖️</span>
         </button>
       </div>
@@ -30,7 +30,7 @@
         <!-- Category Filter -->
         <div v-if="categories?.length" class="filter-dropdown-group">
           <label class="filter-label">
-            <span class="material-symbols-outlined">category</span>
+            <i class="material-icons">category</i>
             <span class="emoji-fallback">📂</span>
             Catégories
           </label>
@@ -49,7 +49,7 @@
                 {{ category.name }}
               </option>
             </select>
-            <span class="dropdown-arrow material-symbols-outlined">expand_more</span>
+            <span class="dropdown-arrow material-icons">expand_more</span>
             <span class="dropdown-arrow emoji-fallback">▼</span>
           </div>
         </div>
@@ -61,7 +61,7 @@
           class="filter-dropdown-group"
         >
                       <label class="filter-label">
-              <span class="material-symbols-outlined">{{ filter.icon || 'tune' }}</span>
+              <i class="material-icons">{{ filter.icon || 'tune' }}</i>
               <span class="emoji-fallback">{{ filter.icon === 'schedule' ? '⏱️' : '⚙️' }}</span>
               {{ filter.label }}
             </label>
@@ -80,7 +80,7 @@
                 {{ option.label }}
               </option>
             </select>
-            <span class="dropdown-arrow material-symbols-outlined">expand_more</span>
+            <span class="dropdown-arrow material-icons">expand_more</span>
             <span class="dropdown-arrow emoji-fallback">▼</span>
           </div>
         </div>
@@ -236,7 +236,7 @@ export default {
   text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5); /* Ombre de texte pour lisibilité */
 }
 
-.filter-label .material-symbols-outlined {
+.filter-label .material-icons {
   font-size: 1.25rem;
   color: #8B7000; /* Icône dorée foncée */
   font-weight: 600;
@@ -394,12 +394,12 @@ export default {
   display: none; /* Masqué par défaut */
 }
 
-.material-symbols-outlined {
+.material-icons {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
 /* UNIQUEMENT quand .force-emoji est présent sur html, afficher les emoji */
-html.force-emoji .material-symbols-outlined {
+html.force-emoji .material-icons {
   display: none !important;
 }
 

@@ -5,7 +5,7 @@
       <!-- Error State -->
       <div v-if="error" class="error-state">
         <div class="error-icon">
-          <span class="material-symbols-outlined">error</span>
+          <i class="material-icons">error_outline</i>
         </div>
         <h2 class="md3-title-large">Erreur de chargement</h2>
         <p class="md3-body-large dinor-text-gray">{{ errorMessage }}</p>

@@ -39,8 +39,8 @@
               loading="lazy"
             />
             <div class="card-overlay">
-              <span v-if="item.total_time" class="time-badge">
-                {{ item.total_time }}min
+              <span v-if="getPreparationTime(item)" class="time-badge">
+                {{ getPreparationTime(item) }}min
               </span>
               <span v-if="item.difficulty" class="difficulty-badge">
                 {{ getDifficultyLabel(item.difficulty) }}
@@ -84,7 +84,7 @@
       <template #item="{ item }">
         <div class="tip-card">
           <div class="tip-icon">
-            <span class="material-symbols-outlined">lightbulb</span>
+            <i class="material-icons">lightbulb</i>
             <span class="emoji-fallback">💡</span>
           </div>
           <div class="card-content">
@@ -133,7 +133,7 @@
             <p>{{ getShortDescription(item.short_description) }}</p>
             <div class="card-meta">
               <span class="date">
-                <span class="material-symbols-outlined">calendar_today</span>
+                <i class="material-icons">event</i>
                 <span class="emoji-fallback">📅</span>
                 {{ formatDate(item.start_date) }}
               </span>
@@ -165,7 +165,7 @@
             />
             <div class="video-overlay">
               <div class="play-button">
-                <span class="material-symbols-outlined">play_circle</span>
+                <i class="material-icons">play_circle</i>
                 <span class="emoji-fallback">▶️</span>
               </div>
               <div v-if="item.is_live" class="live-badge">
@@ -182,7 +182,7 @@
             <p>{{ getShortDescription(item.description) }}</p>
             <div class="card-meta">
               <span class="views">
-                <span class="material-symbols-outlined">visibility</span>
+                <i class="material-icons">visibility</i>
                 <span class="emoji-fallback">👁️</span>
                 {{ item.views_count || 0 }}
               </span>
@@ -433,8 +433,16 @@ export default {
       return labels[difficulty] || difficulty
     }
     
-    // Removed getPreparationTime and getTotalTime functions
-    // Now using item.total_time directly from the Recipe model accessor
+    const getPreparationTime = (item) => {
+      return item.preparation_time || 0
+    }
+    
+    const getTotalTime = (item) => {
+      const prepTime = item.preparation_time || 0
+      const cookTime = item.cooking_time || 0
+      const restTime = item.resting_time || 0
+      return prepTime + cookTime + restTime
+    }
     
     const getStatusClass = (status) => {
       return `status-${status}`
@@ -526,6 +534,8 @@ export default {
       // Utilitaires
       getShortDescription,
       getDifficultyLabel,
+      getPreparationTime,
+      getTotalTime,
       getStatusClass,
       getStatusLabel,
       formatDate,
@@ -616,7 +626,7 @@ export default {
   background: linear-gradient(135deg, #F4D03F 0%, #FF6B35 100%); /* Dégradé doré vers orange */
 }
 
-.tip-icon .material-symbols-outlined {
+.tip-icon .material-icons {
   font-size: 48px;
   color: #FFFFFF; /* Icône blanche sur fond coloré */
 }
@@ -758,9 +768,9 @@ export default {
   gap: 4px;
 }
 
-.likes .material-symbols-outlined,
-.views .material-symbols-outlined,
-.date .material-symbols-outlined {
+.likes .material-icons,
+.views .material-icons,
+.date .material-icons {
   font-size: 18px;
   margin-right: 6px;
   color: #8B7000; /* Couleur dorée pour les icônes */
@@ -968,8 +978,8 @@ export default {
   gap: 4px;
 }
 
-.likes .material-symbols-outlined,
-.date .material-symbols-outlined {
+.likes .material-icons,
+.date .material-icons {
   font-size: 18px;
   margin-right: 6px;
   color: #8B7000; /* Couleur dorée pour les icônes */
@@ -991,7 +1001,7 @@ export default {
   background: var(--md-sys-color-tertiary-container, #ffd8e4);
 }
 
-.tip-icon .material-symbols-outlined {
+.tip-icon .material-icons {
   font-size: 32px;
   color: var(--md-sys-color-on-tertiary-container, #31111d);
 }

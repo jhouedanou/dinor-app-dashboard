@@ -29,7 +29,7 @@
                 @error="handleImageError"
               >
               <div v-else class="team-logo-placeholder">
-                <span class="material-symbols-outlined">sports_soccer</span>
+                <i class="material-icons">sports_soccer</i>
               </div>
             </div>
             
@@ -53,7 +53,7 @@
       <!-- Empty State -->
       <div v-else class="empty-state">
         <div class="empty-icon">
-          <span class="material-symbols-outlined">sports_soccer</span>
+          <i class="material-icons">sports_soccer</i>
         </div>
         <h2 class="md3-title-large">Aucune équipe</h2>
         <p class="md3-body-large dinor-text-gray">Les équipes seront bientôt disponibles.</p>
