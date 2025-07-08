@@ -51,14 +51,31 @@ class TournamentController extends Controller
             $perPage = min($request->get('per_page', 12), 50);
             $tournaments = $query->paginate($perPage);
 
-            // Mettre à jour automatiquement le statut des tournois
+            // Mettre à jour automatiquement le statut des tournois et ajouter les données utilisateur
+            $user = Auth::user();
+            $tournamentData = [];
+            
             foreach ($tournaments as $tournament) {
                 $tournament->updateStatus();
+                
+                $data = $tournament->toArray();
+                
+                // Ajouter des données spécifiques à l'utilisateur connecté
+                if ($user) {
+                    $data['user_is_participant'] = $tournament->participants()
+                        ->where('user_id', $user->id)->exists();
+                    $data['user_can_register'] = $tournament->canUserRegister($user);
+                } else {
+                    $data['user_is_participant'] = false;
+                    $data['user_can_register'] = false;
+                }
+                
+                $tournamentData[] = $data;
             }
 
             return response()->json([
                 'success' => true,
-                'data' => $tournaments->items(),
+                'data' => $tournamentData,
                 'meta' => [
                     'current_page' => $tournaments->currentPage(),
                     'last_page' => $tournaments->lastPage(),
@@ -323,13 +340,30 @@ class TournamentController extends Controller
                 ->limit(6)
                 ->get();
 
+            $user = Auth::user();
+            $tournamentData = [];
+
             foreach ($tournaments as $tournament) {
                 $tournament->updateStatus();
+                
+                $data = $tournament->toArray();
+                
+                // Ajouter des données spécifiques à l'utilisateur connecté
+                if ($user) {
+                    $data['user_is_participant'] = $tournament->participants()
+                        ->where('user_id', $user->id)->exists();
+                    $data['user_can_register'] = $tournament->canUserRegister($user);
+                } else {
+                    $data['user_is_participant'] = false;
+                    $data['user_can_register'] = false;
+                }
+                
+                $tournamentData[] = $data;
             }
 
             return response()->json([
                 'success' => true,
-                'data' => $tournaments
+                'data' => $tournamentData
             ]);
 
         } catch (\Exception $e) {

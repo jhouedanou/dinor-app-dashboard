@@ -97,8 +97,14 @@ class RecipeResource extends Resource
                             ->maxSize(2048),
                             
                         Forms\Components\TextInput::make('video_url')
-                            ->label('URL Vidéo')
-                            ->url(),
+                            ->label('URL Vidéo principale')
+                            ->url()
+                            ->helperText('URL de la vidéo de la recette (YouTube, Vimeo, etc.)'),
+                            
+                        Forms\Components\TextInput::make('summary_video_url')
+                            ->label('URL Vidéo résumé')
+                            ->url()
+                            ->helperText('URL de la vidéo résumé (YouTube, Vimeo, etc.)'),
                     ])->columns(2),
 
                 Forms\Components\Section::make('Détails de la recette')
@@ -135,11 +141,13 @@ class RecipeResource extends Resource
                         Forms\Components\Select::make('difficulty')
                             ->label('Difficulté')
                             ->options([
+                                'beginner' => 'Débutant',
                                 'easy' => 'Facile',
-                                'medium' => 'Moyen',
+                                'medium' => 'Intermédiaire',
                                 'hard' => 'Difficile',
+                                'expert' => 'Expert',
                             ])
-                            ->default('easy'),
+                            ->default('beginner'),
 
                         Forms\Components\Select::make('meal_type')
                             ->label('Type de repas')
@@ -277,12 +285,16 @@ class RecipeResource extends Resource
                     ->badge()
                     ->color(function ($state) {
                         switch ($state) {
+                            case 'beginner':
+                                return 'info';
                             case 'easy':
                                 return 'success';
                             case 'medium':
                                 return 'warning';
                             case 'hard':
                                 return 'danger';
+                            case 'expert':
+                                return 'gray';
                             default:
                                 return 'gray';
                         }

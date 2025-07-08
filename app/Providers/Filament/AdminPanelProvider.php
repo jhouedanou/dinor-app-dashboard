@@ -108,6 +108,7 @@ class AdminPanelProvider extends PanelProvider
             ->navigationGroups([
                 'Contenu',
                 'Communication',
+                'Pronostics',
                 'Administration', 
                 'Interactions',
                 'Gestion',

@@ -30,7 +30,7 @@
                     @error="handleImageError"
                   >
                   <div v-else class="team-logo-placeholder">
-                    <i class="material-icons">sports_soccer</i>
+                    <span class="material-symbols-outlined">sports_soccer</span>
                   </div>
                   <span class="team-name">{{ currentMatch.home_team.name }}</span>
                 </div>
@@ -51,18 +51,18 @@
                     @error="handleImageError"
                   >
                   <div v-else class="team-logo-placeholder">
-                    <i class="material-icons">sports_soccer</i>
+                    <span class="material-symbols-outlined">sports_soccer</span>
                   </div>
                   <span class="team-name">{{ currentMatch.away_team.name }}</span>
                 </div>
               </div>
               
               <div v-if="currentMatch.can_predict" class="prediction-status can-predict">
-                <i class="material-icons">check_circle</i>
+                <span class="material-symbols-outlined">check_circle</span>
                 <span>Prédictions ouvertes</span>
               </div>
               <div v-else class="prediction-status closed">
-                <i class="material-icons">cancel</i>
+                <span class="material-symbols-outlined">cancel</span>
                 <span>Prédictions fermées</span>
               </div>
             </div>
@@ -130,7 +130,7 @@
         <div v-else class="no-match-section">
           <div class="no-match-card">
             <div class="no-match-icon">
-              <i class="material-icons">sports_soccer</i>
+              <span class="material-symbols-outlined">sports_soccer</span>
             </div>
             <h2 class="md3-title-medium">Aucun match en cours</h2>
             <p class="md3-body-medium dinor-text-gray">
@@ -140,7 +140,7 @@
             <div class="suggestions-grid">
               <div class="suggestion-card" @click="$router.push('/predictions/tournaments')">
                 <div class="suggestion-icon">
-                  <i class="material-icons">emoji_events</i>
+                  <span class="material-symbols-outlined">emoji_events</span>
                 </div>
                 <h3 class="suggestion-title">Explorer les tournois</h3>
                 <p class="suggestion-desc">Rejoignez des tournois et participez aux compétitions</p>
@@ -148,7 +148,7 @@
               
               <div class="suggestion-card" @click="$router.push('/predictions/leaderboard')">
                 <div class="suggestion-icon">
-                  <i class="material-icons">leaderboard</i>
+                  <span class="material-symbols-outlined">leaderboard</span>
                 </div>
                 <h3 class="suggestion-title">Voir le classement</h3>
                 <p class="suggestion-desc">Consultez les performances des autres joueurs</p>
@@ -156,7 +156,7 @@
               
               <div class="suggestion-card" @click="$router.push('/predictions/my-predictions')">
                 <div class="suggestion-icon">
-                  <i class="material-icons">history</i>
+                  <span class="material-symbols-outlined">history</span>
                 </div>
                 <h3 class="suggestion-title">Historique</h3>
                 <p class="suggestion-desc">Revoyez vos anciens pronostics et statistiques</p>
@@ -195,15 +195,15 @@
               
               <div class="tournament-info">
                 <div class="info-item">
-                  <i class="material-icons">group</i>
+                  <span class="material-symbols-outlined">group</span>
                   <span>{{ tournament.participants_count }} participants</span>
                 </div>
                 <div class="info-item" v-if="tournament.prize_pool > 0">
-                  <i class="material-icons">emoji_events</i>
+                  <span class="material-symbols-outlined">emoji_events</span>
                   <span>{{ formatPrize(tournament.prize_pool, tournament.currency) }}</span>
                 </div>
                 <div class="info-item">
-                  <i class="material-icons">schedule</i>
+                  <span class="material-symbols-outlined">schedule</span>
                   <span>{{ formatTournamentDate(tournament.end_date) }}</span>
                 </div>
               </div>
@@ -233,7 +233,7 @@
           <!-- Enhanced No Tournaments Fallback -->
           <div v-else class="no-tournaments-enhanced">
             <div class="no-tournaments-icon">
-              <i class="material-icons">emoji_events</i>
+              <span class="material-symbols-outlined">emoji_events</span>
             </div>
             <h3 class="md3-title-medium">Aucun tournoi disponible</h3>
             <p class="md3-body-medium dinor-text-gray">
@@ -245,15 +245,15 @@
                 <h4 class="md3-title-small">En attendant :</h4>
                 <ul class="fallback-list">
                   <li>
-                    <i class="material-icons">notifications</i>
+                    <span class="material-symbols-outlined">notifications</span>
                     <span>Activez les notifications pour être prévenu des nouveaux tournois</span>
                   </li>
                   <li>
-                    <i class="material-icons">schedule</i>
+                    <span class="material-symbols-outlined">schedule</span>
                     <span>Revenez régulièrement pour ne manquer aucune compétition</span>
                   </li>
                   <li v-if="!authStore.isAuthenticated">
-                    <i class="material-icons">person</i>
+                    <span class="material-symbols-outlined">person</span>
                     <span>Créez un compte pour participer aux prochains tournois</span>
                   </li>
                 </ul>
@@ -265,7 +265,7 @@
                   @click="showAuthModal = true" 
                   class="btn-primary"
                 >
-                  <i class="material-icons">person_add</i>
+                  <span class="material-symbols-outlined">person_add</span>
                   <span>Créer un compte</span>
                 </button>
                 <button 
@@ -273,7 +273,7 @@
                   @click="loadFeaturedTournaments" 
                   class="btn-secondary"
                 >
-                  <i class="material-icons">refresh</i>
+                  <span class="material-symbols-outlined">refresh</span>
                   <span>Actualiser</span>
                 </button>
               </div>
@@ -284,7 +284,7 @@
         <!-- Quick Actions -->
         <div class="quick-actions">
           <router-link to="/predictions/leaderboard" class="quick-action-card">
-            <i class="material-icons">leaderboard</i>
+            <span class="material-symbols-outlined">leaderboard</span>
             <div class="action-text">
               <h3 class="md3-title-small">Classement</h3>
               <p class="md3-body-small">Voir les meilleurs pronostiqueurs</p>
@@ -292,7 +292,7 @@
           </router-link>
           
           <router-link to="/predictions/my-predictions" class="quick-action-card">
-            <i class="material-icons">history</i>
+            <span class="material-symbols-outlined">history</span>
             <div class="action-text">
               <h3 class="md3-title-small">Mes prédictions</h3>
               <p class="md3-body-small">Historique et statistiques</p>

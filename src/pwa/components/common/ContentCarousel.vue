@@ -4,7 +4,7 @@
       <h2>{{ title }}</h2>
       <router-link :to="viewAllLink" class="see-all-btn">
         Voir tout
-        <i class="material-icons">arrow_forward</i>
+        <span class="material-symbols-outlined">arrow_forward</span>
       </router-link>
     </div>
     
@@ -15,12 +15,12 @@
       </div>
       
       <div v-else-if="error" class="carousel-error">
-        <i class="material-icons">error</i>
+        <span class="material-symbols-outlined">error</span>
         <p>Erreur lors du chargement</p>
       </div>
       
       <div v-else-if="items.length === 0" class="carousel-empty">
-        <i class="material-icons">info</i>
+        <span class="material-symbols-outlined">info</span>
         <p>Aucun contenu disponible</p>
       </div>
       
@@ -55,7 +55,7 @@
                 </div>
                 
                 <div v-else class="card-icon">
-                  <i class="material-icons">{{ getTypeIcon() }}</i>
+                  <span class="material-symbols-outlined">{{ getTypeIcon() }}</span>
                 </div>
                 
                 <div class="card-content">
@@ -63,11 +63,11 @@
                   <p>{{ getShortDescription(item.short_description || item.content || item.description) }}</p>
                   <div class="card-meta">
                     <span v-if="item.likes_count" class="likes">
-                      <i class="material-icons">thumb_up</i>
+                      <span class="material-symbols-outlined">thumb_up</span>
                       {{ item.likes_count }}
                     </span>
                     <span v-if="item.favorites_count" class="favorites">
-                      <i class="material-icons">favorite</i>
+                      <span class="material-symbols-outlined">favorite</span>
                       {{ item.favorites_count }}
                     </span>
                     <span v-if="item.created_at" class="date">
@@ -90,14 +90,14 @@
             class="carousel-btn prev"
             :disabled="!canScrollLeft"
           >
-            <i class="material-icons">chevron_left</i>
+            <span class="material-symbols-outlined">chevron_left</span>
           </button>
           <button 
             @click="scrollCarousel(1)" 
             class="carousel-btn next"
             :disabled="!canScrollRight"
           >
-            <i class="material-icons">chevron_right</i>
+            <span class="material-symbols-outlined">chevron_right</span>
           </button>
         </div>
         
@@ -424,7 +424,7 @@ export default {
   box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
 }
 
-.see-all-btn .material-icons {
+.see-all-btn .material-symbols-outlined {
   font-size: 18px;
 }
 
@@ -458,8 +458,8 @@ export default {
   100% { transform: rotate(360deg); }
 }
 
-.carousel-error .material-icons,
-.carousel-empty .material-icons {
+.carousel-error .material-symbols-outlined,
+.carousel-empty .material-symbols-outlined {
   font-size: 48px;
   color: #4A5568; /* Gris foncé - contraste 7.5:1 */
   margin-bottom: 12px;
@@ -655,7 +655,7 @@ export default {
   transform: translate(-50%, -50%) scale(1.1);
 }
 
-.play-button .material-icons {
+.play-button .material-symbols-outlined {
   font-size: 28px;
   color: #FFFFFF;
 }
@@ -668,7 +668,7 @@ export default {
   background: #F7FAFC;
 }
 
-.card-icon .material-icons {
+.card-icon .material-symbols-outlined {
   font-size: 64px;
   color: #E53E3E;
 }
@@ -685,7 +685,7 @@ export default {
   flex-shrink: 0;
 }
 
-.tip-icon .material-icons {
+.tip-icon .material-symbols-outlined {
   font-size: 24px;
   color: #2D3748;
 }
@@ -740,13 +740,13 @@ export default {
   gap: 4px;
 }
 
-.likes .material-icons {
+.likes .material-symbols-outlined {
   font-size: 16px;
   color: #3182CE;
 }
 
-.favorites .material-icons,
-.views .material-icons {
+.favorites .material-symbols-outlined,
+.views .material-symbols-outlined {
   font-size: 16px;
   color: #E53E3E;
 }
@@ -801,7 +801,7 @@ export default {
   transform: scale(1.1);
 }
 
-.carousel-btn:hover:not(:disabled) .material-icons {
+.carousel-btn:hover:not(:disabled) .material-symbols-outlined {
   color: #FFFFFF;
 }
 
@@ -810,7 +810,7 @@ export default {
   cursor: not-allowed;
 }
 
-.carousel-btn .material-icons {
+.carousel-btn .material-symbols-outlined {
   font-size: 24px;
   color: #2D3748;
   transition: color 0.2s ease;

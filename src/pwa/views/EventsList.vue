@@ -10,7 +10,8 @@
     <!-- Toggle Filters Button -->
     <div class="filters-toggle">
       <button @click="showFilters = !showFilters" class="toggle-btn">
-        <i class="material-icons">{{ showFilters ? 'expand_less' : 'expand_more' }}</i>
+        <span class="material-symbols-outlined">{{ showFilters ? 'expand_less' : 'expand_more' }}</span>
+        <span class="emoji-fallback">{{ showFilters ? '▲' : '▼' }}</span>
         <span>{{ showFilters ? 'Masquer les filtres' : 'Afficher les filtres' }}</span>
       </button>
     </div>
@@ -53,7 +54,7 @@
       <!-- Empty State -->
       <div v-if="!filteredEvents.length && !loading" class="empty-state">
         <div class="empty-icon">
-          <span class="material-symbols-outlined">event</span>
+          <span class="material-symbols-outlined">calendar_today</span>
           <span class="emoji-fallback">📅</span>
         </div>
         <h2 class="md3-title-medium">Aucun événement trouvé</h2>

@@ -12,8 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('leaderboards', function (Blueprint $table) {
-            $table->integer('rank')->nullable()->after('accuracy_percentage');
-            $table->integer('correct_predictions')->default(0)->after('correct_winners');
+            // Vérifier si la colonne 'rank' n'existe pas déjà
+            if (!Schema::hasColumn('leaderboards', 'rank')) {
+                $table->integer('rank')->nullable()->after('accuracy_percentage');
+            }
+            
+            // Vérifier si la colonne 'correct_predictions' n'existe pas déjà
+            if (!Schema::hasColumn('leaderboards', 'correct_predictions')) {
+                $table->integer('correct_predictions')->default(0)->after('correct_winners');
+            }
         });
     }
 
@@ -23,7 +30,13 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('leaderboards', function (Blueprint $table) {
-            $table->dropColumn(['rank', 'correct_predictions']);
+            // Seulement supprimer les colonnes si elles existent
+            if (Schema::hasColumn('leaderboards', 'rank')) {
+                $table->dropColumn('rank');
+            }
+            if (Schema::hasColumn('leaderboards', 'correct_predictions')) {
+                $table->dropColumn('correct_predictions');
+            }
         });
     }
 };
