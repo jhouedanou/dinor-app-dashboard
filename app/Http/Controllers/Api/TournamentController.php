@@ -261,15 +261,16 @@ class TournamentController extends Controller
     public function myTournaments(Request $request)
     {
         try {
-            if (!Auth::check()) {
+            // Utiliser Auth::guard('sanctum') pour supporter les tokens Bearer
+            $user = Auth::guard('sanctum')->user();
+            
+            if (!$user) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Vous devez être connecté',
                     'error' => 'AUTHENTICATION_REQUIRED'
                 ], 401);
             }
-
-            $user = Auth::user();
             
             $tournaments = Tournament::whereHas('participants', function ($query) use ($user) {
                 $query->where('user_id', $user->id)
@@ -296,14 +297,17 @@ class TournamentController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $data
+                'data' => $data,
+                'count' => $data->count(),
+                'message' => $data->count() > 0 ? 'Tournois trouvés' : 'Vous n\'êtes inscrit à aucun tournoi actif'
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors du chargement de vos tournois',
-                'error' => 'MY_TOURNAMENTS_ERROR'
+                'error' => 'MY_TOURNAMENTS_ERROR',
+                'debug' => config('app.debug') ? $e->getMessage() : null
             ], 500);
         }
     }

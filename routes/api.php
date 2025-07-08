@@ -99,6 +99,9 @@ Route::prefix('v1/auth')->group(function () {
 // Routes publiques pour l'app mobile
 Route::prefix('v1')->group(function () {
     
+    // Route spécifique tournois (DOIT être avant toute route {tournament})
+    Route::middleware('auth:sanctum')->get('/tournaments/my-tournaments', [App\Http\Controllers\Api\TournamentController::class, 'myTournaments']);
+    
     // Recettes
     Route::get('/recipes', [RecipeController::class, 'index']);
     Route::get('/recipes/{id}', [RecipeController::class, 'show']);
@@ -362,7 +365,6 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     Route::post('/leaderboard/refresh', [App\Http\Controllers\Api\LeaderboardController::class, 'refresh']);
     
     // Tournois - Routes protégées
-    Route::get('/tournaments/my-tournaments', [App\Http\Controllers\Api\TournamentController::class, 'myTournaments']);
     Route::post('/tournaments/{tournament}/register', [App\Http\Controllers\Api\TournamentController::class, 'register']);
     Route::delete('/tournaments/{tournament}/register', [App\Http\Controllers\Api\TournamentController::class, 'unregister']);
     
@@ -473,6 +475,10 @@ Route::prefix('test')->group(function () {
             'categories_count' => \App\Models\Category::count(),
             'tips_count' => \App\Models\Tip::count(),
             'users_count' => \App\Models\User::count(),
+            'tournaments_count' => \App\Models\Tournament::count(),
+            'tournament_participants_count' => \App\Models\TournamentParticipant::count(),
+            'predictions_count' => \App\Models\Prediction::count(),
+            'football_matches_count' => \App\Models\FootballMatch::count(),
         ]);
     });
 });
@@ -489,4 +495,33 @@ Route::prefix('pwa/cache')->group(function () {
     // Nouvel endpoint pour vérifier l'état du cache et les invalidations
     Route::get('status', [CacheController::class, 'getStatus']);
     Route::post('invalidate-content', [CacheController::class, 'invalidateContent']);
+});
+
+// Route de test spécifique pour les tournois
+Route::get('/test/tournaments-debug', function() {
+    try {
+        $tournamentsCount = \App\Models\Tournament::count();
+        $participantsCount = \App\Models\TournamentParticipant::count();
+        $predictionsCount = \App\Models\Prediction::count();
+        
+        // Vérifier si l'utilisateur 4 (Fatima) a des participations
+        $userParticipations = \App\Models\TournamentParticipant::where('user_id', 4)->get();
+        
+        // Récupérer tous les tournois
+        $allTournaments = \App\Models\Tournament::with('participants')->get();
+        
+        return response()->json([
+            'tournaments_count' => $tournamentsCount,
+            'participants_count' => $participantsCount,
+            'predictions_count' => $predictionsCount,
+            'user_4_participations' => $userParticipations,
+            'all_tournaments' => $allTournaments,
+            'message' => 'Debug des tournois'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+    }
 }); 

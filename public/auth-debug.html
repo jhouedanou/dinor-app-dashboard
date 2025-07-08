@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Authentification</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 20px; border: 1px solid #ccc; }
+        button { padding: 10px 20px; margin: 10px; }
+        .result { background: #f5f5f5; padding: 10px; margin: 10px 0; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>Debug Authentification Dinor</h1>
+    
+    <div class="section">
+        <h2>État Local Storage</h2>
+        <button onclick="checkLocalStorage()">Vérifier localStorage</button>
+        <div id="localStorage-result" class="result"></div>
+    </div>
+
+    <div class="section">
+        <h2>Test Connexion</h2>
+        <input type="email" id="email" placeholder="Email" value="admin@dinor.app">
+        <input type="password" id="password" placeholder="Mot de passe" value="password">
+        <button onclick="testLogin()">Tester connexion</button>
+        <div id="login-result" class="result"></div>
+    </div>
+
+    <div class="section">
+        <h2>Test API avec Token</h2>
+        <button onclick="testAuthenticatedAPI()">Tester /leaderboard/my-stats</button>
+        <button onclick="testAuthenticatedAPI2()">Tester /predictions/my-recent</button>
+        <button onclick="testAuthenticatedAPI3()">Tester /tournaments/my-tournaments</button>
+        <div id="api-result" class="result"></div>
+    </div>
+
+    <script>
+        function checkLocalStorage() {
+            const token = localStorage.getItem('auth_token');
+            const user = localStorage.getItem('auth_user');
+            
+            const result = {
+                token: token ? `Existe (${token.length} caractères)` : 'Aucun token',
+                tokenValue: token ? token.substring(0, 50) + '...' : null,
+                user: user ? JSON.parse(user) : 'Aucun utilisateur',
+                timestamp: new Date().toISOString()
+            };
+            
+            document.getElementById('localStorage-result').textContent = JSON.stringify(result, null, 2);
+        }
+
+        async function testLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch('/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    localStorage.setItem('auth_token', result.data.token);
+                    localStorage.setItem('auth_user', JSON.stringify(result.data.user));
+                }
+                
+                document.getElementById('login-result').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('login-result').textContent = `Erreur: ${error.message}`;
+            }
+        }
+
+        async function testAuthenticatedAPI() {
+            await testAPI('/leaderboard/my-stats');
+        }
+
+        async function testAuthenticatedAPI2() {
+            await testAPI('/predictions/my-recent?limit=5');
+        }
+
+        async function testAuthenticatedAPI3() {
+            await testAPI('/tournaments/my-tournaments');
+        }
+
+        async function testAPI(endpoint) {
+            const token = localStorage.getItem('auth_token');
+            
+            const headers = {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            };
+            
+            if (token) {
+                headers.Authorization = `Bearer ${token}`;
+            }
+            
+            try {
+                console.log(`Testing ${endpoint} with headers:`, headers);
+                
+                const response = await fetch(`/api/v1${endpoint}`, {
+                    method: 'GET',
+                    headers: headers
+                });
+                
+                const result = await response.json();
+                
+                const debugInfo = {
+                    endpoint: endpoint,
+                    status: response.status,
+                    statusText: response.statusText,
+                    hasToken: !!token,
+                    tokenPreview: token ? token.substring(0, 20) + '...' : null,
+                    result: result,
+                    timestamp: new Date().toISOString()
+                };
+                
+                document.getElementById('api-result').textContent = JSON.stringify(debugInfo, null, 2);
+                console.log('API Test Result:', debugInfo);
+                
+            } catch (error) {
+                document.getElementById('api-result').textContent = `Erreur: ${error.message}`;
+            }
+        }
+
+        // Charger automatiquement l'état au chargement
+        window.onload = function() {
+            checkLocalStorage();
+        };
+    </script>
+</body>
+</html> 

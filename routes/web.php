@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginErrorController;
+use App\Models\User;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,7 +16,7 @@ use App\Http\Controllers\Auth\LoginErrorController;
 */
 
 Route::get('/', function () {
-    return redirect('/admin');
+    return view('welcome');
 });
 
 Route::get('/dashboard', function () {
@@ -181,3 +182,73 @@ Route::get('/pwa/{path?}', function ($path = null) {
 
 // Route pour la page d'erreur de connexion admin
 Route::get('/admin/login-error', [LoginErrorController::class, 'show'])->name('admin.login.error');
+
+// Route pour les erreurs de login depuis le dashboard
+Route::get('/login-error', [LoginErrorController::class, 'show'])->name('login.error');
+
+// Route de test d'authentification
+Route::get('/test-auth', function () {
+    return view('test-auth');
+});
+
+// Route de debug des tournois
+Route::get('/tournaments-debug', function () {
+    try {
+        $tournamentsCount = \App\Models\Tournament::count();
+        $participantsCount = \App\Models\TournamentParticipant::count();
+        $predictionsCount = \App\Models\Prediction::count();
+        
+        // Vérifier si l'utilisateur 4 (Fatima) a des participations
+        $userParticipations = \App\Models\TournamentParticipant::where('user_id', 4)->get();
+        
+        // Récupérer tous les tournois
+        $allTournaments = \App\Models\Tournament::with('participants')->get();
+        
+        return response()->json([
+            'tournaments_count' => $tournamentsCount,
+            'participants_count' => $participantsCount,
+            'predictions_count' => $predictionsCount,
+            'user_4_participations' => $userParticipations,
+            'all_tournaments' => $allTournaments,
+            'message' => 'Debug des tournois'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+    }
+});
+
+// Route pour créer un token de test
+Route::post('/test-create-token', function () {
+    try {
+        $user = User::first();
+        
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Aucun utilisateur trouvé en base de données'
+            ]);
+        }
+        
+        // Supprimer les anciens tokens
+        $user->tokens()->delete();
+        
+        // Créer un nouveau token
+        $token = $user->createToken('test-browser-' . now()->timestamp);
+        
+        return response()->json([
+            'success' => true,
+            'token' => $token->plainTextToken,
+            'user' => $user,
+            'message' => 'Token de test créé avec succès'
+        ]);
+        
+    } catch (Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Erreur: ' . $e->getMessage()
+        ]);
+    }
+});
