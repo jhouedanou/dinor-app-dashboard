@@ -53,10 +53,8 @@ FROM base as dependencies
 COPY composer.json composer.lock ./
 COPY package.json package-lock.json ./
 
-# Install dependencies with cache mounts pour BuildKit
-RUN --mount=type=cache,target=/root/.composer/cache \
-    --mount=type=cache,target=/root/.npm \
-    composer install --optimize-autoloader --no-scripts --no-dev --no-interaction \
+# Install dependencies without cache mounts to avoid blocking issues
+RUN composer install --optimize-autoloader --no-scripts --no-dev --no-interaction \
     && npm ci
 
 # Production stage
@@ -89,9 +87,8 @@ ENV CACHE_DRIVER=file \
     SESSION_DRIVER=file \
     APP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
 
-# Build assets with cache mount pour optimiser les builds
-RUN --mount=type=cache,target=/root/.npm \
-    npm ci && npm run build && npm run pwa:build && npm prune --production
+# Build assets without cache mount to avoid blocking issues
+RUN npm ci && npm run build && npm run pwa:build && npm prune --production
 
 # Create entrypoint script
 RUN echo '#!/bin/bash\n\

@@ -100,6 +100,7 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                \App\Http\Middleware\DisablePwaForAdmin::class,
             ])
             ->authMiddleware([
                 FilamentAdminAuth::class,
@@ -113,6 +114,7 @@ class AdminPanelProvider extends PanelProvider
                 'Configuration PWA',
             ])
             ->databaseNotifications()
-            ->viteTheme('resources/css/filament/admin/theme.css');
+            ->viteTheme('resources/css/filament/admin/theme.css')
+            ->spa(false); // Désactiver SPA et utiliser les assets compilés
     }
 } 

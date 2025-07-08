@@ -66,7 +66,11 @@ self.addEventListener('fetch', (event) => {
   }
   
   // Ignorer le manifest.json et les ressources de dev Vite
-  if (url.pathname === '/manifest.json' || url.pathname.startsWith('/@vite') || url.pathname.startsWith('/@fs')) {
+  if (url.pathname === '/manifest.json' || 
+      url.pathname.startsWith('/@vite') || 
+      url.pathname.startsWith('/@fs') ||
+      url.pathname.includes('/resources/css/filament/') ||
+      url.hostname === 'localhost' && url.port === '5173') {
     return; // Laisser le navigateur gérer ces requêtes
   }
 
@@ -82,11 +86,15 @@ self.addEventListener('fetch', (event) => {
     fetch(request).then((networkResponse) => {
       console.log('🌐 [SW] Requête réseau pour asset:', url.pathname);
       
+      // IMPORTANT: Cloner la réponse AVANT toute utilisation pour éviter "Response body is already used"
+      const responseClone = networkResponse.clone();
+      
       // Optionnel: mettre en cache les nouvelles ressources statiques seulement
       if (networkResponse.ok && !url.pathname.includes('/api/')) {
         caches.open(STATIC_CACHE_NAME).then((cache) => {
-          const responseToCache = networkResponse.clone();
-          cache.put(request, responseToCache);
+          cache.put(request, responseClone);
+        }).catch(error => {
+          console.warn('⚠️ [SW] Erreur lors de la mise en cache:', error);
         });
       }
       

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nettoyage Service Workers</title>
+</head>
+<body>
+    <h1>🧹 Nettoyage des Service Workers</h1>
+    <p id="status">Nettoyage en cours...</p>
+    
+    <script>
+    async function cleanAllServiceWorkers() {
+        const status = document.getElementById('status');
+        
+        if ('serviceWorker' in navigator) {
+            try {
+                // Désenregistrer tous les service workers
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                
+                for (let registration of registrations) {
+                    await registration.unregister();
+                    console.log('🗑️ Service Worker désinscrit:', registration.scope);
+                }
+                
+                // Nettoyer tous les caches
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    await Promise.all(
+                        cacheNames.map(cacheName => {
+                            console.log('🗑️ Cache supprimé:', cacheName);
+                            return caches.delete(cacheName);
+                        })
+                    );
+                }
+                
+                status.innerHTML = `
+                    ✅ Nettoyage terminé !<br>
+                    🗑️ ${registrations.length} Service Worker(s) supprimé(s)<br>
+                    🗑️ Tous les caches supprimés<br><br>
+                    <strong>Rechargez maintenant la page Filament :</strong><br>
+                    <a href="/admin/login" style="color: blue; text-decoration: underline;">
+                        📱 Accéder à Filament Admin
+                    </a>
+                `;
+                
+            } catch (error) {
+                status.innerHTML = '❌ Erreur: ' + error.message;
+            }
+        } else {
+            status.innerHTML = '⚠️ Service Workers non supportés par ce navigateur';
+        }
+    }
+    
+    // Démarrer le nettoyage automatiquement
+    cleanAllServiceWorkers();
+    </script>
+</body>
+</html> 

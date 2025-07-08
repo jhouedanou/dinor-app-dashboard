@@ -1,0 +1,193 @@
+# Configuration pour l'automatisation du build et du vidage du cache
+# Fichier généré automatiquement par setup-auto-build.sh
+
+# Répertoires à surveiller
+WATCH_DIRS=("app" "resources" "config" "routes" "database" "src")
+
+# Patterns à exclure
+EXCLUDE_PATTERNS=("*.log" "*.tmp" "*.cache" "node_modules/*" "vendor/*" ".git/*" "storage/logs/*" "storage/framework/cache/*")
+
+# Délai entre les builds (en secondes)
+BUILD_DELAY=2
+
+# Mode par défaut (dev/prod)
+DEFAULT_MODE="dev"
+
+# Serveurs par défaut
+DEFAULT_SERVERS=("laravel" "pwa")
+
+# Configuration des ports
+LARAVEL_PORT=8000
+PWA_PORT=5173
+BROWSERSYNC_PORT=3001
+
+# Configuration du cache
+CACHE_TAGS=("pwa" "recipes" "events" "tips" "dinor-tv" "pages")
+CACHE_PREFIX="dinor_cache_"
+
+# Configuration des logs
+LOG_LEVEL="info"
+LOG_FILE="storage/logs/auto-build.log"
+
+# Configuration de la surveillance
+WATCH_EVENTS=("modify" "create" "delete" "move")
+WATCH_RECURSIVE=true
+WATCH_MONITOR=true
+
+# Configuration des builds
+BUILD_LARAVEL=true
+BUILD_PWA=true
+BUILD_OPTIMIZE=true
+
+# Configuration des caches à vider
+CLEAR_CACHE_GENERAL=true
+CLEAR_CACHE_CONFIG=true
+CLEAR_CACHE_VIEWS=true
+CLEAR_CACHE_ROUTES=true
+CLEAR_CACHE_PWA=true
+CLEAR_CACHE_LIVEWIRE=true
+
+# Configuration des optimisations
+OPTIMIZE_AUTOLOADER=true
+OPTIMIZE_CONFIG_CACHE=true
+OPTIMIZE_ROUTE_CACHE=true
+OPTIMIZE_VIEW_CACHE=true
+OPTIMIZE_FILAMENT=true
+
+# Configuration des notifications
+NOTIFY_ON_BUILD=true
+NOTIFY_ON_ERROR=true
+NOTIFY_ON_SUCCESS=true
+
+# Configuration de la production
+PROD_BUILD_OPTIMIZE=true
+PROD_CACHE_DRIVER="redis"
+PROD_SESSION_DRIVER="redis"
+PROD_QUEUE_DRIVER="redis"
+
+# Configuration du développement
+DEV_HOT_RELOAD=true
+DEV_BROWSER_SYNC=true
+DEV_LIVE_RELOAD=true
+
+# Configuration des timeouts
+BUILD_TIMEOUT=300
+WATCH_TIMEOUT=3600
+CACHE_TIMEOUT=60
+
+# Configuration des exclusions spécifiques
+EXCLUDE_FILES=("*.swp" "*.swo" "*.bak" "*.orig" "*.rej")
+EXCLUDE_DIRS=(".git" "node_modules" "vendor" "storage/logs" "storage/framework/cache" "storage/framework/sessions" "storage/framework/views")
+
+# Configuration des patterns de fichiers sensibles
+SENSITIVE_FILES=(".env" ".env.*" "*.key" "*.pem" "*.crt" "*.p12")
+
+# Configuration des hooks
+PRE_BUILD_HOOK=""
+POST_BUILD_HOOK=""
+PRE_CACHE_CLEAR_HOOK=""
+POST_CACHE_CLEAR_HOOK=""
+
+# Configuration des environnements
+ENVIRONMENTS=("local" "staging" "production")
+CURRENT_ENVIRONMENT="local"
+
+# Configuration des serveurs de développement
+DEV_SERVERS=(
+    "laravel:php artisan serve --host=0.0.0.0 --port=8000"
+    "pwa:npm run pwa:dev"
+    "browsersync:npx browser-sync start --config browser-sync.config.js"
+)
+
+# Configuration des commandes de build
+BUILD_COMMANDS=(
+    "laravel:composer dump-autoload --optimize"
+    "laravel:php artisan config:cache"
+    "laravel:php artisan route:cache"
+    "laravel:php artisan view:cache"
+    "pwa:npm run pwa:build"
+    "filament:php artisan filament:optimize-clear"
+)
+
+# Configuration des commandes de vidage de cache
+CACHE_CLEAR_COMMANDS=(
+    "laravel:php artisan cache:clear"
+    "laravel:php artisan config:clear"
+    "laravel:php artisan view:clear"
+    "laravel:php artisan route:clear"
+    "laravel:php artisan livewire:discover"
+    "pwa:npm run pwa:clear-cache"
+)
+
+# Configuration des vérifications de santé
+HEALTH_CHECKS=(
+    "laravel:php artisan --version"
+    "node:node --version"
+    "npm:npm --version"
+    "composer:composer --version"
+    "inotify:inotifywait --version"
+)
+
+# Configuration des métriques
+METRICS_ENABLED=true
+METRICS_BUILD_TIME=true
+METRICS_CACHE_SIZE=true
+METRICS_FILE_COUNT=true
+METRICS_ERROR_RATE=true
+
+# Configuration des alertes
+ALERTS_ENABLED=true
+ALERTS_BUILD_FAILURE=true
+ALERTS_CACHE_ERROR=true
+ALERTS_DISK_SPACE=true
+ALERTS_MEMORY_USAGE=true
+
+# Configuration des seuils
+THRESHOLD_BUILD_TIME=300
+THRESHOLD_CACHE_SIZE=100
+THRESHOLD_DISK_USAGE=90
+THRESHOLD_MEMORY_USAGE=80
+
+# Configuration des sauvegardes
+BACKUP_ENABLED=true
+BACKUP_BEFORE_BUILD=true
+BACKUP_CACHE_DIRS=("storage/framework/cache" "storage/framework/views" "bootstrap/cache")
+BACKUP_RETENTION_DAYS=7
+
+# Configuration de la journalisation
+LOGGING_ENABLED=true
+LOGGING_LEVEL="info"
+LOGGING_FORMAT="json"
+LOGGING_ROTATION=true
+LOGGING_MAX_SIZE="10M"
+LOGGING_MAX_FILES=5
+
+# Configuration des performances
+PERFORMANCE_MODE=false
+PERFORMANCE_PARALLEL_BUILDS=2
+PERFORMANCE_CACHE_WARMUP=true
+PERFORMANCE_LAZY_LOADING=true
+
+# Configuration de la sécurité
+SECURITY_ENABLED=true
+SECURITY_FILE_PERMISSIONS=true
+SECURITY_EXCLUDE_SENSITIVE=true
+SECURITY_VALIDATE_PATHS=true
+
+# Configuration des tests
+TESTS_ENABLED=true
+TESTS_RUN_AFTER_BUILD=false
+TESTS_RUN_AFTER_CACHE_CLEAR=false
+TESTS_COMMAND="php artisan test"
+
+# Configuration du monitoring
+MONITORING_ENABLED=true
+MONITORING_INTERVAL=30
+MONITORING_METRICS=("cpu" "memory" "disk" "network")
+MONITORING_ALERTS=true
+
+# Configuration des mises à jour
+UPDATES_ENABLED=true
+UPDATES_CHECK_INTERVAL=86400
+UPDATES_AUTO_UPDATE=false
+UPDATES_BACKUP_BEFORE_UPDATE=true 

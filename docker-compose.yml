@@ -3,11 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      cache_to:
-        - type=local,dest=/tmp/.buildx-cache-new,mode=max
       target: production
-      args:
-        BUILDKIT_INLINE_CACHE: 1
     image: dinor-dashboard
     container_name: dinor-app
     restart: unless-stopped
@@ -27,7 +23,6 @@ services:
         condition: service_healthy
     ports:
       - "8000:80"
-      - "5173:5173"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80"]
       interval: 30s

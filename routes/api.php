@@ -190,6 +190,10 @@ Route::post('/event-categories/check-exists', [App\Http\Controllers\Api\EventCat
     Route::get('/tournaments/{tournament}', [App\Http\Controllers\Api\TournamentController::class, 'show']);
     Route::get('/tournaments/{tournament}/leaderboard', [App\Http\Controllers\Api\TournamentController::class, 'leaderboard']);
     
+    // Leaderboard - Routes publiques
+    Route::get('/leaderboard', [App\Http\Controllers\Api\LeaderboardController::class, 'index']);
+    Route::get('/leaderboard/top', [App\Http\Controllers\Api\LeaderboardController::class, 'top']);
+    
     // Route de test avec vrais favoris de la base de données
     Route::get('/favorites-real', function() {
         try {
