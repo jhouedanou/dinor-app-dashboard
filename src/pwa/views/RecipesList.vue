@@ -12,11 +12,11 @@
     <!-- Toggle Filters Button -->
     <div class="filters-toggle">
       <button @click="showFilters = !showFilters" class="toggle-btn">
-        <span class="material-symbols-outlined">{{ showFilters ? 'expand_less' : 'expand_more' }}</span>
+        <i class="material-icons">{{ showFilters ? 'expand_less' : 'expand_more' }}</i>
         <span>{{ showFilters ? 'Masquer les filtres' : 'Afficher les filtres' }}</span>
       </button>
       <button @click="forceRefresh" class="refresh-btn" title="Actualiser les données" :disabled="loading">
-        <span class="material-symbols-outlined" :class="{ 'spinning': loading }">refresh</span>
+        <i class="material-icons" :class="{ 'spinning': loading }">refresh</i>
         <span>Actualiser</span>
       </button>
     </div>

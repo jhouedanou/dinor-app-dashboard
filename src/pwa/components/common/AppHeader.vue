@@ -6,7 +6,7 @@
         @click="handleBack" 
         class="md3-icon-button"
       >
-        <span class="material-symbols-outlined">arrow_back</span>
+        <i class="material-icons">arrow_back</i>
         <span class="emoji-fallback">⬅️</span>
       </button>
       
@@ -56,7 +56,7 @@
             <div v-if="favoriteLoading" class="loading-spinner-header"></div>
             <!-- Heart icon -->
             <template v-else>
-              <span class="material-symbols-outlined">{{ isFavorited ? 'favorite' : 'favorite_border' }}</span>
+              <i class="material-icons">{{ isFavorited ? 'favorite' : 'favorite_border' }}</i>
               <span class="emoji-fallback">{{ isFavorited ? '❤️' : '🤍' }}</span>
             </template>
           </button>
@@ -65,7 +65,7 @@
             @click="handleShare" 
             class="md3-icon-button"
           >
-            <span class="material-symbols-outlined">share</span>
+            <i class="material-icons">share</i>
             <span class="emoji-fallback">📤</span>
           </button>
         </slot>
@@ -462,13 +462,13 @@ export default {
   background: rgba(255, 255, 255, 0.1);
 }
 
-.md3-icon-button span.material-symbols-outlined {
+.md3-icon-button span.material-icons {
   color: #FFFFFF; /* Blanc sur rouge - contraste 4.5:1 */
   font-size: 20px; /* Taille d'icône réduite */
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
 }
 
-.md3-icon-button.liked span.material-symbols-outlined {
+.md3-icon-button.liked span.material-icons {
   color: #F4D03F; /* Doré pour les favoris */
   font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 20;
 }
@@ -478,12 +478,12 @@ export default {
   display: none; /* Masqué par défaut */
 }
 
-.material-symbols-outlined {
+.material-icons {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
 }
 
 /* UNIQUEMENT quand .force-emoji est présent sur html, afficher les emoji */
-html.force-emoji .material-symbols-outlined {
+html.force-emoji .material-icons {
   display: none !important;
 }
 
@@ -491,13 +491,13 @@ html.force-emoji .emoji-fallback {
   display: inline-block !important;
 }
 
-.md3-icon-button span.material-symbols-outlined {
+.md3-icon-button span.material-icons {
   color: #FFFFFF; /* Blanc sur rouge - contraste 4.5:1 */
   font-size: 20px; /* Taille d'icône réduite */
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
 }
 
-.md3-icon-button.liked span.material-symbols-outlined {
+.md3-icon-button.liked span.material-icons {
   color: #F4D03F; /* Doré pour les likes/favoris */
   font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 20;
 }

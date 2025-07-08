@@ -25,7 +25,7 @@ Route::get('/dashboard', function () {
 
 // Route pour la PWA
 Route::get('/pwa', function () {
-    return response()->file(public_path('pwa/index.html'), [
+    return response()->file(public_path('pwa/dist/index.html'), [
         'Content-Type' => 'text/html; charset=utf-8',
         'Cache-Control' => 'no-cache, no-store, must-revalidate'
     ]);
@@ -130,15 +130,15 @@ Route::get('/pwa/{file}', function ($file) {
         return response()->file($filePath, ['Content-Type' => $contentType]);
     }
     // Rediriger vers la version buildée par défaut
-    return response()->file(public_path('pwa/index.html'), [
+    return response()->file(public_path('pwa/dist/index.html'), [
         'Content-Type' => 'text/html; charset=utf-8',
         'Cache-Control' => 'no-cache, no-store, must-revalidate'
     ]);
 })->where('file', '[^/]+');
 
-// Routes pour servir les assets de la PWA
-Route::get('/pwa/assets/{path?}', function ($path = null) {
-    $filePath = public_path("pwa/assets/{$path}");
+// Routes pour servir la PWA buildée
+Route::get('/pwa/dist/{path?}', function ($path = null) {
+    $filePath = public_path("pwa/dist/{$path}");
     
     // Si c'est un fichier et qu'il existe
     if ($path && file_exists($filePath) && !is_dir($filePath)) {
@@ -165,7 +165,7 @@ Route::get('/pwa/assets/{path?}', function ($path = null) {
     }
     
     // Sinon, servir l'index.html de la PWA
-    return response()->file(public_path('pwa/index.html'), [
+    return response()->file(public_path('pwa/dist/index.html'), [
         'Content-Type' => 'text/html; charset=utf-8',
         'Cache-Control' => 'no-cache, no-store, must-revalidate'
     ]);
@@ -174,7 +174,7 @@ Route::get('/pwa/assets/{path?}', function ($path = null) {
 // Route catch-all pour la PWA SPA (doit être en dernier)
 Route::get('/pwa/{path?}', function ($path = null) {
     // Servir uniquement la version buildée de la PWA
-    return response()->file(public_path('pwa/index.html'), [
+    return response()->file(public_path('pwa/dist/index.html'), [
         'Content-Type' => 'text/html; charset=utf-8',
         'Cache-Control' => 'no-cache, no-store, must-revalidate'
     ]);

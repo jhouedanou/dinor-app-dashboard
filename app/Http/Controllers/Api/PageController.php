@@ -96,6 +96,7 @@ class PageController extends Controller
             'data' => [
                 'id' => $page->id,
                 'title' => $page->title,
+                'description' => $page->description,
                 'url' => $page->url,
                 'embed_url' => $page->embed_url,
                 'is_external' => $page->is_external,

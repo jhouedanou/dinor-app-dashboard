@@ -41,15 +41,15 @@
         <div class="tip-info">
           <div class="tip-stats">
             <div class="stat-item">
-              <span class="material-symbols-outlined dinor-text-secondary">schedule</span>
+              <i class="material-icons dinor-text-secondary">schedule</i>
               <span class="md3-body-medium">{{ tip.estimated_time }}min</span>
             </div>
             <div class="stat-item">
-              <span class="material-symbols-outlined dinor-text-secondary">favorite</span>
+              <i class="material-icons dinor-text-secondary">favorite</i>
               <span class="md3-body-medium">{{ tip.likes_count || 0 }}</span>
             </div>
             <div class="stat-item">
-              <span class="material-symbols-outlined dinor-text-secondary">comment</span>
+              <i class="material-icons dinor-text-secondary">comment</i>
               <span class="md3-body-medium">{{ tip.comments_count || 0 }}</span>
             </div>
           </div>
@@ -121,7 +121,7 @@
                   </div>
                   <div v-if="canDeleteComment(comment)" class="comment-actions">
                     <button @click="deleteComment(comment.id)" class="btn-delete" title="Supprimer le commentaire">
-                      <span class="material-symbols-outlined">delete</span>
+                      <i class="material-icons">delete</i>
                     </button>
                   </div>
                 </div>
@@ -138,7 +138,7 @@
       <!-- Error State -->
       <div v-else class="error-state">
         <div class="error-icon">
-          <span class="material-symbols-outlined">error</span>
+          <i class="material-icons">error_outline</i>
         </div>
         <h2 class="md3-title-large">Astuce introuvable</h2>
         <p class="md3-body-large dinor-text-gray">L'astuce demandée n'existe pas ou a été supprimée.</p>

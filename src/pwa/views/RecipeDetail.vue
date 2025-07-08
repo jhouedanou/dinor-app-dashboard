@@ -41,31 +41,21 @@
         <div class="recipe-info">
           <div class="recipe-stats">
             <div class="stat-item">
-              <span class="material-symbols-outlined dinor-text-secondary">schedule</span>
-              <span class="emoji-fallback">⏰</span>
+              <i class="material-icons dinor-text-secondary">schedule</i>
               <span class="md3-body-medium">{{ recipe.cooking_time }}min</span>
             </div>
             <div class="stat-item">
-              <span class="material-symbols-outlined dinor-text-secondary">group</span>
-              <span class="emoji-fallback">👥</span>
+              <i class="material-icons dinor-text-secondary">people</i>
               <span class="md3-body-medium">{{ recipe.servings }} pers.</span>
             </div>
             <div class="stat-item">
-              <span class="material-symbols-outlined dinor-text-secondary">favorite</span>
-              <span class="emoji-fallback">❤️</span>
+              <i class="material-icons dinor-text-secondary">favorite</i>
               <span class="md3-body-medium">{{ recipe.likes_count || 0 }}</span>
             </div>
             <div class="stat-item">
-              <span class="material-symbols-outlined dinor-text-secondary">comment</span>
-              <span class="emoji-fallback">💬</span>
+              <i class="material-icons dinor-text-secondary">comment</i>
               <span class="md3-body-medium">{{ recipe.comments_count || 0 }}</span>
             </div>
-          </div>
-
-          <!-- Description -->
-          <div v-if="recipe.description" class="recipe-description">
-            <h2 class="md3-title-medium dinor-text-primary">Description</h2>
-            <p class="md3-body-large dinor-text-gray" v-html="recipe.description"></p>
           </div>
 
           <!-- Summary Video -->
@@ -82,122 +72,78 @@
             </div>
           </div>
 
-          <!-- Main Video -->
-          <div v-if="recipe.video_url" class="recipe-main-video">
-            <h2 class="md3-title-medium dinor-text-primary">Vidéo de la recette</h2>
-            <div class="video-container">
-              <iframe
-                :src="getEmbedUrl(recipe.video_url)"
-                :title="`Vidéo : ${recipe.title}`"
-                frameborder="0"
-                allowfullscreen
-                class="video-iframe"
-              ></iframe>
-            </div>
+          <!-- Description -->
+          <div v-if="recipe.description" class="recipe-description">
+            <h2 class="md3-title-medium dinor-text-primary">Description</h2>
+            <p class="md3-body-large dinor-text-gray" v-html="recipe.description"></p>
           </div>
 
-          <!-- Recipe Sections in Accordions -->
-          <div class="recipe-sections">
-            <!-- Ingredients Accordion -->
-            <Accordion 
-              v-if="recipe.ingredients && recipe.ingredients.length"
-              title="Ingrédients"
-              :initial-open="true"
-              id="ingredients-accordion"
-            >
-              <ul class="ingredients-list">
-                <li v-for="(ingredient, index) in recipe.ingredients" :key="index" class="ingredient-item">
-                  <span class="md3-body-medium">
-                    {{ formatIngredientDisplay(ingredient) }}
-                  </span>
-                </li>
-              </ul>
-            </Accordion>
+          <!-- Ingredients -->
+          <div v-if="recipe.ingredients && recipe.ingredients.length" class="recipe-ingredients">
+            <h2 class="md3-title-medium dinor-text-primary">Ingrédients</h2>
+            <ul class="ingredients-list">
+              <li v-for="ingredient in recipe.ingredients" :key="ingredient.id" class="ingredient-item">
+                <span class="md3-body-medium">{{ ingredient.quantity }} {{ ingredient.unit }} {{ ingredient.name }}</span>
+              </li>
+            </ul>
+          </div>
 
-            <!-- Instructions Accordion -->
-            <Accordion 
-              v-if="recipe.instructions"
-              title="Instructions"
-              :initial-open="true"
-              id="instructions-accordion"
-            >
-              <div class="md3-body-large dinor-text-gray" v-html="formatInstructions(recipe.instructions)"></div>
-            </Accordion>
+          <!-- Instructions -->
+          <div v-if="recipe.instructions" class="recipe-instructions">
+            <h2 class="md3-title-medium dinor-text-primary">Instructions</h2>
+            <div class="md3-body-large dinor-text-gray" v-html="formatInstructions(recipe.instructions)"></div>
+          </div>
 
-            <!-- Gallery Accordion -->
-            <Accordion 
-              v-if="recipe.gallery_urls && recipe.gallery_urls.length"
-              title="Galerie photos"
-              :initial-open="false"
-              id="gallery-accordion"
-            >
-              <div class="gallery-grid">
-                <img 
-                  v-for="(image, index) in recipe.gallery_urls" 
-                  :key="index"
-                  :src="image"
-                  :alt="`${recipe.title} - Photo ${index + 1}`"
-                  class="gallery-image"
-                  @error="handleImageError"
-                  @click="openGalleryModal(index)"
-                >
+          <!-- Comments Section -->
+          <div class="comments-section">
+            <h2 class="md3-title-medium dinor-text-primary">Commentaires ({{ comments.length }})</h2>
+            
+            <!-- Add Comment Form -->
+            <div class="add-comment-form">
+              <div v-if="!authStore.isAuthenticated" class="auth-prompt">
+                <p class="auth-prompt-text">Connectez-vous pour laisser un commentaire</p>
+                <button @click="showAuthModal = true" class="btn-primary">
+                  Se connecter
+                </button>
               </div>
-            </Accordion>
-
-            <!-- Comments Accordion -->
-            <Accordion 
-              :title="`Commentaires (${comments.length})`"
-              :initial-open="false"
-              id="comments-accordion"
-            >
-              <!-- Add Comment Form -->
-              <div class="add-comment-form">
-                <div v-if="!authStore.isAuthenticated" class="auth-prompt">
-                  <p class="auth-prompt-text">Connectez-vous pour laisser un commentaire</p>
-                  <button @click="showAuthModal = true" class="btn-primary">
-                    Se connecter
-                  </button>
+              <div v-else>
+                <div class="authenticated-user">
+                  <span class="user-info">Connecté en tant que {{ authStore.userName }}</span>
+                  <button @click="authStore.logout()" class="btn-logout">Déconnexion</button>
                 </div>
-                <div v-else>
-                  <div class="authenticated-user">
-                    <span class="user-info">Connecté en tant que {{ authStore.userName }}</span>
-                    <button @click="authStore.logout()" class="btn-logout">Déconnexion</button>
+                <textarea 
+                  v-model="newComment" 
+                  placeholder="Ajoutez votre commentaire..." 
+                  class="md3-textarea"
+                  rows="3">
+                </textarea>
+                <button @click="addComment" class="btn-primary" :disabled="!newComment.trim()">
+                  Publier
+                </button>
+              </div>
+            </div>
+
+            <!-- Comments List -->
+            <div v-if="comments.length" class="comments-list">
+              <div v-for="comment in comments" :key="comment.id" class="comment-item">
+                <div class="comment-header">
+                  <div class="comment-meta">
+                    <span class="comment-author md3-body-medium">{{ comment.author_name }}</span>
+                    <span class="comment-date md3-body-small dinor-text-gray">{{ formatDate(comment.created_at) }}</span>
                   </div>
-                  <textarea 
-                    v-model="newComment" 
-                    placeholder="Ajoutez votre commentaire..." 
-                    class="md3-textarea"
-                    rows="3">
-                  </textarea>
-                  <button @click="addComment" class="btn-primary" :disabled="!newComment.trim()">
-                    Publier
-                  </button>
-                </div>
-              </div>
-
-              <!-- Comments List -->
-              <div v-if="comments.length" class="comments-list">
-                <div v-for="comment in comments" :key="comment.id" class="comment-item">
-                  <div class="comment-header">
-                    <div class="comment-meta">
-                      <span class="comment-author md3-body-medium">{{ comment.author_name }}</span>
-                      <span class="comment-date md3-body-small dinor-text-gray">{{ formatDate(comment.created_at) }}</span>
-                    </div>
-                    <div v-if="canDeleteComment(comment)" class="comment-actions">
-                      <button @click="deleteComment(comment.id)" class="btn-delete" title="Supprimer le commentaire">
-                        <span class="material-symbols-outlined">delete</span>
-                        <span class="emoji-fallback">🗑️</span>
-                      </button>
-                    </div>
+                  <div v-if="canDeleteComment(comment)" class="comment-actions">
+                    <button @click="deleteComment(comment.id)" class="btn-delete" title="Supprimer le commentaire">
+                      <i class="material-icons">delete</i>
+                    </button>
                   </div>
-                  <p class="comment-content md3-body-medium">{{ comment.content }}</p>
                 </div>
+                <p class="comment-content md3-body-medium">{{ comment.content }}</p>
               </div>
-              <div v-else class="empty-comments">
-                <p class="md3-body-medium dinor-text-gray">Aucun commentaire pour le moment.</p>
-              </div>
-            </Accordion>
-          </div> <!-- Close recipe-sections -->
+            </div>
+            <div v-else class="empty-comments">
+              <p class="md3-body-medium dinor-text-gray">Aucun commentaire pour le moment.</p>
+            </div>
+          </div>
 
           <!-- Recipe Header Actions -->
           <div class="recipe-header-actions">
@@ -221,8 +167,7 @@
               title="Actualiser les données"
               :disabled="loading"
             >
-              <span class="material-symbols-outlined" :class="{ 'spinning': loading }">refresh</span>
-              <span class="emoji-fallback">🔄</span>
+              <i class="material-icons" :class="{ 'spinning': loading }">refresh</i>
             </button>
             
             <!-- Share Button -->
@@ -231,8 +176,7 @@
               class="share-button"
               title="Partager cette recette"
             >
-              <span class="material-symbols-outlined">share</span>
-              <span class="emoji-fallback">📤</span>
+              <i class="material-icons">share</i>
             </button>
           </div>
         </div>
@@ -241,8 +185,7 @@
       <!-- Error State -->
       <div v-else class="error-state">
         <div class="error-icon">
-          <span class="material-symbols-outlined">error</span>
-          <span class="emoji-fallback">⚠️</span>
+          <i class="material-icons">error_outline</i>
         </div>
         <h2 class="md3-title-large">Recette introuvable</h2>
         <p class="md3-body-large dinor-text-gray">La recette demandée n'existe pas ou a été supprimée.</p>
@@ -261,16 +204,6 @@
       v-model="showAuthModal"
       @authenticated="handleAuthenticated"
     />
-    
-    <!-- Image Lightbox -->
-    <ImageLightbox
-      v-if="recipe && recipe.gallery_urls"
-      :images="recipe.gallery_urls"
-      :title="recipe.title"
-      :initial-index="lightboxIndex"
-      :is-open="showLightbox"
-      @close="closeLightbox"
-    />
   </div>
 </template>
 
@@ -287,8 +220,6 @@ import ShareModal from '@/components/common/ShareModal.vue'
 import AuthModal from '@/components/common/AuthModal.vue'
 import FavoriteButton from '@/components/common/FavoriteButton.vue'
 import LikeButton from '@/components/common/LikeButton.vue'
-import ImageLightbox from '@/components/common/ImageLightbox.vue'
-import Accordion from '@/components/common/Accordion.vue'
 
 export default {
   name: 'RecipeDetail',
@@ -298,9 +229,7 @@ export default {
     ShareModal,
     AuthModal,
     FavoriteButton,
-    LikeButton,
-    ImageLightbox,
-    Accordion
+    LikeButton
   },
   props: {
     id: {
@@ -322,8 +251,6 @@ export default {
     const userFavorited = ref(false)
     const newComment = ref('')
     const showAuthModal = ref(false)
-    const showLightbox = ref(false)
-    const lightboxIndex = ref(0)
 
     const shareData = computed(() => {
       if (!recipe.value) return {}
@@ -495,15 +422,13 @@ export default {
       }
     }
 
-    const getDifficultyLabel = (difficulty) => {
+    const getDifficultyLabel = (level) => {
       const labels = {
         'beginner': 'Débutant',
-        'easy': 'Facile',
-        'medium': 'Intermédiaire',
-        'hard': 'Difficile',
-        'expert': 'Expert'
+        'intermediate': 'Intermédiaire', 
+        'advanced': 'Avancé'
       }
-      return labels[difficulty] || difficulty
+      return labels[level] || 'Débutant'
     }
 
     const formatDate = (date) => {
@@ -619,51 +544,6 @@ export default {
       return `${time} min`
     }
 
-    const formatIngredientDisplay = (ingredient) => {
-      if (!ingredient) return ''
-      
-      let result = ''
-      
-      // Ajouter la quantité si elle existe
-      if (ingredient.quantity) {
-        result += `${ingredient.quantity} `
-      }
-      
-      // Ajouter l'unité si elle existe
-      if (ingredient.unit) {
-        result += `${ingredient.unit} `
-      }
-      
-      // Ajouter le nom de l'ingrédient
-      if (ingredient.name) {
-        result += `de ${ingredient.name}`
-      }
-      
-      // Ajouter les notes si elles existent
-      if (ingredient.notes) {
-        result += ` (${ingredient.notes})`
-      }
-      
-      // Ajouter la marque recommandée si elle existe
-      if (ingredient.recommended_brand) {
-        result += ` [${ingredient.recommended_brand}]`
-      }
-      
-      return result.trim()
-    }
-
-    // Fonction pour ouvrir la galerie d'images
-    const openGalleryModal = (index) => {
-      if (recipe.value?.gallery_urls?.[index]) {
-        lightboxIndex.value = index
-        showLightbox.value = true
-      }
-    }
-    
-    const closeLightbox = () => {
-      showLightbox.value = false
-    }
-
     // Exposer les méthodes et les refs nécessaires au template et au parent
     return {
       recipe,
@@ -693,12 +573,7 @@ export default {
       getDifficultyLabel,
       getEmbedUrl,
       showShareModal,
-      handleAuthenticated,
-      openGalleryModal,
-      formatIngredientDisplay,
-      showLightbox,
-      lightboxIndex,
-      closeLightbox
+      handleAuthenticated
     }
   }
 }
@@ -812,51 +687,21 @@ p, span, div {
 
 .video-container {
   position: relative;
-  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  padding-bottom: 56.25%; /* Ratio 16:9 */
   height: 0;
   overflow: hidden;
-  margin: 1rem 0;
   border-radius: 8px;
+  margin-top: 1rem;
 }
 
-.video-container iframe {
+.summary-video-iframe {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-}
-
-.recipe-gallery {
-  margin: 2rem 0;
-}
-
-.gallery-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.gallery-image {
-  width: 100%;
-  height: 150px;
-  object-fit: cover;
+  border: none;
   border-radius: 8px;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-.gallery-image:hover {
-  transform: scale(1.05);
-}
-
-.recipe-main-video {
-  margin: 2rem 0;
-}
-
-.recipe-summary-video {
-  margin: 2rem 0;
 }
 
 .ingredients-list {
@@ -865,12 +710,8 @@ p, span, div {
 }
 
 .ingredient-item {
-  padding: 0.5rem 0;
+  padding: 0.5rem;
   border-bottom: 1px solid var(--md-sys-color-outline-variant);
-}
-
-.ingredient-item:last-child {
-  border-bottom: none;
 }
 
 .loading-container,
@@ -939,27 +780,5 @@ p, span, div {
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
-}
-
-/* Recipe Sections Styles */
-.recipe-sections {
-  margin: 2rem 0;
-}
-
-.recipe-sections .ingredients-list {
-  margin: 0;
-  padding: 0;
-}
-
-.recipe-sections .gallery-grid {
-  margin-top: 0;
-}
-
-.recipe-sections .add-comment-form {
-  margin-bottom: 1.5rem;
-}
-
-.recipe-sections .comments-list {
-  margin-top: 1rem;
 }
 </style> 
