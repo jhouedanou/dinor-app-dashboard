@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test OneSignal - Double Initialisation Corrigée</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .header {
+            text-align: center;
+            color: #f59e0b;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        .btn {
+            background: #f59e0b;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #d97706;
+        }
+        .log-container {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔧 Test OneSignal</h1>
+        <p>Vérification que la double initialisation est corrigée</p>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 État du SDK OneSignal</h2>
+        <div id="sdkStatus"></div>
+        <button class="btn" onclick="checkSDKStatus()">Vérifier l'état</button>
+    </div>
+
+    <div class="test-section">
+        <h2>🔔 Tests des Notifications</h2>
+        <div id="notificationStatus"></div>
+        <button class="btn" onclick="testPermissions()">Tester les permissions</button>
+        <button class="btn" onclick="checkSubscription()">Vérifier l'abonnement</button>
+    </div>
+
+    <div class="test-section">
+        <h2>📝 Logs Console</h2>
+        <div id="consoleLogs" class="log-container"></div>
+        <button class="btn" onclick="clearLogs()">Effacer les logs</button>
+    </div>
+
+    <!-- OneSignal SDK -->
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+
+    <script>
+        // Rediriger les logs de console vers notre interface
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        const logContainer = document.getElementById('consoleLogs');
+        
+        function addLogToInterface(message, type = 'log') {
+            const logDiv = document.createElement('div');
+            logDiv.style.color = type === 'error' ? 'red' : type === 'warn' ? 'orange' : 'black';
+            logDiv.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.appendChild(logDiv);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addLogToInterface(args.join(' '), 'log');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addLogToInterface(args.join(' '), 'error');
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addLogToInterface(args.join(' '), 'warn');
+        };
+
+        function showStatus(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function checkSDKStatus() {
+            if (typeof window.OneSignal !== 'undefined') {
+                showStatus('sdkStatus', '✅ OneSignal SDK chargé avec succès', 'success');
+                
+                // Vérifier s'il y a des erreurs de double initialisation
+                window.OneSignalDeferred = window.OneSignalDeferred || [];
+                window.OneSignalDeferred.push(function(OneSignal) {
+                    console.log('🔍 Vérification de l\'état OneSignal...');
+                    showStatus('sdkStatus', '✅ OneSignal SDK fonctionnel - Aucune double initialisation détectée', 'success');
+                });
+            } else {
+                showStatus('sdkStatus', '❌ OneSignal SDK non disponible', 'error');
+            }
+        }
+
+        function testPermissions() {
+            if (typeof window.OneSignal === 'undefined') {
+                showStatus('notificationStatus', '❌ OneSignal non disponible', 'error');
+                return;
+            }
+
+            window.OneSignalDeferred.push(async function(OneSignal) {
+                try {
+                    const permission = await OneSignal.Notifications.requestPermission();
+                    if (permission) {
+                        showStatus('notificationStatus', '✅ Permission accordée pour les notifications', 'success');
+                    } else {
+                        showStatus('notificationStatus', '⚠️ Permission refusée pour les notifications', 'error');
+                    }
+                } catch (error) {
+                    showStatus('notificationStatus', `❌ Erreur: ${error.message}`, 'error');
+                    console.error('Erreur permission:', error);
+                }
+            });
+        }
+
+        function checkSubscription() {
+            if (typeof window.OneSignal === 'undefined') {
+                showStatus('notificationStatus', '❌ OneSignal non disponible', 'error');
+                return;
+            }
+
+            window.OneSignalDeferred.push(async function(OneSignal) {
+                try {
+                    const isSubscribed = await OneSignal.User.PushSubscription.optedIn;
+                    const userId = await OneSignal.User.PushSubscription.id;
+                    
+                    if (isSubscribed) {
+                        showStatus('notificationStatus', `✅ Abonné aux notifications (ID: ${userId})`, 'success');
+                    } else {
+                        showStatus('notificationStatus', '⚠️ Non abonné aux notifications', 'info');
+                    }
+                } catch (error) {
+                    showStatus('notificationStatus', `❌ Erreur: ${error.message}`, 'error');
+                    console.error('Erreur abonnement:', error);
+                }
+            });
+        }
+
+        function clearLogs() {
+            logContainer.innerHTML = '';
+        }
+
+        // Vérifier automatiquement au chargement
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                checkSDKStatus();
+                console.log('🧪 Page de test OneSignal chargée');
+                console.log('🔍 Recherche d\'erreurs de double initialisation...');
+            }, 1000);
+        });
+
+        // Intercepter les erreurs OneSignal spécifiques
+        window.addEventListener('error', function(event) {
+            if (event.message && event.message.includes('OneSignal')) {
+                if (event.message.includes('initialized once')) {
+                    showStatus('sdkStatus', '❌ ERREUR: Double initialisation détectée!', 'error');
+                    console.error('🚨 Erreur de double initialisation OneSignal détectée!');
+                } else {
+                    console.error('Erreur OneSignal:', event.message);
+                }
+            }
+        });
+    </script>
+</body>
+</html> 

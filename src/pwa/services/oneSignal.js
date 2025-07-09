@@ -4,6 +4,7 @@
 class OneSignalService {
     constructor() {
         this.isInitialized = false;
+        this.initInProgress = false;
         
         // Configuration conditionnelle selon l'environnement
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
@@ -15,12 +16,13 @@ class OneSignalService {
             // Mode production
             this.appId = "7703701f-3c33-408d-99e0-db5c4da8918a";
             this.devMode = false;
-            this.init();
+            // Utiliser un délai pour éviter la double initialisation avec d'autres scripts
+            setTimeout(() => this.init(), 100);
         }
     }
 
     /**
-     * Initialise OneSignal
+     * Initialise OneSignal avec protection contre la double initialisation
      */
     async init() {
         if (this.devMode) {
@@ -28,25 +30,56 @@ class OneSignalService {
             return;
         }
         
+        if (this.isInitialized || this.initInProgress) {
+            console.log('🔧 OneSignal: Déjà initialisé ou en cours d\'initialisation, ignoré');
+            return;
+        }
+        
+        this.initInProgress = true;
+        
         try {
             window.OneSignalDeferred = window.OneSignalDeferred || [];
             
             OneSignalDeferred.push(async (OneSignal) => {
-                await OneSignal.init({
-                    appId: this.appId,
-                    allowLocalhostAsSecureOrigin: true, // Pour le développement
-                });
+                try {
+                    // Vérifier si OneSignal est déjà initialisé
+                    if (window.OneSignal && window.OneSignal.init) {
+                        console.log('⚠️ OneSignal: SDK déjà chargé, initialisation ignorée');
+                        this.initInProgress = false;
+                        return;
+                    }
 
-                this.isInitialized = true;
-                console.log('✅ OneSignal initialisé avec succès');
+                    await OneSignal.init({
+                        appId: this.appId,
+                        allowLocalhostAsSecureOrigin: true,
+                        autoRegister: true,
+                        notifyButton: {
+                            enable: false // Désactiver le bouton par défaut OneSignal
+                        }
+                    });
 
-                // Écouter les événements de notification
-                this.setupEventListeners();
-                
-                // Demander la permission si pas déjà accordée
-                await this.requestPermission();
+                    this.isInitialized = true;
+                    this.initInProgress = false;
+                    console.log('✅ OneSignal initialisé avec succès');
+
+                    // Écouter les événements de notification
+                    this.setupEventListeners();
+                    
+                    // Demander la permission si pas déjà accordée
+                    await this.requestPermission();
+                } catch (initError) {
+                    this.initInProgress = false;
+                    if (initError.message && initError.message.includes('initialized once')) {
+                        console.log('ℹ️ OneSignal: Déjà initialisé, récupération de l\'état...');
+                        this.isInitialized = true;
+                        this.setupEventListeners();
+                    } else {
+                        throw initError;
+                    }
+                }
             });
         } catch (error) {
+            this.initInProgress = false;
             console.error('❌ Erreur lors de l\'initialisation OneSignal:', error);
         }
     }
