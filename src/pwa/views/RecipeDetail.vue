@@ -41,23 +41,19 @@
         <div class="recipe-info">
           <div class="recipe-stats">
             <div class="stat-item">
-              <span class="material-symbols-outlined dinor-text-secondary">schedule</span>
-              <span class="emoji-fallback">⏰</span>
+              <DinorIcon name="schedule" :size="20" class="dinor-text-secondary" />
               <span class="md3-body-medium">{{ recipe.cooking_time }}min</span>
             </div>
             <div class="stat-item">
-              <span class="material-symbols-outlined dinor-text-secondary">group</span>
-              <span class="emoji-fallback">👥</span>
+              <DinorIcon name="group" :size="20" class="dinor-text-secondary" />
               <span class="md3-body-medium">{{ recipe.servings }} pers.</span>
             </div>
             <div class="stat-item">
-              <span class="material-symbols-outlined dinor-text-secondary">favorite</span>
-              <span class="emoji-fallback">❤️</span>
+              <DinorIcon name="favorite" :size="20" class="dinor-text-secondary" />
               <span class="md3-body-medium">{{ recipe.likes_count || 0 }}</span>
             </div>
             <div class="stat-item">
-              <span class="material-symbols-outlined dinor-text-secondary">comment</span>
-              <span class="emoji-fallback">💬</span>
+              <DinorIcon name="comment" :size="20" class="dinor-text-secondary" />
               <span class="md3-body-medium">{{ recipe.comments_count || 0 }}</span>
             </div>
           </div>
@@ -185,8 +181,7 @@
                     </div>
                     <div v-if="canDeleteComment(comment)" class="comment-actions">
                       <button @click="deleteComment(comment.id)" class="btn-delete" title="Supprimer le commentaire">
-                        <span class="material-symbols-outlined">delete</span>
-                        <span class="emoji-fallback">🗑️</span>
+                        <DinorIcon name="delete" :size="16" />
                       </button>
                     </div>
                   </div>
@@ -221,8 +216,7 @@
               title="Actualiser les données"
               :disabled="loading"
             >
-              <span class="material-symbols-outlined" :class="{ 'spinning': loading }">refresh</span>
-              <span class="emoji-fallback">🔄</span>
+              <DinorIcon name="refresh" :size="20" :class="{ 'spinning': loading }" />
             </button>
             
             <!-- Share Button -->
@@ -231,8 +225,7 @@
               class="share-button"
               title="Partager cette recette"
             >
-              <span class="material-symbols-outlined">share</span>
-              <span class="emoji-fallback">📤</span>
+              <DinorIcon name="share" :size="20" />
             </button>
           </div>
         </div>
@@ -241,8 +234,7 @@
       <!-- Error State -->
       <div v-else class="error-state">
         <div class="error-icon">
-          <span class="material-symbols-outlined">error</span>
-          <span class="emoji-fallback">⚠️</span>
+          <DinorIcon name="error" :size="64" />
         </div>
         <h2 class="md3-title-large">Recette introuvable</h2>
         <p class="md3-body-large dinor-text-gray">La recette demandée n'existe pas ou a été supprimée.</p>
@@ -289,6 +281,7 @@ import FavoriteButton from '@/components/common/FavoriteButton.vue'
 import LikeButton from '@/components/common/LikeButton.vue'
 import ImageLightbox from '@/components/common/ImageLightbox.vue'
 import Accordion from '@/components/common/Accordion.vue'
+import DinorIcon from '@/components/DinorIcon.vue'
 
 export default {
   name: 'RecipeDetail',
@@ -300,7 +293,8 @@ export default {
     FavoriteButton,
     LikeButton,
     ImageLightbox,
-    Accordion
+    Accordion,
+    DinorIcon
   },
   props: {
     id: {

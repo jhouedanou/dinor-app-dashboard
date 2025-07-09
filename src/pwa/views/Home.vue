@@ -75,8 +75,7 @@
       <template #item="{ item }">
         <div class="tip-card">
           <div class="tip-icon">
-            <span class="material-symbols-outlined">lightbulb</span>
-            <span class="emoji-fallback">💡</span>
+            <DinorIcon name="lightbulb" :size="48" color="#FFFFFF" />
           </div>
           <div class="card-content">
             <h3>{{ item.title }}</h3>
@@ -155,8 +154,7 @@
             />
             <div class="video-overlay">
               <div class="play-button">
-                <span class="material-symbols-outlined">play_circle</span>
-                <span class="emoji-fallback">▶️</span>
+                <DinorIcon name="play_circle" :size="48" color="white" />
               </div>
               <div v-if="item.is_live" class="live-badge">
                 <span class="live-dot"></span>
@@ -172,8 +170,7 @@
             <p>{{ getShortDescription(item.description) }}</p>
             <div class="card-meta">
               <span class="views">
-                <span class="material-symbols-outlined">visibility</span>
-                <span class="emoji-fallback">👁️</span>
+                <DinorIcon name="visibility" :size="16" />
                 {{ item.views_count || 0 }}
               </span>
               <span class="date">{{ formatDate(item.created_at) }}</span>

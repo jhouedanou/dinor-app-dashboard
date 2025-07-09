@@ -15,9 +15,11 @@
     
     <!-- Heart icon with animation -->
     <div v-else class="heart-container" @click.stop="handleToggle">
-      <span class="material-symbols-outlined heart-icon">
-        {{ isLiked ? 'favorite' : 'favorite_border' }}
-      </span>
+      <DinorIcon 
+        :name="isLiked ? 'favorite' : 'favorite_border'"
+        :size="20"
+        class="heart-icon"
+      />
       <span class="emoji-fallback">
         {{ isLiked ? '❤️' : '🤍' }}
       </span>
@@ -34,9 +36,13 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import apiService from '@/services/api'
+import DinorIcon from '@/components/DinorIcon.vue'
 
 export default {
   name: 'LikeButton',
+  components: {
+    DinorIcon
+  },
   props: {
     type: {
       type: String,
@@ -298,7 +304,6 @@ export default {
 }
 
 .heart-icon {
-  font-size: 20px;
   transition: all 0.2s ease;
   cursor: pointer;
   user-select: none;
@@ -331,7 +336,7 @@ export default {
 }
 
 .like-button.size-small .heart-icon {
-  font-size: 16px;
+  /* Size handled by DinorIcon component */
 }
 
 .like-button.size-small .emoji-fallback {
@@ -343,7 +348,7 @@ export default {
 }
 
 .like-button.size-large .heart-icon {
-  font-size: 24px;
+  /* Size handled by DinorIcon component */
 }
 
 .like-button.size-large .emoji-fallback {
@@ -397,7 +402,7 @@ export default {
   }
   
   .heart-icon {
-    font-size: 18px;
+    /* Size handled by DinorIcon component */
   }
   
   .emoji-fallback {

@@ -47,24 +47,24 @@
 
               <div class="tournament-info">
                 <div class="info-item">
-                  <span class="material-symbols-outlined">groups</span>
+                  <DinorIcon name="group" :size="16" />
                   <span>{{ tournament.participants_count }} participants</span>
                 </div>
                 
                 <div class="info-item" v-if="tournament.prize_pool">
-                  <span class="material-symbols-outlined">emoji_events</span>
+                  <DinorIcon name="trophy" :size="16" />
                   <span>{{ formatPrize(tournament.prize_pool, tournament.currency) }}</span>
                 </div>
                 
                 <div class="info-item">
-                  <span class="material-symbols-outlined">schedule</span>
+                  <DinorIcon name="schedule" :size="16" />
                   <span>{{ formatTournamentDate(tournament.start_date) }}</span>
                 </div>
               </div>
 
               <div class="tournament-actions">
                 <span class="view-matches-btn">
-                  <span class="material-symbols-outlined">sports_soccer</span>
+                  <DinorIcon name="target" :size="16" />
                   Voir les matchs
                 </span>
               </div>
@@ -73,7 +73,7 @@
           
           <div v-else class="no-tournaments">
             <div class="no-tournaments-icon">
-              <span class="material-symbols-outlined">emoji_events</span>
+              <DinorIcon name="trophy" :size="64" />
             </div>
             <h3 class="md3-title-medium">Aucun tournoi disponible</h3>
             <p class="md3-body-medium dinor-text-gray">
@@ -86,7 +86,7 @@
         <div class="rules-footer">
           <div class="rules-card">
             <h3 class="rules-title">
-              <span class="material-symbols-outlined">info</span>
+              <DinorIcon name="info" :size="20" />
               Règles des pronostics
             </h3>
             <div class="rules-content">
@@ -114,7 +114,7 @@
         <div class="modal-header">
           <h2 class="modal-title">{{ selectedTournament.name }}</h2>
           <button @click="closeTournamentModal" class="close-btn">
-            <span class="material-symbols-outlined">close</span>
+            <DinorIcon name="close" :size="20" />
           </button>
         </div>
         
@@ -185,11 +185,11 @@
                 
                 <div class="prediction-status">
                   <span v-if="savingMatches.includes(match.id)" class="status-saving">
-                    <span class="material-symbols-outlined">sync</span>
+                    <DinorIcon name="loading" :size="16" />
                     Sauvegarde...
                   </span>
                   <span v-else-if="savedMatches.includes(match.id)" class="status-saved">
-                    <span class="material-symbols-outlined">check_circle</span>
+                    <DinorIcon name="check_circle" :size="16" />
                     Sauvegardé
                   </span>
                 </div>
@@ -198,7 +198,7 @@
               <!-- Predict Button (if not authenticated) -->
               <div v-else-if="!authStore.isAuthenticated && match.can_predict" class="prediction-auth-required">
                 <button @click="showAuthModal = true" class="btn-predict">
-                  <span class="material-symbols-outlined">person</span>
+                  <DinorIcon name="person" :size="16" />
                   Pronostiquer
                 </button>
               </div>
@@ -214,7 +214,7 @@
           </div>
           
           <div v-else class="no-matches">
-            <span class="material-symbols-outlined">sports_soccer</span>
+            <DinorIcon name="target" :size="48" />
             <p>Aucun match disponible pour ce tournoi</p>
           </div>
         </div>
@@ -234,12 +234,14 @@ import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useApiStore } from '@/stores/api'
 import { useAuthStore } from '@/stores/auth'
 import AuthModal from '@/components/common/AuthModal.vue'
+import DinorIcon from '@/components/DinorIcon.vue'
 
 export default {
   name: 'Predictions',
   emits: ['update-header'],
   components: {
-    AuthModal
+    AuthModal,
+    DinorIcon
   },
   setup(_, { emit }) {
     const apiStore = useApiStore()
@@ -586,9 +588,6 @@ export default {
   color: #666;
 }
 
-.info-item .material-symbols-outlined {
-  font-size: 1rem;
-}
 
 .tournament-actions {
   display: flex;
@@ -613,8 +612,7 @@ export default {
   padding: 3rem 1rem;
 }
 
-.no-tournaments-icon .material-symbols-outlined {
-  font-size: 4rem;
+.no-tournaments-icon {
   color: #ccc;
   margin-bottom: 1rem;
 }
@@ -876,7 +874,7 @@ export default {
   color: #4caf50;
 }
 
-.status-saving .material-symbols-outlined {
+.status-saving .dinor-icon {
   animation: spin 1s linear infinite;
 }
 
@@ -939,8 +937,7 @@ export default {
   color: #666;
 }
 
-.no-matches .material-symbols-outlined {
-  font-size: 3rem;
+.no-matches .dinor-icon {
   margin-bottom: 1rem;
   opacity: 0.5;
 }

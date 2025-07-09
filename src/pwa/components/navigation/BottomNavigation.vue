@@ -135,7 +135,7 @@ export default {
 
 <style scoped>
 .bottom-navigation {
-  position: fixed;
+  position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
@@ -199,14 +199,6 @@ export default {
   margin-bottom: 4px;
 }
 
-.nav-icon .material-symbols-outlined {
-  font-size: 24px;
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-}
-
-.nav-item.active .nav-icon .material-symbols-outlined {
-  font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24;
-}
 
 .nav-label {
   font-size: 12px;
@@ -268,50 +260,5 @@ export default {
   }
 }
 
-/* Système de fallback pour les icônes - logique simplifiée */
-.emoji-fallback {
-  display: none; /* Masqué par défaut */
-}
 
-.material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-}
-
-/* UNIQUEMENT quand .force-emoji est présent sur html, afficher les emoji */
-html.force-emoji .material-symbols-outlined {
-  display: none !important;
-}
-
-html.force-emoji .emoji-fallback {
-  display: inline-block !important;
-}
-
-.nav-icon .material-symbols-outlined {
-  font-size: 24px;
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-}
-
-.nav-icon .emoji-fallback {
-  font-size: 20px;
-}
-
-.nav-item.active .nav-icon .material-symbols-outlined {
-  font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24;
-}
-
-.nav-item.active .nav-icon .emoji-fallback {
-  font-size: 22px;
-  filter: brightness(1.2);
-}
-
-/* Responsive pour petit écran */
-@media (max-width: 480px) {
-  .nav-icon .material-symbols-outlined {
-    font-size: 20px;
-  }
-
-  .nav-icon .emoji-fallback {
-    font-size: 18px;
-  }
-}
 </style>

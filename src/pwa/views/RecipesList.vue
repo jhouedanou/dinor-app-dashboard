@@ -12,11 +12,11 @@
     <!-- Toggle Filters Button -->
     <div class="filters-toggle">
       <button @click="showFilters = !showFilters" class="toggle-btn">
-        <span class="material-symbols-outlined">{{ showFilters ? 'expand_less' : 'expand_more' }}</span>
+        <DinorIcon :name="showFilters ? 'expand_less' : 'expand_more'" :size="20" />
         <span>{{ showFilters ? 'Masquer les filtres' : 'Afficher les filtres' }}</span>
       </button>
       <button @click="forceRefresh" class="refresh-btn" title="Actualiser les données" :disabled="loading">
-        <span class="material-symbols-outlined" :class="{ 'spinning': loading }">refresh</span>
+        <DinorIcon name="refresh" :size="20" :class="{ 'spinning': loading }" />
         <span>Actualiser</span>
       </button>
     </div>
@@ -45,8 +45,7 @@
     <!-- Error State -->
     <div v-else-if="error" class="error-state">
       <div class="error-icon">
-        <span class="material-symbols-outlined">error</span>
-        <span class="emoji-fallback">❌</span>
+        <DinorIcon name="error" :size="32" />
       </div>
       <p>{{ error }}</p>
       <button @click="retry" class="retry-btn">
@@ -66,8 +65,7 @@
       <!-- Empty State -->
       <div v-if="!filteredRecipes.length && !loading" class="empty-state">
         <div class="empty-icon">
-          <span class="material-symbols-outlined">restaurant</span>
-          <span class="emoji-fallback">🍽️</span>
+          <DinorIcon name="restaurant" :size="32" />
         </div>
         <h3>{{ searchQuery || selectedCategory || hasActiveFilters ? 'Aucune recette trouvée' : 'Aucune recette disponible' }}</h3>
         <p v-if="searchQuery || selectedCategory || hasActiveFilters">
@@ -98,8 +96,7 @@
             <div class="recipe-overlay">
               <div class="recipe-meta">
                 <span v-if="getTotalTime(recipe)" class="time">
-                  <span class="material-symbols-outlined">schedule</span>
-                  <span class="emoji-fallback">⏱️</span>
+                  <DinorIcon name="schedule" :size="18" />
                   {{ getTotalTime(recipe) }}min
                 </span>
                 <span v-if="recipe.difficulty" class="difficulty">
@@ -130,18 +127,15 @@
                 />
               </div>
               <div class="stat">
-                <span class="material-symbols-outlined">comment</span>
-                <span class="emoji-fallback">💬</span>
+                <DinorIcon name="comment" :size="18" />
                 <span>{{ recipe.comments_count || 0 }}</span>
               </div>
               <div v-if="recipe.servings" class="stat">
-                <span class="material-symbols-outlined">group</span>
-                <span class="emoji-fallback">👥</span>
+                <DinorIcon name="group" :size="18" />
                 <span>{{ recipe.servings }}</span>
               </div>
               <div v-if="recipe.required_equipment?.length" class="stat equipment">
-                <span class="material-symbols-outlined">kitchen</span>
-                <span class="emoji-fallback">🍳</span>
+                <DinorIcon name="kitchen" :size="18" />
                 <span>{{ recipe.required_equipment.length }} équipement{{ recipe.required_equipment.length > 1 ? 's' : '' }}</span>
               </div>
             </div>
@@ -166,6 +160,7 @@ import BannerSection from '@/components/common/BannerSection.vue'
 import SearchAndFilters from '@/components/common/SearchAndFilters.vue'
 import LikeButton from '@/components/common/LikeButton.vue'
 import AuthModal from '@/components/common/AuthModal.vue'
+import DinorIcon from '@/components/DinorIcon.vue'
 
 export default {
   name: 'RecipesList',
@@ -173,7 +168,8 @@ export default {
     BannerSection,
     SearchAndFilters,
     LikeButton,
-    AuthModal
+    AuthModal,
+    DinorIcon
   },
   setup() {
     const router = useRouter()

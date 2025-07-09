@@ -16,8 +16,7 @@
     <!-- Error State -->
     <div v-else-if="error" class="error-state">
       <div class="error-icon">
-        <span class="material-symbols-outlined">error</span>
-        <span class="emoji-fallback">⚠️</span>
+        <DinorIcon name="error" :size="32" />
       </div>
       <h2 class="md3-title-large">Erreur de chargement</h2>
       <p class="md3-body-large dinor-text-gray">{{ error }}</p>
@@ -27,8 +26,7 @@
     <!-- Empty State -->
     <div v-else-if="!loading && tips.length === 0" class="empty-state">
       <div class="empty-icon">
-        <span class="material-symbols-outlined">lightbulb</span>
-        <span class="emoji-fallback">💡</span>
+        <DinorIcon name="lightbulb" :size="32" />
       </div>
       <h2 class="md3-title-medium">Aucune astuce trouvée</h2>
       <p class="md3-body-medium dinor-text-gray">
@@ -48,8 +46,7 @@
         >
           <!-- Tip Icon -->
           <div class="tip-icon">
-            <span class="material-symbols-outlined">lightbulb</span>
-            <span class="emoji-fallback">💡</span>
+            <DinorIcon name="lightbulb" :size="24" />
           </div>
 
           <!-- Tip Content -->
@@ -62,8 +59,7 @@
             <!-- Tip Meta -->
             <div class="tip-meta">
               <div class="time" v-if="tip.created_at">
-                <span class="material-symbols-outlined">schedule</span>
-                <span class="emoji-fallback">⏰</span>
+                <DinorIcon name="schedule" :size="14" />
                 <span>{{ formatDate(tip.created_at) }}</span>
               </div>
             </div>
@@ -97,8 +93,7 @@
                 />
               </div>
               <div class="stat" v-if="tip.category">
-                <span class="material-symbols-outlined">category</span>
-                <span class="emoji-fallback">🏷️</span>
+                <DinorIcon name="category" :size="18" />
                 <span>{{ tip.category.name }}</span>
               </div>
             </div>
@@ -123,6 +118,7 @@ import FavoriteButton from '@/components/common/FavoriteButton.vue'
 import LikeButton from '@/components/common/LikeButton.vue'
 import AuthModal from '@/components/common/AuthModal.vue'
 import BannerSection from '@/components/common/BannerSection.vue'
+import DinorIcon from '@/components/DinorIcon.vue'
 
 export default {
   name: 'TipsList',
@@ -130,7 +126,8 @@ export default {
     FavoriteButton,
     LikeButton,
     AuthModal,
-    BannerSection
+    BannerSection,
+    DinorIcon
   },
   setup() {
     const router = useRouter()

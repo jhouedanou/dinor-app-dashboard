@@ -81,13 +81,11 @@
             <h3 class="md3-title-small dinor-text-primary">Ajouter à votre agenda</h3>
             <div class="calendar-buttons">
               <button @click="addToGoogleCalendar" class="calendar-button google-calendar">
-                <span class="material-symbols-outlined">event</span>
-                <span class="emoji-fallback">📅</span>
+                <DinorIcon name="event" :size="16" />
                 Google Calendar
               </button>
               <button @click="addToIcal" class="calendar-button ical">
-                <span class="material-symbols-outlined">calendar_month</span>
-                <span class="emoji-fallback">🗓️</span>
+                <DinorIcon name="calendar_month" :size="16" />
                 iCal / Outlook
               </button>
             </div>
@@ -103,8 +101,7 @@
           <div v-if="event.registration_required" class="event-registration">
             <h3 class="md3-title-small dinor-text-primary">Inscription</h3>
             <p class="md3-body-medium">
-              <span class="material-symbols-outlined dinor-text-secondary">info</span>
-              <span class="emoji-fallback dinor-text-secondary">ℹ️</span>
+              <DinorIcon name="info" :size="16" class="dinor-text-secondary" />
               Inscription requise pour cet événement
             </p>
             <div v-if="event.max_attendees" class="registration-info">
@@ -153,8 +150,7 @@
                   </div>
                   <div v-if="canDeleteComment(comment)" class="comment-actions">
                     <button @click="deleteComment(comment.id)" class="btn-delete" title="Supprimer le commentaire">
-                      <span class="material-symbols-outlined">delete</span>
-                      <span class="emoji-fallback">🗑️</span>
+                      <DinorIcon name="delete" :size="16" />
                     </button>
                   </div>
                 </div>
@@ -171,8 +167,7 @@
       <!-- Error State -->
       <div v-else class="error-state">
         <div class="error-icon">
-          <span class="material-symbols-outlined">error</span>
-          <span class="emoji-fallback">⚠️</span>
+          <DinorIcon name="error" :size="64" />
         </div>
         <h2 class="md3-title-large">Événement introuvable</h2>
         <p class="md3-body-large dinor-text-gray">L'événement demandé n'existe pas ou a été supprimé.</p>
@@ -797,10 +792,8 @@ p, span, div {
   margin-bottom: 16px;
 }
 
-.error-state .error-icon span.material-symbols-outlined {
-  font-size: 64px;
+.error-state .error-icon .dinor-icon {
   color: #E53E3E; /* Rouge Dinor */
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;
 }
 
 .error-state .error-icon .emoji-fallback {
@@ -813,12 +806,12 @@ p, span, div {
   display: none; /* Masqué par défaut */
 }
 
-.material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+.dinor-icon {
+  /* Styling handled by DinorIcon component */
 }
 
 /* UNIQUEMENT quand .force-emoji est présent sur html, afficher les emoji */
-html.force-emoji .material-symbols-outlined {
+html.force-emoji .dinor-icon {
   display: none !important;
 }
 
@@ -827,14 +820,12 @@ html.force-emoji .emoji-fallback {
 }
 
 /* Styles spécifiques pour les icônes */
-.event-stats .material-symbols-outlined {
-  font-size: 20px;
+.event-stats .dinor-icon {
   margin-right: 8px;
 }
 
 /* Styles pour les puces event-badges */
-.md3-chip .material-symbols-outlined {
-  font-size: 18px;
+.md3-chip .dinor-icon {
   margin-right: 6px;
 }
 
@@ -945,8 +936,8 @@ html.force-emoji .emoji-fallback {
   background: #E55A00;
 }
 
-.calendar-button .material-symbols-outlined {
-  font-size: 1.1rem;
+.calendar-button .dinor-icon {
+  /* Size handled by component */
 }
 
 @media (max-width: 480px) {

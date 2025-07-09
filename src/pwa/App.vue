@@ -293,7 +293,11 @@ export default {
   height: 100vh;
   overflow: hidden;
 }
-
+main.main-content.with-bottom-nav.with-header{
+  padding-top: 0px;
+ 
+  padding-bottom: 5em;
+}
 .app-container {
   height: 100vh;
   display: flex;

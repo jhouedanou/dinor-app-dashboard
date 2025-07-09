@@ -468,44 +468,6 @@ export default {
   font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 20;
 }
 
-/* Système de fallback pour les icônes - logique simplifiée */
-.emoji-fallback {
-  display: none; /* Masqué par défaut */
-}
-
-.material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
-}
-
-/* UNIQUEMENT quand .force-emoji est présent sur html, afficher les emoji */
-html.force-emoji .material-symbols-outlined {
-  display: none !important;
-}
-
-html.force-emoji .emoji-fallback {
-  display: inline-block !important;
-}
-
-.md3-icon-button span.material-symbols-outlined {
-  color: #FFFFFF; /* Blanc sur rouge - contraste 4.5:1 */
-  font-size: 20px; /* Taille d'icône réduite */
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
-}
-
-.md3-icon-button.liked span.material-symbols-outlined {
-  color: #F4D03F; /* Doré pour les likes/favoris */
-  font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 20;
-}
-
-/* Styles pour les emoji fallback */
-.emoji-fallback {
-  font-size: 18px;
-  color: #FFFFFF;
-}
-
-.md3-icon-button.liked .emoji-fallback {
-  color: #F4D03F; /* Doré pour les likes/favoris */
-}
 
 .md3-app-bar-title {
   flex: 1;

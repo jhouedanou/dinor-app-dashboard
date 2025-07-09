@@ -41,15 +41,15 @@
         <div class="tip-info">
           <div class="tip-stats">
             <div class="stat-item">
-              <span class="material-symbols-outlined dinor-text-secondary">schedule</span>
+              <DinorIcon name="schedule" :size="18" class="dinor-text-secondary" />
               <span class="md3-body-medium">{{ tip.estimated_time }}min</span>
             </div>
             <div class="stat-item">
-              <span class="material-symbols-outlined dinor-text-secondary">favorite</span>
+              <DinorIcon name="favorite" :size="18" class="dinor-text-secondary" />
               <span class="md3-body-medium">{{ tip.likes_count || 0 }}</span>
             </div>
             <div class="stat-item">
-              <span class="material-symbols-outlined dinor-text-secondary">comment</span>
+              <DinorIcon name="comment" :size="18" class="dinor-text-secondary" />
               <span class="md3-body-medium">{{ tip.comments_count || 0 }}</span>
             </div>
           </div>
@@ -121,7 +121,7 @@
                   </div>
                   <div v-if="canDeleteComment(comment)" class="comment-actions">
                     <button @click="deleteComment(comment.id)" class="btn-delete" title="Supprimer le commentaire">
-                      <span class="material-symbols-outlined">delete</span>
+                      <DinorIcon name="delete" :size="18" />
                     </button>
                   </div>
                 </div>
@@ -138,7 +138,7 @@
       <!-- Error State -->
       <div v-else class="error-state">
         <div class="error-icon">
-          <span class="material-symbols-outlined">error</span>
+          <DinorIcon name="error" :size="48" />
         </div>
         <h2 class="md3-title-large">Astuce introuvable</h2>
         <p class="md3-body-large dinor-text-gray">L'astuce demandée n'existe pas ou a été supprimée.</p>
@@ -170,6 +170,7 @@ import { useComments } from '@/composables/useComments'
 import Badge from '@/components/common/Badge.vue'
 import ShareModal from '@/components/common/ShareModal.vue'
 import AuthModal from '@/components/common/AuthModal.vue'
+import DinorIcon from '@/components/DinorIcon.vue'
 
 export default {
   name: 'TipDetail',
@@ -177,7 +178,8 @@ export default {
   components: {
     Badge,
     ShareModal,
-    AuthModal
+    AuthModal,
+    DinorIcon
   },
   props: {
     id: {

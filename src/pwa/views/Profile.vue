@@ -9,7 +9,7 @@
     <!-- Not Authenticated State -->
     <div v-else-if="!authStore?.isAuthenticated" class="auth-required">
       <div class="auth-icon">
-        <span class="material-symbols-outlined">person</span>
+        <DinorIcon name="person" :size="48" />
       </div>
       <h2 class="md3-title-large">Profil utilisateur</h2>
       <p class="md3-body-large">Connectez-vous pour voir votre profil et vos favoris</p>
@@ -23,7 +23,7 @@
       <!-- User Info Section -->
       <div class="user-info-section">
         <div class="user-avatar">
-          <span class="material-symbols-outlined">person</span>
+          <DinorIcon name="person" :size="32" />
         </div>
         <div class="user-details">
           <h1 class="user-name">{{ authStore.userName }}</h1>
@@ -41,7 +41,7 @@
           class="nav-button"
           :class="{ active: activeSection === section.key }"
         >
-          <span class="material-symbols-outlined">{{ section.icon }}</span>
+          <DinorIcon :name="section.icon" :size="20" />
           <span>{{ section.label }}</span>
         </button>
       </div>
@@ -60,7 +60,7 @@
               class="filter-tab"
               :class="{ active: selectedFilter === tab.key }"
             >
-              <span class="material-symbols-outlined">{{ tab.icon }}</span>
+              <DinorIcon :name="tab.icon" :size="18" />
               <span>{{ tab.label }}</span>
             </button>
           </div>
@@ -81,7 +81,7 @@
                 @error="handleImageError"
               >
               <div class="favorite-type-badge">
-                <span class="material-symbols-outlined">{{ getTypeIcon(favorite.type) }}</span>
+                <DinorIcon :name="getTypeIcon(favorite.type)" :size="16" />
               </div>
             </div>
             <div class="favorite-info">
@@ -95,11 +95,11 @@
                 </span>
                 <div class="favorite-stats">
                   <span class="stat">
-                    <span class="material-symbols-outlined">favorite</span>
+                    <DinorIcon name="favorite" :size="16" />
                     {{ favorite.content.likes_count || 0 }}
                   </span>
                   <span class="stat">
-                    <span class="material-symbols-outlined">comment</span>
+                    <DinorIcon name="comment" :size="16" />
                     {{ favorite.content.comments_count || 0 }}
                   </span>
                 </div>
@@ -110,7 +110,7 @@
               class="remove-favorite"
               title="Retirer des favoris"
             >
-              <span class="material-symbols-outlined">close</span>
+              <DinorIcon name="close" :size="16" />
             </button>
           </div>
         </div>
@@ -118,7 +118,7 @@
         <!-- Empty State -->
         <div v-else class="empty-favorites">
           <div class="empty-icon">
-            <span class="material-symbols-outlined">favorite_border</span>
+            <DinorIcon name="favorite_border" :size="48" />
           </div>
           <h3>{{ getEmptyMessage() }}</h3>
           <p>{{ getEmptyDescription() }}</p>
@@ -146,7 +146,7 @@
               <div class="stats-grid">
                 <div class="stat-card total-predictions">
                   <div class="stat-icon">
-                    <span class="material-symbols-outlined">sports_soccer</span>
+                    <DinorIcon name="target" :size="24" />
                   </div>
                   <div class="stat-content">
                     <span class="stat-value">{{ userPredictionsStats.total_predictions }}</span>
@@ -156,7 +156,7 @@
                 
                 <div class="stat-card total-points">
                   <div class="stat-icon">
-                    <span class="material-symbols-outlined">emoji_events</span>
+                    <DinorIcon name="trophy" :size="24" />
                   </div>
                   <div class="stat-content">
                     <span class="stat-value">{{ userPredictionsStats.total_points }}</span>
@@ -166,7 +166,7 @@
                 
                 <div class="stat-card accuracy">
                   <div class="stat-icon">
-                    <span class="material-symbols-outlined">target</span>
+                    <DinorIcon name="target" :size="24" />
                   </div>
                   <div class="stat-content">
                     <span class="stat-value">{{ userPredictionsStats.accuracy_percentage }}%</span>
@@ -176,7 +176,7 @@
                 
                 <div class="stat-card ranking" v-if="userPredictionsStats.current_rank">
                   <div class="stat-icon">
-                    <span class="material-symbols-outlined">leaderboard</span>
+                    <DinorIcon name="activity" :size="24" />
                   </div>
                   <div class="stat-content">
                     <span class="stat-value">#{{ userPredictionsStats.current_rank }}</span>
@@ -188,17 +188,17 @@
               <!-- Quick Actions -->
               <div class="quick-actions">
                 <button @click="goToPredictions" class="action-button primary">
-                  <span class="material-symbols-outlined">add_circle</span>
+                  <DinorIcon name="add" :size="18" />
                   <span>Faire un pronostic</span>
                 </button>
                 
                 <button @click="switchPredictionsTab('my-ranking')" class="action-button secondary">
-                  <span class="material-symbols-outlined">leaderboard</span>
+                  <DinorIcon name="activity" :size="18" />
                   <span>Voir le classement</span>
                 </button>
                 
                 <button @click="switchPredictionsTab('active-tournaments')" class="action-button secondary">
-                  <span class="material-symbols-outlined">emoji_events</span>
+                  <DinorIcon name="trophy" :size="18" />
                   <span>Tournois actifs</span>
                 </button>
               </div>
@@ -212,7 +212,7 @@
                 @click="switchPredictionsTab(tab.key)"
                 :class="['sub-tab', { active: activePredictionsTab === tab.key }]"
               >
-                <span class="material-symbols-outlined">{{ tab.icon }}</span>
+                <DinorIcon :name="tab.icon" :size="18" />
                 <span>{{ tab.label }}</span>
               </button>
             </div>
@@ -224,7 +224,7 @@
                 <div class="stats-grid">
                   <div class="stat-card">
                     <div class="stat-icon">
-                      <span class="material-symbols-outlined">sports_soccer</span>
+                      <DinorIcon name="target" :size="20" />
                     </div>
                     <div class="stat-info">
                       <span class="stat-value">{{ userPredictionsStats.total_predictions || 0 }}</span>
@@ -233,7 +233,7 @@
                   </div>
                   <div class="stat-card">
                     <div class="stat-icon accuracy">
-                      <span class="material-symbols-outlined">target</span>
+                      <DinorIcon name="target" :size="20" />
                     </div>
                     <div class="stat-info">
                       <span class="stat-value">{{ userPredictionsStats.accuracy_percentage || 0 }}%</span>
@@ -242,7 +242,7 @@
                   </div>
                   <div class="stat-card">
                     <div class="stat-icon points">
-                      <span class="material-symbols-outlined">emoji_events</span>
+                      <DinorIcon name="trophy" :size="20" />
                     </div>
                     <div class="stat-info">
                       <span class="stat-value">{{ userPredictionsStats.total_points || 0 }}</span>
@@ -251,7 +251,7 @@
                   </div>
                   <div class="stat-card" v-if="userPredictionsStats.current_rank">
                     <div class="stat-icon ranking">
-                      <span class="material-symbols-outlined">leaderboard</span>
+                      <DinorIcon name="activity" :size="20" />
                     </div>
                     <div class="stat-info">
                       <span class="stat-value">#{{ userPredictionsStats.current_rank }}</span>
@@ -265,7 +265,7 @@
               <div v-if="recentPredictions.length" class="recent-predictions-preview">
                 <div class="section-header-with-action">
                   <h3 class="subsection-title">
-                    <span class="material-symbols-outlined">history</span>
+                    <DinorIcon name="loading" :size="18" />
                     Pronostics récents
                   </h3>
                   <div class="predictions-filter-mini">
@@ -301,10 +301,8 @@
                     }"
                   >
                     <div class="prediction-status-indicator">
-                      <span v-if="prediction.is_calculated" class="material-symbols-outlined">
-                        {{ prediction.points_earned > 0 ? 'check_circle' : 'cancel' }}
-                      </span>
-                      <span v-else class="material-symbols-outlined pending-icon">schedule</span>
+                      <DinorIcon v-if="prediction.is_calculated" :name="prediction.points_earned > 0 ? 'check_circle' : 'cancel'" :size="16" />
+                      <DinorIcon v-else name="schedule" :size="16" class="pending-icon" />
                     </div>
                     <div class="prediction-match">
                       <div class="teams">
@@ -327,7 +325,7 @@
                 </div>
                 
                 <button @click="loadAllUserPredictions" class="btn-secondary show-all-btn">
-                  <span class="material-symbols-outlined">visibility</span>
+                  <DinorIcon name="visibility" :size="18" />
                   Voir tous mes pronostics ({{ userPredictionsStats.total_predictions }})
                 </button>
               </div>
@@ -336,7 +334,7 @@
               <div v-if="userAllPredictions.length" class="all-predictions">
                 <div class="predictions-header">
                   <h3 class="subsection-title">
-                    <span class="material-symbols-outlined">list</span>
+                    <DinorIcon name="list" :size="18" />
                     Tous mes pronostics
                   </h3>
                   <div class="predictions-filters">
@@ -345,28 +343,28 @@
                         @click="predictionsFilter = 'all'"
                         :class="['filter-chip', { active: predictionsFilter === 'all' }]"
                       >
-                        <span class="material-symbols-outlined">select_all</span>
+                        <DinorIcon name="check" :size="16" />
                         Tous ({{ userAllPredictions.length }})
                       </button>
                       <button 
                         @click="predictionsFilter = 'pending'"
                         :class="['filter-chip', { active: predictionsFilter === 'pending' }]"
                       >
-                        <span class="material-symbols-outlined">schedule</span>
+                        <DinorIcon name="schedule" :size="16" />
                         En attente ({{ getPredictionsCountByStatus('pending') }})
                       </button>
                       <button 
                         @click="predictionsFilter = 'calculated'"
                         :class="['filter-chip', { active: predictionsFilter === 'calculated' }]"
                       >
-                        <span class="material-symbols-outlined">check_circle</span>
+                        <DinorIcon name="check_circle" :size="16" />
                         Terminés ({{ getPredictionsCountByStatus('calculated') }})
                       </button>
                       <button 
                         @click="predictionsFilter = 'won'"
                         :class="['filter-chip', { active: predictionsFilter === 'won' }]"
                       >
-                        <span class="material-symbols-outlined">emoji_events</span>
+                        <DinorIcon name="trophy" :size="16" />
                         Gagnants ({{ getPredictionsCountByStatus('won') }})
                       </button>
                     </div>
@@ -419,11 +417,11 @@
                           </div>
                           <div class="prediction-result">
                             <span v-if="prediction.is_calculated" class="points-earned" :class="getPointsClass(prediction.points_earned)">
-                              <span class="material-symbols-outlined">{{ prediction.points_earned > 0 ? 'add' : 'remove' }}</span>
+                              <DinorIcon :name="prediction.points_earned > 0 ? 'add' : 'remove'" :size="14" />
                               {{ prediction.points_earned }} point{{ prediction.points_earned > 1 ? 's' : '' }}
                             </span>
                             <span v-else class="pending">
-                              <span class="material-symbols-outlined">schedule</span>
+                              <DinorIcon name="schedule" :size="14" />
                               En attente du résultat
                             </span>
                           </div>
@@ -438,7 +436,7 @@
               <div v-if="!recentPredictions.length && !userAllPredictions.length" class="empty-predictions">
                 <div class="empty-illustration">
                   <div class="empty-icon">
-                    <span class="material-symbols-outlined">sports_soccer</span>
+                    <DinorIcon name="target" :size="48" />
                   </div>
                   <div class="empty-pattern"></div>
                 </div>
@@ -446,11 +444,11 @@
                 <p>Commencez à faire des pronostics pour gagner des points et grimper dans le classement !</p>
                 <div class="empty-actions">
                   <button @click="goToPredictions" class="btn-primary">
-                    <span class="material-symbols-outlined">add</span>
+                    <DinorIcon name="add" :size="18" />
                     Faire mon premier pronostic
                   </button>
                   <button @click="switchPredictionsTab('active-tournaments')" class="btn-secondary">
-                    <span class="material-symbols-outlined">emoji_events</span>
+                    <DinorIcon name="trophy" :size="18" />
                     Voir les tournois
                   </button>
                 </div>
@@ -461,32 +459,30 @@
             <div v-if="activePredictionsTab === 'my-ranking'" class="tab-content">
               <div class="ranking-section">
                 <h3 class="subsection-title">
-                  <span class="material-symbols-outlined">leaderboard</span>
+                  <DinorIcon name="activity" :size="18" />
                   Mon classement
                 </h3>
                 
                 <!-- Personal Ranking Card -->
                 <div v-if="userPredictionsStats.current_rank" class="my-rank-card enhanced">
                   <div class="rank-badge" :class="getRankClass(userPredictionsStats.current_rank)">
-                    <span class="material-symbols-outlined">emoji_events</span>
+                    <DinorIcon name="trophy" :size="20" />
                     <span class="rank-number">#{{ userPredictionsStats.current_rank }}</span>
                   </div>
                   <div class="rank-info">
                     <h4>{{ authStore.user?.name || 'Vous' }}</h4>
                     <div class="rank-stats">
                       <div class="stat-item">
-                        <span class="material-symbols-outlined">star</span>
+                        <DinorIcon name="star" :size="16" />
                         <span>{{ userPredictionsStats.total_points }} points</span>
                       </div>
                       <div class="stat-item">
-                        <span class="material-symbols-outlined">target</span>
+                        <DinorIcon name="target" :size="16" />
                         <span>{{ userPredictionsStats.accuracy_percentage }}% de réussite</span>
                       </div>
                     </div>
                     <div v-if="userPredictionsStats.rank_change" class="rank-change" :class="{ positive: userPredictionsStats.rank_change > 0, negative: userPredictionsStats.rank_change < 0 }">
-                      <span class="material-symbols-outlined">
-                        {{ userPredictionsStats.rank_change > 0 ? 'trending_up' : 'trending_down' }}
-                      </span>
+                      <DinorIcon :name="userPredictionsStats.rank_change > 0 ? 'trending_up' : 'trending_down'" :size="16" />
                       {{ userPredictionsStats.rank_change > 0 ? '+' : '' }}{{ userPredictionsStats.rank_change }} place{{ Math.abs(userPredictionsStats.rank_change) > 1 ? 's' : '' }}
                     </div>
                   </div>
@@ -505,11 +501,11 @@
                 
                 <div class="ranking-actions">
                   <button @click="goToLeaderboard" class="btn-primary">
-                    <span class="material-symbols-outlined">leaderboard</span>
+                    <DinorIcon name="activity" :size="18" />
                     Voir le classement complet
                   </button>
                   <button @click="switchPredictionsTab('active-tournaments')" class="btn-secondary">
-                    <span class="material-symbols-outlined">emoji_events</span>
+                    <DinorIcon name="trophy" :size="18" />
                     Rejoindre un tournoi
                   </button>
                 </div>
@@ -536,11 +532,11 @@
                     
                     <div class="tournament-info">
                       <div v-if="tournament.total_prize" class="prize">
-                        <span class="material-symbols-outlined">emoji_events</span>
+                        <DinorIcon name="trophy" :size="16" />
                         <span>{{ formatPrize(tournament.total_prize) }}</span>
                       </div>
                       <div class="participants">
-                        <span class="material-symbols-outlined">group</span>
+                        <DinorIcon name="group" :size="16" />
                         <span>{{ tournament.participants_count || 0 }} participant{{ (tournament.participants_count || 0) > 1 ? 's' : '' }}</span>
                       </div>
                     </div>
@@ -568,7 +564,7 @@
                 
                 <div v-else class="empty-tournaments">
                   <div class="empty-icon">
-                    <span class="material-symbols-outlined">emoji_events</span>
+                    <DinorIcon name="trophy" :size="48" />
                   </div>
                   <h4>Aucun tournoi actif</h4>
                   <p>Les nouveaux tournois apparaîtront ici dès qu'ils seront disponibles.</p>
@@ -580,7 +576,7 @@
           <!-- Error State -->
           <div v-else class="error-state">
             <div class="error-icon">
-              <span class="material-symbols-outlined">error</span>
+              <DinorIcon name="error" :size="48" />
             </div>
             <h3>Impossible de charger vos pronostics</h3>
             <p>Vérifiez votre connexion et réessayez.</p>
@@ -681,7 +677,7 @@
               Vous serez déconnecté de votre compte sur cet appareil. Vos données seront conservées.
             </p>
             <button @click="handleLogout" class="btn-logout-main">
-              <span class="material-symbols-outlined">logout</span>
+              <DinorIcon name="logout" :size="18" />
               <span>Se déconnecter</span>
             </button>
           </div>
@@ -696,19 +692,19 @@
             <h3 class="form-title">Conditions d'utilisation</h3>
             <div class="legal-links">
               <a href="/terms" class="legal-link">
-                <span class="material-symbols-outlined">description</span>
+                <DinorIcon name="edit" :size="18" />
                 <span>Conditions générales d'utilisation</span>
-                <span class="material-symbols-outlined">arrow_forward_ios</span>
+                <DinorIcon name="chevron_right" :size="18" />
               </a>
               <a href="/privacy" class="legal-link">
-                <span class="material-symbols-outlined">privacy_tip</span>
+                <DinorIcon name="security" :size="18" />
                 <span>Politique de confidentialité</span>
-                <span class="material-symbols-outlined">arrow_forward_ios</span>
+                <DinorIcon name="chevron_right" :size="18" />
               </a>
               <a href="/cookies" class="legal-link">
-                <span class="material-symbols-outlined">cookie</span>
+                <DinorIcon name="settings" :size="18" />
                 <span>Politique des cookies</span>
-                <span class="material-symbols-outlined">arrow_forward_ios</span>
+                <DinorIcon name="chevron_right" :size="18" />
               </a>
             </div>
           </div>
@@ -2879,8 +2875,7 @@ export default {
   transform: translateY(-1px);
 }
 
-.sub-tab .material-symbols-outlined {
-  font-size: 20px;
+.sub-tab .dinor-icon {
   font-weight: 600;
 }
 
@@ -3360,8 +3355,7 @@ export default {
           justify-content: center;
           flex-shrink: 0;
 
-          .material-symbols-outlined {
-            font-size: 24px;
+          .dinor-icon {
             font-weight: 600;
           }
         }
@@ -3434,8 +3428,8 @@ export default {
           }
         }
 
-        .material-symbols-outlined {
-          font-size: 1.25rem;
+        .dinor-icon {
+          /* Size handled by component */
         }
       }
     }
@@ -3627,8 +3621,8 @@ export default {
         background: #F3F4F6;
         border: 2px solid #E5E7EB;
 
-        .material-symbols-outlined {
-          font-size: 18px;
+        .dinor-icon {
+          /* Size handled by component */
         }
 
         .pending-icon {
@@ -3663,8 +3657,8 @@ export default {
           border: 1px solid #FCA5A5;
         }
 
-        .material-symbols-outlined {
-          font-size: 16px;
+        .dinor-icon {
+          /* Size handled by component */
         }
       }
 
@@ -3681,8 +3675,8 @@ export default {
         align-items: center;
         gap: 0.25rem;
 
-        .material-symbols-outlined {
-          font-size: 16px;
+        .dinor-icon {
+          /* Size handled by component */
         }
       }
     }
@@ -3829,8 +3823,8 @@ export default {
         font-size: 0.875rem;
         color: var(--md-sys-color-on-surface-variant);
 
-        .material-symbols-outlined {
-          font-size: 1rem;
+        .dinor-icon {
+          /* Size handled by component */
         }
       }
     }
@@ -3846,8 +3840,7 @@ export default {
     padding: 2rem;
 
     .empty-icon {
-      .material-symbols-outlined {
-        font-size: 3rem;
+      .dinor-icon {
         color: var(--md-sys-color-on-surface-variant);
         opacity: 0.5;
       }
@@ -3991,8 +3984,7 @@ export default {
   margin: 0;
 }
 
-.subsection-title .material-symbols-outlined {
-  font-size: 24px;
+.subsection-title .dinor-icon {
   color: #E53E3E;
   background: #FEF2F2;
   padding: 4px;
@@ -4072,15 +4064,15 @@ export default {
   justify-content: center;
 }
 
-.prediction-status-indicator .material-symbols-outlined {
-  font-size: 16px;
+.prediction-status-indicator .dinor-icon {
+  /* Size handled by component */
 }
 
-.prediction-card.positive-result .prediction-status-indicator .material-symbols-outlined {
+.prediction-card.positive-result .prediction-status-indicator .dinor-icon {
   color: #38A169;
 }
 
-.prediction-card.negative-result .prediction-status-indicator .material-symbols-outlined {
+.prediction-card.negative-result .prediction-status-indicator .dinor-icon {
   color: #E53E3E;
 }
 
@@ -4127,8 +4119,8 @@ export default {
   background: #EDF2F7;
 }
 
-.filter-chip .material-symbols-outlined {
-  font-size: 14px;
+.filter-chip .dinor-icon {
+  /* Size handled by component */
 }
 
 /* Grouped Predictions */
@@ -4207,8 +4199,8 @@ export default {
   font-size: 14px;
 }
 
-.stat-item .material-symbols-outlined {
-  font-size: 16px;
+.stat-item .dinor-icon {
+  /* Size handled by component */
 }
 
 /* Progress Card */
@@ -4286,8 +4278,7 @@ export default {
   margin: 0 auto;
 }
 
-.empty-icon .material-symbols-outlined {
-  font-size: 40px;
+.empty-icon .dinor-icon {
   color: #A0AEC0;
 }
 
@@ -4344,8 +4335,8 @@ export default {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.show-all-btn .material-symbols-outlined {
-  font-size: 20px;
+.show-all-btn .dinor-icon {
+  /* Size handled by component */
 }
 
 /* Responsive Design */
@@ -4447,8 +4438,8 @@ export default {
         top: 8px;
         right: 8px;
         
-        .material-symbols-outlined {
-          font-size: 16px;
+        .dinor-icon {
+          /* Size handled by component */
         }
       }
     }
