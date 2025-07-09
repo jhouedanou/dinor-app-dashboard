@@ -99,29 +99,43 @@ class ImportCsv extends Page implements HasForms
                     ->schema([
                         \Filament\Forms\Components\Actions::make([
                             Action::make('download_example')
-                                ->label('Télécharger l\'exemple CSV')
+                                ->label('📥 Télécharger l\'exemple CSV')
                                 ->icon('heroicon-o-arrow-down-tray')
-                                ->color('secondary')
+                                ->color('info')
+                                ->outlined()
+                                ->size('lg')
                                 ->action(function (callable $get) {
                                     $type = $get('content_type');
                                     if ($type) {
-                                        return $this->downloadExample($type);
+                                        $csvContent = $this->generateExampleCsv($type);
+                                        $filename = 'exemple_' . $type . '.csv';
+                                        
+                                        return response()->streamDownload(function () use ($csvContent) {
+                                            echo $csvContent;
+                                        }, $filename, [
+                                            'Content-Type' => 'text/csv; charset=UTF-8',
+                                            'Content-Disposition' => 'attachment; filename="' . $filename . '"'
+                                        ]);
                                     }
+                                    
                                     Notification::make()
-                                        ->title('Erreur')
+                                        ->title('⚠️ Erreur')
                                         ->body('Veuillez sélectionner un type de contenu.')
-                                        ->danger()
+                                        ->warning()
                                         ->send();
                                 })
                                 ->visible(fn (callable $get) => $get('content_type')),
 
                             Action::make('import')
-                                ->label('Importer le fichier')
+                                ->label('📤 Importer le fichier')
                                 ->icon('heroicon-o-arrow-up-tray')
                                 ->color('primary')
+                                ->size('lg')
                                 ->action('import')
                                 ->visible(fn (callable $get) => $get('content_type') && $get('csv_file')),
                         ])
+                        ->fullWidth()
+                        ->alignment('center')
                     ])
             ])
             ->statePath('data');
@@ -580,12 +594,40 @@ class ImportCsv extends Page implements HasForms
         };
     }
 
+    public function generateExampleCsv(string $type): string
+    {
+        $examples = $this->getExampleData();
+        
+        if (!isset($examples[$type])) {
+            return '';
+        }
+        
+        $csvContent = '';
+        foreach ($examples[$type] as $row) {
+            $csvContent .= '"' . implode('","', $row) . '"' . "\n";
+        }
+        
+        return $csvContent;
+    }
+
     public function downloadExample(string $type)
     {
-        $examples = [
+        $csvContent = $this->generateExampleCsv($type);
+
+        return response($csvContent)
+            ->header('Content-Type', 'text/csv; charset=UTF-8')
+            ->header('Content-Disposition', 'attachment; filename="exemple_' . $type . '.csv"')
+            ->header('Cache-Control', 'no-cache, must-revalidate')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', '0');
+    }
+
+    private function getExampleData(): array
+    {
+        return [
             'recipes' => [
                 ['title', 'description', 'short_description', 'ingredients', 'instructions', 'preparation_time', 'cooking_time', 'servings', 'difficulty', 'meal_type', 'diet_type', 'category', 'tags', 'is_featured', 'is_published'],
-                ['Riz au Gras', 'Délicieux riz au gras traditionnel', 'Riz préparé avec de la sauce tomate', '[{"quantity":"2","unit":"tasses","ingredient_id":null}]', '[{"step":"Faire revenir les oignons"}]', '30', '60', '4', 'medium', 'lunch', 'none', 'Plats principaux', '["riz","traditionnel"]', 'true', 'true']
+                ['Riz au Gras', 'Délicieux riz au gras traditionnel', 'Riz préparé avec de la sauce tomate', '[{"quantity":"2","unit":"tasses","name":"Riz jasmin"}]', '[{"step":"Faire revenir les oignons","description":"Coupez et faites revenir 2 oignons"}]', '30', '60', '4', 'medium', 'lunch', 'none', 'Plats principaux', '["riz","traditionnel"]', 'true', 'true']
             ],
             'events' => [
                 ['title', 'description', 'content', 'short_description', 'start_date', 'end_date', 'location', 'address', 'city', 'country', 'category', 'price', 'currency', 'is_free', 'max_participants', 'tags', 'is_featured', 'is_published', 'status'],

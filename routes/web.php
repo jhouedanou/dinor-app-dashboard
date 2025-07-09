@@ -171,6 +171,7 @@ Route::get('/pwa/assets/{path?}', function ($path = null) {
     ]);
 })->where('path', '.*');
 
+
 // Route catch-all pour la PWA SPA (doit être en dernier)
 Route::get('/pwa/{path?}', function ($path = null) {
     // Servir uniquement la version buildée de la PWA
