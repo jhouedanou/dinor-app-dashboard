@@ -20,13 +20,11 @@
           <div class="event-overlay dinor-gradient-primary">
             <div class="event-badges">
               <div v-if="event.location" class="md3-chip event-location">
-                <span class="material-symbols-outlined">location_on</span>
-                <span class="emoji-fallback">📍</span>
+                <DinorIcon name="location_on" :size="16" />
                 <span>{{ event.location }}</span>
               </div>
               <div v-if="event.category" class="md3-chip event-category">
-                <span class="material-symbols-outlined">tag</span>
-                <span class="emoji-fallback">🏷️</span>
+                <DinorIcon name="tag" :size="16" />
                 <span>{{ event.category.name }}</span>
               </div>
             </div>
@@ -37,28 +35,23 @@
         <div class="event-info">
           <div class="event-stats">
             <div class="stat-item" v-if="event.start_date">
-              <span class="material-symbols-outlined dinor-text-secondary">calendar_today</span>
-              <span class="emoji-fallback">📅</span>
+              <DinorIcon name="calendar_today" :size="16" />
               <span class="md3-body-medium">{{ formatEventDate(event.start_date) }}</span>
             </div>
             <div class="stat-item" v-if="event.start_time">
-              <span class="material-symbols-outlined dinor-text-secondary">schedule</span>
-              <span class="emoji-fallback">⏰</span>
+              <DinorIcon name="schedule" :size="16" />
               <span class="md3-body-medium">{{ formatTime(event.start_time) }}</span>
             </div>
             <div class="stat-item" v-if="event.location">
-              <span class="material-symbols-outlined dinor-text-secondary">place</span>
-              <span class="emoji-fallback">📍</span>
+              <DinorIcon name="place" :size="16" />
               <span class="md3-body-medium">{{ event.location }}</span>
             </div>
             <div class="stat-item">
-              <span class="material-symbols-outlined dinor-text-secondary">favorite</span>
-              <span class="emoji-fallback">❤️</span>
+              <DinorIcon name="favorite" :size="16" />
               <span class="md3-body-medium">{{ event.likes_count || 0 }}</span>
             </div>
             <div class="stat-item">
-              <span class="material-symbols-outlined dinor-text-secondary">comment</span>
-              <span class="emoji-fallback">💬</span>
+              <DinorIcon name="comment" :size="16" />
               <span class="md3-body-medium">{{ event.comments_count || 0 }}</span>
             </div>
           </div>
@@ -210,13 +203,15 @@ import { useSocialShare } from '@/composables/useSocialShare'
 import { useComments } from '@/composables/useComments'
 import ShareModal from '@/components/common/ShareModal.vue'
 import AuthModal from '@/components/common/AuthModal.vue'
+import DinorIcon from '@/components/DinorIcon.vue'
 
 export default {
   name: 'EventDetail',
   emits: ['update-header'],
   components: {
     ShareModal,
-    AuthModal
+    AuthModal,
+    DinorIcon
   },
   props: {
     id: {

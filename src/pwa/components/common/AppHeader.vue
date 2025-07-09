@@ -6,8 +6,7 @@
         @click="handleBack" 
         class="md3-icon-button"
       >
-        <span class="material-symbols-outlined">arrow_back</span>
-        <span class="emoji-fallback">⬅️</span>
+        <DinorIcon name="arrow_back" :size="24" />
       </button>
       
       <!-- Logo et titre -->
@@ -56,8 +55,7 @@
             <div v-if="favoriteLoading" class="loading-spinner-header"></div>
             <!-- Heart icon -->
             <template v-else>
-              <span class="material-symbols-outlined">{{ isFavorited ? 'favorite' : 'favorite_border' }}</span>
-              <span class="emoji-fallback">{{ isFavorited ? '❤️' : '🤍' }}</span>
+              <DinorIcon :name="isFavorited ? 'favorite' : 'favorite_border'" :size="24" :filled="isFavorited" />
             </template>
           </button>
           <button 
@@ -65,8 +63,7 @@
             @click="handleShare" 
             class="md3-icon-button"
           >
-            <span class="material-symbols-outlined">share</span>
-            <span class="emoji-fallback">📤</span>
+            <DinorIcon name="share" :size="24" />
           </button>
         </slot>
       </div>
@@ -80,11 +77,13 @@ import { computed, ref, watch, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import apiService from '@/services/api'
 import CacheRefreshButton from './CacheRefreshButton.vue'
+import DinorIcon from '@/components/DinorIcon.vue'
 
 export default {
   name: 'AppHeader',
   components: {
-    CacheRefreshButton
+    CacheRefreshButton,
+    DinorIcon
   },
   props: {
     title: {

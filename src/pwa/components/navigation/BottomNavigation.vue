@@ -10,8 +10,7 @@
         href="#"
       >
         <div class="nav-icon">
-          <span class="material-symbols-outlined">{{ item.icon }}</span>
-          <span class="emoji-fallback">{{ getEmojiForIcon(item.icon) }}</span>
+          <DinorIcon :name="item.icon" :size="24" :filled="isActive(item)" />
         </div>
         <span class="nav-label">{{ item.label }}</span>
       </a>
@@ -32,11 +31,13 @@ import { useRoute, useRouter } from 'vue-router'
 import { useApiStore } from '@/stores/api'
 import { useAuthHandler } from '@/composables/useAuthHandler'
 import AuthModal from '@/components/common/AuthModal.vue'
+import DinorIcon from '@/components/DinorIcon.vue'
 
 export default {
   name: 'BottomNavigation',
   components: {
-    AuthModal
+    AuthModal,
+    DinorIcon
   },
   setup() {
     const route = useRoute()
@@ -135,27 +136,6 @@ export default {
       return false
     }
     
-    // Émojis de fallback pour les icônes Material Design
-    const getEmojiForIcon = (icon) => {
-      const emojiMap = {
-        'apps': '🏠',
-        'home': '🏠',
-        'restaurant': '🍽️',
-        'lightbulb': '💡',
-        'event': '📅',
-        'play_circle': '📺',
-        'public': '🌐',
-        'web': '🌐',
-        'person': '👤',
-        'favorite': '❤️',
-        'star': '⭐',
-        'search': '🔍',
-        'settings': '⚙️',
-        'notifications': '🔔',
-        'menu': '☰'
-      }
-      return emojiMap[icon] || '📱'
-    }
 
     // Gestion de l'authentification réussie
     const onAuthSuccess = (user) => {
@@ -174,7 +154,6 @@ export default {
       loading,
       handleItemClick,
       isActive,
-      getEmojiForIcon,
       showAuthModal,
       authModalMessage,
       closeAuthModal,

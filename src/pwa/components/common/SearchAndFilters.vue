@@ -3,8 +3,7 @@
     <!-- Search Bar -->
     <div class="search-container">
       <div class="search-input-wrapper">
-        <span class="material-symbols-outlined search-icon">search</span>
-        <span class="emoji-fallback search-icon">🔍</span>
+        <DinorIcon name="search" :size="20" class="search-icon" />
         <input
           :value="searchQuery"
           @input="$emit('update:searchQuery', $event.target.value)"
@@ -18,8 +17,7 @@
           class="clear-search"
           aria-label="Effacer la recherche"
         >
-          <span class="material-symbols-outlined">close</span>
-          <span class="emoji-fallback">✖️</span>
+          <DinorIcon name="close" :size="16" />
         </button>
       </div>
     </div>
@@ -30,8 +28,7 @@
         <!-- Category Filter -->
         <div v-if="categories?.length" class="filter-dropdown-group">
           <label class="filter-label">
-            <span class="material-symbols-outlined">category</span>
-            <span class="emoji-fallback">📂</span>
+            <DinorIcon name="category" :size="16" />
             Catégories
           </label>
           <div class="dropdown-wrapper">
@@ -49,8 +46,7 @@
                 {{ category.name }}
               </option>
             </select>
-            <span class="dropdown-arrow material-symbols-outlined">expand_more</span>
-            <span class="dropdown-arrow emoji-fallback">▼</span>
+            <DinorIcon name="expand_more" :size="16" class="dropdown-arrow" />
           </div>
         </div>
 
@@ -60,11 +56,10 @@
           :key="filter.key"
           class="filter-dropdown-group"
         >
-                      <label class="filter-label">
-              <span class="material-symbols-outlined">{{ filter.icon || 'tune' }}</span>
-              <span class="emoji-fallback">{{ filter.icon === 'schedule' ? '⏱️' : '⚙️' }}</span>
-              {{ filter.label }}
-            </label>
+          <label class="filter-label">
+            <DinorIcon :name="filter.icon || 'tune'" :size="16" />
+            {{ filter.label }}
+          </label>
           <div class="dropdown-wrapper">
             <select
               :value="getFilterValue(filter.key) || ''"
@@ -80,8 +75,7 @@
                 {{ option.label }}
               </option>
             </select>
-            <span class="dropdown-arrow material-symbols-outlined">expand_more</span>
-            <span class="dropdown-arrow emoji-fallback">▼</span>
+            <DinorIcon name="expand_more" :size="16" class="dropdown-arrow" />
           </div>
         </div>
       </div>
@@ -96,8 +90,13 @@
 </template>
 
 <script>
+import DinorIcon from '@/components/DinorIcon.vue'
+
 export default {
   name: 'SearchAndFilters',
+  components: {
+    DinorIcon
+  },
   emits: ['update:searchQuery', 'update:selectedCategory', 'update:additionalFilter'],
   props: {
     searchQuery: {

@@ -391,10 +391,8 @@
                         }"
                       >
                         <div class="prediction-status-indicator">
-                          <span v-if="prediction.is_calculated" class="material-symbols-outlined">
-                            {{ prediction.points_earned > 0 ? 'check_circle' : 'cancel' }}
-                          </span>
-                          <span v-else class="material-symbols-outlined pending-icon">schedule</span>
+                          <DinorIcon v-if="prediction.is_calculated" :name="prediction.points_earned > 0 ? 'check_circle' : 'cancel'" :size="20" />
+                          <DinorIcon v-else name="schedule" :size="20" class="pending-icon" />
                         </div>
                         
                         <div class="prediction-match">
@@ -769,11 +767,13 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useApiStore } from '@/stores/api'
 import AuthModal from '@/components/common/AuthModal.vue'
+import DinorIcon from '@/components/DinorIcon.vue'
 
 export default {
   name: 'Profile',
   components: {
-    AuthModal
+    AuthModal,
+    DinorIcon
   },
   setup() {
     const router = useRouter()
@@ -2948,7 +2948,7 @@ export default {
   box-shadow: 0 2px 8px rgba(244, 208, 63, 0.2);
 }
 
-.prediction-card.calculated {
+.prediction-card.calculated:not(.positive-result):not(.negative-result) {
   border-left: 4px solid #10B981;
 }
 
@@ -3458,8 +3458,11 @@ export default {
       }
 
       &.calculated {
-        border-left: 4px solid #10B981;
         background: linear-gradient(to right, #F0FDF4 0%, #FFFFFF 8%);
+        
+        &:not(.positive-result):not(.negative-result) {
+          border-left: 4px solid #10B981;
+        }
       }
 
       &.positive-result {

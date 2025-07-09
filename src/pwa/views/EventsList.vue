@@ -10,10 +10,7 @@
     <!-- Toggle Filters Button -->
     <div class="filters-toggle">
       <button @click="showFilters = !showFilters" class="toggle-btn">
-        <span class="icon-test">
-          <span class="material-symbols-outlined">{{ showFilters ? 'expand_less' : 'expand_more' }}</span>
-          <span class="emoji-fallback">{{ showFilters ? '▲' : '▼' }}</span>
-        </span>
+        <DinorIcon :name="showFilters ? 'expand_less' : 'expand_more'" :size="20" />
         <span>{{ showFilters ? 'Masquer les filtres' : 'Afficher les filtres' }}</span>
       </button>
     </div>
@@ -41,9 +38,8 @@
 
     <!-- Error State -->
     <div v-else-if="error" class="error-state">
-      <div class="error-icon icon-test">
-        <span class="material-symbols-outlined">error</span>
-        <span class="emoji-fallback">⚠️</span>
+      <div class="error-icon">
+        <DinorIcon name="error" :size="48" />
       </div>
       <p class="md3-body-large dinor-text-gray">Erreur lors du chargement des événements.</p>
       <button @click="retry" class="retry-btn">
@@ -55,9 +51,8 @@
     <div v-else class="content">
       <!-- Empty State -->
       <div v-if="!filteredEvents.length && !loading" class="empty-state">
-        <div class="empty-icon icon-test">
-          <span class="material-symbols-outlined">calendar_today</span>
-          <span class="emoji-fallback">📅</span>
+        <div class="empty-icon">
+          <DinorIcon name="calendar_today" :size="64" />
         </div>
         <h2 class="md3-title-medium">Aucun événement trouvé</h2>
         <p class="md3-body-medium dinor-text-gray">
@@ -106,31 +101,26 @@
             </p>
             
             <div class="event-details">
-              <div class="detail icon-test">
-                <span class="material-symbols-outlined">calendar_today</span>
-                <span class="emoji-fallback">📅</span>
+              <div class="detail">
+                <DinorIcon name="calendar_today" :size="16" />
                 <span>{{ formatDate(event.start_date) }}</span>
               </div>
-              <div v-if="event.start_time" class="detail icon-test">
-                <span class="material-symbols-outlined">schedule</span>
-                <span class="emoji-fallback">⏰</span>
+              <div v-if="event.start_time" class="detail">
+                <DinorIcon name="schedule" :size="16" />
                 <span>{{ formatTime(event.start_time) }}</span>
               </div>
-              <div v-if="event.location" class="detail icon-test">
-                <span class="material-symbols-outlined">location_on</span>
-                <span class="emoji-fallback">📍</span>
+              <div v-if="event.location" class="detail">
+                <DinorIcon name="location_on" :size="16" />
                 <span>{{ event.location }}</span>
               </div>
-              <div v-if="event.event_type" class="detail icon-test">
-                <span class="material-symbols-outlined">category</span>
-                <span class="emoji-fallback">🏷️</span>
+              <div v-if="event.event_type" class="detail">
+                <DinorIcon name="category" :size="16" />
                 <span>{{ getEventTypeLabel(event.event_type) }}</span>
               </div>
             </div>
             
-            <div v-if="event.max_participants" class="participants-info icon-test">
-              <span class="material-symbols-outlined">group</span>
-              <span class="emoji-fallback">👥</span>
+            <div v-if="event.max_participants" class="participants-info">
+              <DinorIcon name="group" :size="16" />
               <span>{{ event.participants_count || 0 }} / {{ event.max_participants }} participants</span>
             </div>
           </div>
@@ -147,12 +137,14 @@ import apiService from '@/services/api'
 import { useBanners } from '@/composables/useBanners'
 import SearchAndFilters from '@/components/common/SearchAndFilters.vue'
 import BannerSection from '@/components/common/BannerSection.vue'
+import DinorIcon from '@/components/DinorIcon.vue'
 
 export default {
   name: 'EventsList',
   components: {
     SearchAndFilters,
-    BannerSection
+    BannerSection,
+    DinorIcon
   },
   setup() {
     const router = useRouter()

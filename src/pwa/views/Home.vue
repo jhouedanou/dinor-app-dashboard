@@ -133,8 +133,7 @@
             <p>{{ getShortDescription(item.short_description) }}</p>
             <div class="card-meta">
               <span class="date">
-                <span class="material-symbols-outlined">calendar_today</span>
-                <span class="emoji-fallback">📅</span>
+                <DinorIcon name="calendar_today" :size="16" />
                 {{ formatDate(item.start_date) }}
               </span>
               <span class="created">{{ formatDate(item.created_at) }}</span>
@@ -217,6 +216,7 @@ import { useGlobalAuth } from '@/composables/useAuthHandler'
 import { useRefresh } from '@/composables/useRefresh'
 import ContentCarousel from '@/components/common/ContentCarousel.vue'
 import BannerSection from '@/components/common/BannerSection.vue'
+import DinorIcon from '@/components/DinorIcon.vue'
 import LikeButton from '@/components/common/LikeButton.vue'
 import AuthModal from '@/components/common/AuthModal.vue'
 import CacheRefreshButton from '@/components/common/CacheRefreshButton.vue'
@@ -226,6 +226,7 @@ export default {
   components: {
     ContentCarousel,
     BannerSection,
+    DinorIcon,
     LikeButton,
     AuthModal,
     CacheRefreshButton

@@ -56,8 +56,7 @@
             class="video-play-button"
             :style="{ color: banner.text_color || '#FFFFFF' }"
           >
-            <span class="material-symbols-outlined">play_circle</span>
-            <span class="emoji-fallback">▶️</span>
+            <DinorIcon name="play_circle" :size="20" />
             <span>Voir la démo</span>
           </button>
         </div>
@@ -77,8 +76,13 @@
 </template>
 
 <script>
+import DinorIcon from '@/components/DinorIcon.vue'
+
 export default {
   name: 'BannerSection',
+  components: {
+    DinorIcon
+  },
   props: {
     type: {
       type: String,
