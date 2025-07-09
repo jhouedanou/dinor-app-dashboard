@@ -117,7 +117,6 @@ import {
   ShieldCheck,
   Gavel,
   FileText,
-  Target,
   Crown,
   Medal,
 } from 'lucide-vue-next'
@@ -250,7 +249,6 @@ app.component('LucideBookOpen', BookOpen)
 app.component('LucideShieldCheck', ShieldCheck)
 app.component('LucideGavel', Gavel)
 app.component('LucideFileText', FileText)
-app.component('LucideTarget', Target)
 app.component('LucideCrown', Crown)
 app.component('LucideMedal', Medal)
 
