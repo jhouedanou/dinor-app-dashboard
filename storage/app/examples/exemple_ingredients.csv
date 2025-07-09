@@ -1,0 +1,6 @@
+"name","category","subcategory","unit","recommended_brand","average_price","description","image","is_active"
+"Riz jasmin","Céréales et féculents","Riz","kg","Taureau Ailé","2500.00","Riz parfumé de qualité supérieure","ingredients/riz-jasmin.jpg","true"
+"Tomates fraîches","Légumes","Légumes fruits","kg","Local","800.00","Tomates rouges bien mûres","ingredients/tomates.jpg","true"
+"Oignons","Légumes","Légumes bulbes","kg","Local","600.00","Oignons jaunes de qualité","ingredients/oignons.jpg","true"
+"Huile de palme","Huiles et matières grasses","Huiles végétales","l","Palmci","1200.00","Huile de palme rouge traditionnelle","ingredients/huile-palme.jpg","true"
+"Poisson fumé","Poissons et fruits de mer","Poissons fumés","kg","Artisanal","3500.00","Poisson fumé du terroir","ingredients/poisson-fume.jpg","true" 

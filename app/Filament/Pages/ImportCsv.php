@@ -16,7 +16,19 @@ use App\Models\Event;
 use App\Models\Tip;
 use App\Models\DinorTv;
 use App\Models\Category;
+use App\Models\Banner;
+use App\Models\Team;
+use App\Models\FootballMatch;
+use App\Models\Tournament;
+use App\Models\Prediction;
+use App\Models\PushNotification;
+use App\Models\Ingredient;
+use App\Models\EventCategory;
+use App\Models\MediaFile;
+use App\Models\Page as PageModel;
+use App\Models\User;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Hash;
 use League\Csv\Reader;
 
 class ImportCsv extends Page implements HasForms
@@ -51,6 +63,17 @@ class ImportCsv extends Page implements HasForms
                                 'tips' => 'Astuces',
                                 'dinor_tv' => 'Vidéos (Dinor TV)',
                                 'categories' => 'Catégories',
+                                'banners' => 'Bannières',
+                                'teams' => 'Équipes',
+                                'football_matches' => 'Matchs de Football',
+                                'tournaments' => 'Tournois',
+                                'predictions' => 'Prédictions',
+                                'push_notifications' => 'Notifications Push',
+                                'ingredients' => 'Ingrédients',
+                                'event_categories' => 'Catégories d\'Événements',
+                                'media_files' => 'Fichiers Média',
+                                'pages' => 'Pages',
+                                'users' => 'Utilisateurs',
                             ])
                             ->required()
                             ->reactive()
@@ -174,6 +197,39 @@ class ImportCsv extends Page implements HasForms
             case 'categories':
                 $this->importCategory($record);
                 break;
+            case 'banners':
+                $this->importBanner($record);
+                break;
+            case 'teams':
+                $this->importTeam($record);
+                break;
+            case 'football_matches':
+                $this->importFootballMatch($record);
+                break;
+            case 'tournaments':
+                $this->importTournament($record);
+                break;
+            case 'predictions':
+                $this->importPrediction($record);
+                break;
+            case 'push_notifications':
+                $this->importPushNotification($record);
+                break;
+            case 'ingredients':
+                $this->importIngredient($record);
+                break;
+            case 'event_categories':
+                $this->importEventCategory($record);
+                break;
+            case 'media_files':
+                $this->importMediaFile($record);
+                break;
+            case 'pages':
+                $this->importPage($record);
+                break;
+            case 'users':
+                $this->importUser($record);
+                break;
         }
     }
 
@@ -283,6 +339,224 @@ class ImportCsv extends Page implements HasForms
         return $category->id;
     }
 
+    private function importBanner(array $record): void
+    {
+        Banner::create([
+            'title' => $record['title'],
+            'description' => $record['description'] ?? '',
+            'type_contenu' => $record['type_contenu'] ?? '',
+            'titre' => $record['titre'] ?? $record['title'],
+            'sous_titre' => $record['sous_titre'] ?? '',
+            'section' => $record['section'] ?? 'home',
+            'image_url' => $record['image_url'] ?? '',
+            'demo_video_url' => $record['demo_video_url'] ?? '',
+            'background_color' => $record['background_color'] ?? '#FF6B6B',
+            'text_color' => $record['text_color'] ?? '#FFFFFF',
+            'button_text' => $record['button_text'] ?? '',
+            'button_url' => $record['button_url'] ?? '',
+            'button_color' => $record['button_color'] ?? '#FF6B6B',
+            'is_active' => (bool)($record['is_active'] ?? true),
+            'order' => (int)($record['order'] ?? 0),
+            'position' => $record['position'] ?? 'home',
+        ]);
+    }
+
+    private function importTeam(array $record): void
+    {
+        Team::create([
+            'name' => $record['name'],
+            'short_name' => $record['short_name'] ?? \Str::limit($record['name'], 3, ''),
+            'country' => $record['country'] ?? 'Côte d\'Ivoire',
+            'logo' => $record['logo'] ?? '',
+            'color_primary' => $record['color_primary'] ?? '#FF6B6B',
+            'color_secondary' => $record['color_secondary'] ?? '#FFFFFF',
+            'is_active' => (bool)($record['is_active'] ?? true),
+            'founded_year' => (int)($record['founded_year'] ?? date('Y')),
+            'description' => $record['description'] ?? '',
+        ]);
+    }
+
+    private function importFootballMatch(array $record): void
+    {
+        $homeTeam = Team::where('name', $record['home_team'])->first();
+        $awayTeam = Team::where('name', $record['away_team'])->first();
+
+        if (!$homeTeam || !$awayTeam) {
+            throw new \Exception("Équipes non trouvées pour le match {$record['home_team']} vs {$record['away_team']}");
+        }
+
+        FootballMatch::create([
+            'home_team_id' => $homeTeam->id,
+            'away_team_id' => $awayTeam->id,
+            'tournament_id' => $record['tournament_id'] ?? null,
+            'match_date' => $record['match_date'],
+            'predictions_close_at' => $record['predictions_close_at'] ?? $record['match_date'],
+            'status' => $record['status'] ?? 'scheduled',
+            'home_score' => isset($record['home_score']) ? (int)$record['home_score'] : null,
+            'away_score' => isset($record['away_score']) ? (int)$record['away_score'] : null,
+            'competition' => $record['competition'] ?? '',
+            'round' => $record['round'] ?? '',
+            'venue' => $record['venue'] ?? '',
+            'notes' => $record['notes'] ?? '',
+            'is_active' => (bool)($record['is_active'] ?? true),
+            'predictions_enabled' => (bool)($record['predictions_enabled'] ?? true),
+        ]);
+    }
+
+    private function importTournament(array $record): void
+    {
+        Tournament::create([
+            'name' => $record['name'],
+            'slug' => \Str::slug($record['name']),
+            'description' => $record['description'] ?? '',
+            'start_date' => $record['start_date'],
+            'end_date' => $record['end_date'],
+            'registration_start' => $record['registration_start'] ?? $record['start_date'],
+            'registration_end' => $record['registration_end'] ?? $record['end_date'],
+            'prediction_deadline' => $record['prediction_deadline'] ?? $record['start_date'],
+            'max_participants' => (int)($record['max_participants'] ?? 100),
+            'entry_fee' => $record['entry_fee'] ?? '0.00',
+            'currency' => $record['currency'] ?? 'XOF',
+            'prize_pool' => $record['prize_pool'] ?? '0.00',
+            'status' => $record['status'] ?? 'upcoming',
+            'rules' => json_decode($record['rules'] ?? '[]', true),
+            'image' => $record['image'] ?? '',
+            'is_featured' => (bool)($record['is_featured'] ?? false),
+            'is_public' => (bool)($record['is_public'] ?? true),
+            'created_by' => 1, // Admin user
+        ]);
+    }
+
+    private function importPrediction(array $record): void
+    {
+        $user = User::where('email', $record['user_email'])->first();
+        $match = FootballMatch::find($record['football_match_id']);
+
+        if (!$user || !$match) {
+            throw new \Exception("Utilisateur ou match non trouvé pour la prédiction");
+        }
+
+        Prediction::create([
+            'user_id' => $user->id,
+            'football_match_id' => $match->id,
+            'predicted_home_score' => (int)$record['predicted_home_score'],
+            'predicted_away_score' => (int)$record['predicted_away_score'],
+            'predicted_winner' => $record['predicted_winner'],
+            'points_earned' => (int)($record['points_earned'] ?? 0),
+            'is_calculated' => (bool)($record['is_calculated'] ?? false),
+            'ip_address' => $record['ip_address'] ?? '127.0.0.1',
+            'user_agent' => $record['user_agent'] ?? 'CSV Import',
+        ]);
+    }
+
+    private function importPushNotification(array $record): void
+    {
+        PushNotification::create([
+            'title' => $record['title'],
+            'message' => $record['message'],
+            'icon' => $record['icon'] ?? '',
+            'url' => $record['url'] ?? '',
+            'target_audience' => $record['target_audience'] ?? 'all',
+            'target_data' => json_decode($record['target_data'] ?? '[]', true),
+            'onesignal_id' => $record['onesignal_id'] ?? '',
+            'status' => $record['status'] ?? 'draft',
+            'scheduled_at' => $record['scheduled_at'] ?? null,
+            'sent_at' => $record['sent_at'] ?? null,
+            'statistics' => json_decode($record['statistics'] ?? '[]', true),
+            'created_by' => 1, // Admin user
+        ]);
+    }
+
+    private function importIngredient(array $record): void
+    {
+        Ingredient::create([
+            'name' => $record['name'],
+            'category' => $record['category'] ?? 'Autres',
+            'subcategory' => $record['subcategory'] ?? '',
+            'unit' => $record['unit'] ?? 'pièce',
+            'recommended_brand' => $record['recommended_brand'] ?? '',
+            'average_price' => $record['average_price'] ?? '0.00',
+            'description' => $record['description'] ?? '',
+            'image' => $record['image'] ?? '',
+            'is_active' => (bool)($record['is_active'] ?? true),
+        ]);
+    }
+
+    private function importEventCategory(array $record): void
+    {
+        EventCategory::create([
+            'name' => $record['name'],
+            'slug' => \Str::slug($record['name']),
+            'description' => $record['description'] ?? '',
+            'image' => $record['image'] ?? '',
+            'color' => $record['color'] ?? '#FF6B6B',
+            'icon' => $record['icon'] ?? 'heroicon-o-calendar',
+            'is_active' => (bool)($record['is_active'] ?? true),
+        ]);
+    }
+
+    private function importMediaFile(array $record): void
+    {
+        MediaFile::create([
+            'name' => $record['name'],
+            'filename' => $record['filename'],
+            'path' => $record['path'],
+            'disk' => $record['disk'] ?? 'public',
+            'mime_type' => $record['mime_type'] ?? 'image/jpeg',
+            'type' => $record['type'] ?? 'image',
+            'size' => (int)($record['size'] ?? 0),
+            'metadata' => json_decode($record['metadata'] ?? '[]', true),
+            'model_type' => $record['model_type'] ?? null,
+            'model_id' => $record['model_id'] ?? null,
+            'collection_name' => $record['collection_name'] ?? 'default',
+            'uploaded_by' => 1, // Admin user
+            'alt_text' => $record['alt_text'] ?? '',
+            'description' => $record['description'] ?? '',
+            'tags' => json_decode($record['tags'] ?? '[]', true),
+            'thumbnail_path' => $record['thumbnail_path'] ?? '',
+            'responsive_images' => json_decode($record['responsive_images'] ?? '[]', true),
+            'title' => $record['title'] ?? $record['name'],
+            'caption' => $record['caption'] ?? '',
+            'is_optimized' => (bool)($record['is_optimized'] ?? false),
+            'is_public' => (bool)($record['is_public'] ?? true),
+            'is_featured' => (bool)($record['is_featured'] ?? false),
+            'download_count' => (int)($record['download_count'] ?? 0),
+            'view_count' => (int)($record['view_count'] ?? 0),
+        ]);
+    }
+
+    private function importPage(array $record): void
+    {
+        PageModel::create([
+            'title' => $record['title'],
+            'content' => $record['content'] ?? '',
+            'slug' => \Str::slug($record['title']),
+            'meta_title' => $record['meta_title'] ?? $record['title'],
+            'meta_description' => $record['meta_description'] ?? '',
+            'meta_keywords' => $record['meta_keywords'] ?? '',
+            'template' => $record['template'] ?? 'default',
+            'url' => $record['url'] ?? '',
+            'embed_url' => $record['embed_url'] ?? '',
+            'is_external' => (bool)($record['is_external'] ?? false),
+            'is_published' => (bool)($record['is_published'] ?? true),
+            'is_homepage' => (bool)($record['is_homepage'] ?? false),
+            'order' => (int)($record['order'] ?? 0),
+            'parent_id' => $record['parent_id'] ?? null,
+            'featured_image' => $record['featured_image'] ?? '',
+        ]);
+    }
+
+    private function importUser(array $record): void
+    {
+        User::create([
+            'name' => $record['name'],
+            'email' => $record['email'],
+            'password' => Hash::make($record['password'] ?? 'password'),
+            'role' => $record['role'] ?? 'user',
+            'is_active' => (bool)($record['is_active'] ?? true),
+        ]);
+    }
+
     private function getContentTypeName(string $type): string
     {
         return match($type) {
@@ -291,6 +565,17 @@ class ImportCsv extends Page implements HasForms
             'tips' => 'astuces',
             'dinor_tv' => 'vidéos',
             'categories' => 'catégories',
+            'banners' => 'bannières',
+            'teams' => 'équipes',
+            'football_matches' => 'matchs de football',
+            'tournaments' => 'tournois',
+            'predictions' => 'prédictions',
+            'push_notifications' => 'notifications push',
+            'ingredients' => 'ingrédients',
+            'event_categories' => 'catégories d\'événements',
+            'media_files' => 'fichiers média',
+            'pages' => 'pages',
+            'users' => 'utilisateurs',
             default => $type,
         };
     }
@@ -317,6 +602,50 @@ class ImportCsv extends Page implements HasForms
             'categories' => [
                 ['name', 'description', 'color', 'icon', 'is_active', 'type'],
                 ['Plats principaux', 'Catégorie pour les plats principaux', '#FF6B6B', 'heroicon-o-squares-plus', 'true', 'general']
+            ],
+            'banners' => [
+                ['title', 'description', 'type_contenu', 'titre', 'sous_titre', 'section', 'image_url', 'demo_video_url', 'background_color', 'text_color', 'button_text', 'button_url', 'button_color', 'is_active', 'order', 'position'],
+                ['Bannière Accueil', 'Bannière principale de l\'accueil', 'promo', 'Découvrez Dinor', 'L\'app de cuisine ivoirienne', 'hero', 'https://example.com/banner.jpg', 'https://youtube.com/watch?v=demo', '#FF6B6B', '#FFFFFF', 'Découvrir', '/recipes', '#FF6B6B', 'true', '1', 'home']
+            ],
+            'teams' => [
+                ['name', 'short_name', 'country', 'logo', 'color_primary', 'color_secondary', 'is_active', 'founded_year', 'description'],
+                ['Éléphants de Côte d\'Ivoire', 'CIV', 'Côte d\'Ivoire', 'teams/elephants.png', '#FF6B00', '#FFFFFF', 'true', '1960', 'Équipe nationale de football de Côte d\'Ivoire']
+            ],
+            'football_matches' => [
+                ['home_team', 'away_team', 'tournament_id', 'match_date', 'predictions_close_at', 'status', 'home_score', 'away_score', 'competition', 'round', 'venue', 'notes', 'is_active', 'predictions_enabled'],
+                ['Éléphants de Côte d\'Ivoire', 'Lions du Sénégal', '1', '2025-08-15 20:00:00', '2025-08-15 19:45:00', 'scheduled', '', '', 'CAN 2025', 'Groupe A', 'Stade Félix Houphouët-Boigny', 'Match de poule', 'true', 'true']
+            ],
+            'tournaments' => [
+                ['name', 'description', 'start_date', 'end_date', 'registration_start', 'registration_end', 'prediction_deadline', 'max_participants', 'entry_fee', 'currency', 'prize_pool', 'status', 'rules', 'image', 'is_featured', 'is_public'],
+                ['CAN 2025 Predictions', 'Tournoi de prédictions pour la CAN 2025', '2025-08-01 00:00:00', '2025-08-31 23:59:59', '2025-07-01 00:00:00', '2025-07-31 23:59:59', '2025-08-01 00:00:00', '1000', '0.00', 'XOF', '100000.00', 'upcoming', '[]', 'tournaments/can2025.jpg', 'true', 'true']
+            ],
+            'predictions' => [
+                ['user_email', 'football_match_id', 'predicted_home_score', 'predicted_away_score', 'predicted_winner', 'points_earned', 'is_calculated', 'ip_address', 'user_agent'],
+                ['user@example.com', '1', '2', '1', 'home', '3', 'true', '192.168.1.1', 'Mozilla/5.0']
+            ],
+            'push_notifications' => [
+                ['title', 'message', 'icon', 'url', 'target_audience', 'target_data', 'onesignal_id', 'status', 'scheduled_at', 'sent_at', 'statistics'],
+                ['Nouvelle recette !', 'Une délicieuse recette de riz au gras vient d\'être ajoutée', 'recipe-icon', '/recipes/riz-au-gras', 'all', '[]', '', 'draft', '', '', '[]']
+            ],
+            'ingredients' => [
+                ['name', 'category', 'subcategory', 'unit', 'recommended_brand', 'average_price', 'description', 'image', 'is_active'],
+                ['Riz jasmin', 'Céréales et féculents', 'Riz', 'kg', 'Taureau Ailé', '2500.00', 'Riz parfumé de qualité supérieure', 'ingredients/riz-jasmin.jpg', 'true']
+            ],
+            'event_categories' => [
+                ['name', 'description', 'image', 'color', 'icon', 'is_active'],
+                ['Ateliers Cuisine', 'Catégorie pour les ateliers de cuisine', 'categories/ateliers.jpg', '#4CAF50', 'heroicon-o-academic-cap', 'true']
+            ],
+            'media_files' => [
+                ['name', 'filename', 'path', 'disk', 'mime_type', 'type', 'size', 'metadata', 'model_type', 'model_id', 'collection_name', 'alt_text', 'description', 'tags', 'thumbnail_path', 'responsive_images', 'title', 'caption', 'is_optimized', 'is_public', 'is_featured', 'download_count', 'view_count'],
+                ['Photo recette riz', 'riz-au-gras-1.jpg', 'recipes/riz-au-gras-1.jpg', 'public', 'image/jpeg', 'image', '245760', '{}', 'App\\Models\\Recipe', '1', 'featured_image', 'Délicieux riz au gras', 'Photo du plat fini', '["riz","plat-principal"]', 'recipes/thumbs/riz-au-gras-1-thumb.jpg', '[]', 'Riz au gras', 'Le plat traditionnel ivoirien', 'true', 'true', 'false', '0', '0']
+            ],
+            'pages' => [
+                ['title', 'content', 'meta_title', 'meta_description', 'meta_keywords', 'template', 'url', 'embed_url', 'is_external', 'is_published', 'is_homepage', 'order', 'parent_id', 'featured_image'],
+                ['À propos de Dinor', '<h1>À propos de nous</h1><p>Dinor est l\'application de référence...</p>', 'À propos - Dinor', 'Découvrez l\'histoire et la mission de Dinor', 'dinor,cuisine,ivoirienne,recettes', 'default', '/about', '', 'false', 'true', 'false', '1', '', 'pages/about-banner.jpg']
+            ],
+            'users' => [
+                ['name', 'email', 'password', 'role', 'is_active'],
+                ['Chef Marie', 'chef.marie@dinor.app', 'password123', 'chef', 'true']
             ]
         ];
 

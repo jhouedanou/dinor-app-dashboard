@@ -1,0 +1,6 @@
+"name","description","image","color","icon","is_active"
+"Ateliers Cuisine","Catégorie pour les ateliers de cuisine","categories/ateliers.jpg","#4CAF50","heroicon-o-academic-cap","true"
+"Dégustations","Événements de dégustation et découverte","categories/degustations.jpg","#FF9800","heroicon-o-heart","true"
+"Concours Culinaires","Compétitions et concours de cuisine","categories/concours.jpg","#E91E63","heroicon-o-trophy","true"
+"Festivals Gastronomiques","Festivals et fêtes culinaires","categories/festivals.jpg","#9C27B0","heroicon-o-musical-note","true"
+"Formations Professionnelles","Formations pour chefs et professionnels","categories/formations.jpg","#3F51B5","heroicon-o-briefcase","true" 

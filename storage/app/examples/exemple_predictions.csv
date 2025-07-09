@@ -1,0 +1,5 @@
+"user_email","football_match_id","predicted_home_score","predicted_away_score","predicted_winner","points_earned","is_calculated","ip_address","user_agent"
+"user@example.com","1","2","1","home","3","true","192.168.1.1","Mozilla/5.0"
+"chef.marie@dinor.app","1","1","1","draw","1","true","192.168.1.2","Chrome/90.0"
+"fan@football.ci","2","3","0","home","3","true","192.168.1.3","Safari/14.0"
+"supporter@dinor.app","2","2","2","draw","1","true","192.168.1.4","Firefox/88.0" 

@@ -1,0 +1,5 @@
+"title","message","icon","url","target_audience","target_data","onesignal_id","status","scheduled_at","sent_at","statistics"
+"Nouvelle recette !","Une délicieuse recette de riz au gras vient d'être ajoutée","recipe-icon","/recipes/riz-au-gras","all","[]","","draft","","","[]"
+"Événement ce soir","N'oubliez pas l'atelier cuisine de ce soir à 19h","event-icon","/events/atelier-cuisine","event_participants","[]","","scheduled","2025-08-15 17:00:00","","[]"
+"Nouveau match disponible","Côte d'Ivoire vs Sénégal - Faites vos prédictions !","match-icon","/predictions/match-1","all","[]","","sent","","2025-08-10 10:00:00","{""delivered"": 1250, ""clicked"": 340}"
+"Tips du jour","Astuce: Utilisez du gingembre frais pour plus de saveur","tip-icon","/tips/gingembre-frais","all","[]","","sent","","2025-08-09 08:00:00","{""delivered"": 1180, ""clicked"": 230}" 

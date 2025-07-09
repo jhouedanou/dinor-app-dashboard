@@ -1,0 +1,4 @@
+"home_team","away_team","tournament_id","match_date","predictions_close_at","status","home_score","away_score","competition","round","venue","notes","is_active","predictions_enabled"
+"Éléphants de Côte d'Ivoire","Lions du Sénégal","1","2025-08-15 20:00:00","2025-08-15 19:45:00","scheduled","","","CAN 2025","Groupe A","Stade Félix Houphouët-Boigny","Match de poule","true","true"
+"Aigles du Mali","Étalons du Burkina Faso","1","2025-08-16 17:00:00","2025-08-16 16:45:00","scheduled","","","CAN 2025","Groupe A","Stade de la Paix","Match de poule","true","true"
+"Éléphants de Côte d'Ivoire","Aigles du Mali","1","2025-08-19 20:00:00","2025-08-19 19:45:00","scheduled","","","CAN 2025","Groupe A","Stade Félix Houphouët-Boigny","Match de poule","true","true" 

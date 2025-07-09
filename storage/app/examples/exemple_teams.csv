@@ -1,0 +1,5 @@
+"name","short_name","country","logo","color_primary","color_secondary","is_active","founded_year","description"
+"Éléphants de Côte d'Ivoire","CIV","Côte d'Ivoire","teams/elephants.png","#FF6B00","#FFFFFF","true","1960","Équipe nationale de football de Côte d'Ivoire"
+"Lions du Sénégal","SEN","Sénégal","teams/lions.png","#00AA00","#FFFF00","true","1960","Équipe nationale de football du Sénégal"
+"Aigles du Mali","MLI","Mali","teams/aigles.png","#FFCD00","#14B53A","true","1960","Équipe nationale de football du Mali"
+"Étalons du Burkina Faso","BFA","Burkina Faso","teams/etalons.png","#CE1126","#009639","true","1960","Équipe nationale de football du Burkina Faso" 

@@ -1,0 +1,4 @@
+"title","description","type_contenu","titre","sous_titre","section","image_url","demo_video_url","background_color","text_color","button_text","button_url","button_color","is_active","order","position"
+"Bannière Accueil","Bannière principale de l'accueil","promo","Découvrez Dinor","L'app de cuisine ivoirienne","hero","https://example.com/banner.jpg","https://youtube.com/watch?v=demo","#FF6B6B","#FFFFFF","Découvrir","/recipes","#FF6B6B","true","1","home"
+"Bannière Recettes","Promotion des recettes populaires","recettes","Nos Meilleures Recettes","Goûtez l'authenticité","recipes","https://example.com/recipes-banner.jpg","","#4CAF50","#FFFFFF","Voir les recettes","/recipes","#4CAF50","true","2","home"
+"Bannière Événements","Mise en avant des événements","events","Événements Culinaires","Participez à nos ateliers","events","https://example.com/events-banner.jpg","","#2196F3","#FFFFFF","Découvrir","/events","#2196F3","true","3","home" 

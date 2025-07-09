@@ -1,0 +1,6 @@
+"name","email","password","role","is_active"
+"Chef Marie","chef.marie@dinor.app","password123","chef","true"
+"Admin Dinor","admin@dinor.app","admin123","admin","true"
+"Modérateur Paul","moderator.paul@dinor.app","moderator123","moderator","true"
+"Utilisateur Test","user.test@dinor.app","user123","user","true"
+"Chef Aya","chef.aya@dinor.app","chef123","chef","true" 
