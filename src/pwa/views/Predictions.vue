@@ -3,8 +3,12 @@
     <main class="md3-main-content">
       <!-- Loading State -->
       <div v-if="loading" class="loading-container">
-        <div class="md3-circular-progress"></div>
-        <p class="md3-body-large">Chargement des matchs...</p>
+        <div class="skeleton-loader">
+          <div class="skeleton-header"></div>
+          <div class="skeleton-tournaments">
+            <div v-for="i in 3" :key="i" class="skeleton-tournament"></div>
+          </div>
+        </div>
       </div>
 
       <!-- Predictions Content -->
@@ -12,296 +16,210 @@
         <!-- Header Section -->
         <div class="predictions-header">
           <h1 class="md3-title-large dinor-text-primary">Pronostics</h1>
-          <p class="md3-body-medium dinor-text-gray">Pariez sur vos matchs favoris et gagnez des points!</p>
+          <p class="md3-body-medium dinor-text-gray">
+            Participez aux tournois et gagnez des points en prédisant les résultats !
+          </p>
         </div>
 
-        <!-- Current Match Section -->
-        <div v-if="currentMatch" class="current-match-section">
-          <h2 class="md3-title-medium dinor-text-primary">Match en cours</h2>
-          <div class="match-card featured">
-            <div class="match-header">
-              <div class="match-teams">
-                <div class="team home-team">
-                  <img 
-                    v-if="currentMatch.home_team.logo_url" 
-                    :src="currentMatch.home_team.logo_url" 
-                    :alt="currentMatch.home_team.name"
-                    class="team-logo"
-                    @error="handleImageError"
-                  >
-                  <div v-else class="team-logo-placeholder">
-                    <span class="material-symbols-outlined">sports_soccer</span>
-                  </div>
-                  <span class="team-name">{{ currentMatch.home_team.name }}</span>
-                </div>
-                
-                <div class="match-vs">
-                  <span class="vs-text">VS</span>
-                  <div class="match-date">
-                    {{ formatMatchDate(currentMatch.match_date) }}
-                  </div>
-                </div>
-                
-                <div class="team away-team">
-                  <img 
-                    v-if="currentMatch.away_team.logo_url" 
-                    :src="currentMatch.away_team.logo_url" 
-                    :alt="currentMatch.away_team.name"
-                    class="team-logo"
-                    @error="handleImageError"
-                  >
-                  <div v-else class="team-logo-placeholder">
-                    <span class="material-symbols-outlined">sports_soccer</span>
-                  </div>
-                  <span class="team-name">{{ currentMatch.away_team.name }}</span>
-                </div>
-              </div>
-              
-              <div v-if="currentMatch.can_predict" class="prediction-status can-predict">
-                <span class="material-symbols-outlined">check_circle</span>
-                <span>Prédictions ouvertes</span>
-              </div>
-              <div v-else class="prediction-status closed">
-                <span class="material-symbols-outlined">cancel</span>
-                <span>Prédictions fermées</span>
-              </div>
-            </div>
-
-            <!-- User Prediction Form -->
-            <div v-if="currentMatch.can_predict && authStore.isAuthenticated" class="prediction-form">
-              <h3 class="md3-title-small">Votre pronostic</h3>
-              <div class="score-inputs">
-                <div class="score-input">
-                  <label class="md3-body-small">{{ currentMatch.home_team.short_name || currentMatch.home_team.name }}</label>
-                  <input 
-                    v-model.number="prediction.homeScore"
-                    type="number" 
-                    min="0" 
-                    max="20"
-                    class="score-field"
-                  >
-                </div>
-                <div class="score-separator">-</div>
-                <div class="score-input">
-                  <label class="md3-body-small">{{ currentMatch.away_team.short_name || currentMatch.away_team.name }}</label>
-                  <input 
-                    v-model.number="prediction.awayScore"
-                    type="number" 
-                    min="0" 
-                    max="20"
-                    class="score-field"
-                  >
-                </div>
-              </div>
-              <button 
-                @click="submitPrediction"
-                :disabled="!canSubmitPrediction || submitting"
-                class="btn-primary prediction-submit"
-              >
-                <span v-if="submitting">Envoi...</span>
-                <span v-else>{{ userPrediction ? 'Modifier' : 'Valider' }} le pronostic</span>
-              </button>
-            </div>
-
-            <!-- Auth Required Message -->
-            <div v-else-if="currentMatch.can_predict && !authStore.isAuthenticated" class="auth-required">
-              <p class="md3-body-medium">Connectez-vous pour faire votre pronostic</p>
-              <button @click="showAuthModal = true" class="btn-primary">
-                Se connecter
-              </button>
-            </div>
-
-            <!-- Existing Prediction Display -->
-            <div v-if="userPrediction" class="user-prediction">
-              <h3 class="md3-title-small">Votre pronostic actuel</h3>
-              <div class="prediction-display">
-                <span class="prediction-score">
-                  {{ userPrediction.predicted_home_score }} - {{ userPrediction.predicted_away_score }}
-                </span>
-                <span class="prediction-winner">
-                  Gagnant prédit: {{ getPredictedWinnerText(userPrediction.predicted_winner) }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- No Current Match - Improved Fallback -->
-        <div v-else class="no-match-section">
-          <div class="no-match-card">
-            <div class="no-match-icon">
-              <span class="material-symbols-outlined">sports_soccer</span>
-            </div>
-            <h2 class="md3-title-medium">Aucun match en cours</h2>
-            <p class="md3-body-medium dinor-text-gray">
-              Il n'y a pas de match disponible pour le moment, mais vous pouvez :
-            </p>
-            
-            <div class="suggestions-grid">
-              <div class="suggestion-card" @click="$router.push('/predictions/tournaments')">
-                <div class="suggestion-icon">
-                  <span class="material-symbols-outlined">emoji_events</span>
-                </div>
-                <h3 class="suggestion-title">Explorer les tournois</h3>
-                <p class="suggestion-desc">Rejoignez des tournois et participez aux compétitions</p>
-              </div>
-              
-              <div class="suggestion-card" @click="$router.push('/predictions/leaderboard')">
-                <div class="suggestion-icon">
-                  <span class="material-symbols-outlined">leaderboard</span>
-                </div>
-                <h3 class="suggestion-title">Voir le classement</h3>
-                <p class="suggestion-desc">Consultez les performances des autres joueurs</p>
-              </div>
-              
-              <div class="suggestion-card" @click="$router.push('/predictions/my-predictions')">
-                <div class="suggestion-icon">
-                  <span class="material-symbols-outlined">history</span>
-                </div>
-                <h3 class="suggestion-title">Historique</h3>
-                <p class="suggestion-desc">Revoyez vos anciens pronostics et statistiques</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tournaments Section -->
+        <!-- Tournaments List -->
         <div class="tournaments-section">
-          <div class="section-header">
-            <h2 class="md3-title-medium dinor-text-primary">Tournois en cours</h2>
-            <router-link to="/predictions/tournaments" class="view-all-link">
-              Voir tout
-            </router-link>
-          </div>
-          
           <div v-if="loadingTournaments" class="tournaments-loading">
-            <div class="md3-circular-progress"></div>
-            <p class="md3-body-small">Chargement des tournois...</p>
+            <div class="skeleton-tournaments">
+              <div v-for="i in 4" :key="i" class="skeleton-tournament"></div>
+            </div>
           </div>
           
-          <div v-else-if="featuredTournaments.length > 0" class="tournaments-grid">
+          <div v-else-if="tournaments.length > 0" class="tournaments-grid">
             <div 
-              v-for="tournament in featuredTournaments" 
+              v-for="tournament in tournaments" 
               :key="tournament.id" 
               class="tournament-card"
-              @click="openTournament(tournament)"
+              @click="openTournamentMatches(tournament)"
             >
-              <div class="tournament-header">
-                <h3 class="tournament-name">{{ tournament.name }}</h3>
-                <span :class="['tournament-status', tournament.status]">{{ tournament.status_label }}</span>
+              <div class="tournament-status" :class="tournament.status">
+                {{ tournament.status_label }}
               </div>
               
-              <p class="tournament-description">{{ tournament.description }}</p>
-              
+              <div class="tournament-header">
+                <h3 class="tournament-name">{{ tournament.name }}</h3>
+                <p class="tournament-description">{{ tournament.description }}</p>
+              </div>
+
               <div class="tournament-info">
                 <div class="info-item">
-                  <span class="material-symbols-outlined">group</span>
+                  <span class="material-symbols-outlined">groups</span>
                   <span>{{ tournament.participants_count }} participants</span>
                 </div>
-                <div class="info-item" v-if="tournament.prize_pool > 0">
+                
+                <div class="info-item" v-if="tournament.prize_pool">
                   <span class="material-symbols-outlined">emoji_events</span>
                   <span>{{ formatPrize(tournament.prize_pool, tournament.currency) }}</span>
                 </div>
+                
                 <div class="info-item">
                   <span class="material-symbols-outlined">schedule</span>
-                  <span>{{ formatTournamentDate(tournament.end_date) }}</span>
+                  <span>{{ formatTournamentDate(tournament.start_date) }}</span>
                 </div>
               </div>
-              
+
               <div class="tournament-actions">
-                <button 
-                  v-if="tournament.can_register && !tournament.user_is_participant" 
-                  @click.stop="registerToTournament(tournament)"
-                  :disabled="registering === tournament.id"
-                  class="btn-primary btn-small"
-                >
-                  <span v-if="registering === tournament.id">Inscription...</span>
-                  <span v-else>Participer</span>
-                </button>
-                <button 
-                  v-else-if="tournament.user_is_participant" 
-                  @click.stop="viewTournamentLeaderboard(tournament)"
-                  class="btn-secondary btn-small"
-                >
-                  <span class="material-symbols-outlined">check_circle</span>
-                  Mon classement
-                </button>
-                <span v-else class="tournament-closed">Inscriptions fermées</span>
+                <span class="view-matches-btn">
+                  <span class="material-symbols-outlined">sports_soccer</span>
+                  Voir les matchs
+                </span>
               </div>
             </div>
           </div>
           
-          <!-- Enhanced No Tournaments Fallback -->
-          <div v-else class="no-tournaments-enhanced">
+          <div v-else class="no-tournaments">
             <div class="no-tournaments-icon">
               <span class="material-symbols-outlined">emoji_events</span>
             </div>
             <h3 class="md3-title-medium">Aucun tournoi disponible</h3>
             <p class="md3-body-medium dinor-text-gray">
-              Les tournois apparaîtront ici dès qu'ils seront disponibles.
+              Les nouveaux tournois apparaîtront ici dès qu'ils seront disponibles.
             </p>
-            
-            <div class="fallback-actions">
-              <div class="fallback-info">
-                <h4 class="md3-title-small">En attendant :</h4>
-                <ul class="fallback-list">
-                  <li>
-                    <span class="material-symbols-outlined">notifications</span>
-                    <span>Activez les notifications pour être prévenu des nouveaux tournois</span>
-                  </li>
-                  <li>
-                    <span class="material-symbols-outlined">schedule</span>
-                    <span>Revenez régulièrement pour ne manquer aucune compétition</span>
-                  </li>
-                  <li v-if="!authStore.isAuthenticated">
-                    <span class="material-symbols-outlined">person</span>
-                    <span>Créez un compte pour participer aux prochains tournois</span>
-                  </li>
-                </ul>
+          </div>
+        </div>
+
+        <!-- Rules Footer -->
+        <div class="rules-footer">
+          <div class="rules-card">
+            <h3 class="rules-title">
+              <span class="material-symbols-outlined">info</span>
+              Règles des pronostics
+            </h3>
+            <div class="rules-content">
+              <div class="rule-item">
+                <span class="points">3 pts</span>
+                <span class="rule-text">Score exact</span>
               </div>
-              
-              <div class="fallback-cta">
-                <button 
-                  v-if="!authStore.isAuthenticated" 
-                  @click="showAuthModal = true" 
-                  class="btn-primary"
-                >
-                  <span class="material-symbols-outlined">person_add</span>
-                  <span>Créer un compte</span>
-                </button>
-                <button 
-                  v-else
-                  @click="loadFeaturedTournaments" 
-                  class="btn-secondary"
-                >
-                  <span class="material-symbols-outlined">refresh</span>
-                  <span>Actualiser</span>
-                </button>
+              <div class="rule-item">
+                <span class="points">1 pt</span>
+                <span class="rule-text">Bon vainqueur</span>
+              </div>
+              <div class="rule-item">
+                <span class="points">0 pt</span>
+                <span class="rule-text">Pronostic incorrect</span>
               </div>
             </div>
           </div>
         </div>
-
-        <!-- Quick Actions -->
-        <div class="quick-actions">
-          <router-link to="/predictions/leaderboard" class="quick-action-card">
-            <span class="material-symbols-outlined">leaderboard</span>
-            <div class="action-text">
-              <h3 class="md3-title-small">Classement</h3>
-              <p class="md3-body-small">Voir les meilleurs pronostiqueurs</p>
-            </div>
-          </router-link>
-          
-          <router-link to="/predictions/my-predictions" class="quick-action-card">
-            <span class="material-symbols-outlined">history</span>
-            <div class="action-text">
-              <h3 class="md3-title-small">Mes prédictions</h3>
-              <p class="md3-body-small">Historique et statistiques</p>
-            </div>
-          </router-link>
-        </div>
       </div>
     </main>
+    
+    <!-- Tournament Matches Modal -->
+    <div v-if="selectedTournament" class="tournament-modal-overlay" @click="closeTournamentModal">
+      <div class="tournament-modal" @click.stop>
+        <div class="modal-header">
+          <h2 class="modal-title">{{ selectedTournament.name }}</h2>
+          <button @click="closeTournamentModal" class="close-btn">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        
+        <div class="modal-content">
+          <div v-if="loadingMatches" class="matches-loading">
+            <div class="skeleton-matches">
+              <div v-for="i in 3" :key="i" class="skeleton-match"></div>
+            </div>
+          </div>
+          
+          <div v-else-if="tournamentMatches.length > 0" class="matches-list">
+            <div 
+              v-for="match in tournamentMatches" 
+              :key="match.id" 
+              class="match-card"
+              :class="{ 'match-saved': savedMatches.includes(match.id) }"
+            >
+              <div class="match-header">
+                <div class="match-teams">
+                  <div class="team home-team">
+                    <img v-if="match.home_team.logo_url" :src="match.home_team.logo_url" :alt="match.home_team.name" />
+                    <span>{{ match.home_team.short_name || match.home_team.name }}</span>
+                  </div>
+                  <div class="vs">vs</div>
+                  <div class="team away-team">
+                    <img v-if="match.away_team.logo_url" :src="match.away_team.logo_url" :alt="match.away_team.name" />
+                    <span>{{ match.away_team.short_name || match.away_team.name }}</span>
+                  </div>
+                </div>
+                
+                <div class="match-info">
+                  <span class="match-date">{{ formatMatchDate(match.match_date) }}</span>
+                  <span class="match-status" :class="match.can_predict ? 'open' : 'closed'">
+                    {{ match.can_predict ? 'Pronostics ouverts' : 'Fermé' }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Prediction Form (if authenticated and can predict) -->
+              <div v-if="authStore.isAuthenticated && match.can_predict" class="prediction-form">
+                <div class="score-inputs">
+                  <div class="score-input">
+                    <label>{{ match.home_team.short_name || match.home_team.name }}</label>
+                    <input 
+                      v-model.number="predictions[match.id].homeScore"
+                      @input="handlePredictionInput(match.id)"
+                      type="number" 
+                      min="0" 
+                      max="20"
+                      class="score-field"
+                      :class="{ 'saving': savingMatches.includes(match.id), 'saved': savedMatches.includes(match.id) }"
+                    >
+                  </div>
+                  <div class="score-separator">-</div>
+                  <div class="score-input">
+                    <label>{{ match.away_team.short_name || match.away_team.name }}</label>
+                    <input 
+                      v-model.number="predictions[match.id].awayScore"
+                      @input="handlePredictionInput(match.id)"
+                      type="number" 
+                      min="0" 
+                      max="20"
+                      class="score-field"
+                      :class="{ 'saving': savingMatches.includes(match.id), 'saved': savedMatches.includes(match.id) }"
+                    >
+                  </div>
+                </div>
+                
+                <div class="prediction-status">
+                  <span v-if="savingMatches.includes(match.id)" class="status-saving">
+                    <span class="material-symbols-outlined">sync</span>
+                    Sauvegarde...
+                  </span>
+                  <span v-else-if="savedMatches.includes(match.id)" class="status-saved">
+                    <span class="material-symbols-outlined">check_circle</span>
+                    Sauvegardé
+                  </span>
+                </div>
+              </div>
+
+              <!-- Predict Button (if not authenticated) -->
+              <div v-else-if="!authStore.isAuthenticated && match.can_predict" class="prediction-auth-required">
+                <button @click="showAuthModal = true" class="btn-predict">
+                  <span class="material-symbols-outlined">person</span>
+                  Pronostiquer
+                </button>
+              </div>
+
+              <!-- Existing Prediction Display -->
+              <div v-if="match.user_prediction" class="existing-prediction">
+                <span class="prediction-label">Votre pronostic :</span>
+                <span class="prediction-score">
+                  {{ match.user_prediction.predicted_home_score }} - {{ match.user_prediction.predicted_away_score }}
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <div v-else class="no-matches">
+            <span class="material-symbols-outlined">sports_soccer</span>
+            <p>Aucun match disponible pour ce tournoi</p>
+          </div>
+        </div>
+      </div>
+    </div>
     
     <!-- Auth Modal -->
     <AuthModal 
@@ -312,7 +230,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useApiStore } from '@/stores/api'
 import { useAuthStore } from '@/stores/auth'
 import AuthModal from '@/components/common/AuthModal.vue'
@@ -327,202 +245,121 @@ export default {
     const apiStore = useApiStore()
     const authStore = useAuthStore()
     
-    const currentMatch = ref(null)
-    const userPrediction = ref(null)
+    // State
+    const tournaments = ref([])
     const loading = ref(true)
-    const submitting = ref(false)
+    const loadingTournaments = ref(true)
     const showAuthModal = ref(false)
     
-    // Tournois
-    const featuredTournaments = ref([])
-    const loadingTournaments = ref(true)
-    const registering = ref(null)
+    // Tournament modal state
+    const selectedTournament = ref(null)
+    const tournamentMatches = ref([])
+    const loadingMatches = ref(false)
     
-    const prediction = ref({
-      homeScore: 0,
-      awayScore: 0
-    })
+    // Predictions state
+    const predictions = ref({})
+    const savingMatches = ref([])
+    const savedMatches = ref([])
+    const debounceTimers = ref({})
 
-    const canSubmitPrediction = computed(() => {
-      return prediction.value.homeScore !== null && 
-             prediction.value.awayScore !== null &&
-             prediction.value.homeScore >= 0 && 
-             prediction.value.awayScore >= 0
-    })
-
-    const loadCurrentMatch = async () => {
+    // Load tournaments
+    const loadTournaments = async () => {
+      loadingTournaments.value = true
       try {
-        const data = await apiStore.get('/matches/current/match')
-        if (data.success && data.data) {
-          currentMatch.value = data.data
-          await loadUserPrediction()
-        }
-      } catch (error) {
-        console.error('Erreur lors du chargement du match:', error)
-      } finally {
-        loading.value = false
-      }
-    }
-
-    const loadUserPrediction = async () => {
-      if (!authStore.isAuthenticated || !currentMatch.value) return
-      
-      try {
-        const data = await apiStore.get(`/predictions/match/${currentMatch.value.id}`)
-        if (data.success && data.data) {
-          userPrediction.value = data.data
-          prediction.value = {
-            homeScore: data.data.predicted_home_score,
-            awayScore: data.data.predicted_away_score
-          }
-        }
-      } catch (error) {
-        console.error('Erreur lors du chargement de la prédiction:', error)
-      }
-    }
-
-    const submitPrediction = async () => {
-      if (!canSubmitPrediction.value || submitting.value) return
-      
-      submitting.value = true
-      
-      try {
-        const payload = {
-          football_match_id: currentMatch.value.id,
-          predicted_home_score: prediction.value.homeScore,
-          predicted_away_score: prediction.value.awayScore
-        }
-        
-        let data
-        if (userPrediction.value) {
-          data = await apiStore.put(`/predictions/${userPrediction.value.id}`, payload)
-        } else {
-          data = await apiStore.post('/predictions', payload)
-        }
-        
+        const data = await apiStore.get('/tournaments/featured?limit=20')
         if (data.success) {
-          userPrediction.value = data.data
-          // Afficher un message de succès
-          console.log('Pronostic enregistré avec succès!')
-        }
-      } catch (error) {
-        console.error('Erreur lors de l\'envoi du pronostic:', error)
-        if (error.message?.includes('401')) {
-          showAuthModal.value = true
-        }
-      } finally {
-        submitting.value = false
-      }
-    }
-
-    const formatMatchDate = (dateString) => {
-      const date = new Date(dateString)
-      return date.toLocaleDateString('fr-FR', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      })
-    }
-
-    const getPredictedWinnerText = (winner) => {
-      switch (winner) {
-        case 'home': return currentMatch.value?.home_team?.name || 'Domicile'
-        case 'away': return currentMatch.value?.away_team?.name || 'Extérieur'
-        case 'draw': return 'Match nul'
-        default: return 'Inconnu'
-      }
-    }
-
-    const handleImageError = (event) => {
-      event.target.style.display = 'none'
-    }
-
-    const handleAuthenticated = () => {
-      showAuthModal.value = false
-      loadUserPrediction()
-    }
-
-    // Watch for auth changes
-    watch(() => authStore.isAuthenticated, (isAuth) => {
-      if (isAuth) {
-        loadUserPrediction()
-      } else {
-        userPrediction.value = null
-      }
-    })
-
-    const loadFeaturedTournaments = async () => {
-      try {
-        const data = await apiStore.get('/tournaments/featured')
-        if (data.success) {
-          featuredTournaments.value = data.data || []
+          tournaments.value = data.data
         }
       } catch (error) {
         console.error('Erreur lors du chargement des tournois:', error)
       } finally {
         loadingTournaments.value = false
+        loading.value = false
       }
     }
 
-    const registerToTournament = async (tournament) => {
-      if (!authStore.isAuthenticated) {
-        showAuthModal.value = true
-        return
-      }
-      
-      // Vérification supplémentaire côté client
-      if (tournament.user_is_participant) {
-        console.log('Utilisateur déjà inscrit au tournoi')
-        return
-      }
-      
-      registering.value = tournament.id
+    // Open tournament matches modal
+    const openTournamentMatches = async (tournament) => {
+      selectedTournament.value = tournament
+      loadingMatches.value = true
       
       try {
-        const data = await apiStore.post(`/tournaments/${tournament.id}/register`, {})
+        const data = await apiStore.get(`/tournaments/${tournament.id}/matches`)
         if (data.success) {
-          tournament.user_is_participant = true
-          tournament.can_register = false
-          tournament.participants_count += 1
-          console.log('Inscription réussie au tournoi!')
+          tournamentMatches.value = data.data
+          
+          // Initialize predictions for each match
+          data.data.forEach(match => {
+            predictions.value[match.id] = {
+              homeScore: match.user_prediction?.predicted_home_score || 0,
+              awayScore: match.user_prediction?.predicted_away_score || 0
+            }
+          })
         }
       } catch (error) {
-        console.error('Erreur lors de l\'inscription:', error)
-        
-        // Gestion spécifique de l'erreur d'inscription
-        if (error.message?.includes('Inscription impossible') || error.message?.includes('REGISTRATION_NOT_ALLOWED')) {
-          console.log('Utilisateur probablement déjà inscrit, mise à jour de l\'état')
-          tournament.user_is_participant = true
-          tournament.can_register = false
-        } else if (error.message?.includes('401')) {
-          showAuthModal.value = true
-        }
+        console.error('Erreur lors du chargement des matchs:', error)
       } finally {
-        registering.value = null
+        loadingMatches.value = false
       }
     }
 
-    const openTournament = (tournament) => {
-      // Navigate to tournament detail page
-      console.log('Ouverture du tournoi:', tournament.name)
+    // Close tournament modal
+    const closeTournamentModal = () => {
+      selectedTournament.value = null
+      tournamentMatches.value = []
+      predictions.value = {}
+      savingMatches.value = []
+      savedMatches.value = []
     }
 
-    const viewTournamentLeaderboard = (tournament) => {
-      // Navigate to tournament leaderboard
-      console.log('Classement du tournoi:', tournament.name)
+    // Handle prediction input with debounce
+    const handlePredictionInput = (matchId) => {
+      // Clear existing timer
+      if (debounceTimers.value[matchId]) {
+        clearTimeout(debounceTimers.value[matchId])
+      }
+      
+      // Remove from saved matches
+      savedMatches.value = savedMatches.value.filter(id => id !== matchId)
+      
+      // Set new timer
+      debounceTimers.value[matchId] = setTimeout(() => {
+        savePrediction(matchId)
+      }, 1000)
     }
 
-    const formatPrize = (amount, currency) => {
-      return new Intl.NumberFormat('fr-FR', {
-        style: 'currency',
-        currency: currency || 'XOF',
-        minimumFractionDigits: 0
-      }).format(amount)
+    // Save prediction
+    const savePrediction = async (matchId) => {
+      if (!authStore.isAuthenticated) return
+      
+      const prediction = predictions.value[matchId]
+      if (!prediction || prediction.homeScore === null || prediction.awayScore === null) return
+      
+      savingMatches.value.push(matchId)
+      
+      try {
+        const data = await apiStore.patch('/predictions/upsert', {
+          football_match_id: matchId,
+          predicted_home_score: prediction.homeScore,
+          predicted_away_score: prediction.awayScore
+        })
+        
+        if (data.success) {
+          savedMatches.value.push(matchId)
+          
+          // Remove from saved after 3 seconds
+          setTimeout(() => {
+            savedMatches.value = savedMatches.value.filter(id => id !== matchId)
+          }, 3000)
+        }
+      } catch (error) {
+        console.error('Erreur lors de la sauvegarde:', error)
+      } finally {
+        savingMatches.value = savingMatches.value.filter(id => id !== matchId)
+      }
     }
 
+    // Format functions
     const formatTournamentDate = (dateString) => {
       const date = new Date(dateString)
       const now = new Date()
@@ -541,9 +378,35 @@ export default {
       }
     }
 
+    const formatMatchDate = (dateString) => {
+      const date = new Date(dateString)
+      return date.toLocaleDateString('fr-FR', {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    }
+
+    const formatPrize = (amount, currency) => {
+      return new Intl.NumberFormat('fr-FR', {
+        style: 'currency',
+        currency: currency || 'XOF',
+        minimumFractionDigits: 0
+      }).format(amount)
+    }
+
+    const handleAuthenticated = () => {
+      showAuthModal.value = false
+      // Reload current tournament matches if open
+      if (selectedTournament.value) {
+        openTournamentMatches(selectedTournament.value)
+      }
+    }
+
     onMounted(() => {
-      loadCurrentMatch()
-      loadFeaturedTournaments()
+      loadTournaments()
       
       emit('update-header', {
         title: 'Pronostics',
@@ -552,26 +415,23 @@ export default {
     })
 
     return {
-      currentMatch,
-      userPrediction,
+      tournaments,
       loading,
-      submitting,
-      showAuthModal,
-      prediction,
-      canSubmitPrediction,
-      authStore,
-      featuredTournaments,
       loadingTournaments,
-      registering,
-      submitPrediction,
-      registerToTournament,
-      openTournament,
-      viewTournamentLeaderboard,
-      formatMatchDate,
+      showAuthModal,
+      selectedTournament,
+      tournamentMatches,
+      loadingMatches,
+      predictions,
+      savingMatches,
+      savedMatches,
+      authStore,
+      openTournamentMatches,
+      closeTournamentModal,
+      handlePredictionInput,
       formatTournamentDate,
+      formatMatchDate,
       formatPrize,
-      getPredictedWinnerText,
-      handleImageError,
       handleAuthenticated
     }
   }
@@ -585,125 +445,135 @@ export default {
   font-family: 'Roboto', sans-serif;
 }
 
-.predictions-content {
-  padding: 1rem;
-  max-width: 800px;
+/* Loading States */
+.loading-container {
+  padding: 2rem;
+}
+
+.skeleton-loader {
+  max-width: 600px;
   margin: 0 auto;
 }
 
+.skeleton-header {
+  height: 60px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.skeleton-tournaments {
+  display: grid;
+  gap: 1rem;
+}
+
+.skeleton-tournament {
+  height: 120px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 12px;
+}
+
+.skeleton-matches {
+  display: grid;
+  gap: 1rem;
+}
+
+.skeleton-match {
+  height: 80px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 8px;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Header */
 .predictions-header {
   text-align: center;
-  margin-bottom: 2rem;
+  padding: 2rem 1rem;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
-.current-match-section {
-  margin-bottom: 2rem;
-}
-
+/* Tournaments */
 .tournaments-section {
-  margin-bottom: 2rem;
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.view-all-link {
-  color: #F4D03F;
-  text-decoration: none;
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.view-all-link:hover {
-  text-decoration: underline;
-}
-
-.tournaments-loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 2rem;
-  text-align: center;
+  padding: 0 1rem 2rem;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .tournaments-grid {
   display: grid;
   gap: 1rem;
-  margin-bottom: 1rem;
 }
 
 .tournament-card {
-  background: #FFFFFF;
-  border-radius: 12px;
-  border: 1px solid #E2E8F0;
+  background: white;
+  border-radius: 16px;
   padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border: 1px solid #e0e0e0;
   cursor: pointer;
   transition: all 0.2s ease;
+  position: relative;
 }
 
 .tournament-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  border-color: #F4D03F;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.tournament-status {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.tournament-status.active {
+  background: #e8f5e8;
+  color: #2e7d32;
+}
+
+.tournament-status.registration_open {
+  background: #e3f2fd;
+  color: #1976d2;
 }
 
 .tournament-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
   margin-bottom: 1rem;
 }
 
 .tournament-name {
-  font-size: 1.1rem;
+  font-size: 1.25rem;
   font-weight: 600;
-  color: #2D3748;
-  margin: 0;
-  flex: 1;
-  margin-right: 1rem;
-}
-
-.tournament-status {
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.tournament-status.registration_open {
-  background: #D1FAE5;
-  color: #065F46;
-}
-
-.tournament-status.active {
-  background: #DBEAFE;
-  color: #1E40AF;
-}
-
-.tournament-status.upcoming {
-  background: #FEF3C7;
-  color: #92400E;
-}
-
-.tournament-status.finished {
-  background: #F3F4F6;
-  color: #6B7280;
+  margin-bottom: 0.5rem;
+  color: #1a1a1a;
 }
 
 .tournament-description {
-  color: #6B7280;
+  color: #666;
   font-size: 0.9rem;
-  margin-bottom: 1rem;
-  line-height: 1.4;
 }
 
 .tournament-info {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 0.5rem;
   margin-bottom: 1rem;
 }
@@ -712,141 +582,225 @@ export default {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.85rem;
-  color: #6B7280;
+  font-size: 0.9rem;
+  color: #666;
 }
 
-.info-item i {
+.info-item .material-symbols-outlined {
   font-size: 1rem;
-  color: #F4D03F;
 }
 
 .tournament-actions {
   display: flex;
   justify-content: flex-end;
+}
+
+.view-matches-btn {
+  display: flex;
   align-items: center;
-}
-
-.btn-small {
+  gap: 0.5rem;
   padding: 0.5rem 1rem;
-  font-size: 0.85rem;
-  border-radius: 6px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #333;
+  font-weight: 500;
 }
 
-.tournament-closed {
-  color: #9CA3AF;
-  font-size: 0.85rem;
-  font-style: italic;
-}
-
+/* No Tournaments */
 .no-tournaments {
   text-align: center;
   padding: 3rem 1rem;
-  color: #9CA3AF;
 }
 
-.no-tournaments i {
-  font-size: 3rem;
+.no-tournaments-icon .material-symbols-outlined {
+  font-size: 4rem;
+  color: #ccc;
   margin-bottom: 1rem;
-  color: #E5E7EB;
+}
+
+/* Rules Footer */
+.rules-footer {
+  margin-top: 2rem;
+  padding: 0 1rem 2rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.rules-card {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #e9ecef;
+}
+
+.rules-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.rules-content {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.rule-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.points {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: #007bff;
+  color: white;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.rule-text {
+  color: #555;
+  font-size: 0.95rem;
+}
+
+/* Tournament Modal */
+.tournament-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.tournament-modal {
+  background: white;
+  border-radius: 16px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.close-btn:hover {
+  background: #f5f5f5;
+}
+
+.modal-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+/* Matches */
+.matches-list {
+  display: grid;
+  gap: 1rem;
 }
 
 .match-card {
-  background: #FFFFFF;
+  background: white;
+  border: 2px solid #e0e0e0;
   border-radius: 12px;
-  border: 1px solid #E2E8F0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
-  margin-bottom: 1rem;
+  padding: 1rem;
+  transition: border-color 0.3s ease;
 }
 
-.match-card.featured {
-  border-color: #F4D03F;
-  box-shadow: 0 4px 16px rgba(244, 208, 63, 0.2);
+.match-card.match-saved {
+  border-color: #4caf50;
+  background: #f8fff8;
+}
+
+.match-header {
+  margin-bottom: 1rem;
 }
 
 .match-teams {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .team {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex: 1;
-}
-
-.team-logo {
-  width: 60px;
-  height: 60px;
-  object-fit: contain;
-  margin-bottom: 0.5rem;
-}
-
-.team-logo-placeholder {
-  width: 60px;
-  height: 60px;
-  background: #F4F4F5;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #9CA3AF;
-  margin-bottom: 0.5rem;
-}
-
-.team-name {
-  text-align: center;
-  font-weight: 600;
-  font-size: 0.9rem;
-}
-
-.match-vs {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 0 1rem;
-}
-
-.vs-text {
-  font-weight: 700;
-  font-size: 1.2rem;
-  color: #F4D03F;
-}
-
-.match-date {
-  font-size: 0.8rem;
-  color: #6B7280;
-  text-align: center;
-  margin-top: 0.5rem;
-}
-
-.prediction-status {
-  display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  font-size: 0.9rem;
   font-weight: 500;
 }
 
-.prediction-status.can-predict {
-  background: #D1FAE5;
-  color: #065F46;
+.team img {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
 }
 
-.prediction-status.closed {
-  background: #FEE2E2;
-  color: #991B1B;
+.vs {
+  color: #666;
+  font-size: 0.9rem;
 }
 
+.match-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.match-status.open {
+  color: #4caf50;
+  font-weight: 500;
+}
+
+.match-status.closed {
+  color: #f44336;
+}
+
+/* Prediction Form */
 .prediction-form {
-  border-top: 1px solid #E2E8F0;
-  padding-top: 1rem;
   margin-top: 1rem;
 }
 
@@ -855,335 +809,157 @@ export default {
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  margin: 1rem 0;
+  margin-bottom: 0.5rem;
 }
 
 .score-input {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 0.25rem;
 }
 
 .score-input label {
-  margin-bottom: 0.5rem;
-  color: #6B7280;
+  font-size: 0.8rem;
+  color: #666;
 }
 
 .score-field {
   width: 60px;
-  height: 50px;
+  height: 40px;
   text-align: center;
-  border: 2px solid #E2E8F0;
+  border: 2px solid #e0e0e0;
   border-radius: 8px;
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: 600;
+  transition: all 0.3s ease;
 }
 
 .score-field:focus {
   outline: none;
-  border-color: #F4D03F;
+  border-color: #007bff;
+}
+
+.score-field.saving {
+  border-color: #ff9800;
+  background: #fff8e1;
+}
+
+.score-field.saved {
+  border-color: #4caf50;
+  background: #f8fff8;
 }
 
 .score-separator {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   font-weight: 600;
-  color: #6B7280;
+  color: #666;
 }
 
-.prediction-submit {
-  width: 100%;
-  margin-top: 1rem;
-}
-
-.auth-required {
-  text-align: center;
-  padding: 1rem;
-  border: 1px dashed #E2E8F0;
-  border-radius: 8px;
-  margin-top: 1rem;
-}
-
-.user-prediction {
-  background: #F8F9FA;
-  border-radius: 8px;
-  padding: 1rem;
-  margin-top: 1rem;
-}
-
-.prediction-display {
+.prediction-status {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
+  font-size: 0.85rem;
+}
+
+.status-saving {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #ff9800;
+}
+
+.status-saved {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #4caf50;
+}
+
+.status-saving .material-symbols-outlined {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Auth Required */
+.prediction-auth-required {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.btn-predict {
+  display: flex;
   align-items: center;
   gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-predict:hover {
+  background: #0056b3;
+}
+
+/* Existing Prediction */
+.existing-prediction {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.5rem;
+  background: #f0f8ff;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.prediction-label {
+  color: #666;
 }
 
 .prediction-score {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #F4D03F;
-}
-
-.prediction-winner {
-  font-size: 0.9rem;
-  color: #6B7280;
-}
-
-.quick-actions {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.quick-action-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 1rem;
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
-  border-radius: 8px;
-  text-decoration: none;
-  color: #2D3748;
-  transition: all 0.2s ease;
-}
-
-.quick-action-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.quick-action-card i {
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
-  color: #F4D03F;
-}
-
-.action-text {
-  text-align: center;
-}
-
-.rules-section {
-  background: #F8F9FA;
-  border-radius: 12px;
-  padding: 1.5rem;
-}
-
-.rules-grid {
-  display: grid;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.rule-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  background: #FFFFFF;
-  border-radius: 8px;
-}
-
-.rule-icon {
-  width: 40px;
-  height: 40px;
-  background: #F4D03F;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #2D3748;
-}
-
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 60vh;
-  padding: 2rem;
-  text-align: center;
-}
-
-/* No Match Section Styles */
-.no-match-section {
-  margin-bottom: 2rem;
-}
-
-.no-match-card {
-  background: #F8F9FA;
-  border-radius: 16px;
-  padding: 2rem;
-  text-align: center;
-}
-
-.no-match-icon {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: #E2E8F0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 1.5rem;
-}
-
-.no-match-icon i {
-  font-size: 36px;
-  color: #6B7280;
-}
-
-.suggestions-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1rem;
-  margin-top: 2rem;
-}
-
-.suggestion-card {
-  background: #FFFFFF;
-  border-radius: 12px;
-  padding: 1.5rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: 1px solid #E2E8F0;
-  text-align: center;
-}
-
-.suggestion-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border-color: #F4D03F;
-}
-
-.suggestion-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: #FEF3C7;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 1rem;
-}
-
-.suggestion-icon i {
-  font-size: 24px;
-  color: #F59E0B;
-}
-
-.suggestion-title {
-  font-size: 1.1rem;
   font-weight: 600;
-  color: #2D3748;
-  margin: 0 0 0.5rem 0;
+  color: #007bff;
 }
 
-.suggestion-desc {
-  font-size: 0.9rem;
-  color: #6B7280;
-  margin: 0;
-  line-height: 1.4;
-}
-
-/* Enhanced No Tournaments Styles */
-.no-tournaments-enhanced {
-  background: #F8F9FA;
-  border-radius: 16px;
+/* No Matches */
+.no-matches {
+  text-align: center;
   padding: 2rem;
-  text-align: center;
+  color: #666;
 }
 
-.no-tournaments-icon {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: #FEF3C7;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 1.5rem;
+.no-matches .material-symbols-outlined {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
 }
 
-.no-tournaments-icon i {
-  font-size: 36px;
-  color: #F59E0B;
-}
-
-.fallback-actions {
-  margin-top: 2rem;
-  text-align: left;
-}
-
-.fallback-info h4 {
-  color: #2D3748;
-  margin: 0 0 1rem 0;
-}
-
-.fallback-list {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 1.5rem 0;
-}
-
-.fallback-list li {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid #E2E8F0;
-}
-
-.fallback-list li:last-child {
-  border-bottom: none;
-}
-
-.fallback-list i {
-  color: #F4D03F;
-  font-size: 20px;
-  margin-top: 2px;
-  flex-shrink: 0;
-}
-
-.fallback-list span {
-  color: #6B7280;
-  line-height: 1.4;
-}
-
-.fallback-cta {
-  text-align: center;
-  margin-top: 1.5rem;
-}
-
-.fallback-cta button {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-@media (max-width: 768px) {
-  .quick-actions {
-    grid-template-columns: 1fr;
+/* Responsive */
+@media (min-width: 768px) {
+  .tournaments-grid {
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   }
   
-  .suggestions-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .match-teams {
-    flex-direction: column;
+  .tournament-info {
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: 1rem;
   }
   
-  .match-vs {
-    order: -1;
-    margin-bottom: 1rem;
-  }
-  
-  .team-logo,
-  .team-logo-placeholder {
-    width: 50px;
-    height: 50px;
+  .info-item {
+    flex: 1;
+    min-width: 120px;
   }
 }
 </style>

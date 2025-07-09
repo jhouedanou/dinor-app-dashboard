@@ -106,7 +106,6 @@ import {
   Activity,
   Utensils,
   Coffee,
-  Restaurant,
   CalendarDays,
   CalendarCheck,
   CalendarX,
@@ -114,7 +113,6 @@ import {
   Timer,
   Hourglass,
   AlarmClock,
-  Stopwatch
 } from 'lucide-vue-next'
 
 // Import global styles
@@ -234,7 +232,6 @@ app.component('LucidePieChart', PieChart)
 app.component('LucideActivity', Activity)
 app.component('LucideUtensils', Utensils)
 app.component('LucideCoffee', Coffee)
-app.component('LucideRestaurant', Restaurant)
 app.component('LucideCalendarDays', CalendarDays)
 app.component('LucideCalendarCheck', CalendarCheck)
 app.component('LucideCalendarX', CalendarX)
@@ -242,7 +239,6 @@ app.component('LucideCalendarClock', CalendarClock)
 app.component('LucideTimer', Timer)
 app.component('LucideHourglass', Hourglass)
 app.component('LucideAlarmClock', AlarmClock)
-app.component('LucideStopwatch', Stopwatch)
 
 // Configuration globale des stores
 const appStore = useAppStore()

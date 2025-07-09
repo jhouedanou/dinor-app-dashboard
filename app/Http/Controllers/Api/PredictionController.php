@@ -9,6 +9,8 @@ use App\Models\Leaderboard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class PredictionController extends Controller
 {
@@ -36,6 +38,103 @@ class PredictionController extends Controller
                 'total' => $predictions->total(),
             ]
         ]);
+    }
+
+    /**
+     * Create or update a prediction in one operation (upsert)
+     */
+    public function upsert(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'football_match_id' => 'required|exists:football_matches,id',
+            'predicted_home_score' => 'required|integer|min:0|max:20',
+            'predicted_away_score' => 'required|integer|min:0|max:20',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Données invalides',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $userId = Auth::id();
+        $matchId = $request->football_match_id;
+
+        // Use cache to avoid repeated database queries for the same match
+        $cacheKey = "match_prediction_check_{$matchId}";
+        $match = Cache::remember($cacheKey, 300, function () use ($matchId) {
+            return FootballMatch::select(['id', 'predictions_close_at', 'match_date', 'predictions_enabled', 'is_active'])
+                ->find($matchId);
+        });
+
+        if (!$match) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Match non trouvé'
+            ], 404);
+        }
+
+        // Vérifier si les prédictions sont ouvertes
+        if (!$match->can_predict) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Les pronostics sont fermés pour ce match'
+            ], 422);
+        }
+
+        // Déterminer le gagnant prédit
+        $predictedWinner = 'draw';
+        if ($request->predicted_home_score > $request->predicted_away_score) {
+            $predictedWinner = 'home';
+        } elseif ($request->predicted_away_score > $request->predicted_home_score) {
+            $predictedWinner = 'away';
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Utiliser updateOrCreate pour un upsert efficace
+            $prediction = Prediction::updateOrCreate(
+                [
+                    'user_id' => $userId,
+                    'football_match_id' => $matchId
+                ],
+                [
+                    'predicted_home_score' => $request->predicted_home_score,
+                    'predicted_away_score' => $request->predicted_away_score,
+                    'predicted_winner' => $predictedWinner,
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                    'is_calculated' => false,
+                    'points_earned' => 0
+                ]
+            );
+
+            // Invalider le cache des prédictions utilisateur
+            Cache::forget("user_predictions_{$userId}");
+            Cache::forget("user_prediction_{$userId}_{$matchId}");
+
+            DB::commit();
+
+            // Charger les relations pour la réponse
+            $prediction->load(['footballMatch.homeTeam', 'footballMatch.awayTeam']);
+
+            return response()->json([
+                'success' => true,
+                'data' => $prediction,
+                'message' => $prediction->wasRecentlyCreated ? 'Pronostic créé avec succès' : 'Pronostic mis à jour avec succès'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la sauvegarde du pronostic'
+            ], 500);
+        }
     }
 
     public function store(Request $request)
@@ -176,10 +275,14 @@ class PredictionController extends Controller
     {
         $userId = Auth::id();
         
-        $prediction = Prediction::where('user_id', $userId)
-            ->where('football_match_id', $matchId)
-            ->with(['footballMatch.homeTeam', 'footballMatch.awayTeam'])
-            ->first();
+        // Use cache for frequently accessed predictions
+        $cacheKey = "user_prediction_{$userId}_{$matchId}";
+        $prediction = Cache::remember($cacheKey, 600, function () use ($userId, $matchId) {
+            return Prediction::where('user_id', $userId)
+                ->where('football_match_id', $matchId)
+                ->with(['footballMatch.homeTeam', 'footballMatch.awayTeam'])
+                ->first();
+        });
 
         return response()->json([
             'success' => true,
@@ -197,6 +300,39 @@ class PredictionController extends Controller
             ->orderBy('created_at', 'desc')
             ->limit($limit)
             ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $predictions
+        ]);
+    }
+
+    /**
+     * Get predictions for multiple matches (batch operation)
+     */
+    public function batchGetPredictions(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'match_ids' => 'required|array',
+            'match_ids.*' => 'integer|exists:football_matches,id'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Données invalides',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $userId = Auth::id();
+        $matchIds = $request->match_ids;
+        
+        $predictions = Prediction::with(['footballMatch.homeTeam', 'footballMatch.awayTeam'])
+            ->where('user_id', $userId)
+            ->whereIn('football_match_id', $matchIds)
+            ->get()
+            ->keyBy('football_match_id');
 
         return response()->json([
             'success' => true,

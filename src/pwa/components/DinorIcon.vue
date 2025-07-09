@@ -12,17 +12,21 @@
 <script setup>
 import { computed } from 'vue'
 
-// Mapping des icônes Material vers Lucide
+// Mapping des icônes Material vers Lucide + support direct Lucide
 const iconMapping = {
   // Navigation
   'home': 'LucideHome',
   'apps': 'LucideHome',
   'restaurant': 'LucideChefHat',
+  'chef-hat': 'LucideChefHat',
   'lightbulb': 'LucideLightbulb',
   'event': 'LucideCalendar',
+  'calendar': 'LucideCalendar',
   'calendar_today': 'LucideCalendar',
-  'play_circle': 'LucidePlay',
+  'play_circle': 'LucidePlayCircle',
+  'play-circle': 'LucidePlayCircle',
   'person': 'LucideUser',
+  'user': 'LucideUser',
   'arrow_back': 'LucideArrowLeft',
   
   // Actions
@@ -151,9 +155,21 @@ const props = defineProps({
 
 // Composant d'icône à utiliser
 const iconComponent = computed(() => {
+  // Vérifier d'abord le mapping
   const mappedIcon = iconMapping[props.name]
   if (mappedIcon) {
     return mappedIcon
+  }
+  
+  // Essayer les noms Lucide directs (convertir kebab-case vers PascalCase)
+  const lucideName = 'Lucide' + props.name
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join('')
+  
+  // Pour les icônes du menu, on accepte les noms Lucide directs  
+  if (props.name.includes('-') || ['home', 'user', 'calendar', 'lightbulb'].includes(props.name)) {
+    return lucideName
   }
   
   // Fallback vers l'icône par défaut

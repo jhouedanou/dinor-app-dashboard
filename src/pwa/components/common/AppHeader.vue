@@ -39,8 +39,6 @@
       </div>
       
       <div class="md3-app-bar-actions">
-        <!-- Dev only refresh button -->
-        <CacheRefreshButton v-if="isDevelopment" size="small" />
         
         <slot name="actions">
           <button 
@@ -76,13 +74,11 @@ import { useRouter, useRoute } from 'vue-router'
 import { computed, ref, watch, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import apiService from '@/services/api'
-import CacheRefreshButton from './CacheRefreshButton.vue'
 import DinorIcon from '@/components/DinorIcon.vue'
 
 export default {
   name: 'AppHeader',
   components: {
-    CacheRefreshButton,
     DinorIcon
   },
   props: {

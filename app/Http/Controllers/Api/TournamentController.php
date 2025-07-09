@@ -5,9 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Tournament;
 use App\Models\TournamentParticipant;
+use App\Models\FootballMatch;
+use App\Models\Prediction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class TournamentController extends Controller
 {
@@ -329,48 +332,94 @@ class TournamentController extends Controller
         }
     }
 
-    public function featured()
+    /**
+     * Get matches for a specific tournament with user predictions
+     */
+    public function matches(Request $request, Tournament $tournament)
     {
         try {
-            $tournaments = Tournament::with(['creator:id,name'])
-                ->public()
-                ->featured()
-                ->notExpired()
-                ->orderBy('start_date')
-                ->limit(6)
-                ->get();
+            // Cache key for tournament matches
+            $cacheKey = "tournament_matches_{$tournament->id}";
+            $userId = Auth::id();
+            
+            // Get matches with eager loading
+            $matches = Cache::remember($cacheKey, 300, function () use ($tournament) {
+                return FootballMatch::with(['homeTeam:id,name,short_name,logo', 'awayTeam:id,name,short_name,logo'])
+                    ->where('tournament_id', $tournament->id)
+                    ->where('is_active', true)
+                    ->orderBy('match_date')
+                    ->get();
+            });
 
-            $user = Auth::user();
-            $tournamentData = [];
+            // If user is authenticated, load their predictions
+            if ($userId) {
+                $matchIds = $matches->pluck('id')->toArray();
+                
+                // Get user predictions for these matches
+                $userPredictions = Prediction::where('user_id', $userId)
+                    ->whereIn('football_match_id', $matchIds)
+                    ->get()
+                    ->keyBy('football_match_id');
 
-            foreach ($tournaments as $tournament) {
-                $tournament->updateStatus();
-                
-                $data = $tournament->toArray();
-                
-                // Ajouter des données spécifiques à l'utilisateur connecté
-                if ($user) {
-                    $data['user_is_participant'] = $tournament->participants()
-                        ->where('user_id', $user->id)->exists();
-                    $data['user_can_register'] = $tournament->canUserRegister($user);
-                } else {
-                    $data['user_is_participant'] = false;
-                    $data['user_can_register'] = false;
-                }
-                
-                $tournamentData[] = $data;
+                // Attach user predictions to matches
+                $matches = $matches->map(function ($match) use ($userPredictions) {
+                    $match->user_prediction = $userPredictions->get($match->id);
+                    return $match;
+                });
             }
 
             return response()->json([
                 'success' => true,
-                'data' => $tournamentData
+                'data' => $matches,
+                'tournament' => [
+                    'id' => $tournament->id,
+                    'name' => $tournament->name,
+                    'status' => $tournament->status,
+                    'can_predict' => $tournament->can_predict
+                ]
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur lors du chargement des tournois mis en avant',
-                'error' => 'FEATURED_TOURNAMENTS_ERROR'
+                'message' => 'Erreur lors du chargement des matchs du tournoi',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get featured tournaments with optimized loading
+     */
+    public function featured(Request $request)
+    {
+        try {
+            $limit = min($request->get('limit', 10), 20);
+            
+            $tournaments = Tournament::with(['creator:id,name'])
+                ->public()
+                ->featured()
+                ->notExpired()
+                ->withCount('participants')
+                ->orderBy('start_date')
+                ->limit($limit)
+                ->get();
+
+            // Update status for each tournament
+            $tournaments->each(function ($tournament) {
+                $tournament->updateStatus();
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => $tournaments
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors du chargement des tournois en vedette',
+                'error' => $e->getMessage()
             ], 500);
         }
     }

@@ -16,7 +16,6 @@ use App\Http\Controllers\Api\CacheController;
 use App\Http\Controllers\Api\ShareController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\PWA\CacheController as PWACacheController;
-use App\Http\Controllers\PWA\PwaMenuItemController;
 
 /*
 |--------------------------------------------------------------------------
@@ -120,8 +119,6 @@ Route::prefix('v1')->group(function () {
     Route::get('/cache/stats', [CacheController::class, 'stats']);
     Route::get('/cache/status', [CacheController::class, 'status']);
     
-    // PWA Menu Items
-    Route::get('/pwa-menu-items', [PwaMenuItemController::class, 'index']);
     
     // Pages
     Route::get('/pages', [PageController::class, 'index']);
@@ -182,16 +179,17 @@ Route::post('/event-categories/check-exists', [App\Http\Controllers\Api\EventCat
     Route::get('/teams', [App\Http\Controllers\Api\TeamController::class, 'index']);
     Route::get('/teams/{team}', [App\Http\Controllers\Api\TeamController::class, 'show']);
     
-    Route::get('/matches', [App\Http\Controllers\Api\FootballMatchController::class, 'index']);
-    Route::get('/matches/{footballMatch}', [App\Http\Controllers\Api\FootballMatchController::class, 'show']);
-    Route::get('/matches/upcoming/list', [App\Http\Controllers\Api\FootballMatchController::class, 'upcoming']);
-    Route::get('/matches/current/match', [App\Http\Controllers\Api\FootballMatchController::class, 'current']);
+    Route::get('/matches', [App\Http\Controllers\Api\FootballMatchController::class, 'index'])->middleware('cache.matches:600');
+    Route::get('/matches/{footballMatch}', [App\Http\Controllers\Api\FootballMatchController::class, 'show'])->middleware('cache.matches:300');
+    Route::get('/matches/upcoming/list', [App\Http\Controllers\Api\FootballMatchController::class, 'upcoming'])->middleware('cache.matches:300');
+    Route::get('/matches/current/match', [App\Http\Controllers\Api\FootballMatchController::class, 'current'])->middleware('cache.matches:180');
     
     // Tournois - Routes publiques
-    Route::get('/tournaments', [App\Http\Controllers\Api\TournamentController::class, 'index']);
-    Route::get('/tournaments/featured', [App\Http\Controllers\Api\TournamentController::class, 'featured']);
-    Route::get('/tournaments/{tournament}', [App\Http\Controllers\Api\TournamentController::class, 'show']);
-    Route::get('/tournaments/{tournament}/leaderboard', [App\Http\Controllers\Api\TournamentController::class, 'leaderboard']);
+    Route::get('/tournaments', [App\Http\Controllers\Api\TournamentController::class, 'index'])->middleware('cache.matches:600');
+    Route::get('/tournaments/featured', [App\Http\Controllers\Api\TournamentController::class, 'featured'])->middleware('cache.matches:300');
+    Route::get('/tournaments/{tournament}', [App\Http\Controllers\Api\TournamentController::class, 'show'])->middleware('cache.matches:600');
+    Route::get('/tournaments/{tournament}/matches', [App\Http\Controllers\Api\TournamentController::class, 'matches'])->middleware('cache.matches:300');
+    Route::get('/tournaments/{tournament}/leaderboard', [App\Http\Controllers\Api\TournamentController::class, 'leaderboard'])->middleware('cache.matches:180');
     
     // Leaderboard - Routes publiques
     Route::get('/leaderboard', [App\Http\Controllers\Api\LeaderboardController::class, 'index']);
@@ -354,6 +352,8 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     // Prédictions - Routes protégées
     Route::get('/predictions', [App\Http\Controllers\Api\PredictionController::class, 'index']);
     Route::post('/predictions', [App\Http\Controllers\Api\PredictionController::class, 'store']);
+    Route::patch('/predictions/upsert', [App\Http\Controllers\Api\PredictionController::class, 'upsert']);
+    Route::post('/predictions/batch', [App\Http\Controllers\Api\PredictionController::class, 'batchGetPredictions']);
     Route::get('/predictions/my-recent', [App\Http\Controllers\Api\PredictionController::class, 'userRecentPredictions']);
     Route::get('/predictions/match/{matchId}', [App\Http\Controllers\Api\PredictionController::class, 'getUserPredictionForMatch']);
     Route::get('/predictions/{prediction}', [App\Http\Controllers\Api\PredictionController::class, 'show']);

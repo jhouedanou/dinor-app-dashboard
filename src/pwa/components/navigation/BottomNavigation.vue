@@ -45,43 +45,16 @@ export default {
     const apiStore = useApiStore()
     const { requireAuth, showAuthModal, authModalMessage, closeAuthModal, handleAuthSuccess } = useAuthHandler()
     
-    const menuItems = ref([])
-    const loading = ref(true)
-    
-    // Fallback navigation si l'API échoue
-    const fallbackNavItems = [
-      { name: 'all', path: '/', icon: 'apps', label: 'Accueil', action_type: 'route' },
-      { name: 'recipes', path: '/recipes', icon: 'restaurant', label: 'Recettes', action_type: 'route' },
+    // Menu statique avec icônes Lucide
+    const menuItems = ref([
+      { name: 'all', path: '/', icon: 'home', label: 'Accueil', action_type: 'route' },
+      { name: 'recipes', path: '/recipes', icon: 'chef-hat', label: 'Recettes', action_type: 'route' },
       { name: 'tips', path: '/tips', icon: 'lightbulb', label: 'Astuces', action_type: 'route' },
-      { name: 'events', path: '/events', icon: 'event', label: 'Événements', action_type: 'route' },
-      { name: 'dinor-tv', path: '/dinor-tv', icon: 'play_circle', label: 'DinorTV', action_type: 'route' },
-      { name: 'profile', path: '/profile', icon: 'person', label: 'Profil', action_type: 'route' }
-    ]
-
-    const loadMenuItems = async () => {
-      try {
-        // Chargement des éléments de menu
-        const data = await apiStore.get('/pwa-menu-items')
-        
-        if (data.success && Array.isArray(data.data)) {
-          // Filtrer seulement les éléments actifs et les trier par ordre
-          menuItems.value = data.data
-            .filter(item => item.is_active)
-            .sort((a, b) => (a.order || 0) - (b.order || 0))
-            .slice(0, 7) // Limiter à 7 éléments max pour la navigation mobile
-          
-          // Menu items chargés
-        } else {
-          // Réponse API invalide, utilisation du fallback
-          menuItems.value = fallbackNavItems
-        }
-      } catch (error) {
-        // Erreur lors du chargement du menu
-        menuItems.value = fallbackNavItems
-      } finally {
-        loading.value = false
-      }
-    }
+      { name: 'events', path: '/events', icon: 'calendar', label: 'Événements', action_type: 'route' },
+      { name: 'dinor-tv', path: '/dinor-tv', icon: 'play-circle', label: 'DinorTV', action_type: 'route' },
+      { name: 'profile', path: '/profile', icon: 'user', label: 'Profil', action_type: 'route' }
+    ])
+    const loading = ref(false)
 
     const handleItemClick = (item) => {
       // Vérifier l'authentification pour le profil
@@ -144,10 +117,7 @@ export default {
       router.push('/profile')
     }
 
-    // Charger les éléments de menu au montage
-    onMounted(() => {
-      loadMenuItems()
-    })
+    // Menu statique - pas besoin de charger depuis l'API
 
     return {
       menuItems,

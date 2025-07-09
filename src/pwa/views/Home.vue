@@ -10,15 +10,6 @@
       :banners="banners"
     />
 
-    <!-- Bouton d'actualisation du cache -->
-    <div class="cache-controls">
-      <CacheRefreshButton 
-        variant="full"
-        size="medium"
-        @refresh="handleCacheRefresh"
-        @error="handleCacheError"
-      />
-    </div>
 
     <!-- Recettes - 4 dernières -->
     <ContentCarousel
@@ -219,7 +210,6 @@ import BannerSection from '@/components/common/BannerSection.vue'
 import DinorIcon from '@/components/DinorIcon.vue'
 import LikeButton from '@/components/common/LikeButton.vue'
 import AuthModal from '@/components/common/AuthModal.vue'
-import CacheRefreshButton from '@/components/common/CacheRefreshButton.vue'
 
 export default {
   name: 'Home',
@@ -229,7 +219,6 @@ export default {
     DinorIcon,
     LikeButton,
     AuthModal,
-    CacheRefreshButton
   },
   setup() {
     const router = useRouter()
@@ -401,20 +390,6 @@ export default {
       router.push(`/video/${video.id}`)
     }
 
-    const handleCacheRefresh = (result) => {
-      console.log('Cache actualisé:', result)
-      // Recharger les données après l'actualisation du cache
-      if (result.success) {
-        // Recharger les données des carousels
-        setTimeout(() => {
-          window.location.reload()
-        }, 1000)
-      }
-    }
-
-    const handleCacheError = (error) => {
-      console.error('Erreur lors de l\'actualisation du cache:', error)
-    }
     
     const getShortDescription = (text) => {
       if (!text) return ''
@@ -521,8 +496,6 @@ export default {
       handleTipClick,
       handleEventClick,
       handleVideoClick,
-      handleCacheRefresh,
-      handleCacheError,
       
       // Utilitaires
       getShortDescription,
