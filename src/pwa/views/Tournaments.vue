@@ -47,22 +47,22 @@
             <div class="tournament-info">
               <div class="info-row">
                 <div class="info-item">
-                  <span class="material-symbols-outlined">group</span>
+                  <DinorIcon name="group" :size="16" />
                   <span>{{ tournament.participants_count }} participants</span>
                 </div>
                 <div class="info-item" v-if="tournament.prize_pool > 0">
-                  <span class="material-symbols-outlined">emoji_events</span>
+                  <DinorIcon name="emoji_events" :size="16" />
                   <span>{{ formatPrize(tournament.prize_pool, tournament.currency) }}</span>
                 </div>
               </div>
               
               <div class="info-row">
                 <div class="info-item">
-                  <span class="material-symbols-outlined">schedule</span>
+                  <DinorIcon name="schedule" :size="16" />
                   <span>Fin: {{ formatDate(tournament.end_date) }}</span>
                 </div>
                 <div class="info-item" v-if="tournament.entry_fee > 0">
-                  <span class="material-symbols-outlined">payments</span>
+                  <DinorIcon name="payments" :size="16" />
                   <span>{{ formatPrize(tournament.entry_fee, tournament.currency) }}</span>
                 </div>
               </div>
@@ -95,21 +95,21 @@
                 @click.stop="viewTournamentLeaderboard(tournament)"
                 class="btn-secondary btn-small"
               >
-                <span class="material-symbols-outlined">leaderboard</span>
+                <DinorIcon name="leaderboard" :size="16" />
                 Mon classement
               </button>
               
               <div v-else class="tournament-status-info">
                 <span v-if="tournament.status === 'upcoming'" class="status-text">
-                  <span class="material-symbols-outlined">schedule</span>
+                  <DinorIcon name="schedule" :size="16" />
                   À venir
                 </span>
                 <span v-else-if="tournament.status === 'finished'" class="status-text">
-                  <span class="material-symbols-outlined">flag</span>
+                  <DinorIcon name="flag" :size="16" />
                   Terminé
                 </span>
                 <span v-else class="status-text">
-                  <span class="material-symbols-outlined">block</span>
+                  <DinorIcon name="block" :size="16" />
                   Inscriptions fermées
                 </span>
               </div>
@@ -119,7 +119,7 @@
 
         <!-- Empty State -->
         <div v-else class="empty-state">
-          <span class="material-symbols-outlined">emoji_events</span>
+          <DinorIcon name="emoji_events" :size="64" />
           <h3>Aucun tournoi disponible</h3>
           <p>Les tournois apparaîtront ici quand ils seront disponibles.</p>
         </div>
@@ -175,12 +175,14 @@ import { ref, onMounted, computed } from 'vue'
 import { useApiStore } from '@/stores/api'
 import { useAuthStore } from '@/stores/auth'
 import AuthModal from '@/components/common/AuthModal.vue'
+import DinorIcon from '@/components/DinorIcon.vue'
 
 export default {
   name: 'Tournaments',
   emits: ['update-header'],
   components: {
-    AuthModal
+    AuthModal,
+    DinorIcon
   },
   setup(_, { emit }) {
     const apiStore = useApiStore()
@@ -479,8 +481,7 @@ export default {
   color: #6B7280;
 }
 
-.info-item i {
-  font-size: 1rem;
+.info-item {
   color: #F4D03F;
 }
 
@@ -536,9 +537,7 @@ export default {
   font-size: 0.85rem;
 }
 
-.status-text i {
-  font-size: 1rem;
-}
+/* Status text icons are now handled by DinorIcon component */
 
 .empty-state {
   text-align: center;
@@ -546,8 +545,7 @@ export default {
   color: #9CA3AF;
 }
 
-.empty-state i {
-  font-size: 4rem;
+.empty-state {
   margin-bottom: 1rem;
   color: #E5E7EB;
 }

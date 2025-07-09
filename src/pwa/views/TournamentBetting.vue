@@ -6,7 +6,7 @@
         <div class="header-content">
           <div class="breadcrumb">
             <router-link to="/predictions" class="breadcrumb-link">Prédictions</router-link>
-            <span class="material-symbols-outlined">chevron_right</span>
+            <DinorIcon name="chevron_right" :size="16" />
             <span class="current-page">Paris de Tournois</span>
           </div>
           <h1 class="md3-title-large dinor-text-primary">Interface de Paris</h1>
@@ -19,7 +19,7 @@
       <!-- Tournament Selection -->
       <div class="tournament-selection">
         <h2 class="section-title">
-          <span class="material-symbols-outlined">emoji_events</span>
+          <DinorIcon name="emoji_events" :size="20" />
           Sélectionner un tournoi
         </h2>
         
@@ -42,7 +42,7 @@
                   {{ tournament.status_label }}
                 </span>
                 <span v-if="tournament.is_featured" class="featured-badge">
-                  <span class="material-symbols-outlined">star</span>
+                  <DinorIcon name="star" :size="16" />
                   Vedette
                 </span>
               </div>
@@ -52,15 +52,15 @@
             
             <div class="tournament-stats">
               <div class="stat">
-                <span class="material-symbols-outlined">group</span>
+                <DinorIcon name="group" :size="16" />
                 <span>{{ tournament.participants_count }} participants</span>
               </div>
               <div class="stat" v-if="tournament.prize_pool > 0">
-                <span class="material-symbols-outlined">emoji_events</span>
+                <DinorIcon name="emoji_events" :size="16" />
                 <span>{{ formatCurrency(tournament.prize_pool, tournament.currency) }}</span>
               </div>
               <div class="stat">
-                <span class="material-symbols-outlined">schedule</span>
+                <DinorIcon name="schedule" :size="16" />
                 <span>{{ formatDate(tournament.end_date) }}</span>
               </div>
             </div>
@@ -82,11 +82,11 @@
       <div v-if="selectedTournament" class="betting-interface">
         <div class="interface-header">
           <h2 class="section-title">
-            <span class="material-symbols-outlined">casino</span>
+            <DinorIcon name="casino" :size="20" />
             Interface de Paris - {{ selectedTournament.name }}
           </h2>
           <div class="user-balance" v-if="authStore.isAuthenticated">
-            <span class="material-symbols-outlined">account_balance_wallet</span>
+            <DinorIcon name="account_balance_wallet" :size="20" />
             <span>Solde: {{ userBalance }} points</span>
           </div>
         </div>
@@ -101,7 +101,7 @@
           </div>
           
           <div v-else-if="tournamentMatches.length === 0" class="no-matches">
-            <span class="material-symbols-outlined">sports_soccer</span>
+            <DinorIcon name="sports_soccer" :size="48" />
             <h3>Aucun match disponible</h3>
             <p>Aucun match n'est actuellement ouvert aux paris pour ce tournoi.</p>
           </div>
@@ -119,11 +119,11 @@
                 </div>
                 <div class="betting-status">
                   <span v-if="match.can_predict" class="status-open">
-                    <span class="material-symbols-outlined">lock_open</span>
+                    <DinorIcon name="lock_open" :size="16" />
                     Paris ouverts
                   </span>
                   <span v-else class="status-closed">
-                    <span class="material-symbols-outlined">lock</span>
+                    <DinorIcon name="lock" :size="16" />
                     Paris fermés
                   </span>
                 </div>
@@ -138,7 +138,7 @@
                     class="team-logo"
                   >
                   <div v-else class="team-logo-placeholder">
-                    <span class="material-symbols-outlined">shield</span>
+                    <DinorIcon name="shield" :size="32" />
                   </div>
                   <div class="team-info">
                     <h4 class="team-name">{{ match.home_team.name }}</h4>
@@ -172,7 +172,7 @@
                     class="team-logo"
                   >
                   <div v-else class="team-logo-placeholder">
-                    <span class="material-symbols-outlined">shield</span>
+                    <DinorIcon name="shield" :size="32" />
                   </div>
                   <div class="team-info">
                     <h4 class="team-name">{{ match.away_team.name }}</h4>
@@ -189,7 +189,7 @@
                   <!-- Score Prediction -->
                   <div class="bet-type score-prediction">
                     <label class="bet-label">
-                      <span class="material-symbols-outlined">sports_score</span>
+                      <DinorIcon name="sports_score" :size="16" />
                       Prédiction de score
                     </label>
                     <div class="score-inputs">
@@ -220,7 +220,7 @@
                   <!-- Winner Prediction -->
                   <div class="bet-type winner-prediction">
                     <label class="bet-label">
-                      <span class="material-symbols-outlined">emoji_events</span>
+                      <DinorIcon name="emoji_events" :size="16" />
                       Vainqueur
                     </label>
                     <div class="winner-options">
@@ -248,7 +248,7 @@
                   <!-- Bet Amount -->
                   <div class="bet-type bet-amount">
                     <label class="bet-label">
-                      <span class="material-symbols-outlined">payments</span>
+                      <DinorIcon name="payments" :size="16" />
                       Mise (points)
                     </label>
                     <div class="amount-input">
@@ -298,7 +298,7 @@
                 >
                   <span v-if="submitting" class="loading-spinner"></span>
                   <span v-else>
-                    <span class="material-symbols-outlined">casino</span>
+                    <DinorIcon name="casino" :size="16" />
                     Placer le pari
                   </span>
                 </button>
@@ -306,7 +306,7 @@
 
               <!-- Auth Required -->
               <div v-else-if="match.can_predict && !authStore.isAuthenticated" class="auth-required">
-                <span class="material-symbols-outlined">login</span>
+                <DinorIcon name="login" :size="32" />
                 <p>Connectez-vous pour parier sur ce match</p>
                 <button @click="showAuthModal = true" class="btn-primary">
                   Se connecter
@@ -318,15 +318,15 @@
                 <h4 class="existing-bet-title">Votre pari actuel</h4>
                 <div class="bet-details">
                   <div class="detail-item">
-                    <span class="material-symbols-outlined">sports_score</span>
+                    <DinorIcon name="sports_score" :size="16" />
                     <span>{{ getExistingBet(match.id).predicted_home_score }}-{{ getExistingBet(match.id).predicted_away_score }}</span>
                   </div>
                   <div class="detail-item">
-                    <span class="material-symbols-outlined">emoji_events</span>
+                    <DinorIcon name="emoji_events" :size="16" />
                     <span>{{ getWinnerText(getExistingBet(match.id).predicted_winner) }}</span>
                   </div>
                   <div class="detail-item">
-                    <span class="material-symbols-outlined">payments</span>
+                    <DinorIcon name="payments" :size="16" />
                     <span>{{ getExistingBet(match.id).bet_amount || 0 }} points</span>
                   </div>
                 </div>
@@ -338,14 +338,14 @@
         <!-- Betting Statistics -->
         <div class="betting-stats">
           <h3 class="subsection-title">
-            <span class="material-symbols-outlined">analytics</span>
+            <DinorIcon name="analytics" :size="20" />
             Vos statistiques de paris
           </h3>
           
           <div class="stats-grid">
             <div class="stat-card">
               <div class="stat-icon">
-                <span class="material-symbols-outlined">casino</span>
+                <DinorIcon name="casino" :size="24" />
               </div>
               <div class="stat-content">
                 <h4 class="stat-value">{{ userStats.totalBets || 0 }}</h4>
@@ -355,7 +355,7 @@
             
             <div class="stat-card">
               <div class="stat-icon">
-                <span class="material-symbols-outlined">trending_up</span>
+                <DinorIcon name="trending_up" :size="24" />
               </div>
               <div class="stat-content">
                 <h4 class="stat-value">{{ userStats.winRate || 0 }}%</h4>
@@ -365,7 +365,7 @@
             
             <div class="stat-card">
               <div class="stat-icon">
-                <span class="material-symbols-outlined">payments</span>
+                <DinorIcon name="payments" :size="24" />
               </div>
               <div class="stat-content">
                 <h4 class="stat-value">{{ userStats.totalWinnings || 0 }}</h4>
@@ -375,7 +375,7 @@
             
             <div class="stat-card">
               <div class="stat-icon">
-                <span class="material-symbols-outlined">leaderboard</span>
+                <DinorIcon name="leaderboard" :size="24" />
               </div>
               <div class="stat-content">
                 <h4 class="stat-value">#{{ userStats.rank || 'N/A' }}</h4>
@@ -389,7 +389,7 @@
       <!-- No Tournament Selected -->
       <div v-else class="no-tournament-selected">
         <div class="placeholder-content">
-          <span class="material-symbols-outlined">casino</span>
+          <DinorIcon name="casino" :size="64" />
           <h3>Sélectionnez un tournoi</h3>
           <p>Choisissez un tournoi ci-dessus pour commencer à parier</p>
         </div>
@@ -409,11 +409,13 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useApiStore } from '@/stores/api'
 import { useAuthStore } from '@/stores/auth'
 import AuthModal from '@/components/common/AuthModal.vue'
+import DinorIcon from '@/components/DinorIcon.vue'
 
 export default {
   name: 'TournamentBetting',
   components: {
-    AuthModal
+    AuthModal,
+    DinorIcon
   },
   setup() {
     const apiStore = useApiStore()
@@ -1286,8 +1288,7 @@ export default {
   color: #6b7280;
 }
 
-.placeholder-content .material-symbols-outlined {
-  font-size: 4rem;
+.placeholder-content {
   opacity: 0.5;
 }
 
@@ -1308,10 +1309,6 @@ export default {
   padding: 3rem;
   color: #6b7280;
   text-align: center;
-}
-
-.no-matches .material-symbols-outlined {
-  font-size: 3rem;
   opacity: 0.5;
 }
 

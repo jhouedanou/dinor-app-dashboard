@@ -5,7 +5,7 @@
       <!-- Error State -->
       <div v-if="error" class="error-state">
         <div class="error-icon">
-          <span class="material-symbols-outlined">error</span>
+          <DinorIcon name="error" :size="64" />
         </div>
         <h2 class="md3-title-large">Erreur de chargement</h2>
         <p class="md3-body-large dinor-text-gray">{{ errorMessage }}</p>
@@ -55,9 +55,13 @@
 import { ref, onMounted, computed, onUnmounted, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useApi } from '@/composables/useApi'
+import DinorIcon from '@/components/DinorIcon.vue'
 
 export default {
   name: 'WebEmbed',
+  components: {
+    DinorIcon
+  },
   setup() {
     const router = useRouter()
     const route = useRoute()
@@ -445,10 +449,9 @@ export default {
   text-align: center;
 }
 
-.error-icon i {
-  font-size: 4rem;
-  color: var(--md-sys-color-error);
+.error-icon {
   margin-bottom: 1rem;
+  color: var(--md-sys-color-error);
 }
 
 .error-actions {

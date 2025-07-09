@@ -16,8 +16,7 @@
     <!-- Error State -->
     <div v-else-if="error" class="error-state">
       <div class="error-icon">
-        <span class="material-symbols-outlined">error</span>
-        <span class="emoji-fallback">⚠️</span>
+        <DinorIcon name="error" :size="32" />
       </div>
       <h2 class="md3-title-large">Erreur de chargement</h2>
       <p class="md3-body-large dinor-text-gray">{{ error }}</p>
@@ -47,8 +46,7 @@
               />
               <div class="video-overlay">
                 <div class="play-button">
-                  <span class="material-symbols-outlined">play_circle</span>
-                  <span class="emoji-fallback">▶️</span>
+                  <DinorIcon name="play_circle" :size="48" />
                 </div>
                 <div class="live-badge">
                   <span class="live-dot"></span>
@@ -64,8 +62,7 @@
               </p>
               <div class="video-meta">
                 <span v-if="video.viewers_count" class="viewers">
-                  <span class="material-symbols-outlined">visibility</span>
-                  <span class="emoji-fallback">👁️</span>
+                  <DinorIcon name="visibility" :size="16" />
                   {{ video.viewers_count }} spectateurs
                 </span>
                 <span v-if="video.scheduled_at" class="scheduled">
@@ -84,7 +81,7 @@
         <!-- Empty State -->
         <div v-if="!videos.length && !loading" class="empty-state">
           <div class="empty-icon">
-            <span class="material-symbols-outlined">play_circle</span>
+            <DinorIcon name="play_circle" :size="48" />
           </div>
           <h3>Aucune vidéo disponible</h3>
           <p>Les vidéos culinaires seront bientôt disponibles.</p>
@@ -101,8 +98,7 @@
                 @error="handleImageError">
               <div class="play-overlay">
                 <div class="play-button">
-                  <span class="material-symbols-outlined">play_circle</span>
-                  <span class="emoji-fallback">▶️</span>
+                  <DinorIcon name="play_circle" :size="48" />
                 </div>
               </div>
               <div class="video-badge featured-badge">
@@ -116,8 +112,7 @@
               </p>
               <div class="video-meta">
                 <div class="views-count">
-                  <span class="material-symbols-outlined">visibility</span>
-                  <span class="emoji-fallback">👁️</span>
+                  <DinorIcon name="visibility" :size="16" />
                   <span>{{ formatViews(featuredVideo.view_count) }}</span>
                 </div>
                 <div class="video-date">
@@ -151,7 +146,7 @@
                   @error="handleImageError">
                 <div class="play-overlay">
                   <div class="play-button">
-                    <span class="material-symbols-outlined">play_circle</span>
+                    <DinorIcon name="play_circle" :size="48" />
                     <span class="emoji-fallback">▶️</span>
                   </div>
                 </div>
@@ -160,8 +155,7 @@
                 <h3 class="video-title md3-title-small">{{ video.title }}</h3>
                 <div class="video-meta">
                   <div class="views-count">
-                    <span class="material-symbols-outlined">visibility</span>
-                    <span class="emoji-fallback">👁️</span>
+                    <DinorIcon name="visibility" :size="16" />
                     <span>{{ formatViews(video.view_count) }}</span>
                   </div>
                   <div class="video-date">
@@ -190,8 +184,7 @@
     <div v-if="selectedVideo" class="video-modal" @click="closeVideo">
       <div class="modal-content" @click.stop>
         <button @click="closeVideo" class="close-button">
-          <span class="material-symbols-outlined">close</span>
-          <span class="emoji-fallback">✖️</span>
+          <DinorIcon name="close" :size="24" />
         </button>
         <div class="video-player">
           <iframe
@@ -222,13 +215,15 @@ import { useBanners } from '@/composables/useBanners'
 import FavoriteButton from '@/components/common/FavoriteButton.vue'
 import AuthModal from '@/components/common/AuthModal.vue'
 import BannerSection from '@/components/common/BannerSection.vue'
+import DinorIcon from '@/components/DinorIcon.vue'
 
 export default {
   name: 'DinorTV',
   components: {
     FavoriteButton,
     AuthModal,
-    BannerSection
+    BannerSection,
+    DinorIcon
   },
   setup() {
     // Banner management

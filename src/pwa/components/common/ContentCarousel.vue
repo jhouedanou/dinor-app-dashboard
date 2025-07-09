@@ -4,7 +4,7 @@
       <h2>{{ title }}</h2>
       <router-link :to="viewAllLink" class="see-all-btn">
         Voir tout
-        <span class="material-symbols-outlined">arrow_forward</span>
+        <DinorIcon name="arrow_forward" :size="18" />
       </router-link>
     </div>
     
@@ -15,12 +15,12 @@
       </div>
       
       <div v-else-if="error" class="carousel-error">
-        <span class="material-symbols-outlined">error</span>
+        <DinorIcon name="error" :size="48" />
         <p>Erreur lors du chargement</p>
       </div>
       
       <div v-else-if="items.length === 0" class="carousel-empty">
-        <span class="material-symbols-outlined">info</span>
+        <DinorIcon name="info" :size="48" />
         <p>Aucun contenu disponible</p>
       </div>
       
@@ -55,7 +55,7 @@
                 </div>
                 
                 <div v-else class="card-icon">
-                  <span class="material-symbols-outlined">{{ getTypeIcon() }}</span>
+                  <DinorIcon :name="getTypeIcon()" :size="32" />
                 </div>
                 
                 <div class="card-content">
@@ -63,11 +63,11 @@
                   <p>{{ getShortDescription(item.short_description || item.content || item.description) }}</p>
                   <div class="card-meta">
                     <span v-if="item.likes_count" class="likes">
-                      <span class="material-symbols-outlined">thumb_up</span>
+                      <DinorIcon name="thumb_up" :size="16" />
                       {{ item.likes_count }}
                     </span>
                     <span v-if="item.favorites_count" class="favorites">
-                      <span class="material-symbols-outlined">favorite</span>
+                      <DinorIcon name="favorite" :size="16" />
                       {{ item.favorites_count }}
                     </span>
                     <span v-if="item.created_at" class="date">
@@ -90,14 +90,14 @@
             class="carousel-btn prev"
             :disabled="!canScrollLeft"
           >
-            <span class="material-symbols-outlined">chevron_left</span>
+            <DinorIcon name="chevron_left" :size="24" />
           </button>
           <button 
             @click="scrollCarousel(1)" 
             class="carousel-btn next"
             :disabled="!canScrollRight"
           >
-            <span class="material-symbols-outlined">chevron_right</span>
+            <DinorIcon name="chevron_right" :size="24" />
           </button>
         </div>
         
@@ -119,9 +119,13 @@
 <script>
 import { ref, onMounted, onUnmounted, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
+import DinorIcon from '@/components/DinorIcon.vue'
 
 export default {
   name: 'ContentCarousel',
+  components: {
+    DinorIcon
+  },
   props: {
     title: {
       type: String,

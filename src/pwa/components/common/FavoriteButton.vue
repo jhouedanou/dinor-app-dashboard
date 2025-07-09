@@ -15,12 +15,11 @@
     
     <!-- Heart icon with animation -->
     <div v-else class="heart-container" @click.stop="handleToggle">
-      <span class="material-symbols-outlined heart-icon">
-        {{ isFavorited ? 'favorite' : 'favorite_border' }}
-      </span>
-      <span class="emoji-fallback">
-        {{ isFavorited ? '❤️' : '🤍' }}
-      </span>
+      <DinorIcon 
+        :name="isFavorited ? 'favorite' : 'favorite_border'" 
+        :size="20" 
+        class="heart-icon" 
+      />
     </div>
     
     <!-- Optional count display -->
@@ -34,9 +33,13 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import apiService from '@/services/api'
+import DinorIcon from '@/components/DinorIcon.vue'
 
 export default {
   name: 'FavoriteButton',
+  components: {
+    DinorIcon
+  },
   props: {
     type: {
       type: String,

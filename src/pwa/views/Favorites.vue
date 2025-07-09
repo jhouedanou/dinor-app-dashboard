@@ -9,8 +9,7 @@
     <!-- Not Authenticated State -->
     <div v-else-if="!authStore.isAuthenticated" class="auth-required-state">
       <div class="auth-icon">
-        <span class="material-symbols-outlined">account_circle</span>
-        <span class="emoji-fallback">👤</span>
+        <DinorIcon name="account_circle" :size="40" />
       </div>
       <h2 class="md3-title-large">Connexion requise</h2>
       <p class="md3-body-large dinor-text-gray">
@@ -40,8 +39,7 @@
           class="filter-tab"
           :class="{ active: selectedFilter === tab.key }"
         >
-          <span class="material-symbols-outlined">{{ tab.icon }}</span>
-          <span class="emoji-fallback">{{ tab.emoji }}</span>
+          <DinorIcon :name="tab.icon" :size="20" />
           <span>{{ tab.label }}</span>
           <span class="count" v-if="getFilterCount(tab.key) > 0">
             {{ getFilterCount(tab.key) }}
@@ -65,8 +63,7 @@
               @error="handleImageError"
             >
             <div class="content-type-badge">
-              <span class="material-symbols-outlined">{{ getTypeIcon(favorite.type) }}</span>
-              <span class="emoji-fallback">{{ getTypeEmoji(favorite.type) }}</span>
+              <DinorIcon :name="getTypeIcon(favorite.type)" :size="14" />
             </div>
           </div>
 
@@ -80,21 +77,18 @@
             <!-- Meta Info -->
             <div class="favorite-meta">
               <span class="favorite-date md3-body-small dinor-text-gray">
-                <span class="material-symbols-outlined">schedule</span>
-                <span class="emoji-fallback">🕒</span>
+                <DinorIcon name="schedule" :size="16" />
                 Ajouté {{ formatDate(favorite.favorited_at) }}
               </span>
               
               <!-- Content Stats -->
               <div class="content-stats">
                 <span class="stat" v-if="favorite.content.likes_count > 0">
-                  <span class="material-symbols-outlined">thumb_up</span>
-                  <span class="emoji-fallback">👍</span>
+                  <DinorIcon name="thumb_up" :size="14" />
                   {{ favorite.content.likes_count }}
                 </span>
                 <span class="stat" v-if="favorite.content.comments_count > 0">
-                  <span class="material-symbols-outlined">comment</span>
-                  <span class="emoji-fallback">💬</span>
+                  <DinorIcon name="comment" :size="14" />
                   {{ favorite.content.comments_count }}
                 </span>
               </div>
@@ -120,8 +114,7 @@
       <!-- Empty State -->
       <div v-else-if="!loading" class="empty-state">
         <div class="empty-icon">
-          <span class="material-symbols-outlined">favorite_border</span>
-          <span class="emoji-fallback">🤍</span>
+          <DinorIcon name="favorite_border" :size="40" />
         </div>
         <h2 class="md3-title-medium">{{ getEmptyTitle() }}</h2>
         <p class="md3-body-medium dinor-text-gray">{{ getEmptyMessage() }}</p>
@@ -143,12 +136,14 @@ import { useAuthStore } from '@/stores/auth'
 import apiService from '@/services/api'
 import FavoriteButton from '@/components/common/FavoriteButton.vue'
 import AuthModal from '@/components/common/AuthModal.vue'
+import DinorIcon from '@/components/DinorIcon.vue'
 
 export default {
   name: 'Favorites',
   components: {
     FavoriteButton,
-    AuthModal
+    AuthModal,
+    DinorIcon
   },
   setup() {
     const router = useRouter()

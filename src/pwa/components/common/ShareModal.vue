@@ -6,7 +6,7 @@
           <div class="share-modal-header">
             <h3>Partager</h3>
             <button class="close-btn" @click="close" aria-label="Fermer">
-              <span class="material-symbols-outlined">close</span>
+              <DinorIcon name="close" :size="24" />
             </button>
           </div>
           
@@ -34,7 +34,7 @@
                 class="share-link-input"
               >
               <button @click="handleCopyLink" class="copy-btn" :class="{ copied: linkCopied }">
-                <span class="material-symbols-outlined">{{ linkCopied ? 'check' : 'content_copy' }}</span>
+                <DinorIcon :name="linkCopied ? 'check' : 'content_copy'" :size="18" />
                 {{ linkCopied ? 'Copié!' : 'Copier' }}
               </button>
             </div>
@@ -48,6 +48,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { useSocialShare } from '@/composables/useSocialShare'
+import DinorIcon from '@/components/DinorIcon.vue'
 
 const props = defineProps({
   modelValue: {
