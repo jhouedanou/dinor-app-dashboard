@@ -10,7 +10,7 @@
     ]"
     @click="handleClick"
   >
-    <span v-if="icon" class="badge-icon material-symbols-outlined">{{ icon }}</span>
+    <component v-if="icon" :is="icon" :size="getIconSize()" class="badge-icon" />
     <span class="badge-text">{{ text }}</span>
     <span v-if="count !== undefined" class="badge-count">{{ count }}</span>
   </div>
@@ -63,6 +63,14 @@ export default {
       if (this.clickable) {
         this.$emit('click', event);
       }
+    },
+    getIconSize() {
+      switch (this.size) {
+        case 'small': return 16
+        case 'medium': return 18
+        case 'large': return 20
+        default: return 18
+      }
     }
   }
 };
@@ -102,17 +110,10 @@ export default {
   gap: 0.375rem;
 }
 
-/* Icon sizes */
-.badge--small .badge-icon {
-  font-size: 1rem;
-}
-
-.badge--medium .badge-icon {
-  font-size: 1.125rem;
-}
-
-.badge--large .badge-icon {
-  font-size: 1.25rem;
+/* Icon styles */
+.badge-icon {
+  display: flex;
+  align-items: center;
 }
 
 /* Variants */

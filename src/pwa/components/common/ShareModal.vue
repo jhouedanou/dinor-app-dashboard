@@ -210,16 +210,7 @@ watch(() => props.modelValue, (newVal) => {
   color: white;
 }
 
-.share-btn span.material-symbols-outlined {
-  font-size: 24px;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: white;
-}
+
 
 .share-icon {
   font-size: 20px;

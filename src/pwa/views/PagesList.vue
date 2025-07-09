@@ -9,8 +9,7 @@
     <!-- Error State -->
     <div v-else-if="error" class="error-state">
       <div class="error-icon">
-        <span class="material-symbols-outlined">error</span>
-        <span class="emoji-fallback">⚠️</span>
+        <LucideAlertTriangle :size="48" />
       </div>
       <h2 class="md3-title-large">Erreur de chargement</h2>
       <p class="md3-body-large dinor-text-gray">{{ error }}</p>
@@ -20,8 +19,7 @@
     <!-- Empty State -->
     <div v-else-if="!loading && pages.length === 0" class="empty-state">
       <div class="empty-icon">
-        <span class="material-symbols-outlined">menu_book</span>
-        <span class="emoji-fallback">📖</span>
+        <LucideBookOpen :size="48" />
       </div>
       <h2 class="md3-title-medium">Aucune page trouvée</h2>
       <p class="md3-body-medium dinor-text-gray">
@@ -38,8 +36,7 @@
         class="page-card"
       >
         <div class="page-icon">
-          <span class="material-symbols-outlined">{{ getPageIcon(page.template) }}</span>
-          <span class="emoji-fallback">{{ getPageEmoji(page.template) }}</span>
+          <component :is="getPageIconComponent(page.template)" :size="24" />
         </div>
         
         <div class="page-content">
@@ -59,8 +56,7 @@
         </div>
         
         <div class="page-arrow">
-          <span class="material-symbols-outlined">chevron_right</span>
-          <span class="emoji-fallback">▶️</span>
+          <LucideChevronRight :size="20" />
         </div>
       </article>
     </div>
@@ -112,14 +108,14 @@ export default {
       }
     }
     
-    const getPageIcon = (template) => {
+    const getPageIconComponent = (template) => {
       const icons = {
-        'about': 'info',
-        'contact': 'mail',
-        'privacy': 'privacy_tip',
-        'terms': 'gavel',
-        'faq': 'help',
-        'default': 'article'
+        'about': 'LucideInfo',
+        'contact': 'LucideMail',
+        'privacy': 'LucideShieldCheck',
+        'terms': 'LucideGavel',
+        'faq': 'LucideHelpCircle',
+        'default': 'LucideFileText'
       }
       return icons[template] || icons.default
     }
@@ -145,18 +141,6 @@ export default {
       })
     }
     
-    const getPageEmoji = (template) => {
-      const emojis = {
-        'about': '🤔',
-        'contact': '📧',
-        'privacy': '🔒',
-        'terms': '📜',
-        'faq': '❓',
-        'default': '📄'
-      }
-      return emojis[template] || emojis.default
-    }
-    
     // Lifecycle
     onMounted(() => {
       loadPages()
@@ -168,10 +152,9 @@ export default {
       error,
       goToPage,
       retry,
-      getPageIcon,
+      getPageIconComponent,
       getTemplateLabel,
-      formatDate,
-      getPageEmoji
+      formatDate
     }
   }
 }

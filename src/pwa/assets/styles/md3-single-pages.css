@@ -288,10 +288,7 @@
     gap: 12px;
 }
 
-.section-title .material-symbols-outlined {
-    font-size: 28px;
-    color: var(--dinor-goldenrod);
-}
+
 
 /* Typography Material Design 3 */
 .md3-display-small {

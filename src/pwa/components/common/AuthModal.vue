@@ -6,7 +6,7 @@
           <div class="auth-modal-header">
             <h3>{{ isLogin ? 'Connexion' : 'Inscription' }}</h3>
             <button class="close-btn" @click="close" aria-label="Fermer">
-              <span class="material-symbols-outlined">close</span>
+              <LucideX :size="20" />
             </button>
           </div>
           

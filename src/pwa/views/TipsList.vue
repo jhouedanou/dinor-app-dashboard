@@ -281,15 +281,7 @@ export default {
   background: var(--md-sys-color-tertiary-container, #ffd8e4);
 }
 
-.error-icon .material-symbols-outlined {
-  font-size: 32px;
-  color: var(--md-sys-color-on-error-container, #5f1411);
-}
 
-.empty-icon .material-symbols-outlined {
-  font-size: 32px;
-  color: var(--md-sys-color-on-tertiary-container, #31111d);
-}
 
 .content {
   padding: 16px;
@@ -337,10 +329,7 @@ export default {
   flex-shrink: 0;
 }
 
-.tip-icon .material-symbols-outlined {
-  font-size: 24px;
-  color: #FFFFFF; /* Icône blanche sur fond coloré */
-}
+
 
 .tip-meta {
   display: flex;
@@ -363,9 +352,7 @@ export default {
   color: #2D3748; /* Couleur foncée pour contraste 3.8:1 */
 }
 
-.time .material-symbols-outlined {
-  font-size: 14px;
-}
+
 
 .tip-content {
   flex: 1;
@@ -419,9 +406,7 @@ export default {
   color: var(--md-sys-color-on-surface-variant, #49454f);
 }
 
-.stat .material-symbols-outlined {
-  font-size: 18px;
-}
+
 
 .retry-btn {
   padding: 12px 24px;
@@ -459,73 +444,7 @@ export default {
   }
 }
 
-/* Système de fallback pour les icônes - logique simplifiée */
-.emoji-fallback {
-  display: none; /* Masqué par défaut */
-}
 
-.material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-}
 
-/* UNIQUEMENT quand .force-emoji est présent sur html, afficher les emoji */
-html.force-emoji .material-symbols-outlined {
-  display: none !important;
-}
 
-html.force-emoji .emoji-fallback {
-  display: inline-block !important;
-}
-
-.error-icon .material-symbols-outlined {
-  font-size: 32px;
-  color: var(--md-sys-color-on-error-container, #5f1411);
-}
-
-.error-icon .emoji-fallback {
-  font-size: 32px;
-  color: var(--md-sys-color-on-error-container, #5f1411);
-}
-
-.empty-icon .material-symbols-outlined {
-  font-size: 32px;
-  color: var(--md-sys-color-on-tertiary-container, #31111d);
-}
-
-.empty-icon .emoji-fallback {
-  font-size: 32px;
-  color: var(--md-sys-color-on-tertiary-container, #31111d);
-}
-
-.tip-icon .material-symbols-outlined {
-  font-size: 32px;
-  color: #F59E0B;
-}
-
-.tip-icon .emoji-fallback {
-  font-size: 30px;
-  color: #F59E0B;
-}
-
-.time .material-symbols-outlined {
-  font-size: 16px;
-  color: #6B7280;
-  margin-right: 4px;
-}
-
-.time .emoji-fallback {
-  font-size: 14px;
-  color: #6B7280;
-  margin-right: 4px;
-}
-
-.stat .material-symbols-outlined {
-  font-size: 16px;
-  margin-right: 4px;
-}
-
-.stat .emoji-fallback {
-  font-size: 14px;
-  margin-right: 4px;
-}
 </style>

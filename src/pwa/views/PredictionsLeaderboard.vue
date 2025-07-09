@@ -20,7 +20,7 @@
           <div class="user-stats-header">
             <h2 class="md3-title-medium">Vos statistiques</h2>
             <div class="user-rank-badge" :class="getRankClass(userStats.current_position)">
-              <span class="material-symbols-outlined">star</span>
+              <LucideStar :size="20" />
               <span>{{ userStats.current_position ? `#${userStats.current_position}` : 'Non classé' }}</span>
             </div>
           </div>
@@ -45,8 +45,8 @@
           </div>
           
           <div v-if="userStats.rank_change !== 0" class="rank-change">
-            <span v-if="userStats.rank_change > 0" class="material-symbols-outlined rank-up">trending_up</span>
-            <span v-else class="material-symbols-outlined rank-down">trending_down</span>
+            <LucideTrendingUp v-if="userStats.rank_change > 0" :size="20" class="rank-up" />
+            <LucideTrendingDown v-else :size="20" class="rank-down" />
             <span>{{ Math.abs(userStats.rank_change) }} position{{ Math.abs(userStats.rank_change) > 1 ? 's' : '' }}</span>
           </div>
         </div>
@@ -54,7 +54,7 @@
         <!-- Auth Prompt -->
         <div v-else-if="!authStore.isAuthenticated" class="auth-prompt">
           <div class="auth-prompt-content">
-            <span class="material-symbols-outlined">account_circle</span>
+            <LucideUser :size="48" />
             <h3 class="md3-title-medium">Connectez-vous</h3>
             <p class="md3-body-medium">Connectez-vous pour voir vos statistiques et votre position dans le classement</p>
             <button @click="showAuthModal = true" class="btn-primary">
@@ -71,7 +71,7 @@
             <!-- Podium Top 3 -->
             <div v-for="(player, index) in topPlayers.slice(0, 3)" :key="player.id" class="podium-item" :class="`rank-${index + 1}`">
               <div class="podium-rank">
-                <span class="material-symbols-outlined">{{ getPodiumIcon(index + 1) }}</span>
+                <component :is="getPodiumIconComponent(index + 1)" :size="32" />
               </div>
               <div class="podium-info">
                 <div class="player-name">{{ player.user.name }}</div>
@@ -105,8 +105,8 @@
               </div>
               
               <div v-if="player.rank_change" class="rank-change-indicator">
-                <span v-if="player.rank_change > 0" class="material-symbols-outlined rank-up">keyboard_arrow_up</span>
-                <span v-else class="material-symbols-outlined rank-down">keyboard_arrow_down</span>
+                <LucideChevronUp v-if="player.rank_change > 0" :size="16" class="rank-up" />
+                <LucideChevronDown v-else :size="16" class="rank-down" />
                 <span>{{ Math.abs(player.rank_change) }}</span>
               </div>
             </div>
@@ -115,7 +115,7 @@
           <!-- Empty State -->
           <div v-else class="empty-leaderboard">
             <div class="empty-icon">
-              <span class="material-symbols-outlined">leaderboard</span>
+              <LucideBarChart3 :size="48" />
             </div>
             <h3 class="md3-title-medium">Aucun classement</h3>
             <p class="md3-body-medium dinor-text-gray">Le classement apparaîtra dès que les premiers pronostics seront faits.</p>
@@ -129,7 +129,7 @@
             :disabled="refreshing"
             class="btn-secondary refresh-btn"
           >
-            <span class="material-symbols-outlined">refresh</span>
+            <LucideRefreshCw :size="20" />
             <span v-if="refreshing">Mise à jour...</span>
             <span v-else>Actualiser le classement</span>
           </button>
@@ -235,12 +235,12 @@ export default {
       return ''
     }
 
-    const getPodiumIcon = (rank) => {
+    const getPodiumIconComponent = (rank) => {
       switch (rank) {
-        case 1: return 'emoji_events'
-        case 2: return 'military_tech'
-        case 3: return 'stars'
-        default: return 'star'
+        case 1: return 'LucideCrown'
+        case 2: return 'LucideMedal'
+        case 3: return 'LucideAward'
+        default: return 'LucideStar'
       }
     }
 
@@ -270,7 +270,7 @@ export default {
       refreshLeaderboard,
       isCurrentUser,
       getRankClass,
-      getPodiumIcon,
+      getPodiumIconComponent,
       handleAuthenticated
     }
   }

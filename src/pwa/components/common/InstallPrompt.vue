@@ -6,7 +6,7 @@
   >
     <div class="prompt-content">
       <div class="prompt-icon">
-        <span class="material-symbols-outlined">download</span>
+        <LucideDownload :size="24" />
       </div>
       <div class="prompt-text">
         <h3>Installer Dinor App</h3>

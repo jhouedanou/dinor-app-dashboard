@@ -9,8 +9,8 @@
     >
       <span class="accordion-title">{{ title }}</span>
       <span class="accordion-icon">
-        <span class="material-symbols-outlined">{{ isOpen ? 'expand_less' : 'expand_more' }}</span>
-        <span class="emoji-fallback">{{ isOpen ? '▲' : '▼' }}</span>
+        <LucideChevronUp v-if="isOpen" :size="20" />
+        <LucideChevronDown v-else :size="20" />
       </span>
     </button>
     

@@ -8,8 +8,7 @@
         @click.stop="previousImage"
         :disabled="currentIndex === 0"
       >
-        <span class="material-symbols-outlined">chevron_left</span>
-        <span class="emoji-fallback">◀</span>
+        <LucideChevronLeft :size="32" />
       </button>
       
       <button 
@@ -18,8 +17,7 @@
         @click.stop="nextImage"
         :disabled="currentIndex === images.length - 1"
       >
-        <span class="material-symbols-outlined">chevron_right</span>
-        <span class="emoji-fallback">▶</span>
+        <LucideChevronRight :size="32" />
       </button>
       
       <!-- Image -->
@@ -45,8 +43,7 @@
           {{ currentIndex + 1 }} / {{ images.length }}
         </div>
         <button class="lightbox-close" @click="closeLightbox">
-          <span class="material-symbols-outlined">close</span>
-          <span class="emoji-fallback">✕</span>
+          <LucideX :size="20" />
         </button>
       </div>
     </div>
