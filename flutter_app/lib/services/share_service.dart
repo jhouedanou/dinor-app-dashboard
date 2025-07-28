@@ -69,10 +69,10 @@ class ShareService {
       if (type != null && id != null) {
         final shareData = await _getShareData(type: type, id: id, platform: platform);
         if (shareData != null) {
-          url = shareData['url'];
-          title = shareData['title'] ?? title;
-          text = shareData['description'] ?? text;
-          imageUrl = shareData['image'];
+          url = shareData['url'] as String? ?? url;
+          title = shareData['title'] as String? ?? title;
+          text = shareData['description'] as String? ?? text;
+          imageUrl = shareData['image'] as String? ?? imageUrl;
         }
       }
       
@@ -117,9 +117,9 @@ class ShareService {
       if (type != null && id != null) {
         final shareData = await _getShareData(type: type, id: id, platform: 'whatsapp');
         if (shareData != null) {
-          url = shareData['url'];
-          title = shareData['title'] ?? title;
-          text = shareData['description'] ?? text;
+          url = shareData['url'] as String? ?? url;
+          title = shareData['title'] as String? ?? title;
+          text = shareData['description'] as String? ?? text;
         }
       }
       
@@ -164,9 +164,9 @@ class ShareService {
       if (type != null && id != null) {
         final shareData = await _getShareData(type: type, id: id, platform: 'facebook');
         if (shareData != null) {
-          url = shareData['url'];
-          title = shareData['title'] ?? title;
-          text = shareData['description'] ?? text;
+          url = shareData['url'] as String? ?? url;
+          title = shareData['title'] as String? ?? title;
+          text = shareData['description'] as String? ?? text;
         }
       }
       
@@ -211,9 +211,9 @@ class ShareService {
       if (type != null && id != null) {
         final shareData = await _getShareData(type: type, id: id, platform: 'twitter');
         if (shareData != null) {
-          url = shareData['url'];
-          title = shareData['title'] ?? title;
-          text = shareData['description'] ?? text;
+          url = shareData['url'] as String? ?? url;
+          title = shareData['title'] as String? ?? title;
+          text = shareData['description'] as String? ?? text;
         }
       }
       
@@ -258,9 +258,9 @@ class ShareService {
       if (type != null && id != null) {
         final shareData = await _getShareData(type: type, id: id, platform: 'email');
         if (shareData != null) {
-          url = shareData['url'];
-          title = shareData['title'] ?? title;
-          text = shareData['description'] ?? text;
+          url = shareData['url'] as String? ?? url;
+          title = shareData['title'] as String? ?? title;
+          text = shareData['description'] as String? ?? text;
         }
       }
       
@@ -302,9 +302,9 @@ class ShareService {
       if (type != null && id != null) {
         final shareData = await _getShareData(type: type, id: id, platform: 'sms');
         if (shareData != null) {
-          url = shareData['url'];
-          title = shareData['title'] ?? title;
-          text = shareData['description'] ?? text;
+          url = shareData['url'] as String? ?? url;
+          title = shareData['title'] as String? ?? title;
+          text = shareData['description'] as String? ?? text;
         }
       }
       
@@ -362,10 +362,10 @@ class ShareService {
       if (id != null) {
         final shareData = await _getShareData(type: type!, id: id);
         if (shareData != null) {
-          url = shareData['url'];
-          title = shareData['title'] ?? title;
-          description = shareData['description'] ?? description;
-          imageUrl = shareData['image'];
+          url = shareData['url'] as String? ?? url;
+          title = shareData['title'] as String? ?? title;
+          description = shareData['description'] as String? ?? description;
+          imageUrl = shareData['image'] as String? ?? imageUrl;
         }
       }
       
@@ -415,10 +415,10 @@ class ShareService {
       if (id != null) {
         final shareData = await _getShareData(type: type!, id: id);
         if (shareData != null) {
-          url = shareData['url'];
-          title = shareData['title'] ?? title;
-          content = shareData['description'] ?? content;
-          imageUrl = shareData['image'];
+          url = shareData['url'] as String? ?? url;
+          title = shareData['title'] as String? ?? title;
+          content = shareData['description'] as String? ?? content;
+          imageUrl = shareData['image'] as String? ?? imageUrl;
         }
       }
       
@@ -456,10 +456,10 @@ class ShareService {
       if (id != null) {
         final shareData = await _getShareData(type: type!, id: id);
         if (shareData != null) {
-          url = shareData['url'];
-          title = shareData['title'] ?? title;
-          description = shareData['description'] ?? description;
-          imageUrl = shareData['image'];
+          url = shareData['url'] as String? ?? url;
+          title = shareData['title'] as String? ?? title;
+          description = shareData['description'] as String? ?? description;
+          imageUrl = shareData['image'] as String? ?? imageUrl;
         }
       }
       
@@ -510,10 +510,10 @@ class ShareService {
       if (id != null) {
         final shareData = await _getShareData(type: type!, id: id);
         if (shareData != null) {
-          url = shareData['url'];
-          title = shareData['title'] ?? title;
-          description = shareData['description'] ?? description;
-          imageUrl = shareData['image'];
+          url = shareData['url'] as String? ?? url;
+          title = shareData['title'] as String? ?? title;
+          description = shareData['description'] as String? ?? description;
+          imageUrl = shareData['image'] as String? ?? imageUrl;
         }
       }
       

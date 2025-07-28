@@ -27,6 +27,18 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+// Routes pour les partages
+Route::prefix('v1/shares')->group(function () {
+    // Récupérer l'URL de partage
+    Route::get('/url', [ShareController::class, 'getShareUrl']);
+    
+    // Récupérer les métadonnées de partage
+    Route::get('/metadata', [ShareController::class, 'getShareMetadata']);
+    
+    // Tracker un partage
+    Route::post('/track', [ShareController::class, 'trackShare']);
+});
+
 // Route de test avec vrais favoris (sans authentification)
 Route::get('/test-favorites', function() {
     try {

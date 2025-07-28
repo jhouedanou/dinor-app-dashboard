@@ -217,7 +217,7 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
       body: Column(
         children: [
           // En-tête avec logo
-          const AppHeader(),
+          const AppHeader(title: 'Dinor'),
           // Contenu principal avec pull-to-refresh
           Expanded(
             child: RefreshIndicator(

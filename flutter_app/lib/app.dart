@@ -25,7 +25,7 @@ import 'services/modal_service.dart';
 
 // Components (équivalent des imports Vue)
 import 'components/common/loading_screen.dart';
-import 'components/common/app_header.dart';
+import 'components/app_header.dart';
 import 'components/navigation/simple_bottom_navigation.dart';
 import 'components/common/install_prompt.dart';
 
