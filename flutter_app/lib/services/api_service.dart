@@ -15,402 +15,289 @@
  * - Auth : login(), register(), logout(), getProfile()
  */
 
-import 'dart:convert';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/foundation.dart';
 
 class ApiService {
-  static ApiService? _instance;
-  static ApiService get instance => _instance ??= ApiService._();
+  static const String baseUrl = 'https://dinor.app/api'; // Même API que React Native
+  static const Duration timeout = Duration(seconds: 30);
   
-  ApiService._();
-  
-  late String _baseURL;
-  String? _authToken;
-  
-  // Configuration identique à api.js Vue
-  static Future<void> initialize() async {
-    final instance = ApiService.instance;
-    instance._baseURL = instance._getBaseURL();
-    await instance._loadAuthToken();
-    
-    print('📡 [API] Service initialisé avec baseURL: ${instance._baseURL}');
-  }
-  
-  String _getBaseURL() {
-    // Configuration identique à Vue/React Native
-    if (kDebugMode) {
-      return 'http://localhost:8000/api/v1'; // Dev avec proxy
+  final Map<String, dynamic> _cache = {};
+  final Map<String, DateTime> _cacheTimestamps = {};
+  static const Duration _cacheDuration = Duration(minutes: 5);
+
+  // Headers par défaut
+  Map<String, String> get _defaultHeaders => {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'User-Agent': 'DinorFlutter/1.0',
+  };
+
+  // Obtenir le token d'authentification
+  Future<String?> _getAuthToken() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString('auth_token');
+    } catch (error) {
+      print('❌ [ApiService] Erreur récupération token:', error);
+      return null;
     }
-    return 'https://dinor.app/api/v1'; // Production
   }
-  
-  Future<void> _loadAuthToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    _authToken = prefs.getString('auth_token');
-    print('🔐 [API] Token d\'authentification: ${_authToken != null ? '***existe***' : 'null'}');
-  }
-  
-  Future<void> _saveAuthToken(String? token) async {
-    final prefs = await SharedPreferences.getInstance();
+
+  // Headers avec authentification
+  Future<Map<String, String>> _getHeaders() async {
+    final headers = Map<String, String>.from(_defaultHeaders);
+    final token = await _getAuthToken();
+    
     if (token != null) {
-      await prefs.setString('auth_token', token);
-      _authToken = token;
-    } else {
-      await prefs.remove('auth_token');
-      _authToken = null;
-    }
-  }
-  
-  Map<String, String> _getHeaders() {
-    final headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'X-Requested-With': 'XMLHttpRequest', // Identique Laravel Vue
-    };
-    
-    // Ajouter token Bearer si disponible (identique à Vue)
-    if (_authToken != null) {
-      headers['Authorization'] = 'Bearer $_authToken';
+      headers['Authorization'] = 'Bearer $token';
     }
     
     return headers;
   }
-  
-  Future<Map<String, dynamic>> _request(
+
+  // Méthode générique pour les requêtes
+  Future<Map<String, dynamic>> request(
     String endpoint, {
     String method = 'GET',
     Map<String, dynamic>? body,
-    Map<String, String>? additionalHeaders,
+    Map<String, dynamic>? params,
+    bool forceRefresh = false,
   }) async {
-    final url = Uri.parse('$_baseURL$endpoint');
-    final headers = {..._getHeaders(), ...?additionalHeaders};
-    
-    print('📡 [API] Requête vers: $endpoint (${method.toUpperCase()})');
-    print('🔐 [API] Headers: ${headers.keys.toList()}');
-    
     try {
-      late http.Response response;
+      final url = Uri.parse('$baseUrl$endpoint').replace(queryParameters: params);
+      final headers = await _getHeaders();
+      
+      // Vérifier le cache pour les requêtes GET
+      if (method == 'GET' && !forceRefresh) {
+        final cachedData = _getCachedData(endpoint, params);
+        if (cachedData != null) {
+          print('📦 [ApiService] Données récupérées du cache: $endpoint');
+          return cachedData;
+        }
+      }
+
+      print('🌐 [ApiService] $method $url');
+
+      http.Response response;
       
       switch (method.toUpperCase()) {
         case 'GET':
-          response = await http.get(url, headers: headers);
+          response = await http.get(url, headers: headers).timeout(timeout);
           break;
         case 'POST':
           response = await http.post(
             url,
             headers: headers,
-            body: body != null ? jsonEncode(body) : null,
-          );
+            body: body != null ? json.encode(body) : null,
+          ).timeout(timeout);
           break;
         case 'PUT':
           response = await http.put(
             url,
             headers: headers,
-            body: body != null ? jsonEncode(body) : null,
-          );
+            body: body != null ? json.encode(body) : null,
+          ).timeout(timeout);
           break;
         case 'DELETE':
-          response = await http.delete(url, headers: headers);
+          response = await http.delete(url, headers: headers).timeout(timeout);
           break;
         default:
           throw Exception('Méthode HTTP non supportée: $method');
       }
-      
-      print('📡 [API] Réponse reçue: ${response.statusCode}');
-      
-      // Gestion d'erreurs identique à Vue
-      if (!_isSuccessStatusCode(response.statusCode)) {
-        if (response.statusCode == 401) {
-          print('🔒 [API] Erreur 401 - Token invalide ou manquant');
-          await _saveAuthToken(null); // Clear invalid token
+
+      print('📡 [ApiService] Réponse ${response.statusCode}: $endpoint');
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = json.decode(response.body);
+        
+        // Mettre en cache les réponses GET réussies
+        if (method == 'GET') {
+          _setCachedData(endpoint, params, data);
         }
         
-        throw ApiException(
-          statusCode: response.statusCode,
-          message: 'HTTP error! status: ${response.statusCode}',
-        );
-      }
-      
-      // Parse JSON response (structure identique Vue/Laravel)
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      print('✅ [API] Réponse JSON: success=${data['success']}, endpoint=$endpoint');
-      
-      return data;
-      
-    } catch (e) {
-      print('❌ [API] Erreur de requête: $endpoint - ${e.toString()}');
-      rethrow;
-    }
-  }
-  
-  bool _isSuccessStatusCode(int statusCode) {
-    return statusCode >= 200 && statusCode < 300;
-  }
-  
-  // RECIPES - Endpoints identiques à Vue/React Native
-  Future<Map<String, dynamic>> getRecipes({Map<String, dynamic>? params}) async {
-    String endpoint = '/recipes';
-    if (params != null && params.isNotEmpty) {
-      final queryString = Uri(queryParameters: params.map((k, v) => MapEntry(k, v.toString()))).query;
-      endpoint += '?$queryString';
-    }
-    return _request(endpoint);
-  }
-  
-  Future<Map<String, dynamic>> getRecipe(String id) async {
-    return _request('/recipes/$id');
-  }
-  
-  Future<Map<String, dynamic>> getRecipesFresh({Map<String, dynamic>? params}) async {
-    // Force fresh data (équivalent requestFresh Vue)
-    return getRecipes(params: {...?params, '_t': DateTime.now().millisecondsSinceEpoch});
-  }
-  
-  Future<Map<String, dynamic>> getRecipeFresh(String id) async {
-    return _request('/recipes/$id?_t=${DateTime.now().millisecondsSinceEpoch}');
-  }
-  
-  // TIPS - Endpoints identiques
-  Future<Map<String, dynamic>> getTips({Map<String, dynamic>? params}) async {
-    String endpoint = '/tips';
-    if (params != null && params.isNotEmpty) {
-      final queryString = Uri(queryParameters: params.map((k, v) => MapEntry(k, v.toString()))).query;
-      endpoint += '?$queryString';
-    }
-    return _request(endpoint);
-  }
-  
-  Future<Map<String, dynamic>> getTip(String id) async {
-    return _request('/tips/$id');
-  }
-  
-  Future<Map<String, dynamic>> getTipsFresh({Map<String, dynamic>? params}) async {
-    return getTips(params: {...?params, '_t': DateTime.now().millisecondsSinceEpoch});
-  }
-  
-  Future<Map<String, dynamic>> getTipFresh(String id) async {
-    return _request('/tips/$id?_t=${DateTime.now().millisecondsSinceEpoch}');
-  }
-  
-  // EVENTS - Endpoints identiques
-  Future<Map<String, dynamic>> getEvents({Map<String, dynamic>? params}) async {
-    String endpoint = '/events';
-    if (params != null && params.isNotEmpty) {
-      final queryString = Uri(queryParameters: params.map((k, v) => MapEntry(k, v.toString()))).query;
-      endpoint += '?$queryString';
-    }
-    return _request(endpoint);
-  }
-  
-  Future<Map<String, dynamic>> getEvent(String id) async {
-    return _request('/events/$id');
-  }
-  
-  Future<Map<String, dynamic>> getEventsFresh({Map<String, dynamic>? params}) async {
-    return getEvents(params: {...?params, '_t': DateTime.now().millisecondsSinceEpoch});
-  }
-  
-  Future<Map<String, dynamic>> getEventFresh(String id) async {
-    return _request('/events/$id?_t=${DateTime.now().millisecondsSinceEpoch}');
-  }
-  
-  // DINOR TV - Endpoints identiques
-  Future<Map<String, dynamic>> getVideos({Map<String, dynamic>? params}) async {
-    String endpoint = '/dinor-tv';
-    if (params != null && params.isNotEmpty) {
-      final queryString = Uri(queryParameters: params.map((k, v) => MapEntry(k, v.toString()))).query;
-      endpoint += '?$queryString';
-    }
-    return _request(endpoint);
-  }
-  
-  Future<Map<String, dynamic>> getVideo(String id) async {
-    return _request('/dinor-tv/$id');
-  }
-  
-  Future<Map<String, dynamic>> getVideosFresh({Map<String, dynamic>? params}) async {
-    return getVideos(params: {...?params, '_t': DateTime.now().millisecondsSinceEpoch});
-  }
-  
-  Future<Map<String, dynamic>> getVideoFresh(String id) async {
-    return _request('/dinor-tv/$id?_t=${DateTime.now().millisecondsSinceEpoch}');
-  }
-  
-  // INTERACTIONS - Identiques à Vue
-  Future<Map<String, dynamic>> toggleLike(String type, String id) async {
-    final result = await _request(
-      '/$type/$id/like',
-      method: 'POST',
-    );
-    print('🔄 [API] Toggle like: $type $id');
-    return result;
-  }
-  
-  Future<Map<String, dynamic>> getComments(String type, String id) async {
-    return _request('/$type/$id/comments');
-  }
-  
-  Future<Map<String, dynamic>> addComment(String type, String id, String content) async {
-    return _request(
-      '/$type/$id/comments',
-      method: 'POST',
-      body: {'content': content},
-    );
-  }
-  
-  // CATEGORIES - Identiques à Vue
-  Future<Map<String, dynamic>> getCategories() async {
-    return _request('/categories');
-  }
-  
-  Future<Map<String, dynamic>> getEventCategories() async {
-    return _request('/categories/events');
-  }
-  
-  Future<Map<String, dynamic>> getRecipeCategories() async {
-    return _request('/categories/recipes');
-  }
-  
-  // SEARCH - Identique à Vue
-  Future<Map<String, dynamic>> search(String query, {String? type}) async {
-    final params = {'q': query};
-    if (type != null) params['type'] = type;
-    
-    final queryString = Uri(queryParameters: params).query;
-    return _request('/search?$queryString');
-  }
-  
-  // FAVORITES - Identiques à Vue
-  Future<Map<String, dynamic>> getFavorites({Map<String, dynamic>? params}) async {
-    String endpoint = '/favorites';
-    if (params != null && params.isNotEmpty) {
-      final queryString = Uri(queryParameters: params.map((k, v) => MapEntry(k, v.toString()))).query;
-      endpoint += '?$queryString';
-    }
-    return _request(endpoint);
-  }
-  
-  Future<Map<String, dynamic>> toggleFavorite(String type, String id) async {
-    return _request(
-      '/favorites/toggle',
-      method: 'POST',
-      body: {
-        'type': type,
-        'id': id,
-      },
-    );
-  }
-  
-  Future<Map<String, dynamic>> checkFavorite(String type, String id) async {
-    return _request('/favorites/check?type=$type&id=$id');
-  }
-  
-  Future<Map<String, dynamic>> removeFavorite(String favoriteId) async {
-    return _request('/favorites/$favoriteId', method: 'DELETE');
-  }
-  
-  // AUTHENTICATION - Système identique Vue/Laravel
-  Future<Map<String, dynamic>> register(Map<String, dynamic> userData) async {
-    print('🔐 [Auth] Tentative d\'inscription avec: ${userData.keys.toList()}');
-    
-    final data = await _request(
-      '/auth/register',
-      method: 'POST',
-      body: userData,
-    );
-    
-    if (data['success'] == true && data['data']?['token'] != null) {
-      await _saveAuthToken(data['data']['token']);
-      print('✅ [Auth] Inscription réussie');
-    }
-    
-    return data;
-  }
-  
-  Future<Map<String, dynamic>> login(Map<String, dynamic> credentials) async {
-    print('🔐 [Auth] Tentative de connexion pour: ${credentials['email']}');
-    
-    final data = await _request(
-      '/auth/login',
-      method: 'POST',
-      body: credentials,
-    );
-    
-    if (data['success'] == true && data['data']?['token'] != null) {
-      await _saveAuthToken(data['data']['token']);
-      print('✅ [Auth] Connexion réussie');
-    }
-    
-    return data;
-  }
-  
-  Future<Map<String, dynamic>> logout() async {
-    try {
-      if (_authToken != null) {
-        await _request('/auth/logout', method: 'POST');
-      }
-    } catch (e) {
-      print('⚠️ [Auth] Erreur lors de la déconnexion: $e');
-    } finally {
-      await _saveAuthToken(null);
-      print('👋 [Auth] Déconnexion terminée');
-    }
-    
-    return {'success': true};
-  }
-  
-  Future<Map<String, dynamic>> getProfile() async {
-    if (_authToken == null) {
-      throw ApiException(statusCode: 401, message: 'Non authentifié');
-    }
-    
-    try {
-      final data = await _request('/auth/profile');
-      if (data['success'] == true) {
         return data;
+      } else {
+        throw _handleErrorResponse(response);
       }
-      throw ApiException(statusCode: 400, message: data['message'] ?? 'Erreur inconnue');
-    } catch (e) {
-      if (e is ApiException && e.statusCode == 401) {
-        await _saveAuthToken(null); // Clear invalid token
-      }
+    } catch (error) {
+      print('❌ [ApiService] Erreur requête $method $endpoint:', error);
       rethrow;
     }
   }
-  
-  // PAGES - Pour bannières et contenu statique
-  Future<Map<String, dynamic>> getPages({Map<String, dynamic>? params}) async {
-    String endpoint = '/pages';
-    if (params != null && params.isNotEmpty) {
-      final queryString = Uri(queryParameters: params.map((k, v) => MapEntry(k, v.toString()))).query;
-      endpoint += '?$queryString';
+
+  // Méthodes spécifiques
+  Future<Map<String, dynamic>> get(String endpoint, {Map<String, dynamic>? params, bool forceRefresh = false}) {
+    return request(endpoint, params: params, forceRefresh: forceRefresh);
+  }
+
+  Future<Map<String, dynamic>> post(String endpoint, Map<String, dynamic> body) {
+    return request(endpoint, method: 'POST', body: body);
+  }
+
+  Future<Map<String, dynamic>> put(String endpoint, Map<String, dynamic> body) {
+    return request(endpoint, method: 'PUT', body: body);
+  }
+
+  Future<Map<String, dynamic>> delete(String endpoint) {
+    return request(endpoint, method: 'DELETE');
+  }
+
+  // Gestion des erreurs
+  Exception _handleErrorResponse(http.Response response) {
+    try {
+      final errorData = json.decode(response.body);
+      final message = errorData['message'] ?? 'Erreur serveur';
+      
+      switch (response.statusCode) {
+        case 401:
+          return Exception('Non authentifié: $message');
+        case 403:
+          return Exception('Accès refusé: $message');
+        case 404:
+          return Exception('Ressource non trouvée: $message');
+        case 422:
+          return Exception('Données invalides: $message');
+        case 500:
+          return Exception('Erreur serveur: $message');
+        default:
+          return Exception('Erreur ${response.statusCode}: $message');
+      }
+    } catch (e) {
+      return Exception('Erreur ${response.statusCode}: ${response.body}');
     }
-    return _request(endpoint);
   }
-  
-  Future<Map<String, dynamic>> getPage(String id) async {
-    return _request('/pages/$id');
+
+  // Gestion du cache
+  String _getCacheKey(String endpoint, Map<String, dynamic>? params) {
+    final paramsString = params != null ? json.encode(params) : '';
+    return '$endpoint$paramsString';
   }
-  
-  // UTILITY METHODS
-  Future<void> clearCache() async {
-    print('🗑️ [API] Nettoyage du cache (équivalent Vue clearCache)');
-    // En Flutter, pas de cache côté service (communication directe comme Vue)
-    // On peut invalider les stores Provider/Riverpod si nécessaire
+
+  Map<String, dynamic>? _getCachedData(String endpoint, Map<String, dynamic>? params) {
+    final key = _getCacheKey(endpoint, params);
+    final timestamp = _cacheTimestamps[key];
+    
+    if (timestamp != null && DateTime.now().difference(timestamp) < _cacheDuration) {
+      return _cache[key];
+    }
+    
+    return null;
   }
-  
-  bool get isAuthenticated => _authToken != null;
-  String? get authToken => _authToken;
+
+  void _setCachedData(String endpoint, Map<String, dynamic>? params, Map<String, dynamic> data) {
+    final key = _getCacheKey(endpoint, params);
+    _cache[key] = data;
+    _cacheTimestamps[key] = DateTime.now();
+  }
+
+  void clearCache() {
+    _cache.clear();
+    _cacheTimestamps.clear();
+    print('🧹 [ApiService] Cache vidé');
+  }
+
+  // Méthodes spécifiques pour les recettes
+  Future<Map<String, dynamic>> getRecipeCategories() {
+    return get('/recipe-categories');
+  }
+
+  Future<Map<String, dynamic>> getRecipes({Map<String, dynamic>? params}) {
+    return get('/recipes', params: params);
+  }
+
+  Future<Map<String, dynamic>> getRecipe(String id) {
+    return get('/recipes/$id');
+  }
+
+  // Méthodes spécifiques pour les vidéos DinorTV
+  Future<Map<String, dynamic>> getVideos({Map<String, dynamic>? params, bool forceRefresh = false}) {
+    return get('/dinor-tv', params: params, forceRefresh: forceRefresh);
+  }
+
+  Future<Map<String, dynamic>> getVideo(String id) {
+    return get('/dinor-tv/$id');
+  }
+
+  // Méthodes spécifiques pour les likes
+  Future<Map<String, dynamic>> toggleLike(String type, String id) {
+    return post('/likes/toggle', {
+      'likeable_type': type,
+      'likeable_id': id,
+    });
+  }
+
+  Future<Map<String, dynamic>> checkLike(String type, String id) {
+    return get('/likes/check', params: {
+      'type': type,
+      'id': id,
+    });
+  }
+
+  // Méthodes spécifiques pour les commentaires
+  Future<Map<String, dynamic>> getComments(String type, String id) {
+    return get('/comments', params: {
+      'commentable_type': type,
+      'commentable_id': id,
+    });
+  }
+
+  Future<Map<String, dynamic>> addComment(String type, String id, String content) {
+    return post('/comments', {
+      'commentable_type': type,
+      'commentable_id': id,
+      'content': content,
+    });
+  }
+
+  Future<Map<String, dynamic>> deleteComment(String commentId) {
+    return delete('/comments/$commentId');
+  }
+
+  // Méthodes spécifiques pour les favoris
+  Future<Map<String, dynamic>> toggleFavorite(String type, String id) {
+    return post('/favorites/toggle', {
+      'favoritable_type': type,
+      'favoritable_id': id,
+    });
+  }
+
+  Future<Map<String, dynamic>> checkFavorite(String type, String id) {
+    return get('/favorites/check', params: {
+      'type': type,
+      'id': id,
+    });
+  }
+
+  // Méthodes d'authentification
+  Future<Map<String, dynamic>> login(String email, String password) {
+    return post('/auth/login', {
+      'email': email,
+      'password': password,
+    });
+  }
+
+  Future<Map<String, dynamic>> register(String name, String email, String password, String passwordConfirmation) {
+    return post('/auth/register', {
+      'name': name,
+      'email': email,
+      'password': password,
+      'password_confirmation': passwordConfirmation,
+    });
+  }
+
+  Future<Map<String, dynamic>> logout() {
+    return post('/auth/logout');
+  }
+
+  Future<Map<String, dynamic>> getCurrentUser() {
+    return get('/auth/me');
+  }
 }
 
-class ApiException implements Exception {
-  final int statusCode;
-  final String message;
-  
-  ApiException({required this.statusCode, required this.message});
-  
-  @override
-  String toString() => 'ApiException($statusCode): $message';
-}
+// Provider pour Riverpod
+final apiServiceProvider = Provider<ApiService>((ref) {
+  return ApiService();
+});

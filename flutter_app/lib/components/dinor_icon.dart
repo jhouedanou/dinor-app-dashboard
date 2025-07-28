@@ -15,252 +15,104 @@ class DinorIcon extends StatelessWidget {
   final String name;
   final double size;
   final Color? color;
-  final bool filled;
+  final String? className;
 
   const DinorIcon({
     Key? key,
     required this.name,
     this.size = 24,
     this.color,
-    this.filled = false,
+    this.className,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final iconData = _getIconData(name);
-    final iconColor = color ?? Theme.of(context).iconTheme.color;
-
     return Icon(
-      iconData,
+      _getIconData(),
       size: size,
-      color: iconColor,
+      color: color ?? const Color(0xFF4A5568),
     );
   }
 
-  // MAPPING IDENTIQUE aux icônes Lucide Vue (80+ icônes)
-  IconData _getIconData(String name) {
+  IconData _getIconData() {
     switch (name) {
       // Navigation
       case 'home':
         return LucideIcons.home;
-      case 'chef-hat':
-        return LucideIcons.chefHat;
-      case 'lightbulb':
-        return LucideIcons.lightbulb;
-      case 'calendar':
-        return LucideIcons.calendar;
-      case 'play-circle':
-        return LucideIcons.playCircle;
-      case 'user':
-        return LucideIcons.user;
-      
-      // Actions
-      case 'heart':
-        return filled ? Icons.favorite : Icons.favorite_border;
-      case 'share':
-      case 'share2':
-        return LucideIcons.share2;
-      case 'bookmark':
-        return filled ? LucideIcons.bookmarkCheck : LucideIcons.bookmark;
       case 'search':
         return LucideIcons.search;
-      case 'filter':
-        return LucideIcons.filter;
-      case 'refresh':
-        return LucideIcons.refreshCw;
-      
-      // Interface
+      case 'user':
+        return LucideIcons.user;
+      case 'settings':
+        return LucideIcons.settings;
       case 'menu':
         return LucideIcons.menu;
+      case 'close':
       case 'x':
         return LucideIcons.x;
-      case 'chevron-left':
-        return LucideIcons.chevronLeft;
-      case 'chevron-right':
-        return LucideIcons.chevronRight;
-      case 'chevron-up':
-        return LucideIcons.chevronUp;
-      case 'chevron-down':
-        return LucideIcons.chevronDown;
-      case 'expand_more':
-        return LucideIcons.chevronDown;
-      case 'expand_less':
-        return LucideIcons.chevronUp;
-      case 'arrow-left':
+      case 'arrow_back':
         return LucideIcons.arrowLeft;
-      
-      // Contenu
-      case 'clock':
-      case 'schedule':
-        return LucideIcons.clock;
-      case 'calendar_today':
-        return LucideIcons.calendar;
-      case 'group':
-        return LucideIcons.users;
-      case 'comment':
-        return LucideIcons.messageCircle;
-      case 'eye':
-      case 'visibility':
-        return LucideIcons.eye;
-      case 'star':
-        return filled ? Icons.star : Icons.star_border;
-      
-      // Média
-      case 'play':
-        return LucideIcons.play;
-      case 'pause':
-        return LucideIcons.pause;
-      case 'volume2':
-        return LucideIcons.volume2;
-      case 'volume-x':
-        return LucideIcons.volumeX;
-      case 'image':
-        return LucideIcons.image;
-      case 'video':
-        return LucideIcons.video;
-      case 'camera':
-        return LucideIcons.camera;
-      
-      // Cuisine
+      case 'arrow_forward':
+        return LucideIcons.arrowRight;
+      case 'chevron_up':
+        return LucideIcons.chevronUp;
+      case 'chevron_down':
+        return LucideIcons.chevronDown;
+      case 'chevron_left':
+        return LucideIcons.chevronLeft;
+      case 'chevron_right':
+        return LucideIcons.chevronRight;
+
+      // Content
       case 'restaurant':
       case 'utensils':
         return LucideIcons.utensils;
-      case 'kitchen':
-        return LucideIcons.chefHat;
-      case 'coffee':
-        return LucideIcons.coffee;
-      
-      // États
-      case 'check':
-        return LucideIcons.check;
-      case 'check-circle':
-        return LucideIcons.checkCircle;
-      case 'x-circle':
-        return LucideIcons.xCircle;
-      case 'alert-circle':
-        return LucideIcons.alertCircle;
-      case 'alert-triangle':
-        return LucideIcons.alertTriangle;
-      case 'error':
-        return LucideIcons.alertCircle;
-      case 'info':
-        return LucideIcons.info;
-      
-      // Outils
-      case 'settings':
-        return LucideIcons.settings;
-      case 'edit':
-        return LucideIcons.edit;
-      case 'delete':
-      case 'trash2':
-        return LucideIcons.trash2;
-      case 'download':
-        return LucideIcons.download;
-      case 'upload':
-        return LucideIcons.upload;
-      case 'copy':
-        return LucideIcons.copy;
-      case 'external-link':
-        return LucideIcons.externalLink;
-      
-      // Auth
-      case 'login':
-        return LucideIcons.logIn;
-      case 'logout':
-        return LucideIcons.logOut;
-      case 'user-plus':
-        return LucideIcons.userPlus;
-      case 'lock':
-        return LucideIcons.lock;
-      case 'unlock':
-        return LucideIcons.unlock;
-      case 'key':
-        return LucideIcons.key;
-      case 'shield':
-        return LucideIcons.shield;
-      
-      // Communication
-      case 'mail':
-        return LucideIcons.mail;
-      case 'phone':
-        return LucideIcons.phone;
-      case 'message-circle':
+      case 'lightbulb':
+      case 'bulb':
+        return LucideIcons.lightbulb;
+      case 'calendar':
+      case 'event':
+        return LucideIcons.calendar;
+      case 'video':
+      case 'play':
+        return LucideIcons.play;
+      case 'image':
+      case 'photo':
+        return LucideIcons.image;
+      case 'file':
+        return LucideIcons.file;
+      case 'folder':
+        return LucideIcons.folder;
+
+      // Actions
+      case 'like':
+      case 'heart':
+      case 'favorite':
+        return LucideIcons.heart;
+      case 'share':
+        return LucideIcons.share2;
+      case 'comment':
+      case 'message':
         return LucideIcons.messageCircle;
-      case 'bell':
-        return LucideIcons.bell;
-      case 'bell-off':
-        return LucideIcons.bellOff;
-      
-      // Tech
-      case 'wifi':
-        return LucideIcons.wifi;
-      case 'wifi-off':
-        return LucideIcons.wifiOff;
-      case 'smartphone':
-        return LucideIcons.smartphone;
-      case 'tablet':
-        return LucideIcons.tablet;
-      case 'monitor':
-        return LucideIcons.monitor;
-      case 'globe':
-        return LucideIcons.globe;
-      
-      // Business
-      case 'award':
-        return LucideIcons.award;
-      case 'trophy':
-        return LucideIcons.trophy;
-      case 'target':
-        return LucideIcons.target;
-      case 'trending-up':
-        return LucideIcons.trendingUp;
-      case 'trending-down':
-        return LucideIcons.trendingDown;
-      case 'bar-chart3':
-        return LucideIcons.barChart3;
-      case 'pie-chart':
-        return LucideIcons.pieChart;
-      case 'activity':
-        return LucideIcons.activity;
-      
-      // Documents
-      case 'file-text':
-        return LucideIcons.fileText;
-      case 'book-open':
-        return LucideIcons.bookOpen;
-      case 'bookmark-check':
-        return LucideIcons.bookmarkCheck;
-      
-      // Layout
-      case 'grid':
-        return LucideIcons.grid3x3;
-      case 'list':
-        return LucideIcons.list;
-      case 'more-vertical':
-        return LucideIcons.moreVertical;
+      case 'edit':
+      case 'pencil':
+        return LucideIcons.pencil;
+      case 'delete':
+      case 'trash':
+        return LucideIcons.trash2;
+      case 'add':
       case 'plus':
         return LucideIcons.plus;
+      case 'remove':
       case 'minus':
         return LucideIcons.minus;
-      
-      // Time
-      case 'timer':
-        return LucideIcons.timer;
-      case 'hourglass':
-        return LucideIcons.hourglass;
-      case 'alarm-clock':
-        return LucideIcons.alarmClock;
-      case 'calendar-days':
-        return LucideIcons.calendar;
-      case 'calendar-check':
-        return LucideIcons.calendarCheck;
-      case 'calendar-x':
-        return LucideIcons.calendarX;
-      case 'calendar-clock':
-        return LucideIcons.calendarClock;
-      case 'calendar-plus':
-        return LucideIcons.calendarPlus;
-      
+      case 'check':
+      case 'tick':
+        return LucideIcons.check;
+      case 'refresh':
+      case 'reload':
+        return LucideIcons.refreshCw;
+
       // Social
       case 'facebook':
         return LucideIcons.facebook;
@@ -270,23 +122,75 @@ class DinorIcon extends StatelessWidget {
         return LucideIcons.instagram;
       case 'youtube':
         return LucideIcons.youtube;
-      case 'linkedin':
-        return LucideIcons.linkedin;
-      
-      // Special
-      case 'zap':
-        return LucideIcons.zap;
-      case 'crown':
-        return LucideIcons.crown;
-      case 'medal':
-        return LucideIcons.medal;
-      case 'gavel':
-        return LucideIcons.gavel;
-      
-      // Fallback pour icônes non trouvées
+      case 'mail':
+      case 'email':
+        return LucideIcons.mail;
+      case 'phone':
+        return LucideIcons.phone;
+      case 'message':
+        return LucideIcons.messageCircle;
+
+      // UI Elements
+      case 'star':
+        return LucideIcons.star;
+      case 'clock':
+      case 'time':
+      case 'schedule':
+        return LucideIcons.clock;
+      case 'users':
+      case 'group':
+      case 'people':
+        return LucideIcons.users;
+      case 'tag':
+      case 'label':
+        return LucideIcons.tag;
+      case 'location':
+      case 'map-pin':
+        return LucideIcons.mapPin;
+      case 'link':
+        return LucideIcons.link;
+      case 'copy':
+        return LucideIcons.copy;
+      case 'download':
+        return LucideIcons.download;
+      case 'upload':
+        return LucideIcons.upload;
+      case 'eye':
+        return LucideIcons.eye;
+      case 'eye-off':
+        return LucideIcons.eyeOff;
+      case 'lock':
+        return LucideIcons.lock;
+      case 'unlock':
+        return LucideIcons.unlock;
+
+      // Status
+      case 'success':
+      case 'check-circle':
+        return LucideIcons.checkCircle;
+      case 'error':
+      case 'alert-circle':
+        return LucideIcons.alertCircle;
+      case 'warning':
+      case 'alert-triangle':
+        return LucideIcons.alertTriangle;
+      case 'info':
+      case 'info-circle':
+        return LucideIcons.info;
+
+      // Kitchen
+      case 'chef-hat':
+      case 'chef':
+        return LucideIcons.chefHat;
+      case 'knife':
+        return LucideIcons.scissors;
+      case 'pot':
+      case 'pan':
+        return LucideIcons.circle;
+
+      // Default
       default:
-        print('⚠️ [DinorIcon] Icône non trouvée: $name');
-        return LucideIcons.helpCircle;
+        return LucideIcons.circle;
     }
   }
 }
