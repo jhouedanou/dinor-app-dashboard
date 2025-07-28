@@ -27,6 +27,7 @@ import ContentCarousel from '@/components/common/ContentCarousel';
 import LoadingScreen from '@/components/common/LoadingScreen';
 import { useDataStore } from '@/stores';
 import { COLORS, DIMENSIONS, TYPOGRAPHY } from '@/styles';
+import { RootStackParamList } from '@/types/navigation';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -88,17 +89,17 @@ const HomeScreen: React.FC = () => {
   // Navigation handlers (identiques Vue)
   const handleRecipeClick = (recipe: any) => {
     console.log('🍳 [Home] Clic recette:', recipe.title);
-    navigation.navigate('RecipeDetail', { id: recipe.id, recipe });
+    (navigation as any).navigate('RecipeDetail', { id: recipe.id, recipe });
   };
 
   const handleTipClick = (tip: any) => {
     console.log('💡 [Home] Clic astuce:', tip.title);
-    navigation.navigate('TipDetail', { id: tip.id, tip });
+    (navigation as any).navigate('TipDetail', { id: tip.id, tip });
   };
 
   const handleEventClick = (event: any) => {
     console.log('📅 [Home] Clic événement:', event.title);
-    navigation.navigate('EventDetail', { id: event.id, event });
+    (navigation as any).navigate('EventDetail', { id: event.id, event });
   };
 
   // Like handlers (identiques Vue)
@@ -115,7 +116,7 @@ const HomeScreen: React.FC = () => {
   };
 
   const getDifficultyLabel = (difficulty: string): string => {
-    const labels = {
+    const labels: Record<string, string> = {
       'easy': 'Facile',
       'medium': 'Moyen',
       'hard': 'Difficile'
@@ -194,7 +195,7 @@ const HomeScreen: React.FC = () => {
                   {item.title}
                 </Text>
                 <Text style={styles.cardDescription} numberOfLines={2}>
-                  {getShortDescription(item.short_description)}
+                  {getShortDescription(item.short_description || item.description)}
                 </Text>
                 
                 <View style={styles.cardMeta}>
@@ -243,7 +244,7 @@ const HomeScreen: React.FC = () => {
                     </Text>
                   )}
                   <Text style={styles.difficultyText}>
-                    {getDifficultyLabel(item.difficulty_level)}
+                    {getDifficultyLabel(item.difficulty_level || 'medium')}
                   </Text>
                   <Text style={styles.dateText}>
                     {formatDate(item.created_at)}

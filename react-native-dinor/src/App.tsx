@@ -169,7 +169,6 @@ const App: React.FC = () => {
       <LoadingScreen 
         visible={showLoading}
         duration={2500}
-        onComplete={() => setShowLoading(false)}
       />
     );
   }
@@ -183,15 +182,7 @@ const App: React.FC = () => {
           {/* Header avec état dynamique (identique Vue) */}
           <AppHeader
             title={headerState.title}
-            showFavorite={headerState.showFavorite}
-            favoriteType={headerState.favoriteType as any}
-            favoriteItemId={headerState.favoriteItemId}
-            initialFavorited={headerState.isContentFavorited}
-            showShare={headerState.showShare}
-            backPath={headerState.backPath}
-            onFavoriteUpdated={handleFavoriteUpdate}
-            onShare={handleShare}
-            onAuthRequired={handleAuthRequired}
+            showBack={headerState.backPath !== null}
           />
           
           {/* Navigation Tabs avec style exact (identique Vue) */}
@@ -249,7 +240,6 @@ const App: React.FC = () => {
           
           <ShareModal
             visible={showShareModal}
-            shareData={currentShareData}
             onClose={() => setShowShareModal(false)}
           />
         </View>

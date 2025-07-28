@@ -10,6 +10,7 @@ export const DIMENSIONS = {
   // Navigation (exactes depuis Vue CSS)
   BOTTOM_NAV_HEIGHT: 80,       // 80px exact
   HEADER_HEIGHT: 60,           // 60px exact
+  STATUS_BAR_HEIGHT: 0,        // Sera calculé dynamiquement
   
   // Icônes (exactes depuis Vue)
   ICON_SIZE_SM: 20,

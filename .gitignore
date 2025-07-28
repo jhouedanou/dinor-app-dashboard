@@ -75,6 +75,20 @@ yarn-error.log
 package-lock.json
 yarn.lock
 
+# === React Native Projects ===
+/react-native-dinor/node_modules/
+/DinorMobileBuild/node_modules/
+/react-native-dinor/ios/Pods/
+/DinorMobileBuild/ios/Pods/
+/react-native-dinor/android/.gradle/
+/DinorMobileBuild/android/.gradle/
+/react-native-dinor/android/app/build/
+/DinorMobileBuild/android/app/build/
+/react-native-dinor/android/build/
+/DinorMobileBuild/android/build/
+/react-native-dinor/android/local.properties
+/DinorMobileBuild/android/local.properties
+
 # === Production ===
 /public/mix-manifest.json
 /public/js/app.js

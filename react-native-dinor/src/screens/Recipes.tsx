@@ -133,7 +133,7 @@ const RecipesScreen: React.FC = () => {
   };
 
   const getDifficultyLabel = (difficulty: string): string => {
-    const labels = {
+    const labels: Record<string, string> = {
       'easy': 'Facile',
       'medium': 'Moyen',
       'hard': 'Difficile'

@@ -6,7 +6,8 @@ export const TYPOGRAPHY = {
   fontSize: {
     sm: 12,                     // 12px exact
     md: 16,                     // 16px exact
-    lg: 20                      // 20px exact
+    lg: 20,                     // 20px exact
+    xl: 24                      // 24px exact
   },
   fontWeight: {
     normal: '400' as const,     // 400 exact

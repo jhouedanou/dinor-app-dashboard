@@ -15,9 +15,13 @@ interface Recipe {
   id: number;
   title: string;
   description: string;
+  short_description?: string;
   image?: string;
   likes_count: number;
   is_liked: boolean;
+  total_time?: number;
+  difficulty?: string;
+  created_at: string;
 }
 
 interface Tip {
@@ -27,6 +31,9 @@ interface Tip {
   image?: string;
   likes_count: number;
   is_liked: boolean;
+  estimated_time?: number;
+  difficulty_level?: string;
+  created_at: string;
 }
 
 interface Event {
@@ -38,6 +45,15 @@ interface Event {
   image?: string;
   likes_count: number;
   is_liked: boolean;
+  created_at: string;
+}
+
+interface ApiResponse {
+  success: boolean;
+  data?: any;
+  message?: string;
+  is_liked?: boolean;
+  likes_count?: number;
 }
 
 interface DataState {
@@ -287,7 +303,7 @@ export const useDataStore = create<DataState>((set, get) => ({
       // Type mapping pour l'API (identique Vue)
       const apiType = type === 'recipes' ? 'recipe' : type === 'tips' ? 'tip' : 'event';
       
-      const data = await apiService.toggleLike(apiType, id);
+      const data = await apiService.toggleLike(apiType, id) as ApiResponse;
       
       if (data.success) {
         // Mettre à jour l'état local (optimistic update)
@@ -297,7 +313,7 @@ export const useDataStore = create<DataState>((set, get) => ({
           item.id === id
             ? {
                 ...item,
-                is_liked: data.is_liked,
+                is_liked: data.is_liked || false,
                 likes_count: data.likes_count || item.likes_count + (data.is_liked ? 1 : -1)
               }
             : item
@@ -306,7 +322,7 @@ export const useDataStore = create<DataState>((set, get) => ({
         set({ [type]: updatedItems });
         
         console.log('🔄 [Data Store] Like togglé:', { type, id, liked: data.is_liked });
-        return data.is_liked;
+        return data.is_liked || false;
       } else {
         throw new Error(data.message || 'Erreur lors du toggle like');
       }
