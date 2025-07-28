@@ -9,7 +9,7 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import '../../services/navigation_service.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../dinor_icon.dart';
@@ -64,7 +64,7 @@ class AppHeader extends StatelessWidget {
               // Bouton retour - si backPath fourni
               if (backPath != null)
                 IconButton(
-                  onPressed: onBack ?? () => context.go(backPath!),
+                  onPressed: onBack ?? () => NavigationService.pushReplacementNamed(backPath!),
                   icon: const DinorIcon(
                     name: 'arrow-left',
                     size: 24,

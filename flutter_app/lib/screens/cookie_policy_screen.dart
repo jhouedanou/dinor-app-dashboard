@@ -1,3 +1,4 @@
+import '../services/navigation_service.dart';
 /**
  * COOKIE_POLICY_SCREEN.DART - ÉCRAN POLITIQUE DES COOKIES
  * 
@@ -12,7 +13,7 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+
 
 class CookiePolicyScreen extends StatelessWidget {
   const CookiePolicyScreen({Key? key}) : super(key: key);
@@ -36,7 +37,7 @@ class CookiePolicyScreen extends StatelessWidget {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3748)),
-          onPressed: () => context.pop(),
+          onPressed: () => NavigationService.pop(),
         ),
       ),
       body: SingleChildScrollView(

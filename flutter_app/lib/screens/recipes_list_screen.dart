@@ -1,3 +1,4 @@
+import '../services/navigation_service.dart';
 /**
  * RECIPES_LIST_SCREEN.DART - CONVERSION FIDÈLE DE RecipesList.vue
  * 
@@ -18,7 +19,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -233,7 +234,7 @@ class _RecipesListScreenState extends ConsumerState<RecipesListScreen> with Auto
   // HANDLERS (équivalent methods Vue)
   void _goToRecipe(String id) {
     print('🍳 [RecipesListScreen] Navigation vers recette ID: $id');
-    context.push('/recipe/$id');
+    NavigationService.pushNamed('/recipe/$id');
   }
 
   void _clearAllFilters() {

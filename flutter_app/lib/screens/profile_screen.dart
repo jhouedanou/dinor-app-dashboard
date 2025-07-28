@@ -1,3 +1,4 @@
+import '../services/navigation_service.dart';
 /**
  * PROFILE_SCREEN.DART - ÉCRAN PROFIL UTILISATEUR
  * 
@@ -16,7 +17,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -87,7 +88,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with AutomaticKee
       await authHandler.logout();
       
       if (mounted) {
-        context.go('/login');
+        NavigationService.pushNamed('/login');
       }
     } catch (error) {
       print('❌ [ProfileScreen] Erreur déconnexion: $error');
@@ -158,7 +159,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with AutomaticKee
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3748)),
-          onPressed: () => context.pop(),
+          onPressed: () => NavigationService.pop(),
         ),
       ),
       body: Center(
@@ -191,7 +192,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with AutomaticKee
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: () => context.push('/login'),
+              onPressed: () => NavigationService.pushNamed('/login'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFF4D03F),
                 foregroundColor: const Color(0xFF2D3748),
@@ -249,7 +250,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with AutomaticKee
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3748)),
-          onPressed: () => context.pop(),
+          onPressed: () => NavigationService.pop(),
         ),
       ),
       body: Center(
@@ -319,7 +320,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with AutomaticKee
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3748)),
-          onPressed: () => context.pop(),
+          onPressed: () => NavigationService.pop(),
         ),
         actions: [
           IconButton(

@@ -21,7 +21,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  static const String baseUrl = 'https://dinor.app/api'; // Même API que React Native
+  static const String baseUrl = 'https://new.dinorapp.com/api/v1'; // Nouvelle API
   static const Duration timeout = Duration(seconds: 30);
   
   final Map<String, dynamic> _cache = {};
@@ -201,7 +201,7 @@ class ApiService {
 
   // Méthodes spécifiques pour les recettes
   Future<Map<String, dynamic>> getRecipeCategories() {
-    return get('/recipe-categories');
+    return get('/recipes/categories/list');
   }
 
   Future<Map<String, dynamic>> getRecipes({Map<String, dynamic>? params}) {
@@ -210,6 +210,10 @@ class ApiService {
 
   Future<Map<String, dynamic>> getRecipe(String id) {
     return get('/recipes/$id');
+  }
+
+  Future<Map<String, dynamic>> getFeaturedRecipes() {
+    return get('/recipes/featured/list');
   }
 
   // Méthodes spécifiques pour les événements
@@ -221,6 +225,27 @@ class ApiService {
     return get('/events/$id');
   }
 
+  Future<Map<String, dynamic>> getUpcomingEvents() {
+    return get('/events/upcoming/list');
+  }
+
+  Future<Map<String, dynamic>> getFeaturedEvents() {
+    return get('/events/featured/list');
+  }
+
+  // Méthodes spécifiques pour les astuces
+  Future<Map<String, dynamic>> getTips({Map<String, dynamic>? params}) {
+    return get('/tips', params: params);
+  }
+
+  Future<Map<String, dynamic>> getTip(String id) {
+    return get('/tips/$id');
+  }
+
+  Future<Map<String, dynamic>> getFeaturedTips() {
+    return get('/tips/featured/list');
+  }
+
   // Méthodes spécifiques pour les vidéos DinorTV
   Future<Map<String, dynamic>> getVideos({Map<String, dynamic>? params, bool forceRefresh = false}) {
     return get('/dinor-tv', params: params, forceRefresh: forceRefresh);
@@ -228,6 +253,14 @@ class ApiService {
 
   Future<Map<String, dynamic>> getVideo(String id) {
     return get('/dinor-tv/$id');
+  }
+
+  Future<Map<String, dynamic>> getFeaturedVideos() {
+    return get('/dinor-tv/featured/list');
+  }
+
+  Future<Map<String, dynamic>> getLiveVideos() {
+    return get('/dinor-tv/live/list');
   }
 
   // Méthodes spécifiques pour les likes
@@ -278,6 +311,50 @@ class ApiService {
       'type': type,
       'id': id,
     });
+  }
+
+  // Méthodes spécifiques pour les pages
+  Future<Map<String, dynamic>> getPages() {
+    return get('/pages');
+  }
+
+  Future<Map<String, dynamic>> getHomepage() {
+    return get('/pages/homepage');
+  }
+
+  Future<Map<String, dynamic>> getMenu() {
+    return get('/pages/menu');
+  }
+
+  // Méthodes spécifiques pour les catégories
+  Future<Map<String, dynamic>> getCategories() {
+    return get('/categories');
+  }
+
+  Future<Map<String, dynamic>> checkCategories() {
+    return get('/categories/check');
+  }
+
+  // Méthodes spécifiques pour le dashboard
+  Future<Map<String, dynamic>> getDashboard() {
+    return get('/dashboard');
+  }
+
+  // Méthodes de test
+  Future<Map<String, dynamic>> testAllRecipes() {
+    return get('/test/recipes-all');
+  }
+
+  Future<Map<String, dynamic>> testAllEvents() {
+    return get('/test/events-all');
+  }
+
+  Future<Map<String, dynamic>> testAllCategories() {
+    return get('/test/categories-all');
+  }
+
+  Future<Map<String, dynamic>> testDatabaseCheck() {
+    return get('/test/database-check');
   }
 
   // Méthodes d'authentification

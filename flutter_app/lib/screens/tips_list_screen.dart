@@ -1,3 +1,4 @@
+import '../services/navigation_service.dart';
 /**
  * TIPS_LIST_SCREEN.DART - CONVERSION FIDÈLE DE TipsList.vue
  * 
@@ -18,7 +19,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -211,7 +212,7 @@ class _TipsListScreenState extends ConsumerState<TipsListScreen> with AutomaticK
 
   void _goToTip(String id) {
     print('💡 [TipsListScreen] Navigation vers astuce ID: $id');
-    context.push('/tips/$id');
+    NavigationService.pushNamed('/tips/$id');
   }
 
   void _onSearchQueryChanged(String query) {

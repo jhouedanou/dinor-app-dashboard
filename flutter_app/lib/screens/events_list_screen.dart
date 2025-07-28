@@ -1,3 +1,4 @@
+import '../services/navigation_service.dart';
 /**
  * EVENTS_LIST_SCREEN.DART - ÉCRAN LISTE DES ÉVÉNEMENTS
  * 
@@ -16,7 +17,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -71,17 +72,17 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> with Automa
 
   void _handleEventTap(dynamic event) {
     print('📅 [EventsListScreen] Clic sur événement: ${event['id']}');
-    context.push('/events/${event['id']}');
+    NavigationService.pushNamed('/events/${event['id']}');
   }
 
   void _handleLikeTap(dynamic event) async {
     final authHandler = ref.read(useAuthHandlerProvider.notifier);
     
-    if (!authHandler.isAuthenticated) {
-      setState(() {
-        _showAuthModal = true;
-        _authModalMessage = 'Connectez-vous pour liker cet événement';
-      });
+    // Vérifier si l'utilisateur est connecté
+    final authState = ref.read(useAuthHandlerProvider);
+    if (!authState.isAuthenticated) {
+      _authModalMessage = 'Connectez-vous pour liker cet événement';
+      _displayAuthModal();
       return;
     }
 
@@ -96,11 +97,11 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> with Automa
   void _handleFavoriteTap(dynamic event) async {
     final authHandler = ref.read(useAuthHandlerProvider.notifier);
     
-    if (!authHandler.isAuthenticated) {
-      setState(() {
-        _showAuthModal = true;
-        _authModalMessage = 'Connectez-vous pour ajouter aux favoris';
-      });
+    // Vérifier si l'utilisateur est connecté
+    final authState = ref.read(useAuthHandlerProvider);
+    if (!authState.isAuthenticated) {
+      _authModalMessage = 'Connectez-vous pour ajouter aux favoris';
+      _displayAuthModal();
       return;
     }
 
@@ -123,6 +124,32 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> with Automa
     setState(() {
       _showAuthModal = false;
       _authModalMessage = '';
+    });
+  }
+
+  void _displayAuthModal() {
+    // Vérifier que le contexte est prêt avant d'afficher la modale
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _showAuthModal) {
+        showDialog(
+          context: context,
+          barrierDismissible: true,
+          useRootNavigator: true,
+          builder: (BuildContext context) {
+            return AuthModal(
+              isOpen: true,
+              onClose: () {
+                Navigator.of(context, rootNavigator: true).pop();
+                setState(() => _showAuthModal = false);
+              },
+              onAuthenticated: () {
+                Navigator.of(context, rootNavigator: true).pop();
+                setState(() => _showAuthModal = false);
+              },
+            );
+          },
+        );
+      }
     });
   }
 
@@ -152,7 +179,7 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> with Automa
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3748)),
-          onPressed: () => context.pop(),
+          onPressed: () => NavigationService.pop(),
         ),
         actions: [
           IconButton(
@@ -489,6 +516,7 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> with Automa
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
+      useRootNavigator: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),

@@ -13,25 +13,21 @@
  * - showBottomNav computed : mêmes routes exclues
  * - handleShare, handleBack, handleFavorite : logique identique
  * - Modal d'auth et de partage : états identiques
- * - Router-view équivalent : GoRouter avec mêmes transitions
+ * - Router-view équivalent : Navigator classique avec mêmes transitions
  */
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+
+// Services
+import 'services/navigation_service.dart';
+import 'services/modal_service.dart';
 
 // Components (équivalent des imports Vue)
 import 'components/common/loading_screen.dart';
 import 'components/common/app_header.dart';
-import 'components/navigation/bottom_navigation.dart';
+import 'components/navigation/simple_bottom_navigation.dart';
 import 'components/common/install_prompt.dart';
-import 'components/common/share_modal.dart';
-import 'components/common/auth_modal.dart';
-
-// Stores et composables (remplace les imports Vue)
-
-
-import 'router/app_router.dart';
 
 class DinorApp extends ConsumerStatefulWidget {
   const DinorApp({Key? key}) : super(key: key);
@@ -44,7 +40,7 @@ class _DinorAppState extends ConsumerState<DinorApp> {
   // État identique au setup() Vue
   bool _showLoading = true;
   bool _showAuthModal = false;
-  bool _showShareModal = false;
+  // _showShareModal supprimé car géré par ModalService
   
   // Header state - REPRODUCTION EXACTE des ref() Vue
   String _currentPageTitle = 'Dinor';
@@ -54,9 +50,9 @@ class _DinorAppState extends ConsumerState<DinorApp> {
   bool _isContentFavorited = false;
   bool _showShareButton = false;
   String? _backPath;
+  String _currentRoute = '/';
   
-  // Share data - équivalent currentShareData ref()
-  Map<String, dynamic> _currentShareData = {};
+  // Share data supprimé car géré par ModalService
   
   @override
   void initState() {
@@ -65,12 +61,21 @@ class _DinorAppState extends ConsumerState<DinorApp> {
     // Équivalent onMounted() Vue
     print('🚀 [App] Application démarrée avec loading screen');
     
+    // Écouter les changements de route
+    NavigationService.addRouteChangeListener(_updateTitle);
+    
     // Auto-complete loading après 2500ms (identique à App.vue)
     Future.delayed(const Duration(milliseconds: 2500), () {
       if (mounted) {
         _onLoadingComplete();
       }
     });
+  }
+  
+  @override
+  void dispose() {
+    NavigationService.removeRouteChangeListener(_updateTitle);
+    super.dispose();
   }
 
   void _onLoadingComplete() {
@@ -83,6 +88,7 @@ class _DinorAppState extends ConsumerState<DinorApp> {
   // REPRODUCTION EXACTE de updateTitle() Vue
   void _updateTitle(String routePath) {
     setState(() {
+      _currentRoute = routePath; // Stocker la route actuelle
       if (routePath == '/') {
         _currentPageTitle = 'Dinor';
         _showFavoriteButton = false;
@@ -154,7 +160,8 @@ class _DinorAppState extends ConsumerState<DinorApp> {
   void _handleShare() {
     print('🎯 [App] handleShare appelé!');
     
-    final currentRoute = GoRouterState.of(context).uri.path;
+    // Utiliser la route stockée pour éviter les problèmes de contexte modal
+    final currentRoute = _currentRoute;
     
     // Créer les données de partage basées sur la route actuelle
     final shareData = {
@@ -178,11 +185,10 @@ class _DinorAppState extends ConsumerState<DinorApp> {
       shareData['id'] = currentRoute.split('/').last;
     }
     
-    // Stocker les données de partage pour le modal
-    setState(() {
-      _currentShareData = shareData;
-      _showShareModal = true;
-    });
+    // Utiliser ModalService pour afficher la modal de partage
+    ModalService.showShareModal(
+      shareData: shareData,
+    );
     
     print('🚀 [App] Déclenchement du partage avec: $shareData');
   }
@@ -190,10 +196,10 @@ class _DinorAppState extends ConsumerState<DinorApp> {
   // IDENTIQUE à handleBack() Vue
   void _handleBack() {
     if (_backPath != null) {
-      context.go(_backPath!);
+      NavigationService.pushReplacementNamed(_backPath!);
     } else {
-      if (context.canPop()) {
-        context.pop();
+      if (NavigationService.canPop()) {
+        NavigationService.pop();
       }
     }
   }
@@ -208,26 +214,44 @@ class _DinorAppState extends ConsumerState<DinorApp> {
 
   // IDENTIQUE à handleAuthRequired() Vue
   void _handleAuthRequired() {
-    print('🔒 [App] Authentification requise');
     setState(() {
       _showAuthModal = true;
     });
+    _displayAuthModal();
+  }
+
+  void _displayAuthModal() {
+    // Utiliser le nouveau système de modal sûr
+    ModalService.showAuthModal(
+      onClose: () {
+        setState(() => _showAuthModal = false);
+      },
+      onAuthenticated: () {
+        setState(() => _showAuthModal = false);
+      },
+    );
   }
 
   // COMPUTED équivalent à showBottomNav Vue
   bool get _showBottomNav {
-    final currentRoute = GoRouterState.of(context).uri.path;
     const excludedRoutes = ['/login', '/register', '/auth-error', '/404'];
     return !excludedRoutes.any((excludedPath) => 
-      currentRoute == excludedPath || currentRoute.startsWith(excludedPath)
+      _currentRoute == excludedPath || _currentRoute.startsWith(excludedPath)
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'Dinor App',
+    // Les changements de route sont maintenant gérés par le listener
+
+    return MaterialApp(
+      title: 'Dinor App - Votre chef de poche',
       debugShowCheckedModeBanner: false,
+      
+      // Navigation avec NavigationService
+      navigatorKey: NavigationService.navigatorKey,
+      onGenerateRoute: NavigationService.generateRoute,
+      initialRoute: NavigationService.home,
       
       // Thème identique aux styles CSS App.vue
       theme: ThemeData(
@@ -260,8 +284,6 @@ class _DinorAppState extends ConsumerState<DinorApp> {
           trackColor: MaterialStateProperty.all(const Color(0xFFF7FAFC)),
         ),
       ),
-      
-      routerConfig: appRouter,
       
       builder: (context, child) {
         return Stack(
@@ -305,7 +327,7 @@ class _DinorAppState extends ConsumerState<DinorApp> {
                 ),
                 
                 // Bottom Navigation - v-if="showBottomNav"
-                bottomNavigationBar: _showBottomNav ? const BottomNavigation() : null,
+                bottomNavigationBar: _showBottomNav ? const SimpleBottomNavigation() : null,
                 
                 // PWA Install Prompt - InstallPrompt
                 floatingActionButton: const InstallPrompt(),
@@ -319,20 +341,11 @@ class _DinorAppState extends ConsumerState<DinorApp> {
                 onComplete: _onLoadingComplete,
               ),
             
-            // Share Modal - v-model="showShareModal"
-            if (_showShareModal)
-              ShareModal(
-                isOpen: _showShareModal,
-                shareData: _currentShareData,
-                onClose: () => setState(() => _showShareModal = false),
-              ),
+            // Share Modal géré par ModalService maintenant
+            // La modal est gérée automatiquement par ModalService.showShareModal()
             
             // Auth Modal - v-model="showAuthModal"
-            if (_showAuthModal)
-              AuthModal(
-                isOpen: _showAuthModal,
-                onClose: () => setState(() => _showAuthModal = false),
-              ),
+            // Retiré du Stack pour éviter les problèmes de contexte de navigation
           ],
         );
       },

@@ -19,7 +19,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+import '../../services/navigation_service.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 // Components
@@ -93,10 +93,8 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
     if (item['name'] == 'profile') {
       final authStore = ref.read(useAuthHandlerProvider);
       if (!authStore.isAuthenticated) {
-        setState(() {
-          _authModalMessage = 'Vous devez vous connecter pour accéder à votre profil';
-          _showAuthModal = true;
-        });
+        _authModalMessage = 'Vous devez vous connecter pour accéder à votre profil';
+        _displayAuthModal();
         return; // Le modal d'auth s'ouvrira automatiquement
       }
     }
@@ -105,13 +103,13 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
       case 'route':
         // Navigation interne standard
         if (item['path'] != null) {
-          context.go(item['path']);
+          NavigationService.pushReplacementNamed(item['path']);
         }
         break;
 
       case 'web_embed':
         // Charger la dernière page depuis le système Pages dans WebEmbed
-        context.go('/web-embed');
+        NavigationService.pushReplacementNamed('/web-embed');
         break;
 
       case 'external_link':
@@ -122,14 +120,14 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
       default:
         // Type d'action non géré - Fallback vers navigation route si définie
         if (item['path'] != null) {
-          context.go(item['path']);
+          NavigationService.pushReplacementNamed(item['path']);
         }
     }
   }
 
   // IDENTIQUE à isActive() Vue
   bool _isActive(Map<String, dynamic> item) {
-    final currentRoute = GoRouterState.of(context).uri.path;
+    final currentRoute = NavigationService.currentRoute;
 
     // Pour les routes normales
     if (item['action_type'] == 'route' && item['path'] != null) {
@@ -149,7 +147,7 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
   void _onAuthSuccess() {
     setState(() => _showAuthModal = false);
     // Redirection vers le profil après authentification
-    context.go('/profile');
+    NavigationService.pushReplacementNamed('/profile');
   }
 
   @override
@@ -193,14 +191,36 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
         ),
 
         // Auth Modal - v-model="showAuthModal"
-        if (_showAuthModal)
-          AuthModal(
-            isOpen: _showAuthModal,
-            onClose: () => setState(() => _showAuthModal = false),
-            onAuthenticated: _onAuthSuccess,
-          ),
+        // Retiré du Stack pour éviter les problèmes de contexte de navigation
       ],
     );
+  }
+
+  void _displayAuthModal() {
+    // Vérifier que le contexte est prêt avant d'afficher la modale
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _showAuthModal) {
+        showDialog(
+          context: context,
+          barrierDismissible: true,
+          useRootNavigator: true,
+          builder: (BuildContext context) {
+            return AuthModal(
+              isOpen: true,
+              onClose: () {
+                Navigator.of(context, rootNavigator: true).pop();
+                setState(() => _showAuthModal = false);
+              },
+              onAuthenticated: () {
+                Navigator.of(context, rootNavigator: true).pop();
+                setState(() => _showAuthModal = false);
+                _onAuthSuccess();
+              },
+            );
+          },
+        );
+      }
+    });
   }
 
   // Construction d'un item de navigation - STYLES CSS IDENTIQUES

@@ -11,7 +11,7 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import '../../services/navigation_service.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 class ContentCarousel extends StatelessWidget {
@@ -62,7 +62,7 @@ class ContentCarousel extends StatelessWidget {
               
               // Bouton "Voir tout" - .see-all-btn CSS
               TextButton.icon(
-                onPressed: () => context.go(viewAllLink),
+                onPressed: () => NavigationService.pushNamed(viewAllLink),
                 icon: Icon(
                   LucideIcons.chevronRight,
                   size: 16,

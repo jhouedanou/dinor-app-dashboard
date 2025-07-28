@@ -24,8 +24,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 // Services (remplace les services Vue)
 import 'services/api_service.dart';
 
-// Router (remplace Vue Router)
-import 'router/app_router.dart';
+// Router supprimé - remplacé par NavigationService
 
 // App principale (remplace App.vue)
 import 'app.dart';

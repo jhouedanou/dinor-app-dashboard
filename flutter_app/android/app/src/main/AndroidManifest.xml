@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="dinor_app"
+        android:label="Dinor App - Votre chef de poche"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

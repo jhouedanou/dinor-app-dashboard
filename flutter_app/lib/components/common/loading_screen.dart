@@ -95,9 +95,10 @@ class _LoadingScreenState extends State<LoadingScreen>
             height: double.infinity,
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFFF4D03F), Color(0xFFFF6B35)], // Dégradé doré-orange
+                colors: [Color(0xFFE53E3E), Color(0xFFC53030), Color(0xFFE53E3E)], // Gradient rouge identique au PWA
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
+                stops: [0.0, 0.5, 1.0],
               ),
             ),
             child: Center(
@@ -106,70 +107,66 @@ class _LoadingScreenState extends State<LoadingScreen>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Logo Dinor
+                    // Logo Dinor (SVG-style similaire au PWA)
                     Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            offset: const Offset(0, 4),
-                            blurRadius: 20,
-                            color: Colors.black.withOpacity(0.2),
-                          ),
-                        ],
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'D',
-                          style: TextStyle(
-                            fontFamily: 'OpenSans',
-                            fontSize: 48,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFFE53E3E), // Rouge Dinor
-                            letterSpacing: 2,
-                          ),
+                      height: 80,
+                      child: const Text(
+                        'DINOR',
+                        style: TextStyle(
+                          fontFamily: 'OpenSans',
+                          fontSize: 32,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          letterSpacing: 2,
+                          shadows: [
+                            Shadow(
+                              offset: Offset(0, 0),
+                              blurRadius: 20,
+                              color: Colors.white,
+                            ),
+                            Shadow(
+                              offset: Offset(0, 2),
+                              blurRadius: 10,
+                              color: Colors.black26,
+                            ),
+                          ],
                         ),
                       ),
                     ),
 
                     const SizedBox(height: 32),
 
-                    // Nom de l'app
+                    // Texte de chargement dynamique (similaire au PWA)
                     const Text(
-                      'Dinor',
+                      'Dinor se prépare...',
                       style: TextStyle(
                         fontFamily: 'OpenSans',
-                        fontSize: 32,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w600,
                         color: Colors.white,
-                        letterSpacing: 2,
                         shadows: [
                           Shadow(
-                            offset: Offset(2, 2),
-                            blurRadius: 4,
+                            offset: Offset(0, 2),
+                            blurRadius: 10,
                             color: Colors.black26,
                           ),
                         ],
                       ),
                     ),
 
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 8),
 
-                    // Slogan
+                    // Sous-texte
                     const Text(
-                      'Votre compagnon culinaire',
+                      'Chargement de l\'application',
                       style: TextStyle(
                         fontFamily: 'Roboto',
                         fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white,
+                        color: Color(0xFFFFFFFF), // Blanc avec transparence
                         shadows: [
                           Shadow(
-                            offset: Offset(1, 1),
-                            blurRadius: 2,
+                            offset: Offset(0, 1),
+                            blurRadius: 5,
                             color: Colors.black26,
                           ),
                         ],
@@ -178,14 +175,66 @@ class _LoadingScreenState extends State<LoadingScreen>
 
                     const SizedBox(height: 48),
 
-                    // Indicateur de chargement
-                    const SizedBox(
-                      width: 32,
-                      height: 32,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 3,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
+                    // Barre de progression (similaire au PWA)
+                    Column(
+                      children: [
+                        Container(
+                          width: 300,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                          child: Stack(
+                            children: [
+                              // Barre de progression animée
+                              AnimatedBuilder(
+                                animation: _animationController,
+                                builder: (context, child) {
+                                  return Container(
+                                    width: 300 * _animationController.value,
+                                    height: 6,
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [Color(0xFFF4D03F), Color(0xFFF7DC6F), Color(0xFFF4D03F)],
+                                      ),
+                                      borderRadius: BorderRadius.circular(3),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: const Color(0xFFF4D03F).withOpacity(0.5),
+                                          blurRadius: 10,
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        // Pourcentage
+                        AnimatedBuilder(
+                          animation: _animationController,
+                          builder: (context, child) {
+                            return Text(
+                              '${(_animationController.value * 100).round()}%',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white,
+                                shadows: [
+                                  Shadow(
+                                    offset: Offset(0, 1),
+                                    blurRadius: 3,
+                                    color: Colors.black26,
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     ),
                   ],
                 ),

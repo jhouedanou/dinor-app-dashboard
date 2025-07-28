@@ -1,3 +1,4 @@
+import '../services/navigation_service.dart';
 /**
  * PAGES_LIST_SCREEN.DART - ÉCRAN LISTE DES PAGES
  * 
@@ -15,7 +16,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -101,7 +102,7 @@ class _PagesListScreenState extends ConsumerState<PagesListScreen> with Automati
 
   void _handlePageTap(dynamic page) {
     print('📄 [PagesListScreen] Clic sur page: ${page['slug']}');
-    context.push('/pages/${page['slug']}');
+    NavigationService.pushNamed('/pages/${page['slug']}');
   }
 
   void _handleSearch(String query) {
@@ -141,7 +142,7 @@ class _PagesListScreenState extends ConsumerState<PagesListScreen> with Automati
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3748)),
-          onPressed: () => context.pop(),
+          onPressed: () => NavigationService.pop(),
         ),
       ),
       body: Column(

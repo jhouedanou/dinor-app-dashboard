@@ -1,3 +1,4 @@
+import '../services/navigation_service.dart';
 /**
  * HOME_SCREEN.DART - CONVERSION FIDÈLE DE Home.vue
  * 
@@ -18,7 +19,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -261,26 +262,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
 
   // REPRODUCTION EXACTE des handlers Vue
   void _handleRecipeClick(Map<String, dynamic> recipe) {
-    context.go('/recipe/${recipe['id']}');
+    NavigationService.pushNamed('/recipe/${recipe['id']}');
   }
 
   void _handleTipClick(Map<String, dynamic> tip) {
-    context.go('/tip/${tip['id']}');
+    NavigationService.pushNamed('/tip/${tip['id']}');
   }
 
   void _handleEventClick(Map<String, dynamic> event) {
-    context.go('/event/${event['id']}');
+    NavigationService.pushNamed('/event/${event['id']}');
   }
 
   void _handleVideoClick(Map<String, dynamic> video) {
-    context.go('/dinor-tv'); // Vue redirige vers /video/${video.id} puis /dinor-tv
+    NavigationService.pushNamed('/dinor-tv'); // Vue redirige vers /video/${video.id} puis /dinor-tv
   }
 
   // IDENTIQUE à handleAuthError Vue
   void _handleAuthError() {
     setState(() {
       _authModalMessage = 'Vous devez vous connecter pour effectuer cette action';
-      _showAuthModal = true;
+      _displayAuthModal();
     });
   }
 
@@ -456,14 +457,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
       ),
       
       // Auth Modal - AuthModal identique
-      bottomSheet: _showAuthModal
-          ? AuthModal(
-              isOpen: _showAuthModal,
-              onClose: () => setState(() => _showAuthModal = false),
-              onAuthenticated: _handleAuthSuccess,
-            )
-          : null,
+      // Retiré du bottomSheet pour éviter les problèmes de contexte de navigation
     );
+  }
+
+  void _displayAuthModal() {
+    // Vérifier que le contexte est prêt avant d'afficher la modale
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _showAuthModal) {
+        showDialog(
+          context: context,
+          barrierDismissible: true,
+          useRootNavigator: true,
+          builder: (BuildContext context) {
+            return AuthModal(
+              isOpen: true,
+              onClose: () {
+                Navigator.of(context, rootNavigator: true).pop();
+                setState(() => _showAuthModal = false);
+              },
+              onAuthenticated: () {
+                Navigator.of(context, rootNavigator: true).pop();
+                setState(() => _showAuthModal = false);
+                _handleAuthSuccess();
+              },
+            );
+          },
+        );
+      }
+    });
   }
 
   // CONSTRUCTION DES CARTES - Styles CSS identiques

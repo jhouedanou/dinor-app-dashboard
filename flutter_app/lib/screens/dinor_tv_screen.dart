@@ -1,3 +1,4 @@
+import '../services/navigation_service.dart';
 /**
  * DINOR_TV_SCREEN.DART - ÉCRAN DINOR TV
  * 
@@ -16,7 +17,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -67,7 +68,7 @@ class _DinorTVScreenState extends ConsumerState<DinorTVScreen> with AutomaticKee
   void _handleVideoTap(dynamic video) {
     print('🎬 [DinorTVScreen] Clic sur vidéo: ${video['id']}');
     // TODO: Navigation vers détail vidéo
-    // context.push('/dinor-tv/${video['id']}');
+    // NavigationService.pushNamed('/dinor-tv/${video['id']}');
   }
 
   void _handleLikeTap(dynamic video) async {
@@ -115,6 +116,32 @@ class _DinorTVScreenState extends ConsumerState<DinorTVScreen> with AutomaticKee
     });
   }
 
+  void _displayAuthModal() {
+    // Vérifier que le contexte est prêt avant d'afficher la modale
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _showAuthModal) {
+        showDialog(
+          context: context,
+          barrierDismissible: true,
+          useRootNavigator: true,
+          builder: (BuildContext context) {
+            return AuthModal(
+              isOpen: true,
+              onClose: () {
+                Navigator.of(context, rootNavigator: true).pop();
+                setState(() => _showAuthModal = false);
+              },
+              onAuthenticated: () {
+                Navigator.of(context, rootNavigator: true).pop();
+                setState(() => _showAuthModal = false);
+              },
+            );
+          },
+        );
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -141,7 +168,7 @@ class _DinorTVScreenState extends ConsumerState<DinorTVScreen> with AutomaticKee
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3748)),
-          onPressed: () => context.pop(),
+          onPressed: () => NavigationService.pop(),
         ),
       ),
       body: RefreshIndicator(

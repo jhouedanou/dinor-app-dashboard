@@ -1,5 +1,5 @@
 name: dinor_app
-description: Application Dinor - conversion Flutter fidèle de l'app Vue PWA
+description: Dinor App - Votre chef de poche - Application culinaire mobile
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -15,8 +15,8 @@ dependencies:
   riverpod: ^2.6.1
   flutter_riverpod: ^2.6.1
 
-  # Navigation (remplace Vue Router)
-  go_router: ^12.1.3
+  # Navigation (remplace Vue Router) - Navigator classique avec GlobalKey
+  # go_router supprimé pour éviter les erreurs de contexte modal
 
 
   # HTTP et API (remplace axios)
@@ -77,18 +77,18 @@ flutter:
     - assets/icons/
     - assets/fonts/
 
-  fonts:
-    - family: Roboto
-      fonts:
-        - asset: assets/fonts/Roboto-Regular.ttf
-        - asset: assets/fonts/Roboto-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/Roboto-Bold.ttf
-          weight: 700
-    - family: OpenSans
-      fonts:
-        - asset: assets/fonts/OpenSans-Regular.ttf
-        - asset: assets/fonts/OpenSans-SemiBold.ttf
-          weight: 600
-        - asset: assets/fonts/OpenSans-Bold.ttf
-          weight: 700
+  # fonts:
+  #   - family: Roboto
+  #     fonts:
+  #       - asset: assets/fonts/Roboto-Regular.ttf
+  #       - asset: assets/fonts/Roboto-Medium.ttf
+  #         weight: 500
+  #       - asset: assets/fonts/Roboto-Bold.ttf
+  #         weight: 700
+  #   - family: OpenSans
+  #     fonts:
+  #       - asset: assets/fonts/OpenSans-Regular.ttf
+  #       - asset: assets/fonts/OpenSans-SemiBold.ttf
+  #         weight: 600
+  #       - asset: assets/fonts/OpenSans-Bold.ttf
+  #         weight: 700
