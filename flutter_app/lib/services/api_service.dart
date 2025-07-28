@@ -212,6 +212,15 @@ class ApiService {
     return get('/recipes/$id');
   }
 
+  // Méthodes spécifiques pour les événements
+  Future<Map<String, dynamic>> getEvents({Map<String, dynamic>? params}) {
+    return get('/events', params: params);
+  }
+
+  Future<Map<String, dynamic>> getEvent(String id) {
+    return get('/events/$id');
+  }
+
   // Méthodes spécifiques pour les vidéos DinorTV
   Future<Map<String, dynamic>> getVideos({Map<String, dynamic>? params, bool forceRefresh = false}) {
     return get('/dinor-tv', params: params, forceRefresh: forceRefresh);
