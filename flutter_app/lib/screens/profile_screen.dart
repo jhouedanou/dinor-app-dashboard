@@ -56,7 +56,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with AutomaticKee
 
     try {
       print('👤 [ProfileScreen] Chargement profil utilisateur');
-      final data = await ApiService.instance.getCurrentUser();
+      final apiService = ref.read(apiServiceProvider);
+      final data = await apiService.get('/auth/me');
 
       if (data['success'] == true) {
         setState(() {
@@ -79,9 +80,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with AutomaticKee
   Future<void> _handleLogout() async {
     try {
       print('🚪 [ProfileScreen] Déconnexion...');
-      await ApiService.instance.logout();
+      final apiService = ref.read(apiServiceProvider);
+      await apiService.post('/auth/logout', {});
       
-      final authHandler = ref.read(authHandlerProvider.notifier);
+      final authHandler = ref.read(useAuthHandlerProvider.notifier);
       await authHandler.logout();
       
       if (mounted) {
@@ -121,7 +123,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with AutomaticKee
   Widget build(BuildContext context) {
     super.build(context);
     
-    final authHandler = ref.watch(authHandlerProvider);
+    final authHandler = ref.watch(useAuthHandlerProvider);
     
     if (!authHandler.isAuthenticated) {
       return _buildNotAuthenticated();

@@ -129,7 +129,7 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
 
   // IDENTIQUE à isActive() Vue
   bool _isActive(Map<String, dynamic> item) {
-    final currentRoute = GoRouterState.of(context).location;
+    final currentRoute = GoRouterState.of(context).uri.path;
 
     // Pour les routes normales
     if (item['action_type'] == 'route' && item['path'] != null) {
@@ -195,8 +195,7 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
         // Auth Modal - v-model="showAuthModal"
         if (_showAuthModal)
           AuthModal(
-            isVisible: _showAuthModal,
-            initialMessage: _authModalMessage,
+            isOpen: _showAuthModal,
             onClose: () => setState(() => _showAuthModal = false),
             onAuthenticated: _onAuthSuccess,
           ),
@@ -243,7 +242,7 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
                   fontSize: 12, // font-size: 12px
                   fontWeight: isActive ? FontWeight.w600 : FontWeight.w500, // font-weight
                   color: isActive
-                      ? const Color(0xFF FF6B35) // Orange accent pour l'item actif
+                      ? const Color(0xFFFF6B35) // Orange accent pour l'item actif
                       : const Color.fromRGBO(0, 0, 0, 0.7), // Texte sombre
                   height: 1.2, // line-height: 1.2
                 ),
@@ -259,7 +258,7 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
                   width: 24, // width: 24px
                   height: 2, // height: 2px
                   decoration: BoxDecoration(
-                    color: const Color(0xFF FF6B35), // background: #FF6B35
+                    color: const Color(0xFFFF6B35), // background: #FF6B35
                     borderRadius: BorderRadius.circular(1), // border-radius: 1px
                   ),
                 ),

@@ -134,7 +134,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
 
     try {
       print('🍳 [HomeScreen] Chargement des 4 dernières recettes');
-      final data = await ApiService.instance.getRecipes(params: {
+      final apiService = ref.read(apiServiceProvider);
+      final data = await apiService.get('/recipes', params: {
         'limit': '4',
         'sort_by': 'created_at',
         'sort_order': 'desc',
@@ -165,7 +166,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
 
     try {
       print('💡 [HomeScreen] Chargement des 4 dernières astuces');
-      final data = await ApiService.instance.getTips(params: {
+      final apiService = ref.read(apiServiceProvider);
+      final data = await apiService.get('/tips', params: {
         'limit': '4',
         'sort_by': 'created_at',
         'sort_order': 'desc',

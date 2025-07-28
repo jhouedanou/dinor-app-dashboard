@@ -154,7 +154,7 @@ class _DinorAppState extends ConsumerState<DinorApp> {
   void _handleShare() {
     print('🎯 [App] handleShare appelé!');
     
-    final currentRoute = GoRouterState.of(context).location;
+    final currentRoute = GoRouterState.of(context).uri.path;
     
     // Créer les données de partage basées sur la route actuelle
     final shareData = {
@@ -216,7 +216,7 @@ class _DinorAppState extends ConsumerState<DinorApp> {
 
   // COMPUTED équivalent à showBottomNav Vue
   bool get _showBottomNav {
-    final currentRoute = GoRouterState.of(context).location;
+    final currentRoute = GoRouterState.of(context).uri.path;
     const excludedRoutes = ['/login', '/register', '/auth-error', '/404'];
     return !excludedRoutes.any((excludedPath) => 
       currentRoute == excludedPath || currentRoute.startsWith(excludedPath)
@@ -330,7 +330,7 @@ class _DinorAppState extends ConsumerState<DinorApp> {
             // Auth Modal - v-model="showAuthModal"
             if (_showAuthModal)
               AuthModal(
-                isVisible: _showAuthModal,
+                isOpen: _showAuthModal,
                 onClose: () => setState(() => _showAuthModal = false),
               ),
           ],

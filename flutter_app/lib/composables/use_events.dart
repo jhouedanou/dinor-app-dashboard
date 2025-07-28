@@ -40,7 +40,9 @@ class EventsState {
 }
 
 class EventsNotifier extends StateNotifier<EventsState> {
-  EventsNotifier() : super(EventsState(
+  final ApiService _apiService;
+  
+  EventsNotifier(this._apiService) : super(EventsState(
     events: [],
     loading: false,
     meta: {},
@@ -55,7 +57,7 @@ class EventsNotifier extends StateNotifier<EventsState> {
     try {
       print('📅 [Events] Chargement des événements...');
       
-      final data = await ApiService.instance.getEvents(
+      final data = await _apiService.get('/events',
         params: params,
         forceRefresh: forceRefresh,
       );
@@ -89,5 +91,6 @@ class EventsNotifier extends StateNotifier<EventsState> {
 }
 
 final eventsProvider = StateNotifierProvider<EventsNotifier, EventsState>((ref) {
-  return EventsNotifier();
+  final apiService = ref.read(apiServiceProvider);
+  return EventsNotifier(apiService);
 }); 

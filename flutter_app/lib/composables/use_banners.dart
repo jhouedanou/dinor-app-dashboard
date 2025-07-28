@@ -23,7 +23,7 @@ class BannersNotifier extends StateNotifier<List<dynamic>> {
       
       return [];
     } catch (error) {
-      print('❌ [BannersNotifier] Erreur chargement bannières:', error);
+      print('❌ [BannersNotifier] Erreur chargement bannières: $error');
       return [];
     }
   }
@@ -51,7 +51,7 @@ class BannersNotifier extends StateNotifier<List<dynamic>> {
       
       return [];
     } catch (error) {
-      print('❌ [BannersNotifier] Erreur chargement bannières:', error);
+      print('❌ [BannersNotifier] Erreur chargement bannières: $error');
       return [];
     }
   }

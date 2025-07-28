@@ -106,7 +106,6 @@ class AppHeader extends StatelessWidget {
                         color: initialFavorited
                             ? const Color(0xFFE53E3E) // Rouge si favori
                             : const Color(0xFF2D3748), // Foncé sinon
-                        filled: initialFavorited,
                       ),
                       padding: EdgeInsets.zero,
                     ),

@@ -46,7 +46,7 @@ final GoRouter appRouter = GoRouter(
   
   // Navigation guards équivalent à beforeEach Vue
   redirect: (BuildContext context, GoRouterState state) {
-    final location = state.location;
+    final location = state.uri.path;
     
     // Log navigation (équivalent console.log Vue)
     print('🧭 [Router] Navigation vers: $location');
@@ -265,7 +265,7 @@ final GoRouter appRouter = GoRouter(
   
   // Gestion d'erreurs (équivalent :pathMatch(.*) → '/' Vue)
   errorBuilder: (context, state) {
-    print('❌ [Router] Route non trouvée: ${state.location}');
+    print('❌ [Router] Route non trouvée: ${state.uri.path}');
     _updateDocumentTitle('Page non trouvée - Dinor App');
     
     return Scaffold(

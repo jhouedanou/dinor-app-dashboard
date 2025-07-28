@@ -58,7 +58,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         print('🔐 [AuthNotifier] Authentification restaurée depuis le stockage');
       }
     } catch (error) {
-      print('❌ [AuthNotifier] Erreur chargement auth stockée:', error);
+      print('❌ [AuthNotifier] Erreur chargement auth stockée: $error');
     }
   }
 
@@ -70,7 +70,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await prefs.setString('user_email', userEmail);
       print('💾 [AuthNotifier] Authentification sauvegardée');
     } catch (error) {
-      print('❌ [AuthNotifier] Erreur sauvegarde auth:', error);
+      print('❌ [AuthNotifier] Erreur sauvegarde auth: $error');
     }
   }
 
@@ -82,7 +82,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await prefs.remove('user_email');
       print('🧹 [AuthNotifier] Authentification supprimée du stockage');
     } catch (error) {
-      print('❌ [AuthNotifier] Erreur suppression auth:', error);
+      print('❌ [AuthNotifier] Erreur suppression auth: $error');
     }
   }
 
@@ -121,7 +121,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       
       return false;
     } catch (error) {
-      print('❌ [AuthNotifier] Erreur connexion:', error);
+      print('❌ [AuthNotifier] Erreur connexion: $error');
       return false;
     }
   }
@@ -163,7 +163,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       
       return false;
     } catch (error) {
-      print('❌ [AuthNotifier] Erreur inscription:', error);
+      print('❌ [AuthNotifier] Erreur inscription: $error');
       return false;
     }
   }
@@ -175,9 +175,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
       // Appeler l'API de déconnexion si nécessaire
       if (state.token != null) {
         try {
-          await _apiService.post('/auth/logout');
+          await _apiService.post('/auth/logout', {});
         } catch (error) {
-          print('⚠️ [AuthNotifier] Erreur API déconnexion (ignorée):', error);
+          print('⚠️ [AuthNotifier] Erreur API déconnexion (ignorée): $error');
         }
       }
       
@@ -189,7 +189,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       
       print('✅ [AuthNotifier] Déconnexion réussie');
     } catch (error) {
-      print('❌ [AuthNotifier] Erreur déconnexion:', error);
+      print('❌ [AuthNotifier] Erreur déconnexion: $error');
     }
   }
 
@@ -202,7 +202,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final response = await _apiService.get('/auth/me');
       return response['success'];
     } catch (error) {
-      print('❌ [AuthNotifier] Erreur vérification auth:', error);
+      print('❌ [AuthNotifier] Erreur vérification auth: $error');
       // Si erreur, considérer comme non authentifié
       await logout();
       return false;

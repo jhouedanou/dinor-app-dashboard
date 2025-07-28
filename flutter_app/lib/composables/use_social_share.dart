@@ -23,7 +23,7 @@ class SocialShareNotifier extends StateNotifier<bool> {
       
       print('✅ [SocialShareNotifier] Partage réussi');
     } catch (error) {
-      print('❌ [SocialShareNotifier] Erreur partage:', error);
+      print('❌ [SocialShareNotifier] Erreur partage: $error');
     }
   }
 
@@ -49,7 +49,7 @@ class SocialShareNotifier extends StateNotifier<bool> {
         );
       }
     } catch (error) {
-      print('❌ [SocialShareNotifier] Erreur partage Facebook:', error);
+      print('❌ [SocialShareNotifier] Erreur partage Facebook: $error');
     }
   }
 
@@ -76,7 +76,7 @@ class SocialShareNotifier extends StateNotifier<bool> {
         );
       }
     } catch (error) {
-      print('❌ [SocialShareNotifier] Erreur partage Twitter:', error);
+      print('❌ [SocialShareNotifier] Erreur partage Twitter: $error');
     }
   }
 
@@ -104,7 +104,7 @@ class SocialShareNotifier extends StateNotifier<bool> {
         );
       }
     } catch (error) {
-      print('❌ [SocialShareNotifier] Erreur partage Email:', error);
+      print('❌ [SocialShareNotifier] Erreur partage Email: $error');
     }
   }
 
@@ -131,7 +131,7 @@ class SocialShareNotifier extends StateNotifier<bool> {
         );
       }
     } catch (error) {
-      print('❌ [SocialShareNotifier] Erreur partage SMS:', error);
+      print('❌ [SocialShareNotifier] Erreur partage SMS: $error');
     }
   }
 
@@ -144,7 +144,7 @@ class SocialShareNotifier extends StateNotifier<bool> {
       
       print('✅ [SocialShareNotifier] Texte copié');
     } catch (error) {
-      print('❌ [SocialShareNotifier] Erreur copie presse-papiers:', error);
+      print('❌ [SocialShareNotifier] Erreur copie presse-papiers: $error');
     }
   }
 
@@ -182,7 +182,7 @@ class SocialShareNotifier extends StateNotifier<bool> {
         imageUrl: imageUrl,
       );
     } catch (error) {
-      print('❌ [SocialShareNotifier] Erreur partage recette:', error);
+      print('❌ [SocialShareNotifier] Erreur partage recette: $error');
     }
   }
 
@@ -204,7 +204,7 @@ class SocialShareNotifier extends StateNotifier<bool> {
         imageUrl: imageUrl,
       );
     } catch (error) {
-      print('❌ [SocialShareNotifier] Erreur partage astuce:', error);
+      print('❌ [SocialShareNotifier] Erreur partage astuce: $error');
     }
   }
 
@@ -242,7 +242,7 @@ class SocialShareNotifier extends StateNotifier<bool> {
         imageUrl: imageUrl,
       );
     } catch (error) {
-      print('❌ [SocialShareNotifier] Erreur partage événement:', error);
+      print('❌ [SocialShareNotifier] Erreur partage événement: $error');
     }
   }
 
@@ -275,7 +275,7 @@ class SocialShareNotifier extends StateNotifier<bool> {
         imageUrl: imageUrl,
       );
     } catch (error) {
-      print('❌ [SocialShareNotifier] Erreur partage vidéo:', error);
+      print('❌ [SocialShareNotifier] Erreur partage vidéo: $error');
     }
   }
 }

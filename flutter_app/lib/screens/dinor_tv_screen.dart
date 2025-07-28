@@ -71,7 +71,7 @@ class _DinorTVScreenState extends ConsumerState<DinorTVScreen> with AutomaticKee
   }
 
   void _handleLikeTap(dynamic video) async {
-    final authHandler = ref.read(authHandlerProvider.notifier);
+    final authHandler = ref.read(useAuthHandlerProvider.notifier);
     
     if (!authHandler.isAuthenticated) {
       setState(() {
@@ -90,7 +90,7 @@ class _DinorTVScreenState extends ConsumerState<DinorTVScreen> with AutomaticKee
   }
 
   void _handleFavoriteTap(dynamic video) async {
-    final authHandler = ref.read(authHandlerProvider.notifier);
+    final authHandler = ref.read(useAuthHandlerProvider.notifier);
     
     if (!authHandler.isAuthenticated) {
       setState(() {

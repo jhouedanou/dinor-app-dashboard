@@ -55,12 +55,9 @@ class _LikeButtonState extends ConsumerState<LikeButton> {
     try {
       final apiService = ref.read(apiServiceProvider);
       
-      final response = await apiService.request('/likes/toggle', {
-        method: 'POST',
-        body: {
-          'likeable_type': widget.type,
-          'likeable_id': widget.itemId,
-        },
+      final response = await apiService.post('/likes/toggle', {
+        'likeable_type': widget.type,
+        'likeable_id': widget.itemId,
       });
       
       if (response['success']) {
@@ -72,7 +69,7 @@ class _LikeButtonState extends ConsumerState<LikeButton> {
         print('❤️ [LikeButton] Like toggled: $_isLiked, count: $_count');
       }
     } catch (error) {
-      print('❌ [LikeButton] Erreur toggle like:', error);
+      print('❌ [LikeButton] Erreur toggle like: $error');
       
       // Si erreur 401, demander authentification
       if (error.toString().contains('401') || error.toString().contains('connecté')) {
@@ -160,7 +157,7 @@ class _LikeButtonState extends ConsumerState<LikeButton> {
         return BoxDecoration(
           color: Colors.transparent,
           border: Border.all(
-            color: _isLiked ? const Color(0xFFE53E3E) : Colors.grey[300],
+            color: _isLiked ? const Color(0xFFE53E3E) : Colors.grey[300]!,
             width: 1,
           ),
           borderRadius: BorderRadius.circular(_getBorderRadius()),

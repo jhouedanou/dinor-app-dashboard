@@ -40,7 +40,9 @@ class DinorTVState {
 }
 
 class DinorTVNotifier extends StateNotifier<DinorTVState> {
-  DinorTVNotifier() : super(DinorTVState(
+  final ApiService _apiService;
+  
+  DinorTVNotifier(this._apiService) : super(DinorTVState(
     videos: [],
     loading: false,
     meta: {},
@@ -55,7 +57,7 @@ class DinorTVNotifier extends StateNotifier<DinorTVState> {
     try {
       print('📺 [DinorTV] Chargement des vidéos...');
       
-      final data = await ApiService.instance.getVideos(
+      final data = await _apiService.get('/dinor-tv',
         params: params,
         forceRefresh: forceRefresh,
       );
@@ -89,5 +91,6 @@ class DinorTVNotifier extends StateNotifier<DinorTVState> {
 }
 
 final dinorTVProvider = StateNotifierProvider<DinorTVNotifier, DinorTVState>((ref) {
-  return DinorTVNotifier();
+  final apiService = ref.read(apiServiceProvider);
+  return DinorTVNotifier(apiService);
 }); 

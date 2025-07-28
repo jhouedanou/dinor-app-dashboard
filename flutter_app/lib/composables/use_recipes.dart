@@ -21,7 +21,7 @@ class RecipesNotifier extends StateNotifier<List<dynamic>> {
       
       return [];
     } catch (error) {
-      print('❌ [RecipesNotifier] Erreur chargement recettes:', error);
+      print('❌ [RecipesNotifier] Erreur chargement recettes: $error');
       return [];
     }
   }
@@ -41,7 +41,7 @@ class RecipesNotifier extends StateNotifier<List<dynamic>> {
       
       return [];
     } catch (error) {
-      print('❌ [RecipesNotifier] Erreur rechargement recettes:', error);
+      print('❌ [RecipesNotifier] Erreur rechargement recettes: $error');
       return [];
     }
   }
@@ -60,7 +60,7 @@ class RecipesNotifier extends StateNotifier<List<dynamic>> {
       
       return null;
     } catch (error) {
-      print('❌ [RecipesNotifier] Erreur chargement recette:', error);
+      print('❌ [RecipesNotifier] Erreur chargement recette: $error');
       return null;
     }
   }
@@ -79,7 +79,7 @@ class RecipesNotifier extends StateNotifier<List<dynamic>> {
       
       return null;
     } catch (error) {
-      print('❌ [RecipesNotifier] Erreur rechargement recette:', error);
+      print('❌ [RecipesNotifier] Erreur rechargement recette: $error');
       return null;
     }
   }

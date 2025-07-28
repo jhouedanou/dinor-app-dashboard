@@ -21,7 +21,7 @@ class TipsNotifier extends StateNotifier<List<dynamic>> {
       
       return [];
     } catch (error) {
-      print('❌ [TipsNotifier] Erreur chargement astuces:', error);
+      print('❌ [TipsNotifier] Erreur chargement astuces: $error');
       return [];
     }
   }
@@ -41,7 +41,7 @@ class TipsNotifier extends StateNotifier<List<dynamic>> {
       
       return [];
     } catch (error) {
-      print('❌ [TipsNotifier] Erreur rechargement astuces:', error);
+      print('❌ [TipsNotifier] Erreur rechargement astuces: $error');
       return [];
     }
   }
@@ -60,7 +60,7 @@ class TipsNotifier extends StateNotifier<List<dynamic>> {
       
       return null;
     } catch (error) {
-      print('❌ [TipsNotifier] Erreur chargement astuce:', error);
+      print('❌ [TipsNotifier] Erreur chargement astuce: $error');
       return null;
     }
   }
@@ -79,7 +79,7 @@ class TipsNotifier extends StateNotifier<List<dynamic>> {
       
       return null;
     } catch (error) {
-      print('❌ [TipsNotifier] Erreur rechargement astuce:', error);
+      print('❌ [TipsNotifier] Erreur rechargement astuce: $error');
       return null;
     }
   }

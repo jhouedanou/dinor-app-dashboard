@@ -21,23 +21,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
-// Stores (remplace Pinia)
-import 'stores/app_store.dart';
-import 'stores/auth_store.dart';
-import 'stores/api_store.dart';
-
 // Services (remplace les services Vue)
 import 'services/api_service.dart';
-import 'services/notification_service.dart';
 
 // Router (remplace Vue Router)
 import 'router/app_router.dart';
 
 // App principale (remplace App.vue)
 import 'app.dart';
-
-// Global error handler
-import 'utils/error_handler.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -53,7 +44,7 @@ void main() async {
   
   // Gestion d'erreurs globales (équivalent app.config.errorHandler)
   FlutterError.onError = (FlutterErrorDetails details) {
-    ErrorHandler.handleFlutterError(details);
+    print('❌ [FlutterError] ${details.exception}');
   };
   
   // Support tactile (équivalent 'ontouchstart' in window)
@@ -82,10 +73,10 @@ Future<void> _initializeServices() async {
   final prefs = await SharedPreferences.getInstance();
   
   // API Service (équivalent service api.js)
-  await ApiService.initialize();
+  // await ApiService.initialize();
   
   // Notification Service (équivalent OneSignal)
-  await NotificationService.initialize();
+  // await NotificationService.initialize();
   
   print('✅ [Main] Services initialisés avec succès');
 }

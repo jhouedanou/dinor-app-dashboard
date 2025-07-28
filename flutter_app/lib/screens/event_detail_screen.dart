@@ -66,7 +66,8 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
 
     try {
       print('📅 [EventDetailScreen] Chargement détails événement: ${widget.id}');
-      final data = await ApiService.instance.getEvent(widget.id);
+      final apiService = ref.read(apiServiceProvider);
+      final data = await apiService.get('/events/${widget.id}');
 
       if (data['success'] == true) {
         setState(() {
@@ -87,7 +88,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
   }
 
   void _handleLikeTap() async {
-    final authHandler = ref.read(authHandlerProvider.notifier);
+    final authHandler = ref.read(useAuthHandlerProvider.notifier);
     
     if (!authHandler.isAuthenticated) {
       setState(() {
@@ -106,7 +107,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
   }
 
   void _handleFavoriteTap() async {
-    final authHandler = ref.read(authHandlerProvider.notifier);
+    final authHandler = ref.read(useAuthHandlerProvider.notifier);
     
     if (!authHandler.isAuthenticated) {
       setState(() {
@@ -127,7 +128,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
   void _handleShareTap() async {
     if (_event == null) return;
 
-    final shareService = ref.read(socialShareProvider.notifier);
+    final shareService = ref.read(useSocialShareProvider.notifier);
     await shareService.shareEvent(_event!);
   }
 

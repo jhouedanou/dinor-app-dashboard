@@ -26,7 +26,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 
 // Components
-import '../components/common/badge.dart';
+import '../components/common/badge.dart' as dinor_badge;
 import '../components/common/like_button.dart';
 import '../components/common/auth_modal.dart';
 import '../components/common/accordion.dart';
@@ -174,7 +174,7 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
       
       print('✅ [TipDetailScreen] Commentaire ajouté avec succès');
     } catch (error) {
-      print('❌ [TipDetailScreen] Erreur lors de l\'ajout du commentaire:', error);
+      print('❌ [TipDetailScreen] Erreur lors de l\'ajout du commentaire: $error');
       
       // Si erreur 401, demander connexion
       if (error.toString().contains('401') || error.toString().contains('connecté')) {
@@ -188,7 +188,7 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
       await ref.read(useCommentsProvider.notifier).deleteComment(commentId);
       await _loadComments(); // Recharger les commentaires
     } catch (error) {
-      print('❌ [TipDetailScreen] Erreur suppression commentaire:', error);
+      print('❌ [TipDetailScreen] Erreur suppression commentaire: $error');
     }
   }
 
@@ -199,7 +199,7 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
       await _loadTip(forceRefresh: true);
       print('✅ [TipDetailScreen] Rechargement forcé terminé');
     } catch (error) {
-      print('❌ [TipDetailScreen] Erreur lors du rechargement forcé:', error);
+      print('❌ [TipDetailScreen] Erreur lors du rechargement forcé: $error');
     }
   }
 
@@ -473,7 +473,7 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
           child: Row(
             children: [
               if (_tip!['difficulty'] != null)
-                Badge(
+                dinor_badge.Badge(
                   text: _getDifficultyLabel(_tip!['difficulty']),
                   icon: 'star',
                   variant: 'secondary',
@@ -481,7 +481,7 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
                 ),
               const SizedBox(width: 8),
               if (_tip!['type'] != null)
-                Badge(
+                dinor_badge.Badge(
                   text: _getTypeLabel(_tip!['type']),
                   icon: 'tag',
                   variant: 'neutral',
@@ -717,7 +717,7 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
                   ),
                 ),
                 TextButton(
-                  onPressed: () => ref.read(useAuthHandlerProvider).logout(),
+                  onPressed: () => ref.read(useAuthHandlerProvider.notifier).logout(),
                   child: const Text('Déconnexion'),
                 ),
               ],

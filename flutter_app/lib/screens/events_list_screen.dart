@@ -75,7 +75,7 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> with Automa
   }
 
   void _handleLikeTap(dynamic event) async {
-    final authHandler = ref.read(authHandlerProvider.notifier);
+    final authHandler = ref.read(useAuthHandlerProvider.notifier);
     
     if (!authHandler.isAuthenticated) {
       setState(() {
@@ -94,7 +94,7 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> with Automa
   }
 
   void _handleFavoriteTap(dynamic event) async {
-    final authHandler = ref.read(authHandlerProvider.notifier);
+    final authHandler = ref.read(useAuthHandlerProvider.notifier);
     
     if (!authHandler.isAuthenticated) {
       setState(() {

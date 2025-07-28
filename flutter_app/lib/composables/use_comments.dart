@@ -24,7 +24,7 @@ class CommentsNotifier extends StateNotifier<List<dynamic>> {
       
       return [];
     } catch (error) {
-      print('❌ [CommentsNotifier] Erreur chargement commentaires:', error);
+      print('❌ [CommentsNotifier] Erreur chargement commentaires: $error');
       return [];
     }
   }
@@ -47,7 +47,7 @@ class CommentsNotifier extends StateNotifier<List<dynamic>> {
       
       return [];
     } catch (error) {
-      print('❌ [CommentsNotifier] Erreur rechargement commentaires:', error);
+      print('❌ [CommentsNotifier] Erreur rechargement commentaires: $error');
       return [];
     }
   }
@@ -71,7 +71,7 @@ class CommentsNotifier extends StateNotifier<List<dynamic>> {
       
       return false;
     } catch (error) {
-      print('❌ [CommentsNotifier] Erreur ajout commentaire:', error);
+      print('❌ [CommentsNotifier] Erreur ajout commentaire: $error');
       return false;
     }
   }
@@ -91,7 +91,7 @@ class CommentsNotifier extends StateNotifier<List<dynamic>> {
       
       return false;
     } catch (error) {
-      print('❌ [CommentsNotifier] Erreur suppression commentaire:', error);
+      print('❌ [CommentsNotifier] Erreur suppression commentaire: $error');
       return false;
     }
   }
