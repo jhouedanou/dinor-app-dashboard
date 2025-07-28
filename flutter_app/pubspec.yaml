@@ -1,0 +1,90 @@
+name: dinor_app
+description: Application Dinor - conversion Flutter fidèle de l'app Vue PWA
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # État global (remplace Pinia)
+  provider: ^6.1.1
+  riverpod: ^2.4.9
+  flutter_riverpod: ^2.4.9
+
+  # Navigation (remplace Vue Router)
+  go_router: ^12.1.3
+  
+  # HTTP et API (remplace axios)
+  http: ^1.1.2
+  dio: ^5.4.0
+  
+  # Authentification et storage (remplace localStorage)
+  shared_preferences: ^2.2.2
+  flutter_secure_storage: ^9.0.0
+  
+  # Icons (remplace Lucide Vue - 80+ icônes identiques)
+  lucide_icons: ^0.290.0
+  font_awesome_flutter: ^10.6.0
+  
+  # Animations (remplace transitions CSS)
+  animations: ^2.0.8
+  lottie: ^2.7.0
+  
+  # Images et cache
+  cached_network_image: ^3.3.0
+  
+  # PWA features simulation
+  package_info_plus: ^4.2.0
+  connectivity_plus: ^5.0.2
+  
+  # Utils
+  intl: ^0.18.1
+  json_annotation: ^4.8.1
+  equatable: ^2.0.5
+  
+  # UI Components
+  flutter_staggered_grid_view: ^0.7.0
+  shimmer: ^3.0.0
+  
+  # Web support
+  url_launcher: ^6.2.2
+  
+  # Material 3 design
+  cupertino_icons: ^1.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+  json_serializable: ^6.7.1
+  build_runner: ^2.4.7
+
+flutter:
+  uses-material-design: true
+  
+  # Assets identiques à l'app Vue
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/fonts/
+  
+  # Polices Google Fonts identiques
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto-Regular.ttf
+        - asset: assets/fonts/Roboto-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Roboto-Bold.ttf
+          weight: 700
+    - family: OpenSans
+      fonts:
+        - asset: assets/fonts/OpenSans-Regular.ttf
+        - asset: assets/fonts/OpenSans-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/OpenSans-Bold.ttf
+          weight: 700
