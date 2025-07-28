@@ -363,7 +363,7 @@ class _SimpleTipsScreenState extends State<SimpleTipsScreen> {
       ),
       child: InkWell(
         onTap: () {
-          NavigationService.pushNamed('/tip-detail', arguments: {'id': tip['id'].toString()});
+          NavigationService.goToTipDetail(tip['id'].toString());
         },
         borderRadius: BorderRadius.circular(12),
         child: Column(

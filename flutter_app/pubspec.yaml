@@ -37,6 +37,7 @@ dependencies:
 
   # Images et cache
   cached_network_image: ^3.3.0
+  flutter_svg: ^2.0.9
 
   # PWA features simulation
   package_info_plus: ^4.2.0

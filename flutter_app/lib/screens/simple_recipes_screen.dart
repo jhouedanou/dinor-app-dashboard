@@ -366,7 +366,7 @@ class _SimpleRecipesScreenState extends State<SimpleRecipesScreen> {
       ),
       child: InkWell(
         onTap: () {
-          NavigationService.pushNamed('/recipe-detail', arguments: {'id': recipe['id'].toString()});
+          NavigationService.goToRecipeDetail(recipe['id'].toString());
         },
         borderRadius: BorderRadius.circular(12),
         child: Column(

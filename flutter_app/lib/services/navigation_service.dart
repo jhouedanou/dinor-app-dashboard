@@ -8,11 +8,11 @@
 import 'package:flutter/material.dart';
 import '../screens/working_home_screen.dart';
 import '../screens/simple_recipes_screen.dart';
-import '../screens/recipe_detail_screen.dart';
+import '../screens/simple_recipe_detail_screen.dart';
 import '../screens/simple_tips_screen.dart';
-import '../screens/tip_detail_screen.dart';
+import '../screens/simple_tip_detail_screen.dart';
 import '../screens/simple_events_screen.dart';
-import '../screens/event_detail_screen.dart';
+import '../screens/simple_event_detail_screen.dart';
 import '../screens/simple_dinor_tv_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/pages_list_screen.dart';
@@ -30,11 +30,11 @@ class NavigationService {
   // Routes définies
   static const String home = '/';
   static const String recipes = '/recipes';
-  static const String recipeDetail = '/recipe';
+  static const String recipeDetail = '/recipe-detail';
   static const String tips = '/tips';
-  static const String tipDetail = '/tip';
+  static const String tipDetail = '/tip-detail';
   static const String events = '/events';
-  static const String eventDetail = '/event';
+  static const String eventDetail = '/event-detail';
   static const String dinorTv = '/dinor-tv';
   static const String profile = '/profile';
   static const String pages = '/pages';
@@ -112,7 +112,7 @@ class NavigationService {
   }
   
   static void goToRecipeDetail(String id) {
-    pushNamed(recipeDetail, arguments: id);
+    pushNamed(recipeDetail, arguments: {'id': id});
   }
   
   static void goToTips() {
@@ -120,7 +120,7 @@ class NavigationService {
   }
   
   static void goToTipDetail(String id) {
-    pushNamed(tipDetail, arguments: id);
+    pushNamed(tipDetail, arguments: {'id': id});
   }
   
   static void goToEvents() {
@@ -128,7 +128,7 @@ class NavigationService {
   }
   
   static void goToEventDetail(String id) {
-    pushNamed(eventDetail, arguments: id);
+    pushNamed(eventDetail, arguments: {'id': id});
   }
   
   static void goToDinorTv() {
@@ -177,10 +177,10 @@ class NavigationService {
         );
         
       case recipeDetail:
-        final id = settings.arguments as String?;
-        if (id == null) return _errorRoute();
+        final arguments = settings.arguments as Map<String, dynamic>?;
+        if (arguments == null || arguments['id'] == null) return _errorRoute();
         return MaterialPageRoute(
-          builder: (_) => RecipeDetailScreen(id: id),
+          builder: (_) => SimpleRecipeDetailScreen(arguments: arguments),
           settings: settings,
         );
         
@@ -191,10 +191,10 @@ class NavigationService {
         );
         
       case tipDetail:
-        final id = settings.arguments as String?;
-        if (id == null) return _errorRoute();
+        final arguments = settings.arguments as Map<String, dynamic>?;
+        if (arguments == null || arguments['id'] == null) return _errorRoute();
         return MaterialPageRoute(
-          builder: (_) => TipDetailScreen(id: id),
+          builder: (_) => SimpleTipDetailScreen(arguments: arguments),
           settings: settings,
         );
         
@@ -205,10 +205,10 @@ class NavigationService {
         );
         
       case eventDetail:
-        final id = settings.arguments as String?;
-        if (id == null) return _errorRoute();
+        final arguments = settings.arguments as Map<String, dynamic>?;
+        if (arguments == null || arguments['id'] == null) return _errorRoute();
         return MaterialPageRoute(
-          builder: (_) => EventDetailScreen(id: id),
+          builder: (_) => SimpleEventDetailScreen(arguments: arguments),
           settings: settings,
         );
         

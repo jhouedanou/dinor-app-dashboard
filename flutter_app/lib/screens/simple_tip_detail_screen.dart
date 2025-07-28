@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../services/navigation_service.dart';
+import '../services/cache_service.dart';
 
 class SimpleTipDetailScreen extends StatefulWidget {
-  final String id;
-  
-  const SimpleTipDetailScreen({Key? key, required this.id}) : super(key: key);
+  final Map<String, dynamic> arguments;
+
+  const SimpleTipDetailScreen({Key? key, required this.arguments}) : super(key: key);
 
   @override
   State<SimpleTipDetailScreen> createState() => _SimpleTipDetailScreenState();
@@ -16,45 +17,62 @@ class _SimpleTipDetailScreenState extends State<SimpleTipDetailScreen> {
   Map<String, dynamic>? tip;
   bool isLoading = true;
   String? error;
-  bool isFavorite = false;
   bool isLiked = false;
+  bool isFavorite = false;
+
+  final CacheService _cacheService = CacheService();
 
   @override
   void initState() {
     super.initState();
-    _loadTip();
+    _loadTipDetail();
   }
 
-  Future<void> _loadTip() async {
+  Future<void> _loadTipDetail() async {
+    final tipId = widget.arguments['id'] as String;
+    
     try {
-      print('🔄 [TipDetail] Chargement de l\'astuce ${widget.id}...');
-      
+      // Vérifier d'abord le cache
+      final cachedTip = await _cacheService.getCachedTipDetail(tipId);
+      if (cachedTip != null) {
+        setState(() {
+          tip = cachedTip;
+          isLoading = false;
+        });
+        return;
+      }
+
+      // Charger depuis l'API
       final response = await http.get(
-        Uri.parse('https://new.dinorapp.com/api/v1/tips/${widget.id}'),
+        Uri.parse('https://new.dinorapp.com/api/v1/tips/$tipId'),
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
       ).timeout(const Duration(seconds: 10));
 
-      print('📡 [TipDetail] Response status: ${response.statusCode}');
-      
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print('✅ [TipDetail] Data reçue: ${data.toString().substring(0, 100)}...');
+        final tipData = data['data'] ?? data;
+        
+        // Mettre en cache
+        await _cacheService.cacheTipDetail(tipId, tipData);
         
         setState(() {
-          tip = data['data'];
+          tip = tipData;
           isLoading = false;
           error = null;
         });
-        
-        print('💡 [TipDetail] Astuce chargée: ${tip?['title']}');
+      } else if (response.statusCode == 404) {
+        setState(() {
+          isLoading = false;
+          error = 'Astuce non trouvée';
+        });
       } else {
         throw Exception('Erreur API: ${response.statusCode}');
       }
     } catch (e) {
-      print('❌ [TipDetail] Erreur: $e');
+      print('❌ [TipDetail] Erreur chargement: $e');
       setState(() {
         isLoading = false;
         error = e.toString();
@@ -66,49 +84,34 @@ class _SimpleTipDetailScreenState extends State<SimpleTipDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
-      body: _buildBody(),
+      body: isLoading
+          ? const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFE53E3E)),
+              ),
+            )
+          : error != null
+              ? _buildErrorWidget()
+              : tip != null
+                  ? _buildTipDetail()
+                  : const Center(child: Text('Astuce non trouvée')),
     );
   }
 
-  Widget _buildBody() {
-    if (isLoading) {
-      return const Scaffold(
-        backgroundColor: Color(0xFFF5F5F5),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFE53E3E)),
-              ),
-              SizedBox(height: 16),
-              Text(
-                'Chargement de l\'astuce...',
-                style: TextStyle(
-                  fontFamily: 'Roboto',
-                  fontSize: 16,
-                  color: Color(0xFF4A5568),
-                ),
-              ),
-            ],
-          ),
+  Widget _buildErrorWidget() {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F5),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFE53E3E),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => NavigationService.pop(),
         ),
-      );
-    }
-
-    if (error != null || tip == null) {
-      return Scaffold(
-        backgroundColor: const Color(0xFFF5F5F5),
-        appBar: AppBar(
-          title: const Text('Astuce'),
-          backgroundColor: Colors.white,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => NavigationService.pop(),
-          ),
-        ),
-        body: Center(
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -119,32 +122,51 @@ class _SimpleTipDetailScreenState extends State<SimpleTipDetailScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Erreur: $error',
+                error == 'Astuce non trouvée' ? 'Astuce non trouvée' : 'Erreur de chargement',
                 style: const TextStyle(
-                  fontFamily: 'Roboto',
-                  fontSize: 16,
-                  color: Color(0xFF4A5568),
+                  fontFamily: 'OpenSans',
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF2D3748),
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
+              Text(
+                error == 'Astuce non trouvée' 
+                    ? 'Cette astuce n\'existe pas ou a été supprimée.'
+                    : 'Impossible de charger les détails de l\'astuce.',
+                style: const TextStyle(
+                  fontFamily: 'Roboto',
+                  fontSize: 16,
+                  color: Color(0xFF718096),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
               ElevatedButton(
-                onPressed: _loadTip,
+                onPressed: _loadTipDetail,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFE53E3E),
                   foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
                 child: const Text('Réessayer'),
               ),
             ],
           ),
         ),
-      );
-    }
+      ),
+    );
+  }
 
+  Widget _buildTipDetail() {
     return CustomScrollView(
       slivers: [
-        // AppBar avec image de fond
+        // AppBar avec image hero
         SliverAppBar(
           expandedHeight: 300,
           pinned: true,
@@ -168,12 +190,11 @@ class _SimpleTipDetailScreenState extends State<SimpleTipDetailScreen> {
           ],
           flexibleSpace: FlexibleSpaceBar(
             background: Stack(
-              fit: StackFit.expand,
               children: [
                 // Image de fond
-                if (tip!['image_url'] != null)
-                  Image.network(
-                    tip!['image_url'],
+                Positioned.fill(
+                  child: Image.network(
+                    tip!['image_url'] ?? 'https://via.placeholder.com/400x300',
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
@@ -186,20 +207,23 @@ class _SimpleTipDetailScreenState extends State<SimpleTipDetailScreen> {
                       );
                     },
                   ),
-                // Overlay gradient
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.7),
-                      ],
+                ),
+                // Gradient overlay
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withOpacity(0.7),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-                // Titre en bas
+                // Titre et description en bas
                 Positioned(
                   bottom: 16,
                   left: 16,
@@ -244,51 +268,25 @@ class _SimpleTipDetailScreenState extends State<SimpleTipDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Stats de l'astuce
+                // Statistiques
                 _buildTipStats(),
                 const SizedBox(height: 24),
 
-                // Description
-                if (tip!['description'] != null) ...[
-                  _buildSection(
-                    'Description',
-                    Text(
-                      tip!['description'],
-                      style: const TextStyle(
-                        fontFamily: 'Roboto',
-                        fontSize: 16,
-                        color: Color(0xFF4A5568),
-                        height: 1.6,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                ],
-
-                // Contenu détaillé
+                // Contenu
                 if (tip!['content'] != null) ...[
-                  _buildSection(
-                    'Astuce',
-                    _buildContent(),
-                  ),
+                  _buildSection('Contenu', _buildContent()),
                   const SizedBox(height: 24),
                 ],
 
                 // Vidéo
                 if (tip!['video_url'] != null) ...[
-                  _buildSection(
-                    'Vidéo explicative',
-                    _buildVideoContainer(),
-                  ),
+                  _buildSection('Vidéo', _buildVideoContainer()),
                   const SizedBox(height: 24),
                 ],
 
                 // Tags
-                if (tip!['tags'] != null && tip!['tags'].isNotEmpty) ...[
-                  _buildSection(
-                    'Tags',
-                    _buildTagsList(),
-                  ),
+                if (tip!['tags'] != null) ...[
+                  _buildSection('Tags', _buildTagsList()),
                   const SizedBox(height: 24),
                 ],
 
@@ -310,68 +308,65 @@ class _SimpleTipDetailScreenState extends State<SimpleTipDetailScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          if (tip!['difficulty_level'] != null) ...[
-            Expanded(
-              child: _buildStatItem(
-                Icons.star,
-                _getDifficultyLabel(tip!['difficulty_level']),
-                _getDifficultyColor(tip!['difficulty_level']),
-              ),
-            ),
-          ],
-          if (tip!['estimated_time'] != null) ...[
-            Expanded(
-              child: _buildStatItem(
-                Icons.schedule,
-                '${tip!['estimated_time']} min',
-                const Color(0xFF718096),
-              ),
-            ),
-          ],
-          if (tip!['likes_count'] != null) ...[
-            Expanded(
-              child: _buildStatItem(
-                Icons.favorite,
-                '${tip!['likes_count']}',
-                const Color(0xFFE53E3E),
-              ),
-            ),
-          ],
-          if (tip!['comments_count'] != null) ...[
-            Expanded(
-              child: _buildStatItem(
-                Icons.comment,
-                '${tip!['comments_count']}',
-                const Color(0xFF718096),
-              ),
-            ),
-          ],
+          _buildStatItem(
+            Icons.trending_up,
+            'Difficulté',
+            _getDifficultyLabel(tip!['difficulty_level']),
+            _getDifficultyColor(tip!['difficulty_level']),
+          ),
+          _buildStatItem(
+            Icons.schedule,
+            'Temps estimé',
+            '${tip!['estimated_time'] ?? 0} min',
+            const Color(0xFFE53E3E),
+          ),
+          _buildStatItem(
+            Icons.favorite,
+            'Likes',
+            '${tip!['likes_count'] ?? 0}',
+            const Color(0xFFE53E3E),
+          ),
+          _buildStatItem(
+            Icons.comment,
+            'Commentaires',
+            '${tip!['comments_count'] ?? 0}',
+            const Color(0xFF38A169),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildStatItem(IconData icon, String label, Color color) {
+  Widget _buildStatItem(IconData icon, String label, String value, Color color) {
     return Column(
       children: [
         Icon(icon, color: color, size: 24),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(
+            fontFamily: 'OpenSans',
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF2D3748),
+          ),
+        ),
         Text(
           label,
           style: const TextStyle(
             fontFamily: 'Roboto',
             fontSize: 12,
-            color: Color(0xFF4A5568),
+            color: Color(0xFF718096),
           ),
-          textAlign: TextAlign.center,
         ),
       ],
     );
@@ -379,15 +374,14 @@ class _SimpleTipDetailScreenState extends State<SimpleTipDetailScreen> {
 
   Widget _buildSection(String title, Widget content) {
     return Container(
-      width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
@@ -399,12 +393,12 @@ class _SimpleTipDetailScreenState extends State<SimpleTipDetailScreen> {
             title,
             style: const TextStyle(
               fontFamily: 'OpenSans',
-              fontSize: 20,
+              fontSize: 18,
               fontWeight: FontWeight.w600,
               color: Color(0xFF2D3748),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           content,
         ],
       ),
@@ -412,20 +406,8 @@ class _SimpleTipDetailScreenState extends State<SimpleTipDetailScreen> {
   }
 
   Widget _buildContent() {
-    String content = '';
-    if (tip!['content'] is String) {
-      content = tip!['content'];
-    } else if (tip!['content'] is List) {
-      content = tip!['content'].map((item) {
-        if (item is Map && item['step'] != null) {
-          return item['step'];
-        }
-        return item.toString();
-      }).join('\n\n');
-    }
-
     return Text(
-      content,
+      tip!['content'],
       style: const TextStyle(
         fontFamily: 'Roboto',
         fontSize: 16,
@@ -442,19 +424,19 @@ class _SimpleTipDetailScreenState extends State<SimpleTipDetailScreen> {
         color: const Color(0xFFF7FAFC),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Center(
+      child: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.play_circle_outline,
               size: 48,
-              color: Color(0xFFE53E3E),
+              color: Color(0xFFCBD5E0),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(
-              'Vidéo explicative disponible',
-              style: const TextStyle(
+              'Vidéo disponible',
+              style: TextStyle(
                 fontFamily: 'Roboto',
                 fontSize: 14,
                 color: Color(0xFF718096),
@@ -467,33 +449,28 @@ class _SimpleTipDetailScreenState extends State<SimpleTipDetailScreen> {
   }
 
   Widget _buildTagsList() {
-    List<String> tags = [];
-    if (tip!['tags'] is List) {
-      tags = tip!['tags'].whereType<String>().toList();
-    } else if (tip!['tags'] is String) {
-      tags = [tip!['tags']];
-    }
+    final tags = tip!['tags'];
+    if (tags == null) return const Text('Aucun tag disponible');
 
+    final tagsList = tags is List ? tags : [tags];
+    
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: tags.map((tag) {
+      children: tagsList.map<Widget>((tag) {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: const Color(0xFFE53E3E).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: const Color(0xFFE53E3E).withOpacity(0.3),
-            ),
+            color: const Color(0xFFF7FAFC),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
           ),
           child: Text(
-            tag,
+            tag.toString(),
             style: const TextStyle(
               fontFamily: 'Roboto',
               fontSize: 12,
-              color: Color(0xFFE53E3E),
-              fontWeight: FontWeight.w500,
+              color: Color(0xFF4A5568),
             ),
           ),
         );
@@ -504,44 +481,34 @@ class _SimpleTipDetailScreenState extends State<SimpleTipDetailScreen> {
   Widget _buildActions() {
     return Row(
       children: [
-        // Like button
         Expanded(
           child: ElevatedButton.icon(
             onPressed: _toggleLike,
-            icon: Icon(
-              isLiked ? Icons.favorite : Icons.favorite_border,
-              color: isLiked ? Colors.white : const Color(0xFFE53E3E),
-            ),
-            label: Text(
-              isLiked ? 'Aimé' : 'J\'aime',
-              style: TextStyle(
-                color: isLiked ? Colors.white : const Color(0xFFE53E3E),
-              ),
-            ),
+            icon: Icon(isLiked ? Icons.favorite : Icons.favorite_border),
+            label: Text(isLiked ? 'Aimé' : 'J\'aime'),
             style: ElevatedButton.styleFrom(
               backgroundColor: isLiked ? const Color(0xFFE53E3E) : Colors.white,
-              side: BorderSide(
-                color: const Color(0xFFE53E3E),
-                width: 1,
-              ),
+              foregroundColor: isLiked ? Colors.white : const Color(0xFFE53E3E),
+              padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
+                side: BorderSide(
+                  color: isLiked ? Colors.transparent : const Color(0xFFE53E3E),
+                ),
               ),
             ),
           ),
         ),
         const SizedBox(width: 12),
-        // Share button
         Expanded(
-          child: ElevatedButton.icon(
+          child: OutlinedButton.icon(
             onPressed: _shareTip,
-            icon: const Icon(Icons.share, color: Colors.white),
-            label: const Text(
-              'Partager',
-              style: TextStyle(color: Colors.white),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFE53E3E),
+            icon: const Icon(Icons.share),
+            label: const Text('Partager'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: const Color(0xFFE53E3E),
+              side: const BorderSide(color: Color(0xFFE53E3E)),
+              padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -568,38 +535,31 @@ class _SimpleTipDetailScreenState extends State<SimpleTipDetailScreen> {
 
   void _shareTip() {
     // TODO: Implémenter le partage
-    print('Partager l\'astuce: ${tip?['title']}');
-  }
-
-  Color _getDifficultyColor(String? difficulty) {
-    switch (difficulty?.toLowerCase()) {
-      case 'easy':
-      case 'beginner':
-        return Colors.green;
-      case 'medium':
-      case 'intermediate':
-        return Colors.orange;
-      case 'hard':
-      case 'advanced':
-        return Colors.red;
-      default:
-        return const Color(0xFF718096);
-    }
   }
 
   String _getDifficultyLabel(String? difficulty) {
-    switch (difficulty?.toLowerCase()) {
-      case 'easy':
-      case 'beginner':
-        return 'Facile';
-      case 'medium':
-      case 'intermediate':
-        return 'Moyen';
-      case 'hard':
-      case 'advanced':
-        return 'Difficile';
-      default:
-        return difficulty ?? 'Facile';
-    }
+    if (difficulty == null) return 'Non spécifiée';
+    final labels = {
+      'easy': 'Facile',
+      'medium': 'Moyen',
+      'hard': 'Difficile',
+      'beginner': 'Débutant',
+      'intermediate': 'Intermédiaire',
+      'advanced': 'Avancé',
+    };
+    return labels[difficulty] ?? difficulty;
+  }
+
+  Color _getDifficultyColor(String? difficulty) {
+    if (difficulty == null) return const Color(0xFF718096);
+    final colors = {
+      'easy': const Color(0xFF38A169),
+      'medium': const Color(0xFFF4D03F),
+      'hard': const Color(0xFFE53E3E),
+      'beginner': const Color(0xFF38A169),
+      'intermediate': const Color(0xFFF4D03F),
+      'advanced': const Color(0xFFE53E3E),
+    };
+    return colors[difficulty] ?? const Color(0xFF718096);
   }
 }

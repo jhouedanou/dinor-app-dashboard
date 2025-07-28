@@ -183,6 +183,20 @@ const App: React.FC = () => {
           <AppHeader
             title={headerState.title}
             showBack={headerState.backPath !== null}
+            showFavorite={headerState.showFavorite}
+            showShare={headerState.showShare}
+            favoriteType={headerState.favoriteType}
+            favoriteItemId={headerState.favoriteItemId}
+            initialFavorited={headerState.isContentFavorited}
+            onBackPress={() => {
+              if (headerState.backPath) {
+                navigation.navigate(headerState.backPath as any);
+              } else {
+                navigation.goBack();
+              }
+            }}
+            onFavoritePress={handleFavoriteUpdate}
+            onSharePress={handleShare}
           />
           
           {/* Navigation Tabs avec style exact (identique Vue) */}

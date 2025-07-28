@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../services/navigation_service.dart';
 import '../services/cache_service.dart';
+import '../components/app_header.dart';
 
 class WorkingHomeScreen extends StatefulWidget {
   const WorkingHomeScreen({Key? key}) : super(key: key);
@@ -213,76 +214,85 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
-      body: RefreshIndicator(
-        onRefresh: _loadAllData,
-        color: const Color(0xFFE53E3E),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // En-tête
-              _buildHeader(),
-              const SizedBox(height: 24),
+      body: Column(
+        children: [
+          // En-tête avec logo
+          const AppHeader(),
+          // Contenu principal avec pull-to-refresh
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: _loadAllData,
+              color: const Color(0xFFE53E3E),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // En-tête de bienvenue
+                    _buildWelcomeHeader(),
+                    const SizedBox(height: 24),
 
-              // Recettes
-              _buildSection(
-                'Dernières Recettes',
-                '/recipes',
-                recipes,
-                isLoadingRecipes,
-                errorRecipes,
-                _buildRecipeCard,
-                Icons.restaurant,
-                const Color(0xFFE53E3E),
-              ),
-              const SizedBox(height: 24),
+                    // Recettes
+                    _buildSection(
+                      'Dernières Recettes',
+                      '/recipes',
+                      recipes,
+                      isLoadingRecipes,
+                      errorRecipes,
+                      _buildRecipeCard,
+                      Icons.restaurant,
+                      const Color(0xFFE53E3E),
+                    ),
+                    const SizedBox(height: 24),
 
-              // Astuces
-              _buildSection(
-                'Dernières Astuces',
-                '/tips',
-                tips,
-                isLoadingTips,
-                errorTips,
-                _buildTipCard,
-                Icons.lightbulb,
-                const Color(0xFFF4D03F),
-              ),
-              const SizedBox(height: 24),
+                    // Astuces
+                    _buildSection(
+                      'Dernières Astuces',
+                      '/tips',
+                      tips,
+                      isLoadingTips,
+                      errorTips,
+                      _buildTipCard,
+                      Icons.lightbulb,
+                      const Color(0xFFF4D03F),
+                    ),
+                    const SizedBox(height: 24),
 
-              // Événements
-              _buildSection(
-                'Derniers Événements',
-                '/events',
-                events,
-                isLoadingEvents,
-                errorEvents,
-                _buildEventCard,
-                Icons.event,
-                const Color(0xFF38A169),
-              ),
-              const SizedBox(height: 24),
+                    // Événements
+                    _buildSection(
+                      'Derniers Événements',
+                      '/events',
+                      events,
+                      isLoadingEvents,
+                      errorEvents,
+                      _buildEventCard,
+                      Icons.event,
+                      const Color(0xFF38A169),
+                    ),
+                    const SizedBox(height: 24),
 
-              // Vidéos
-              _buildSection(
-                'Dernières Vidéos Dinor TV',
-                '/dinor-tv',
-                videos,
-                isLoadingVideos,
-                errorVideos,
-                _buildVideoCard,
-                Icons.play_circle,
-                const Color(0xFF9B59B6),
+                    // Vidéos
+                    _buildSection(
+                      'Dernières Vidéos Dinor TV',
+                      '/dinor-tv',
+                      videos,
+                      isLoadingVideos,
+                      errorVideos,
+                      _buildVideoCard,
+                      Icons.play_circle,
+                      const Color(0xFF9B59B6),
+                    ),
+                  ],
+                ),
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildWelcomeHeader() {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -420,7 +430,7 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
       ),
       child: InkWell(
         onTap: () {
-          NavigationService.pushNamed('/recipe-detail', arguments: {'id': recipe['id'].toString()});
+          NavigationService.goToRecipeDetail(recipe['id'].toString());
         },
         borderRadius: BorderRadius.circular(16),
         child: Column(
@@ -530,7 +540,7 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
       ),
       child: InkWell(
         onTap: () {
-          NavigationService.pushNamed('/tip-detail', arguments: {'id': tip['id'].toString()});
+          NavigationService.goToTipDetail(tip['id'].toString());
         },
         borderRadius: BorderRadius.circular(16),
         child: Column(
@@ -638,7 +648,7 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
       ),
       child: InkWell(
         onTap: () {
-          NavigationService.pushNamed('/event-detail', arguments: {'id': event['id'].toString()});
+          NavigationService.goToEventDetail(event['id'].toString());
         },
         borderRadius: BorderRadius.circular(16),
         child: Column(

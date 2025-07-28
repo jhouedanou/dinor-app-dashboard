@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../services/navigation_service.dart';
+import '../services/cache_service.dart';
 
 class SimpleEventDetailScreen extends StatefulWidget {
-  final String id;
-  
-  const SimpleEventDetailScreen({Key? key, required this.id}) : super(key: key);
+  final Map<String, dynamic> arguments;
+
+  const SimpleEventDetailScreen({Key? key, required this.arguments}) : super(key: key);
 
   @override
   State<SimpleEventDetailScreen> createState() => _SimpleEventDetailScreenState();
@@ -16,45 +17,62 @@ class _SimpleEventDetailScreenState extends State<SimpleEventDetailScreen> {
   Map<String, dynamic>? event;
   bool isLoading = true;
   String? error;
-  bool isFavorite = false;
   bool isLiked = false;
+  bool isFavorite = false;
+
+  final CacheService _cacheService = CacheService();
 
   @override
   void initState() {
     super.initState();
-    _loadEvent();
+    _loadEventDetail();
   }
 
-  Future<void> _loadEvent() async {
+  Future<void> _loadEventDetail() async {
+    final eventId = widget.arguments['id'] as String;
+    
     try {
-      print('🔄 [EventDetail] Chargement de l\'événement ${widget.id}...');
-      
+      // Vérifier d'abord le cache
+      final cachedEvent = await _cacheService.getCachedEventDetail(eventId);
+      if (cachedEvent != null) {
+        setState(() {
+          event = cachedEvent;
+          isLoading = false;
+        });
+        return;
+      }
+
+      // Charger depuis l'API
       final response = await http.get(
-        Uri.parse('https://new.dinorapp.com/api/v1/events/${widget.id}'),
+        Uri.parse('https://new.dinorapp.com/api/v1/events/$eventId'),
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
       ).timeout(const Duration(seconds: 10));
 
-      print('📡 [EventDetail] Response status: ${response.statusCode}');
-      
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print('✅ [EventDetail] Data reçue: ${data.toString().substring(0, 100)}...');
+        final eventData = data['data'] ?? data;
+        
+        // Mettre en cache
+        await _cacheService.cacheEventDetail(eventId, eventData);
         
         setState(() {
-          event = data['data'];
+          event = eventData;
           isLoading = false;
           error = null;
         });
-        
-        print('📅 [EventDetail] Événement chargé: ${event?['title']}');
+      } else if (response.statusCode == 404) {
+        setState(() {
+          isLoading = false;
+          error = 'Événement non trouvé';
+        });
       } else {
         throw Exception('Erreur API: ${response.statusCode}');
       }
     } catch (e) {
-      print('❌ [EventDetail] Erreur: $e');
+      print('❌ [EventDetail] Erreur chargement: $e');
       setState(() {
         isLoading = false;
         error = e.toString();
@@ -66,49 +84,34 @@ class _SimpleEventDetailScreenState extends State<SimpleEventDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
-      body: _buildBody(),
+      body: isLoading
+          ? const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFE53E3E)),
+              ),
+            )
+          : error != null
+              ? _buildErrorWidget()
+              : event != null
+                  ? _buildEventDetail()
+                  : const Center(child: Text('Événement non trouvé')),
     );
   }
 
-  Widget _buildBody() {
-    if (isLoading) {
-      return const Scaffold(
-        backgroundColor: Color(0xFFF5F5F5),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFE53E3E)),
-              ),
-              SizedBox(height: 16),
-              Text(
-                'Chargement de l\'événement...',
-                style: TextStyle(
-                  fontFamily: 'Roboto',
-                  fontSize: 16,
-                  color: Color(0xFF4A5568),
-                ),
-              ),
-            ],
-          ),
+  Widget _buildErrorWidget() {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F5),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFE53E3E),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => NavigationService.pop(),
         ),
-      );
-    }
-
-    if (error != null || event == null) {
-      return Scaffold(
-        backgroundColor: const Color(0xFFF5F5F5),
-        appBar: AppBar(
-          title: const Text('Événement'),
-          backgroundColor: Colors.white,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => NavigationService.pop(),
-          ),
-        ),
-        body: Center(
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -119,32 +122,51 @@ class _SimpleEventDetailScreenState extends State<SimpleEventDetailScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Erreur: $error',
+                error == 'Événement non trouvé' ? 'Événement non trouvé' : 'Erreur de chargement',
                 style: const TextStyle(
-                  fontFamily: 'Roboto',
-                  fontSize: 16,
-                  color: Color(0xFF4A5568),
+                  fontFamily: 'OpenSans',
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF2D3748),
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
+              Text(
+                error == 'Événement non trouvé' 
+                    ? 'Cet événement n\'existe pas ou a été supprimé.'
+                    : 'Impossible de charger les détails de l\'événement.',
+                style: const TextStyle(
+                  fontFamily: 'Roboto',
+                  fontSize: 16,
+                  color: Color(0xFF718096),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
               ElevatedButton(
-                onPressed: _loadEvent,
+                onPressed: _loadEventDetail,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFE53E3E),
                   foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
                 child: const Text('Réessayer'),
               ),
             ],
           ),
         ),
-      );
-    }
+      ),
+    );
+  }
 
+  Widget _buildEventDetail() {
     return CustomScrollView(
       slivers: [
-        // AppBar avec image de fond
+        // AppBar avec image hero
         SliverAppBar(
           expandedHeight: 300,
           pinned: true,
@@ -168,12 +190,11 @@ class _SimpleEventDetailScreenState extends State<SimpleEventDetailScreen> {
           ],
           flexibleSpace: FlexibleSpaceBar(
             background: Stack(
-              fit: StackFit.expand,
               children: [
                 // Image de fond
-                if (event!['image_url'] != null)
-                  Image.network(
-                    event!['image_url'],
+                Positioned.fill(
+                  child: Image.network(
+                    event!['image_url'] ?? 'https://via.placeholder.com/400x300',
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
@@ -186,20 +207,23 @@ class _SimpleEventDetailScreenState extends State<SimpleEventDetailScreen> {
                       );
                     },
                   ),
-                // Overlay gradient
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.7),
-                      ],
+                ),
+                // Gradient overlay
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withOpacity(0.7),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-                // Titre en bas
+                // Titre et description en bas
                 Positioned(
                   bottom: 16,
                   left: 16,
@@ -244,51 +268,25 @@ class _SimpleEventDetailScreenState extends State<SimpleEventDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Stats de l'événement
+                // Statistiques
                 _buildEventStats(),
                 const SizedBox(height: 24),
 
-                // Description
-                if (event!['description'] != null) ...[
-                  _buildSection(
-                    'Description',
-                    Text(
-                      event!['description'],
-                      style: const TextStyle(
-                        fontFamily: 'Roboto',
-                        fontSize: 16,
-                        color: Color(0xFF4A5568),
-                        height: 1.6,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                ],
-
                 // Détails de l'événement
-                if (event!['details'] != null) ...[
-                  _buildSection(
-                    'Détails',
-                    _buildEventDetails(),
-                  ),
+                if (event!['description'] != null || event!['start_date'] != null || event!['location'] != null) ...[
+                  _buildSection('Détails', _buildEventDetails()),
                   const SizedBox(height: 24),
                 ],
 
                 // Vidéo
                 if (event!['video_url'] != null) ...[
-                  _buildSection(
-                    'Vidéo de présentation',
-                    _buildVideoContainer(),
-                  ),
+                  _buildSection('Vidéo', _buildVideoContainer()),
                   const SizedBox(height: 24),
                 ],
 
                 // Tags
-                if (event!['tags'] != null && event!['tags'].isNotEmpty) ...[
-                  _buildSection(
-                    'Tags',
-                    _buildTagsList(),
-                  ),
+                if (event!['tags'] != null) ...[
+                  _buildSection('Tags', _buildTagsList()),
                   const SizedBox(height: 24),
                 ],
 
@@ -310,84 +308,86 @@ class _SimpleEventDetailScreenState extends State<SimpleEventDetailScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          if (event!['start_date'] != null) ...[
-            Expanded(
-              child: _buildStatItem(
-                Icons.calendar_today,
-                _formatDate(event!['start_date']),
-                const Color(0xFFE53E3E),
-              ),
-            ),
-          ],
-          if (event!['location'] != null) ...[
-            Expanded(
-              child: _buildStatItem(
-                Icons.location_on,
-                event!['location'],
-                const Color(0xFF718096),
-              ),
-            ),
-          ],
-          if (event!['status'] != null) ...[
-            Expanded(
-              child: _buildStatItem(
-                Icons.info,
-                _getStatusLabel(event!['status']),
-                _getStatusColor(event!['status']),
-              ),
-            ),
-          ],
-          if (event!['likes_count'] != null) ...[
-            Expanded(
-              child: _buildStatItem(
-                Icons.favorite,
-                '${event!['likes_count']}',
-                const Color(0xFFE53E3E),
-              ),
-            ),
-          ],
+          _buildStatItem(
+            Icons.calendar_today,
+            'Date de début',
+            _formatDate(event!['start_date']),
+            const Color(0xFFE53E3E),
+          ),
+          _buildStatItem(
+            Icons.location_on,
+            'Lieu',
+            event!['location'] ?? 'Non spécifié',
+            const Color(0xFF38A169),
+          ),
+          _buildStatItem(
+            Icons.info,
+            'Statut',
+            _getStatusLabel(event!['status']),
+            _getStatusColor(event!['status']),
+          ),
+          _buildStatItem(
+            Icons.favorite,
+            'Likes',
+            '${event!['likes_count'] ?? 0}',
+            const Color(0xFFE53E3E),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildStatItem(IconData icon, String label, Color color) {
-    return Column(
-      children: [
-        Icon(icon, color: color, size: 24),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: const TextStyle(
-            fontFamily: 'Roboto',
-            fontSize: 12,
-            color: Color(0xFF4A5568),
+  Widget _buildStatItem(IconData icon, String label, String value, Color color) {
+    return Expanded(
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 24),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              fontFamily: 'OpenSans',
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF2D3748),
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
-          textAlign: TextAlign.center,
-        ),
-      ],
+          Text(
+            label,
+            style: const TextStyle(
+              fontFamily: 'Roboto',
+              fontSize: 10,
+              color: Color(0xFF718096),
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildSection(String title, Widget content) {
     return Container(
-      width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
@@ -399,12 +399,12 @@ class _SimpleEventDetailScreenState extends State<SimpleEventDetailScreen> {
             title,
             style: const TextStyle(
               fontFamily: 'OpenSans',
-              fontSize: 20,
+              fontSize: 18,
               fontWeight: FontWeight.w600,
               color: Color(0xFF2D3748),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           content,
         ],
       ),
@@ -413,57 +413,57 @@ class _SimpleEventDetailScreenState extends State<SimpleEventDetailScreen> {
 
   Widget _buildEventDetails() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (event!['description'] != null) ...[
+          _buildDetailItem('Description', event!['description']),
+          const SizedBox(height: 16),
+        ],
         if (event!['start_date'] != null) ...[
           _buildDetailItem('Date de début', _formatDate(event!['start_date'])),
+          const SizedBox(height: 16),
         ],
         if (event!['end_date'] != null) ...[
           _buildDetailItem('Date de fin', _formatDate(event!['end_date'])),
+          const SizedBox(height: 16),
         ],
         if (event!['location'] != null) ...[
           _buildDetailItem('Lieu', event!['location']),
+          const SizedBox(height: 16),
         ],
-        if (event!['organizer'] != null) ...[
-          _buildDetailItem('Organisateur', event!['organizer']),
-        ],
-        if (event!['category'] != null) ...[
-          _buildDetailItem('Catégorie', event!['category']['name'] ?? event!['category']),
+        if (event!['status'] != null) ...[
+          _buildDetailItem('Statut', _getStatusLabel(event!['status'])),
         ],
       ],
     );
   }
 
   Widget _buildDetailItem(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 100,
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontFamily: 'Roboto',
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF4A5568),
-              ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 80,
+          child: Text(
+            '$label:',
+            style: const TextStyle(
+              fontFamily: 'OpenSans',
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF2D3748),
             ),
           ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(
-                fontFamily: 'Roboto',
-                fontSize: 14,
-                color: Color(0xFF2D3748),
-              ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(
+              fontFamily: 'Roboto',
+              fontSize: 14,
+              color: Color(0xFF4A5568),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -474,19 +474,19 @@ class _SimpleEventDetailScreenState extends State<SimpleEventDetailScreen> {
         color: const Color(0xFFF7FAFC),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Center(
+      child: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.play_circle_outline,
               size: 48,
-              color: Color(0xFFE53E3E),
+              color: Color(0xFFCBD5E0),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(
-              'Vidéo de présentation disponible',
-              style: const TextStyle(
+              'Vidéo disponible',
+              style: TextStyle(
                 fontFamily: 'Roboto',
                 fontSize: 14,
                 color: Color(0xFF718096),
@@ -499,33 +499,28 @@ class _SimpleEventDetailScreenState extends State<SimpleEventDetailScreen> {
   }
 
   Widget _buildTagsList() {
-    List<String> tags = [];
-    if (event!['tags'] is List) {
-      tags = event!['tags'].whereType<String>().toList();
-    } else if (event!['tags'] is String) {
-      tags = [event!['tags']];
-    }
+    final tags = event!['tags'];
+    if (tags == null) return const Text('Aucun tag disponible');
 
+    final tagsList = tags is List ? tags : [tags];
+    
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: tags.map((tag) {
+      children: tagsList.map<Widget>((tag) {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: const Color(0xFFE53E3E).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: const Color(0xFFE53E3E).withOpacity(0.3),
-            ),
+            color: const Color(0xFFF7FAFC),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
           ),
           child: Text(
-            tag,
+            tag.toString(),
             style: const TextStyle(
               fontFamily: 'Roboto',
               fontSize: 12,
-              color: Color(0xFFE53E3E),
-              fontWeight: FontWeight.w500,
+              color: Color(0xFF4A5568),
             ),
           ),
         );
@@ -536,44 +531,34 @@ class _SimpleEventDetailScreenState extends State<SimpleEventDetailScreen> {
   Widget _buildActions() {
     return Row(
       children: [
-        // Like button
         Expanded(
           child: ElevatedButton.icon(
             onPressed: _toggleLike,
-            icon: Icon(
-              isLiked ? Icons.favorite : Icons.favorite_border,
-              color: isLiked ? Colors.white : const Color(0xFFE53E3E),
-            ),
-            label: Text(
-              isLiked ? 'Aimé' : 'J\'aime',
-              style: TextStyle(
-                color: isLiked ? Colors.white : const Color(0xFFE53E3E),
-              ),
-            ),
+            icon: Icon(isLiked ? Icons.favorite : Icons.favorite_border),
+            label: Text(isLiked ? 'Aimé' : 'J\'aime'),
             style: ElevatedButton.styleFrom(
               backgroundColor: isLiked ? const Color(0xFFE53E3E) : Colors.white,
-              side: BorderSide(
-                color: const Color(0xFFE53E3E),
-                width: 1,
-              ),
+              foregroundColor: isLiked ? Colors.white : const Color(0xFFE53E3E),
+              padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
+                side: BorderSide(
+                  color: isLiked ? Colors.transparent : const Color(0xFFE53E3E),
+                ),
               ),
             ),
           ),
         ),
         const SizedBox(width: 12),
-        // Share button
         Expanded(
-          child: ElevatedButton.icon(
+          child: OutlinedButton.icon(
             onPressed: _shareEvent,
-            icon: const Icon(Icons.share, color: Colors.white),
-            label: const Text(
-              'Partager',
-              style: TextStyle(color: Colors.white),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFE53E3E),
+            icon: const Icon(Icons.share),
+            label: const Text('Partager'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: const Color(0xFFE53E3E),
+              side: const BorderSide(color: Color(0xFFE53E3E)),
+              padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -600,11 +585,10 @@ class _SimpleEventDetailScreenState extends State<SimpleEventDetailScreen> {
 
   void _shareEvent() {
     // TODO: Implémenter le partage
-    print('Partager l\'événement: ${event?['title']}');
   }
 
   String _formatDate(String? dateString) {
-    if (dateString == null) return '';
+    if (dateString == null) return 'Non spécifiée';
     try {
       final date = DateTime.parse(dateString);
       return '${date.day}/${date.month}/${date.year}';
@@ -614,32 +598,24 @@ class _SimpleEventDetailScreenState extends State<SimpleEventDetailScreen> {
   }
 
   String _getStatusLabel(String? status) {
-    switch (status?.toLowerCase()) {
-      case 'active':
-        return 'Actif';
-      case 'upcoming':
-        return 'À venir';
-      case 'completed':
-        return 'Terminé';
-      case 'cancelled':
-        return 'Annulé';
-      default:
-        return status ?? 'Actif';
-    }
+    if (status == null) return 'Non spécifié';
+    final labels = {
+      'active': 'Actif',
+      'upcoming': 'À venir',
+      'completed': 'Terminé',
+      'cancelled': 'Annulé',
+    };
+    return labels[status] ?? status;
   }
 
   Color _getStatusColor(String? status) {
-    switch (status?.toLowerCase()) {
-      case 'active':
-        return Colors.green;
-      case 'upcoming':
-        return Colors.blue;
-      case 'completed':
-        return Colors.grey;
-      case 'cancelled':
-        return Colors.red;
-      default:
-        return const Color(0xFF718096);
-    }
+    if (status == null) return const Color(0xFF718096);
+    final colors = {
+      'active': const Color(0xFF38A169),
+      'upcoming': const Color(0xFFF4D03F),
+      'completed': const Color(0xFFE53E3E),
+      'cancelled': const Color(0xFF718096),
+    };
+    return colors[status] ?? const Color(0xFF718096);
   }
 }

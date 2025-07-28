@@ -363,7 +363,7 @@ class _SimpleEventsScreenState extends State<SimpleEventsScreen> {
       ),
       child: InkWell(
         onTap: () {
-          NavigationService.pushNamed('/event-detail', arguments: {'id': event['id'].toString()});
+          NavigationService.goToEventDetail(event['id'].toString());
         },
         borderRadius: BorderRadius.circular(12),
         child: Column(

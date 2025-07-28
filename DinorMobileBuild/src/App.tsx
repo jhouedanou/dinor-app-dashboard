@@ -183,15 +183,21 @@ const App: React.FC = () => {
           {/* Header avec état dynamique (identique Vue) */}
           <AppHeader
             title={headerState.title}
+            showBack={headerState.backPath !== null}
             showFavorite={headerState.showFavorite}
-            favoriteType={headerState.favoriteType as any}
+            showShare={headerState.showShare}
+            favoriteType={headerState.favoriteType}
             favoriteItemId={headerState.favoriteItemId}
             initialFavorited={headerState.isContentFavorited}
-            showShare={headerState.showShare}
-            backPath={headerState.backPath}
-            onFavoriteUpdated={handleFavoriteUpdate}
-            onShare={handleShare}
-            onAuthRequired={handleAuthRequired}
+            onBackPress={() => {
+              if (headerState.backPath) {
+                navigation.navigate(headerState.backPath as any);
+              } else {
+                navigation.goBack();
+              }
+            }}
+            onFavoritePress={handleFavoriteUpdate}
+            onSharePress={handleShare}
           />
           
           {/* Navigation Tabs avec style exact (identique Vue) */}
