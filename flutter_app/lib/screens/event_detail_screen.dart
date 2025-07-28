@@ -129,7 +129,14 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
     if (_event == null) return;
 
     final shareService = ref.read(useSocialShareProvider.notifier);
-    await shareService.shareEvent(_event!);
+    await shareService.shareEvent(
+      title: _event!['title'] ?? 'Événement',
+      description: _event!['description'] ?? '',
+      url: 'https://dinor.app/events/${_event!['id']}',
+      date: _event!['date'],
+      location: _event!['location'],
+      imageUrl: _event!['featured_image_url'],
+    );
   }
 
   void _closeAuthModal() {

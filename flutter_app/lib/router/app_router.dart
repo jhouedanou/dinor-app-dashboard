@@ -31,10 +31,7 @@ import '../screens/cookie_policy_screen.dart';
 
 // Pages predictions (futures extensions)
 import '../screens/predictions_screen.dart';
-import '../screens/predictions_teams_screen.dart';
-import '../screens/predictions_leaderboard_screen.dart';
-import '../screens/tournaments_screen.dart';
-import '../screens/tournament_betting_screen.dart';
+
 
 // App principale avec navigation
 import '../app.dart';

@@ -34,7 +34,7 @@ import '../services/api_service.dart';
 import '../composables/use_recipes.dart';
 import '../composables/use_banners.dart';
 import '../composables/use_auth_handler.dart';
-import '../composables/use_refresh.dart';
+
 
 class RecipesListScreen extends ConsumerStatefulWidget {
   const RecipesListScreen({Key? key}) : super(key: key);
@@ -126,13 +126,13 @@ class _RecipesListScreenState extends ConsumerState<RecipesListScreen> with Auto
       print('🖼️ [RecipesListScreen] Chargement bannières pour type: recipes');
       setState(() => _loadingBanners = true);
       
-      final banners = await ref.read(useBannersProvider.notifier).loadBannersForContentType('recipes', true);
+      final banners = await ref.read(useBannersProvider.notifier).loadBannersForContentType('recipes', forceRefresh: true);
       setState(() {
         _banners = banners;
         _loadingBanners = false;
       });
     } catch (error) {
-      print('❌ [RecipesListScreen] Erreur chargement bannières:', error);
+      print('❌ [RecipesListScreen] Erreur chargement bannières: $error');
       setState(() {
         _errorBanners = error.toString();
         _loadingBanners = false;
@@ -151,7 +151,7 @@ class _RecipesListScreenState extends ConsumerState<RecipesListScreen> with Auto
         _loadingRecipes = false;
       });
     } catch (error) {
-      print('❌ [RecipesListScreen] Erreur chargement recettes:', error);
+      print('❌ [RecipesListScreen] Erreur chargement recettes: $error');
       setState(() {
         _errorRecipes = error.toString();
         _loadingRecipes = false;
@@ -172,7 +172,7 @@ class _RecipesListScreenState extends ConsumerState<RecipesListScreen> with Auto
         });
       }
     } catch (error) {
-      print('❌ [RecipesListScreen] Erreur chargement catégories:', error);
+      print('❌ [RecipesListScreen] Erreur chargement catégories: $error');
       setState(() {
         _errorCategories = error.toString();
         _loadingCategories = false;
@@ -188,8 +188,8 @@ class _RecipesListScreenState extends ConsumerState<RecipesListScreen> with Auto
     if (_searchQuery.trim().isNotEmpty) {
       final query = _searchQuery.toLowerCase();
       filtered = filtered.where((recipe) =>
-        recipe['title']?.toString().toLowerCase().contains(query) ||
-        recipe['short_description']?.toString().toLowerCase().contains(query) ||
+        (recipe['title']?.toString().toLowerCase().contains(query) ?? false) ||
+        (recipe['short_description']?.toString().toLowerCase().contains(query) ?? false) ||
         (recipe['tags'] as List?)?.any((tag) => tag.toString().toLowerCase().contains(query)) == true
       ).toList();
     }
@@ -232,7 +232,7 @@ class _RecipesListScreenState extends ConsumerState<RecipesListScreen> with Auto
 
   // HANDLERS (équivalent methods Vue)
   void _goToRecipe(String id) {
-    print('🍳 [RecipesListScreen] Navigation vers recette ID:', id);
+    print('🍳 [RecipesListScreen] Navigation vers recette ID: $id');
     context.push('/recipe/$id');
   }
 
@@ -266,14 +266,14 @@ class _RecipesListScreenState extends ConsumerState<RecipesListScreen> with Auto
     print('🔄 [RecipesListScreen] Rechargement forcé demandé');
     try {
       // Invalider tous les caches
-      await ref.read(apiServiceProvider).clearCache();
+      ref.read(apiServiceProvider).clearCache();
       ref.read(useRecipesProvider.notifier).clearCache();
       
       // Recharger avec les données fraîches
       await _loadAllData();
       print('✅ [RecipesListScreen] Rechargement forcé terminé');
     } catch (error) {
-      print('❌ [RecipesListScreen] Erreur lors du rechargement forcé:', error);
+      print('❌ [RecipesListScreen] Erreur lors du rechargement forcé: $error');
     }
   }
 

@@ -29,8 +29,8 @@ import 'components/common/share_modal.dart';
 import 'components/common/auth_modal.dart';
 
 // Stores et composables (remplace les imports Vue)
-import 'stores/auth_store.dart';
-import 'composables/use_social_share.dart';
+
+
 import 'router/app_router.dart';
 
 class DinorApp extends ConsumerStatefulWidget {
@@ -322,7 +322,7 @@ class _DinorAppState extends ConsumerState<DinorApp> {
             // Share Modal - v-model="showShareModal"
             if (_showShareModal)
               ShareModal(
-                isVisible: _showShareModal,
+                isOpen: _showShareModal,
                 shareData: _currentShareData,
                 onClose: () => setState(() => _showShareModal = false),
               ),

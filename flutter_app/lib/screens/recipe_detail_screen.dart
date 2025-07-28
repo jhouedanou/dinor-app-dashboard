@@ -26,7 +26,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 
 // Components (équivalent des imports Vue)
-import '../components/common/badge.dart';
+import '../components/common/badge.dart' as dinor_badge;
 import '../components/common/like_button.dart';
 import '../components/common/auth_modal.dart';
 import '../components/common/accordion.dart';
@@ -78,7 +78,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
   void initState() {
     super.initState();
     
-    print('🍳 [RecipeDetailScreen] Écran détail recette initialisé ID:', widget.id);
+    print('🍳 [RecipeDetailScreen] Écran détail recette initialisé ID: ${widget.id}');
     _loadRecipe();
   }
 
@@ -91,7 +91,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
   // REPRODUCTION EXACTE du chargement de données Vue
   Future<void> _loadRecipe({bool forceRefresh = false}) async {
     try {
-      print('🔄 [RecipeDetailScreen] Chargement recette ID:', widget.id, 'ForceRefresh:', forceRefresh);
+      print('🔄 [RecipeDetailScreen] Chargement recette ID: ${widget.id}, ForceRefresh: $forceRefresh');
       setState(() => _loading = true);
       
       // Utiliser l'API service (même que React Native)
@@ -114,7 +114,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
         print('✅ [RecipeDetailScreen] Recette chargée avec succès');
       }
     } catch (error) {
-      print('❌ [RecipeDetailScreen] Erreur lors du chargement de la recette:', error);
+      print('❌ [RecipeDetailScreen] Erreur lors du chargement de la recette: $error');
       setState(() {
         _error = error.toString();
         _loading = false;
@@ -127,7 +127,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
       final comments = await ref.read(useCommentsProvider.notifier).loadComments('Recipe', widget.id);
       setState(() => _comments = comments);
     } catch (error) {
-      print('❌ [RecipeDetailScreen] Erreur chargement commentaires:', error);
+      print('❌ [RecipeDetailScreen] Erreur chargement commentaires: $error');
     }
   }
 
@@ -140,7 +140,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
       });
       setState(() => _userLiked = data['success'] && data['is_liked']);
     } catch (error) {
-      print('❌ [RecipeDetailScreen] Erreur vérification like:', error);
+      print('❌ [RecipeDetailScreen] Erreur vérification like: $error');
     }
   }
 
@@ -153,7 +153,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
       });
       setState(() => _userFavorited = data['success'] && data['is_favorited']);
     } catch (error) {
-      print('❌ [RecipeDetailScreen] Erreur vérification favori:', error);
+      print('❌ [RecipeDetailScreen] Erreur vérification favori: $error');
     }
   }
 
@@ -161,7 +161,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
     if (_commentController.text.trim().isEmpty) return;
     
     try {
-      print('📝 [RecipeDetailScreen] Envoi du commentaire pour Recipe:', widget.id);
+      print('📝 [RecipeDetailScreen] Envoi du commentaire pour Recipe: ${widget.id}');
       
       await ref.read(useCommentsProvider.notifier).addComment(
         'Recipe', 
@@ -174,7 +174,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
       
       print('✅ [RecipeDetailScreen] Commentaire ajouté avec succès');
     } catch (error) {
-      print('❌ [RecipeDetailScreen] Erreur lors de l\'ajout du commentaire:', error);
+      print('❌ [RecipeDetailScreen] Erreur lors de l\'ajout du commentaire: $error');
       
       // Si erreur 401, demander connexion
       if (error.toString().contains('401') || error.toString().contains('connecté')) {
@@ -188,7 +188,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
       await ref.read(useCommentsProvider.notifier).deleteComment(commentId);
       await _loadComments(); // Recharger les commentaires
     } catch (error) {
-      print('❌ [RecipeDetailScreen] Erreur suppression commentaire:', error);
+      print('❌ [RecipeDetailScreen] Erreur suppression commentaire: $error');
     }
   }
 
@@ -199,7 +199,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
       await _loadRecipe(forceRefresh: true);
       print('✅ [RecipeDetailScreen] Rechargement forcé terminé');
     } catch (error) {
-      print('❌ [RecipeDetailScreen] Erreur lors du rechargement forcé:', error);
+      print('❌ [RecipeDetailScreen] Erreur lors du rechargement forcé: $error');
     }
   }
 
@@ -528,7 +528,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
           child: Row(
             children: [
               if (_recipe!['difficulty'] != null)
-                Badge(
+                dinor_badge.Badge(
                   text: _getDifficultyLabel(_recipe!['difficulty']),
                   icon: 'restaurant',
                   variant: 'secondary',
@@ -536,7 +536,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
                 ),
               const SizedBox(width: 8),
               if (_recipe!['category'] != null)
-                Badge(
+                dinor_badge.Badge(
                   text: _recipe!['category']['name'],
                   icon: 'tag',
                   variant: 'neutral',
@@ -793,7 +793,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
                   ),
                 ),
                 TextButton(
-                  onPressed: () => ref.read(useAuthHandlerProvider).logout(),
+                  onPressed: () => ref.read(useAuthHandlerProvider.notifier).logout(),
                   child: const Text('Déconnexion'),
                 ),
               ],

@@ -51,7 +51,7 @@ void main() async {
   await _configureTouchSupport();
   
   // Surveillance réseau (équivalent online/offline listeners)
-  _initializeNetworkListeners();
+  // _initializeNetworkListeners();
   
   runApp(
     ProviderScope(
@@ -60,9 +60,9 @@ void main() async {
   );
   
   // Post-initialisation (équivalent service worker + OneSignal)
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    _postInitialization();
-  });
+  // WidgetsBinding.instance.addPostFrameCallback((_) {
+  //   _postInitialization();
+  // });
 }
 
 /// Initialisation des services - REPRODUCTION EXACTE de main.js
@@ -116,80 +116,5 @@ Future<void> _configureTouchSupport() async {
   print('✅ [Main] Support tactile configuré');
 }
 
-/// Surveillance réseau - IDENTIQUE aux listeners main.js
-void _initializeNetworkListeners() {
-  print('🌐 [Main] Initialisation de la surveillance réseau...');
-  
-  // Équivalent : window.addEventListener('online', updateOnlineStatus)
-  Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
-    final isOnline = result != ConnectivityResult.none;
-    
-    if (isOnline) {
-      print('🟢 [Main] Connexion réseau restaurée');
-      // Équivalent : document.body.classList.remove('offline')
-      AppStore.instance.setOnlineStatus(true);
-    } else {
-      print('🔴 [Main] Connexion réseau perdue');
-      // Équivalent : document.body.classList.add('offline')
-      AppStore.instance.setOnlineStatus(false);
-    }
-  });
-  
-  // Vérification initiale du statut réseau
-  _checkInitialNetworkStatus();
-}
 
-Future<void> _checkInitialNetworkStatus() async {
-  final connectivity = await Connectivity().checkConnectivity();
-  final isOnline = connectivity != ConnectivityResult.none;
-  AppStore.instance.setOnlineStatus(isOnline);
-  
-  print('🌐 [Main] Statut réseau initial : ${isOnline ? "en ligne" : "hors ligne"}');
-}
 
-/// Post-initialisation - ÉQUIVALENT service worker + OneSignal main.js
-Future<void> _postInitialization() async {
-  print('🔧 [Main] Post-initialisation de l\'application...');
-  
-  // Simulation du Service Worker (cache, offline support)
-  await _initializeOfflineSupport();
-  
-  // Initialisation notifications (équivalent OneSignal)
-  await _initializeNotifications();
-  
-  // Exposer les services pour debug (équivalent window.oneSignalService)
-  _exposeDebugServices();
-  
-  print('🎉 [Main] Application Dinor prête à l\'utilisation !');
-}
-
-Future<void> _initializeOfflineSupport() async {
-  // Simulation du service worker pour support hors ligne
-  print('📦 [Main] Initialisation du support hors ligne...');
-  
-  // En Flutter, on utilise des packages comme cached_network_image
-  // et shared_preferences pour simuler le cache du service worker
-}
-
-Future<void> _initializeNotifications() async {
-  print('🔔 [Main] Initialisation du service de notifications...');
-  
-  // Équivalent : oneSignalService.initialize()
-  try {
-    await NotificationService.requestPermissions();
-    print('✅ [Main] Notifications configurées');
-  } catch (e) {
-    print('⚠️ [Main] Erreur notifications: $e');
-  }
-}
-
-void _exposeDebugServices() {
-  // Équivalent : window.oneSignalService = oneSignalService
-  // En Flutter, on peut exposer via des variables globales pour debug
-  if (kDebugMode) {
-    print('🐛 [Main] Services exposés pour debug');
-  }
-}
-
-// Import pour debug mode
-import 'package:flutter/foundation.dart';

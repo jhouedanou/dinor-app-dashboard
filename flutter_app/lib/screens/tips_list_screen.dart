@@ -127,7 +127,7 @@ class _TipsListScreenState extends ConsumerState<TipsListScreen> with AutomaticK
 
   Future<void> _loadTips({bool forceRefresh = false}) async {
     try {
-      print('💡 [TipsListScreen] Chargement astuces ForceRefresh:', forceRefresh);
+      print('💡 [TipsListScreen] Chargement astuces ForceRefresh: $forceRefresh');
       setState(() => _loading = true);
       
       final tips = forceRefresh 
@@ -141,7 +141,7 @@ class _TipsListScreenState extends ConsumerState<TipsListScreen> with AutomaticK
       
       print('✅ [TipsListScreen] ${tips.length} astuces chargées');
     } catch (error) {
-      print('❌ [TipsListScreen] Erreur chargement astuces:', error);
+      print('❌ [TipsListScreen] Erreur chargement astuces: $error');
       setState(() {
         _error = error.toString();
         _loading = false;
@@ -163,7 +163,7 @@ class _TipsListScreenState extends ConsumerState<TipsListScreen> with AutomaticK
       
       print('✅ [TipsListScreen] ${banners.length} bannières chargées');
     } catch (error) {
-      print('❌ [TipsListScreen] Erreur chargement bannières:', error);
+      print('❌ [TipsListScreen] Erreur chargement bannières: $error');
       setState(() {
         _bannersError = error.toString();
         _loadingBanners = false;
@@ -189,7 +189,7 @@ class _TipsListScreenState extends ConsumerState<TipsListScreen> with AutomaticK
         print('✅ [TipsListScreen] ${categories.length} catégories chargées');
       }
     } catch (error) {
-      print('❌ [TipsListScreen] Erreur chargement catégories:', error);
+      print('❌ [TipsListScreen] Erreur chargement catégories: $error');
       setState(() {
         _categoriesError = error.toString();
         _loadingCategories = false;
@@ -205,23 +205,23 @@ class _TipsListScreenState extends ConsumerState<TipsListScreen> with AutomaticK
       await _loadBanners();
       print('✅ [TipsListScreen] Rechargement forcé terminé');
     } catch (error) {
-      print('❌ [TipsListScreen] Erreur lors du rechargement forcé:', error);
+      print('❌ [TipsListScreen] Erreur lors du rechargement forcé: $error');
     }
   }
 
   void _goToTip(String id) {
-    print('💡 [TipsListScreen] Navigation vers astuce ID:', id);
+    print('💡 [TipsListScreen] Navigation vers astuce ID: $id');
     context.push('/tips/$id');
   }
 
   void _onSearchQueryChanged(String query) {
     setState(() => _searchQuery = query);
-    print('🔍 [TipsListScreen] Recherche mise à jour:', query);
+    print('🔍 [TipsListScreen] Recherche mise à jour: $query');
   }
 
   void _onSelectedCategoryChanged(String? categoryId) {
     setState(() => _selectedCategory = categoryId);
-    print('📂 [TipsListScreen] Catégorie sélectionnée:', categoryId);
+    print('📂 [TipsListScreen] Catégorie sélectionnée: $categoryId');
   }
 
   void _onAdditionalFilterChanged(String key, dynamic value) {
@@ -232,7 +232,7 @@ class _TipsListScreenState extends ConsumerState<TipsListScreen> with AutomaticK
         _selectedFilters[key] = value;
       }
     });
-    print('🔧 [TipsListScreen] Filtre $key mis à jour:', value);
+    print('🔧 [TipsListScreen] Filtre $key mis à jour: $value');
   }
 
   void _clearAllFilters() {
@@ -260,10 +260,6 @@ class _TipsListScreenState extends ConsumerState<TipsListScreen> with AutomaticK
 
   void _closeShareModal() {
     setState(() => _showShareModal = false);
-  }
-
-  void _showAuthModal() {
-    setState(() => _showAuthModal = true);
   }
 
   void _closeAuthModal() {
@@ -559,7 +555,7 @@ class _TipsListScreenState extends ConsumerState<TipsListScreen> with AutomaticK
                             initialCount: tip['likes_count'] ?? 0,
                             showCount: true,
                             size: 'small',
-                            onAuthRequired: _showAuthModal,
+                            onAuthRequired: () => setState(() => _showAuthModal = true),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -586,36 +582,5 @@ class _TipsListScreenState extends ConsumerState<TipsListScreen> with AutomaticK
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    super.build(context);
-    
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
-      body: Stack(
-        children: [
-          _loading && _tips.isEmpty
-            ? _buildLoadingState()
-            : _error != null && _tips.isEmpty
-              ? _buildErrorState()
-              : _buildTipsContent(),
-          
-          // Auth Modal
-          AuthModal(
-            isOpen: _showAuthModal,
-            onClose: _closeAuthModal,
-            onAuthenticated: _onAuthenticated,
-          ),
-          
-          // Share Modal
-          if (_shareData != null)
-            ShareModal(
-              isOpen: _showShareModal,
-              shareData: _shareData!,
-              onClose: _closeShareModal,
-            ),
-        ],
-      ),
-    );
-  }
+
 }

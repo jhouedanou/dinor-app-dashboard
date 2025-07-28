@@ -37,7 +37,7 @@ import '../composables/use_events.dart';
 import '../composables/use_dinor_tv.dart';
 import '../composables/use_banners.dart';
 import '../composables/use_auth_handler.dart';
-import '../composables/use_refresh.dart';
+
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -198,7 +198,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
 
     try {
       print('📅 [HomeScreen] Chargement des 4 derniers événements');
-      final data = await ApiService.instance.getEvents(params: {
+      final apiService = ref.read(apiServiceProvider);
+      final data = await apiService.get('/events', params: {
         'limit': '4',
         'sort_by': 'created_at',
         'sort_order': 'desc',
@@ -229,7 +230,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
 
     try {
       print('📺 [HomeScreen] Chargement des 4 dernières vidéos');
-      final data = await ApiService.instance.getVideos(params: {
+      final apiService = ref.read(apiServiceProvider);
+      final data = await apiService.get('/dinor-tv', params: {
         'limit': '4',
         'sort_by': 'created_at',
         'sort_order': 'desc',
@@ -376,8 +378,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
                       type: 'home',
                       section: 'hero',
                       banners: _banners,
-                      loading: _loadingBanners,
-                      error: _errorBanners,
+
                     ),
 
                     const SizedBox(height: 32),
@@ -457,8 +458,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
       // Auth Modal - AuthModal identique
       bottomSheet: _showAuthModal
           ? AuthModal(
-              isVisible: _showAuthModal,
-              initialMessage: _authModalMessage,
+              isOpen: _showAuthModal,
               onClose: () => setState(() => _showAuthModal = false),
               onAuthenticated: _handleAuthSuccess,
             )

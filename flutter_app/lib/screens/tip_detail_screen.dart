@@ -78,7 +78,7 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
   void initState() {
     super.initState();
     
-    print('💡 [TipDetailScreen] Écran détail astuce initialisé ID:', widget.id);
+    print('💡 [TipDetailScreen] Écran détail astuce initialisé ID: ${widget.id}');
     _loadTip();
   }
 
@@ -91,7 +91,7 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
   // REPRODUCTION EXACTE du chargement de données Vue
   Future<void> _loadTip({bool forceRefresh = false}) async {
     try {
-      print('🔄 [TipDetailScreen] Chargement astuce ID:', widget.id, 'ForceRefresh:', forceRefresh);
+      print('🔄 [TipDetailScreen] Chargement astuce ID: ${widget.id}, ForceRefresh: $forceRefresh');
       setState(() => _loading = true);
       
       // Utiliser l'API service (même que React Native)
@@ -114,7 +114,7 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
         print('✅ [TipDetailScreen] Astuce chargée avec succès');
       }
     } catch (error) {
-      print('❌ [TipDetailScreen] Erreur lors du chargement de l\'astuce:', error);
+      print('❌ [TipDetailScreen] Erreur lors du chargement de l\'astuce: $error');
       setState(() {
         _error = error.toString();
         _loading = false;
@@ -127,7 +127,7 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
       final comments = await ref.read(useCommentsProvider.notifier).loadComments('Tip', widget.id);
       setState(() => _comments = comments);
     } catch (error) {
-      print('❌ [TipDetailScreen] Erreur chargement commentaires:', error);
+      print('❌ [TipDetailScreen] Erreur chargement commentaires: $error');
     }
   }
 
@@ -140,7 +140,7 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
       });
       setState(() => _userLiked = data['success'] && data['is_liked']);
     } catch (error) {
-      print('❌ [TipDetailScreen] Erreur vérification like:', error);
+      print('❌ [TipDetailScreen] Erreur vérification like: $error');
     }
   }
 
@@ -153,7 +153,7 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
       });
       setState(() => _userFavorited = data['success'] && data['is_favorited']);
     } catch (error) {
-      print('❌ [TipDetailScreen] Erreur vérification favori:', error);
+      print('❌ [TipDetailScreen] Erreur vérification favori: $error');
     }
   }
 
@@ -161,7 +161,7 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
     if (_commentController.text.trim().isEmpty) return;
     
     try {
-      print('📝 [TipDetailScreen] Envoi du commentaire pour Tip:', widget.id);
+      print('📝 [TipDetailScreen] Envoi du commentaire pour Tip: ${widget.id}');
       
       await ref.read(useCommentsProvider.notifier).addComment(
         'Tip', 

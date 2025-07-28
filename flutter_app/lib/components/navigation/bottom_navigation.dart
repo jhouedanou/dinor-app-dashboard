@@ -24,11 +24,11 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 // Components
 import '../common/auth_modal.dart';
-import '../common/dinor_icon.dart';
+
 
 // Composables et stores
 import '../../composables/use_auth_handler.dart';
-import '../../stores/auth_store.dart';
+
 
 class BottomNavigation extends ConsumerStatefulWidget {
   const BottomNavigation({Key? key}) : super(key: key);
@@ -91,7 +91,7 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
   void _handleItemClick(Map<String, dynamic> item) {
     // Vérifier l'authentification pour le profil
     if (item['name'] == 'profile') {
-      final authStore = ref.read(authStoreProvider);
+      final authStore = ref.read(useAuthHandlerProvider);
       if (!authStore.isAuthenticated) {
         setState(() {
           _authModalMessage = 'Vous devez vous connecter pour accéder à votre profil';

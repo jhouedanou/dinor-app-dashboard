@@ -41,7 +41,7 @@ class ApiService {
       final prefs = await SharedPreferences.getInstance();
       return prefs.getString('auth_token');
     } catch (error) {
-      print('❌ [ApiService] Erreur récupération token:', error);
+      print('❌ [ApiService] Erreur récupération token: $error');
       return null;
     }
   }
@@ -123,7 +123,7 @@ class ApiService {
         throw _handleErrorResponse(response);
       }
     } catch (error) {
-      print('❌ [ApiService] Erreur requête $method $endpoint:', error);
+      print('❌ [ApiService] Erreur requête $method $endpoint: $error');
       rethrow;
     }
   }
@@ -298,7 +298,7 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> logout() {
-    return post('/auth/logout');
+    return post('/auth/logout', {});
   }
 
   Future<Map<String, dynamic>> getCurrentUser() {
