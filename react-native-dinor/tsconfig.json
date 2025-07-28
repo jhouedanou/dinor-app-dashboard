@@ -1,5 +1,4 @@
 {
-  "extends": "@tsconfig/react-native/tsconfig.json",
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
@@ -11,23 +10,16 @@
     "noEmit": true,
     "strict": true,
     "target": "esnext",
-    "baseUrl": "./src",
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["*"],
-      "@/components/*": ["components/*"],
-      "@/screens/*": ["screens/*"],
-      "@/navigation/*": ["navigation/*"], 
-      "@/styles/*": ["styles/*"],
-      "@/stores/*": ["stores/*"],
-      "@/services/*": ["services/*"],
-      "@/utils/*": ["utils/*"]
+      "@/*": ["src/*"]
     },
     "skipLibCheck": true,
     "resolveJsonModule": true
   },
   "include": [
     "src/**/*",
-    "index.js"
+    "src/types/global.d.ts"
   ],
   "exclude": [
     "node_modules",

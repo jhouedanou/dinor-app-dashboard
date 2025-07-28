@@ -17,6 +17,12 @@ interface RequestOptions {
   body?: any;
 }
 
+interface ApiResponse {
+  success: boolean;
+  data?: any;
+  message?: string;
+}
+
 class ApiService {
   private baseURL: string;
 
@@ -31,10 +37,10 @@ class ApiService {
       return 'http://192.168.1.100/api/v1'; // Ajuster selon votre réseau
     }
     // En production, utiliser l'URL de l'API
-    return 'https://your-dinor-api.com/api/v1';
+    return 'https://new.dinorapp.com/api/v1';
   }
 
-  async request(endpoint: string, options: RequestOptions = {}): Promise<any> {
+  async request(endpoint: string, options: RequestOptions = {}): Promise<ApiResponse> {
     const url = `${this.baseURL}${endpoint}`;
     
     // Récupérer le token d'authentification d'AsyncStorage (identique localStorage Vue)
@@ -86,7 +92,7 @@ class ApiService {
         throw new Error(`HTTP error! status: ${response.status}, message: ${errorData}`);
       }
 
-      const data = await response.json();
+      const data = await response.json() as ApiResponse;
       console.log('✅ [API] Réponse JSON:', { success: data.success, endpoint });
       
       return data;
@@ -101,7 +107,7 @@ class ApiService {
   }
 
   // Requête forcée sans cache (identique Vue)
-  async requestFresh(endpoint: string, options: RequestOptions = {}): Promise<any> {
+  async requestFresh(endpoint: string, options: RequestOptions = {}): Promise<ApiResponse> {
     const url = `${this.baseURL}${endpoint}`;
     
     // Récupérer le token d'authentification d'AsyncStorage
@@ -146,7 +152,7 @@ class ApiService {
         throw new Error(`HTTP error! status: ${response.status}, message: ${errorData}`);
       }
 
-      const data = await response.json();
+      const data = await response.json() as ApiResponse;
       console.log('✅ [API] Réponse fraîche JSON:', { success: data.success, endpoint });
       
       return data;
@@ -161,102 +167,102 @@ class ApiService {
   }
 
   // RECIPES - Méthodes identiques Vue
-  async getRecipes(params: Record<string, any> = {}): Promise<any> {
+  async getRecipes(params: Record<string, any> = {}): Promise<ApiResponse> {
     const queryString = new URLSearchParams(params).toString();
     const endpoint = `/recipes${queryString ? `?${queryString}` : ''}`;
     return this.request(endpoint);
   }
 
-  async getRecipe(id: string | number): Promise<any> {
+  async getRecipe(id: string | number): Promise<ApiResponse> {
     return this.request(`/recipes/${id}`);
   }
 
-  async getRecipesFresh(params: Record<string, any> = {}): Promise<any> {
+  async getRecipesFresh(params: Record<string, any> = {}): Promise<ApiResponse> {
     const queryString = new URLSearchParams(params).toString();
     const endpoint = `/recipes${queryString ? `?${queryString}` : ''}`;
     return this.requestFresh(endpoint);
   }
 
-  async getRecipeFresh(id: string | number): Promise<any> {
+  async getRecipeFresh(id: string | number): Promise<ApiResponse> {
     return this.requestFresh(`/recipes/${id}`);
   }
 
   // TIPS - Méthodes identiques Vue
-  async getTips(params: Record<string, any> = {}): Promise<any> {
+  async getTips(params: Record<string, any> = {}): Promise<ApiResponse> {
     const queryString = new URLSearchParams(params).toString();
     const endpoint = `/tips${queryString ? `?${queryString}` : ''}`;
     return this.request(endpoint);
   }
 
-  async getTip(id: string | number): Promise<any> {
+  async getTip(id: string | number): Promise<ApiResponse> {
     return this.request(`/tips/${id}`);
   }
 
-  async getTipsFresh(params: Record<string, any> = {}): Promise<any> {
+  async getTipsFresh(params: Record<string, any> = {}): Promise<ApiResponse> {
     const queryString = new URLSearchParams(params).toString();
     const endpoint = `/tips${queryString ? `?${queryString}` : ''}`;
     return this.requestFresh(endpoint);
   }
 
-  async getTipFresh(id: string | number): Promise<any> {
+  async getTipFresh(id: string | number): Promise<ApiResponse> {
     return this.requestFresh(`/tips/${id}`);
   }
 
   // EVENTS - Méthodes identiques Vue
-  async getEvents(params: Record<string, any> = {}): Promise<any> {
+  async getEvents(params: Record<string, any> = {}): Promise<ApiResponse> {
     const queryString = new URLSearchParams(params).toString();
     const endpoint = `/events${queryString ? `?${queryString}` : ''}`;
     return this.request(endpoint);
   }
 
-  async getEvent(id: string | number): Promise<any> {
+  async getEvent(id: string | number): Promise<ApiResponse> {
     return this.request(`/events/${id}`);
   }
 
-  async getEventsFresh(params: Record<string, any> = {}): Promise<any> {
+  async getEventsFresh(params: Record<string, any> = {}): Promise<ApiResponse> {
     const queryString = new URLSearchParams(params).toString();
     const endpoint = `/events${queryString ? `?${queryString}` : ''}`;
     return this.requestFresh(endpoint);
   }
 
-  async getEventFresh(id: string | number): Promise<any> {
+  async getEventFresh(id: string | number): Promise<ApiResponse> {
     return this.requestFresh(`/events/${id}`);
   }
 
   // PAGES - Méthodes identiques Vue
-  async getPages(params: Record<string, any> = {}): Promise<any> {
+  async getPages(params: Record<string, any> = {}): Promise<ApiResponse> {
     const queryString = new URLSearchParams(params).toString();
     const endpoint = `/pages${queryString ? `?${queryString}` : ''}`;
     return this.request(endpoint);
   }
 
-  async getPage(id: string | number): Promise<any> {
+  async getPage(id: string | number): Promise<ApiResponse> {
     return this.request(`/pages/${id}`);
   }
 
   // DINOR TV - Méthodes identiques Vue
-  async getVideos(params: Record<string, any> = {}): Promise<any> {
+  async getVideos(params: Record<string, any> = {}): Promise<ApiResponse> {
     const queryString = new URLSearchParams(params).toString();
     const endpoint = `/dinor-tv${queryString ? `?${queryString}` : ''}`;
     return this.request(endpoint);
   }
 
-  async getVideo(id: string | number): Promise<any> {
+  async getVideo(id: string | number): Promise<ApiResponse> {
     return this.request(`/dinor-tv/${id}`);
   }
 
-  async getVideosFresh(params: Record<string, any> = {}): Promise<any> {
+  async getVideosFresh(params: Record<string, any> = {}): Promise<ApiResponse> {
     const queryString = new URLSearchParams(params).toString();
     const endpoint = `/dinor-tv${queryString ? `?${queryString}` : ''}`;
     return this.requestFresh(endpoint);
   }
 
-  async getVideoFresh(id: string | number): Promise<any> {
+  async getVideoFresh(id: string | number): Promise<ApiResponse> {
     return this.requestFresh(`/dinor-tv/${id}`);
   }
 
   // LIKES - Méthode identique Vue
-  async toggleLike(type: string, id: string | number): Promise<any> {
+  async toggleLike(type: string, id: string | number): Promise<ApiResponse> {
     const result = await this.request(`/${type}/${id}/like`, {
       method: 'POST'
     });
@@ -266,11 +272,11 @@ class ApiService {
   }
 
   // COMMENTS - Méthodes identiques Vue
-  async getComments(type: string, id: string | number): Promise<any> {
+  async getComments(type: string, id: string | number): Promise<ApiResponse> {
     return this.request(`/${type}/${id}/comments`);
   }
 
-  async addComment(type: string, id: string | number, content: string): Promise<any> {
+  async addComment(type: string, id: string | number, content: string): Promise<ApiResponse> {
     return this.request(`/${type}/${id}/comments`, {
       method: 'POST',
       body: { content }
@@ -278,20 +284,20 @@ class ApiService {
   }
 
   // CATEGORIES - Méthodes identiques Vue
-  async getCategories(): Promise<any> {
+  async getCategories(): Promise<ApiResponse> {
     return this.request('/categories');
   }
 
-  async getEventCategories(): Promise<any> {
+  async getEventCategories(): Promise<ApiResponse> {
     return this.request('/categories/events');
   }
 
-  async getRecipeCategories(): Promise<any> {
+  async getRecipeCategories(): Promise<ApiResponse> {
     return this.request('/categories/recipes');
   }
 
   // SEARCH - Méthode identique Vue
-  async search(query: string, type?: string): Promise<any> {
+  async search(query: string, type?: string): Promise<ApiResponse> {
     const params: Record<string, string> = { q: query };
     if (type) params.type = type;
     
@@ -300,13 +306,13 @@ class ApiService {
   }
 
   // FAVORITES - Méthodes identiques Vue
-  async getFavorites(params: Record<string, any> = {}): Promise<any> {
+  async getFavorites(params: Record<string, any> = {}): Promise<ApiResponse> {
     const queryString = new URLSearchParams(params).toString();
     const endpoint = `/favorites${queryString ? `?${queryString}` : ''}`;
     return this.request(endpoint);
   }
 
-  async toggleFavorite(favoritable_type: string, favoritable_id: string | number): Promise<any> {
+  async toggleFavorite(favoritable_type: string, favoritable_id: string | number): Promise<ApiResponse> {
     return this.request('/favorites/toggle', {
       method: 'POST',
       body: {
@@ -316,39 +322,39 @@ class ApiService {
     });
   }
 
-  async checkFavorite(type: string, id: string | number): Promise<any> {
+  async checkFavorite(type: string, id: string | number): Promise<ApiResponse> {
     const params = new URLSearchParams({ type, id: id.toString() });
     return this.request(`/favorites/check?${params}`);
   }
 
-  async removeFavorite(favoriteId: string | number): Promise<any> {
+  async removeFavorite(favoriteId: string | number): Promise<ApiResponse> {
     return this.request(`/favorites/${favoriteId}`, {
       method: 'DELETE'
     });
   }
 
   // AUTH - Méthodes pour authentification
-  async login(email: string, password: string): Promise<any> {
+  async login(email: string, password: string): Promise<ApiResponse> {
     return this.request('/auth/login', {
       method: 'POST',
       body: { email, password }
     });
   }
 
-  async register(name: string, email: string, password: string): Promise<any> {
+  async register(name: string, email: string, password: string): Promise<ApiResponse> {
     return this.request('/auth/register', {
       method: 'POST',
       body: { name, email, password }
     });
   }
 
-  async logout(): Promise<any> {
+  async logout(): Promise<ApiResponse> {
     return this.request('/auth/logout', {
       method: 'POST'
     });
   }
 
-  async getProfile(): Promise<any> {
+  async getProfile(): Promise<ApiResponse> {
     return this.request('/auth/profile');
   }
 }
