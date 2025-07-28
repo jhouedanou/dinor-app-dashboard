@@ -10,161 +10,169 @@
 
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class BannerSection extends StatelessWidget {
   final String type;
   final String section;
   final List<dynamic> banners;
-  final bool loading;
-  final String? error;
 
   const BannerSection({
     Key? key,
     required this.type,
     required this.section,
     required this.banners,
-    this.loading = false,
-    this.error,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    if (loading) {
-      return Container(
-        height: 300,
-        decoration: BoxDecoration(
-          color: Colors.grey[200],
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: const Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
-
-    if (error != null || banners.isEmpty) {
+    if (banners.isEmpty) {
       return const SizedBox.shrink();
     }
 
-    // Pour l'instant, afficher la première bannière
-    final banner = banners.first;
-
     return Container(
-      height: 300,
-      margin: const EdgeInsets.only(bottom: 32),
+      height: 200,
+      child: PageView.builder(
+        itemCount: banners.length,
+        itemBuilder: (context, index) {
+          final banner = banners[index];
+          return _buildBannerCard(banner);
+        },
+      ),
+    );
+  }
+
+  Widget _buildBannerCard(dynamic banner) {
+    return Container(
+      margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        image: banner['background_image_url'] != null
-            ? DecorationImage(
-                image: CachedNetworkImageProvider(banner['background_image_url']),
-                fit: BoxFit.cover,
-              )
-            : null,
-        gradient: banner['background_image_url'] == null
-            ? const LinearGradient(
-                colors: [Color(0xFFF4D03F), Color(0xFFFF6B35)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              )
-            : null,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Stack(
-        children: [
-          // Overlay pour assurer la lisibilité du texte
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.black.withOpacity(0.3),
-                  Colors.black.withOpacity(0.7),
-                ],
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Stack(
+          children: [
+            // Background Image
+            Positioned.fill(
+              child: CachedNetworkImage(
+                imageUrl: banner['image_url'] ?? '/images/default-banner.jpg',
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(
+                  color: const Color(0xFFF4D03F),
+                  child: const Center(
+                    child: CircularProgressIndicator(
+                      color: Color(0xFF2D3748),
+                    ),
+                  ),
+                ),
+                errorWidget: (context, url, error) => Container(
+                  color: const Color(0xFFF4D03F),
+                  child: const Icon(
+                    LucideIcons.image,
+                    size: 48,
+                    color: Color(0xFF2D3748),
+                  ),
+                ),
               ),
             ),
-          ),
-          
-          // Contenu de la bannière
-          Positioned.fill(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (banner['title'] != null)
-                    Text(
-                      banner['title'],
-                      style: const TextStyle(
-                        fontFamily: 'OpenSans',
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                        shadows: [
-                          Shadow(
-                            offset: Offset(2, 2),
-                            blurRadius: 4,
-                            color: Colors.black38,
-                          ),
-                        ],
-                      ),
-                    ),
-                  
-                  if (banner['description'] != null) ...[
-                    const SizedBox(height: 12),
-                    Text(
-                      banner['description'],
-                      style: const TextStyle(
-                        fontFamily: 'Roboto',
-                        fontSize: 16,
-                        color: Colors.white,
-                        shadows: [
-                          Shadow(
-                            offset: Offset(1, 1),
-                            blurRadius: 2,
-                            color: Colors.black38,
-                          ),
-                        ],
-                      ),
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                  
-                  if (banner['action_text'] != null) ...[
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: () {
-                        // TODO: Gérer l'action de la bannière
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFF6B35),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
+            
+            // Gradient Overlay
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.7),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            
+            // Content
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (banner['title'] != null)
+                      Text(
+                        banner['title'],
+                        style: const TextStyle(
+                          fontFamily: 'OpenSans',
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          shadows: [
+                            Shadow(
+                              offset: Offset(0, 2),
+                              blurRadius: 4,
+                              color: Colors.black54,
+                            ),
+                          ],
                         ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        elevation: 4,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      child: Text(
-                        banner['action_text'],
+                    if (banner['subtitle'] != null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        banner['subtitle'],
                         style: const TextStyle(
                           fontFamily: 'Roboto',
                           fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                          shadows: [
+                            Shadow(
+                              offset: Offset(0, 1),
+                              blurRadius: 2,
+                              color: Colors.black54,
+                            ),
+                          ],
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                    if (banner['cta_text'] != null) ...[
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFF6B35),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          banner['cta_text'],
+                          style: const TextStyle(
+                            fontFamily: 'Roboto',
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -52,6 +52,10 @@ dependencies:
   
   # Web support
   url_launcher: ^6.2.2
+  share_plus: ^7.2.1
+  
+  # HTML rendering for recipe instructions
+  flutter_widget_from_html: ^0.14.10
   
   # Material 3 design
   cupertino_icons: ^1.0.6

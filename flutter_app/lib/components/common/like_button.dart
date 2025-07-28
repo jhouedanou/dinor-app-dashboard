@@ -12,18 +12,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-
 import '../../services/api_service.dart';
-import '../../stores/auth_store.dart';
 
 class LikeButton extends ConsumerStatefulWidget {
-  final String type;
+  final String type; // 'recipe', 'tip', 'event', 'video'
   final String itemId;
   final bool initialLiked;
   final int initialCount;
   final bool showCount;
-  final String size; // small, medium, large
-  final String variant; // minimal, filled
+  final String size; // 'small', 'medium', 'large'
+  final String variant; // 'minimal', 'standard', 'filled'
   final VoidCallback? onAuthRequired;
 
   const LikeButton({
@@ -34,7 +32,7 @@ class LikeButton extends ConsumerStatefulWidget {
     this.initialCount = 0,
     this.showCount = true,
     this.size = 'medium',
-    this.variant = 'filled',
+    this.variant = 'standard',
     this.onAuthRequired,
   }) : super(key: key);
 
@@ -42,208 +40,168 @@ class LikeButton extends ConsumerStatefulWidget {
   ConsumerState<LikeButton> createState() => _LikeButtonState();
 }
 
-class _LikeButtonState extends ConsumerState<LikeButton>
-    with SingleTickerProviderStateMixin {
+class _LikeButtonState extends ConsumerState<LikeButton> {
   late bool _isLiked;
-  late int _likeCount;
-  bool _isLoading = false;
-  late AnimationController _animationController;
-  late Animation<double> _scaleAnimation;
+  late int _count;
 
   @override
   void initState() {
     super.initState();
     _isLiked = widget.initialLiked;
-    _likeCount = widget.initialCount;
-
-    // Animation identique à Vue (scale + couleur)
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 200),
-      vsync: this,
-    );
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.2,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.elasticOut,
-    ));
+    _count = widget.initialCount;
   }
 
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  // REPRODUCTION EXACTE de toggleLike() Vue
   Future<void> _toggleLike() async {
-    final authStore = ref.read(authStoreProvider);
-
-    // Vérifier l'authentification (identique Vue)
-    if (!authStore.isAuthenticated) {
-      print('🔒 [LikeButton] Authentification requise pour liker');
-      widget.onAuthRequired?.call();
-      return;
-    }
-
-    if (_isLoading) return;
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    // Animation immédiate (optimistic update identique Vue)
-    final previousLiked = _isLiked;
-    final previousCount = _likeCount;
-
-    setState(() {
-      _isLiked = !_isLiked;
-      _likeCount += _isLiked ? 1 : -1;
-    });
-
-    // Animation du coeur
-    if (_isLiked) {
-      _animationController.forward().then((_) {
-        _animationController.reverse();
-      });
-    }
-
     try {
-      print('❤️ [LikeButton] Toggle like: ${widget.type} ${widget.itemId}');
-
-      final data = await ApiService.instance.toggleLike(widget.type, widget.itemId);
-
-      if (data['success'] == true) {
-        // Mise à jour avec les données serveur (identique Vue)
-        final serverLiked = data['data']?['is_liked'] ?? _isLiked;
-        final serverCount = data['data']?['total_likes'] ?? _likeCount;
-
+      final apiService = ref.read(apiServiceProvider);
+      
+      final response = await apiService.request('/likes/toggle', {
+        method: 'POST',
+        body: {
+          'likeable_type': widget.type,
+          'likeable_id': widget.itemId,
+        },
+      });
+      
+      if (response['success']) {
         setState(() {
-          _isLiked = serverLiked;
-          _likeCount = serverCount;
+          _isLiked = !_isLiked;
+          _count = response['data']['total_likes'] ?? _count;
         });
-
-        print('✅ [LikeButton] Like mis à jour: liked=$serverLiked, count=$serverCount');
-
-        // Émettre événement global (équivalent window.dispatchEvent Vue)
-        // TODO: Implémenter système d'événements global si nécessaire
-      } else {
-        throw Exception(data['message'] ?? 'Erreur lors du toggle like');
+        
+        print('❤️ [LikeButton] Like toggled: $_isLiked, count: $_count');
       }
     } catch (error) {
-      print('❌ [LikeButton] Erreur toggle like: $error');
-
-      // Rollback en cas d'erreur (identique Vue)
-      setState(() {
-        _isLiked = previousLiked;
-        _likeCount = previousCount;
-      });
-
-      // Afficher erreur à l'utilisateur
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erreur lors de la mise à jour du like'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
+      print('❌ [LikeButton] Erreur toggle like:', error);
+      
+      // Si erreur 401, demander authentification
+      if (error.toString().contains('401') || error.toString().contains('connecté')) {
+        widget.onAuthRequired?.call();
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final iconSize = _getIconSize();
-    final textSize = _getTextSize();
-    
     return GestureDetector(
-      onTap: _isLoading ? null : _toggleLike,
-      child: AnimatedBuilder(
-        animation: _scaleAnimation,
-        builder: (context, child) {
-          return Transform.scale(
-            scale: _scaleAnimation.value,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Icône coeur avec animation
-                Icon(
-                  _isLiked ? LucideIcons.heart : LucideIcons.heart,
-                  size: iconSize,
-                  color: _isLiked
-                      ? const Color(0xFFE53E3E) // Rouge like identique
-                      : (widget.variant == 'minimal'
-                          ? const Color(0xFF8B7000) // Doré minimal
-                          : const Color(0xFF4A5568)), // Gris par défaut
-                ),
-
-                // Compteur si demandé
-                if (widget.showCount) ...[
-                  const SizedBox(width: 4),
-                  Text(
-                    '$_likeCount',
-                    style: TextStyle(
-                      fontFamily: 'Roboto',
-                      fontSize: textSize,
-                      fontWeight: FontWeight.w500,
-                      color: _isLiked
-                          ? const Color(0xFFE53E3E)
-                          : const Color(0xFF4A5568),
-                    ),
-                  ),
-                ],
-
-                // Loading indicator
-                if (_isLoading) ...[
-                  const SizedBox(width: 8),
-                  SizedBox(
-                    width: iconSize * 0.8,
-                    height: iconSize * 0.8,
-                    child: const CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Color(0xFFE53E3E),
-                    ),
-                  ),
-                ],
-              ],
+      onTap: _toggleLike,
+      child: Container(
+        padding: _getPadding(),
+        decoration: _getDecoration(),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              _isLiked ? LucideIcons.heart : LucideIcons.heart,
+              size: _getIconSize(),
+              color: _getIconColor(),
             ),
-          );
-        },
+            if (widget.showCount) ...[
+              const SizedBox(width: 4),
+              Text(
+                '$_count',
+                style: TextStyle(
+                  fontSize: _getFontSize(),
+                  fontWeight: FontWeight.w500,
+                  color: _getTextColor(),
+                  fontFamily: 'Roboto',
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
+  }
+
+  EdgeInsets _getPadding() {
+    switch (widget.size) {
+      case 'small':
+        return const EdgeInsets.symmetric(horizontal: 8, vertical: 4);
+      case 'large':
+        return const EdgeInsets.symmetric(horizontal: 16, vertical: 8);
+      default: // medium
+        return const EdgeInsets.symmetric(horizontal: 12, vertical: 6);
+    }
   }
 
   double _getIconSize() {
     switch (widget.size) {
       case 'small':
         return 16;
-      case 'medium':
-        return 20;
       case 'large':
         return 24;
-      default:
+      default: // medium
         return 20;
     }
   }
 
-  double _getTextSize() {
+  double _getFontSize() {
     switch (widget.size) {
       case 'small':
         return 12;
-      case 'medium':
-        return 14;
       case 'large':
         return 16;
-      default:
+      default: // medium
         return 14;
+    }
+  }
+
+  BoxDecoration? _getDecoration() {
+    switch (widget.variant) {
+      case 'minimal':
+        return null;
+      case 'filled':
+        return BoxDecoration(
+          color: _isLiked ? const Color(0xFFE53E3E) : Colors.grey[200],
+          borderRadius: BorderRadius.circular(_getBorderRadius()),
+        );
+      default: // standard
+        return BoxDecoration(
+          color: Colors.transparent,
+          border: Border.all(
+            color: _isLiked ? const Color(0xFFE53E3E) : Colors.grey[300],
+            width: 1,
+          ),
+          borderRadius: BorderRadius.circular(_getBorderRadius()),
+        );
+    }
+  }
+
+  double _getBorderRadius() {
+    switch (widget.size) {
+      case 'small':
+        return 12;
+      case 'large':
+        return 20;
+      default: // medium
+        return 16;
+    }
+  }
+
+  Color _getIconColor() {
+    if (_isLiked) {
+      return const Color(0xFFE53E3E);
+    }
+    
+    switch (widget.variant) {
+      case 'filled':
+        return Colors.white;
+      default:
+        return const Color(0xFF4A5568);
+    }
+  }
+
+  Color _getTextColor() {
+    if (_isLiked) {
+      return const Color(0xFFE53E3E);
+    }
+    
+    switch (widget.variant) {
+      case 'filled':
+        return Colors.white;
+      default:
+        return const Color(0xFF4A5568);
     }
   }
 }
