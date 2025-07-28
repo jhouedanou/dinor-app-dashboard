@@ -317,8 +317,8 @@ class _DinorAppState extends ConsumerState<DinorApp> {
                           color: Color(0xFFFFFFFF), // Fond blanc pour la zone principale
                         ),
                         padding: EdgeInsets.only(
-                          top: 80, // padding-top: 80px (with-header)
-                          bottom: _showBottomNav ? 80 : 0, // padding-bottom: 80px (with-bottom-nav)
+                          top: 0, // padding-top: 80px (with-header)
+                          bottom: _showBottomNav ? 0 : 0, // padding-bottom: 80px (with-bottom-nav)
                         ),
                         child: child ?? const SizedBox.shrink(),
                       ),

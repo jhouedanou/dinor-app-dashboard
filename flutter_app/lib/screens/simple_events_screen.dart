@@ -12,6 +12,10 @@ class SimpleEventsScreen extends StatefulWidget {
 
 class _SimpleEventsScreenState extends State<SimpleEventsScreen> {
   List<dynamic> events = [];
+  List<dynamic> allEvents = [];
+  List<String> availableTags = [];
+  List<String> selectedTags = [];
+  String searchQuery = '';
   bool isLoading = true;
   String? error;
 
@@ -41,8 +45,11 @@ class _SimpleEventsScreenState extends State<SimpleEventsScreen> {
         
         setState(() {
           if (data['data'] != null) {
-            events = data['data'] is List ? data['data'] : [data['data']];
+            allEvents = data['data'] is List ? data['data'] : [data['data']];
+            events = List.from(allEvents);
+            _extractTags();
           } else {
+            allEvents = [];
             events = [];
           }
           isLoading = false;
@@ -60,6 +67,66 @@ class _SimpleEventsScreenState extends State<SimpleEventsScreen> {
         error = e.toString();
       });
     }
+  }
+
+  void _extractTags() {
+    Set<String> tags = {};
+    for (var event in allEvents) {
+      if (event['tags'] != null) {
+        if (event['tags'] is List) {
+          for (var tag in event['tags']) {
+            if (tag is String) tags.add(tag);
+          }
+        } else if (event['tags'] is String) {
+          tags.add(event['tags']);
+        }
+      }
+    }
+    availableTags = tags.toList()..sort();
+  }
+
+  void _filterEvents() {
+    setState(() {
+      events = allEvents.where((event) {
+        // Filtre par recherche
+        bool matchesSearch = searchQuery.isEmpty || 
+          event['title']?.toString().toLowerCase().contains(searchQuery.toLowerCase()) == true ||
+          event['description']?.toString().toLowerCase().contains(searchQuery.toLowerCase()) == true ||
+          event['location']?.toString().toLowerCase().contains(searchQuery.toLowerCase()) == true;
+        
+        // Filtre par tags
+        bool matchesTags = selectedTags.isEmpty;
+        if (!matchesTags && event['tags'] != null) {
+          List<String> eventTags = [];
+          if (event['tags'] is List) {
+            eventTags = event['tags'].whereType<String>().toList();
+          } else if (event['tags'] is String) {
+            eventTags = [event['tags']];
+          }
+          matchesTags = selectedTags.every((tag) => eventTags.contains(tag));
+        }
+        
+        return matchesSearch && matchesTags;
+      }).toList();
+    });
+  }
+
+  void _onSearchChanged(String query) {
+    setState(() {
+      searchQuery = query;
+    });
+    _filterEvents();
+  }
+
+  void _onTagSelected(String tag) {
+    setState(() {
+      if (selectedTags.contains(tag)) {
+        selectedTags.remove(tag);
+      } else {
+        selectedTags.add(tag);
+      }
+    });
+    _filterEvents();
   }
 
   @override
@@ -83,11 +150,88 @@ class _SimpleEventsScreenState extends State<SimpleEventsScreen> {
           onPressed: () => NavigationService.pop(),
         ),
       ),
-      body: _buildBody(),
+      body: Column(
+        children: [
+          // Barre de recherche
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.all(16),
+            child: TextField(
+              onChanged: _onSearchChanged,
+              decoration: InputDecoration(
+                hintText: 'Rechercher un événement...',
+                prefixIcon: const Icon(Icons.search, color: Color(0xFF718096)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFE53E3E)),
+                ),
+                filled: true,
+                fillColor: const Color(0xFFF7FAFC),
+              ),
+            ),
+          ),
+
+          // Filtres par tags
+          if (availableTags.isNotEmpty)
+            Container(
+              color: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Filtrer par tags:',
+                    style: TextStyle(
+                      fontFamily: 'Roboto',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF4A5568),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: availableTags.map<Widget>((tag) {
+                      bool isSelected = selectedTags.contains(tag);
+                      return FilterChip(
+                        label: Text(tag),
+                        selected: isSelected,
+                        onSelected: (_) => _onTagSelected(tag),
+                        backgroundColor: const Color(0xFFF7FAFC),
+                        selectedColor: const Color(0xFFE53E3E),
+                        labelStyle: TextStyle(
+                          color: isSelected ? Colors.white : const Color(0xFF4A5568),
+                          fontSize: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            ),
+
+          // Liste des événements
+          Expanded(
+            child: _buildEventsList(),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildEventsList() {
     if (isLoading) {
       return const Center(
         child: Column(
@@ -112,77 +256,78 @@ class _SimpleEventsScreenState extends State<SimpleEventsScreen> {
 
     if (error != null) {
       return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.error_outline,
-                size: 64,
-                color: Color(0xFFE53E3E),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.error_outline,
+              size: 64,
+              color: Color(0xFFE53E3E),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Erreur: $error',
+              style: const TextStyle(
+                fontFamily: 'Roboto',
+                fontSize: 16,
+                color: Color(0xFF4A5568),
               ),
-              const SizedBox(height: 16),
-              const Text(
-                'Erreur de connexion',
-                style: TextStyle(
-                  fontFamily: 'OpenSans',
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF2D3748),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadEvents,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFE53E3E),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                error!,
-                style: const TextStyle(
-                  fontFamily: 'Roboto',
-                  fontSize: 14,
-                  color: Color(0xFF4A5568),
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    isLoading = true;
-                    error = null;
-                  });
-                  _loadEvents();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE53E3E),
-                  foregroundColor: Colors.white,
-                ),
-                child: const Text('Réessayer'),
-              ),
-            ],
-          ),
+              child: const Text('Réessayer'),
+            ),
+          ],
         ),
       );
     }
 
     if (events.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.calendar_today,
+            const Icon(
+              Icons.event_busy,
               size: 64,
-              color: Color(0xFF718096),
+              color: Color(0xFFCBD5E0),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text(
-              'Aucun événement trouvé',
-              style: TextStyle(
-                fontFamily: 'OpenSans',
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF2D3748),
+              searchQuery.isNotEmpty || selectedTags.isNotEmpty
+                ? 'Aucun événement trouvé'
+                : 'Aucun événement disponible',
+              style: const TextStyle(
+                fontFamily: 'Roboto',
+                fontSize: 18,
+                color: Color(0xFF4A5568),
               ),
             ),
+            if (searchQuery.isNotEmpty || selectedTags.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    searchQuery = '';
+                    selectedTags.clear();
+                  });
+                  _filterEvents();
+                },
+                child: const Text(
+                  'Effacer les filtres',
+                  style: TextStyle(color: Color(0xFFE53E3E)),
+                ),
+              ),
+            ],
           ],
         ),
       );
@@ -190,8 +335,9 @@ class _SimpleEventsScreenState extends State<SimpleEventsScreen> {
 
     return RefreshIndicator(
       onRefresh: _loadEvents,
+      color: const Color(0xFFE53E3E),
       child: ListView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.zero,
         itemCount: events.length,
         itemBuilder: (context, index) {
           final event = events[index];
@@ -202,129 +348,183 @@ class _SimpleEventsScreenState extends State<SimpleEventsScreen> {
   }
 
   Widget _buildEventCard(Map<String, dynamic> event) {
-    final title = event['title'] ?? event['name'] ?? 'Événement sans titre';
-    final description = event['description'] ?? event['excerpt'] ?? 'Aucune description';
-    final location = event['location'] ?? event['venue'] ?? 'Lieu à définir';
-    final date = event['date'] ?? event['start_date'] ?? event['event_date'];
-    
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
+            blurRadius: 10,
             offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+      child: InkWell(
+        onTap: () {
+          NavigationService.pushNamed('/event-detail', arguments: {'id': event['id'].toString()});
+        },
+        borderRadius: BorderRadius.circular(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF38A169).withOpacity(0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.event,
-                    size: 24,
-                    color: Color(0xFF38A169),
+            // Image de l'événement
+            if (event['image_url'] != null)
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                child: AspectRatio(
+                  aspectRatio: 16 / 9,
+                  child: Image.network(
+                    event['image_url'],
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: const Color(0xFFF7FAFC),
+                        child: const Icon(
+                          Icons.event,
+                          size: 48,
+                          color: Color(0xFFCBD5E0),
+                        ),
+                      );
+                    },
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          fontFamily: 'OpenSans',
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF2D3748),
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (date != null)
-                        Text(
-                          date,
-                          style: const TextStyle(
-                            fontFamily: 'Roboto',
-                            fontSize: 12,
-                            color: Color(0xFF38A169),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(
-              description,
-              style: const TextStyle(
-                fontFamily: 'Roboto',
-                fontSize: 14,
-                color: Color(0xFF4A5568),
-                height: 1.5,
               ),
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                const Icon(
-                  Icons.location_on,
-                  size: 16,
-                  color: Color(0xFF718096),
-                ),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: Text(
-                    location,
+
+            // Contenu de la carte
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Titre
+                  Text(
+                    event['title'] ?? 'Sans titre',
                     style: const TextStyle(
-                      fontFamily: 'Roboto',
-                      fontSize: 12,
-                      color: Color(0xFF718096),
+                      fontFamily: 'OpenSans',
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF2D3748),
                     ),
-                    maxLines: 1,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF38A169).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: const Text(
-                    'Événement',
-                    style: TextStyle(
-                      fontFamily: 'Roboto',
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF38A169),
+                  const SizedBox(height: 8),
+
+                  // Description
+                  if (event['description'] != null) ...[
+                    Text(
+                      event['description'],
+                      style: const TextStyle(
+                        fontFamily: 'Roboto',
+                        fontSize: 14,
+                        color: Color(0xFF718096),
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
+                    const SizedBox(height: 8),
+                  ],
+
+                  // Tags
+                  if (event['tags'] != null && event['tags'].isNotEmpty) ...[
+                                         Wrap(
+                       spacing: 4,
+                       runSpacing: 4,
+                       children: (event['tags'] is List 
+                         ? event['tags'] 
+                         : [event['tags']]).map<Widget>((tag) {
+                         return Container(
+                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                           decoration: BoxDecoration(
+                             color: const Color(0xFFF7FAFC),
+                             borderRadius: BorderRadius.circular(12),
+                           ),
+                           child: Text(
+                             tag.toString(),
+                             style: const TextStyle(
+                               fontSize: 10,
+                               color: Color(0xFF718096),
+                             ),
+                           ),
+                         );
+                       }).toList(),
+                     ),
+                    const SizedBox(height: 8),
+                  ],
+
+                  // Stats
+                  Row(
+                    children: [
+                      if (event['start_date'] != null) ...[
+                        const Icon(
+                          Icons.calendar_today,
+                          size: 16,
+                          color: Color(0xFFE53E3E),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          _formatDate(event['start_date']),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF718096),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                      ],
+                      if (event['location'] != null) ...[
+                        const Icon(
+                          Icons.location_on,
+                          size: 16,
+                          color: Color(0xFF718096),
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            event['location'],
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF718096),
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                      ],
+                      if (event['likes_count'] != null) ...[
+                        const Icon(
+                          Icons.favorite,
+                          size: 16,
+                          color: Color(0xFFE53E3E),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${event['likes_count']}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF718096),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  String _formatDate(String? dateString) {
+    if (dateString == null) return '';
+    try {
+      final date = DateTime.parse(dateString);
+      return '${date.day}/${date.month}/${date.year}';
+    } catch (e) {
+      return dateString;
+    }
   }
 }

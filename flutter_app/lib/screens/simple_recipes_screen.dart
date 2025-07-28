@@ -12,6 +12,10 @@ class SimpleRecipesScreen extends StatefulWidget {
 
 class _SimpleRecipesScreenState extends State<SimpleRecipesScreen> {
   List<dynamic> recipes = [];
+  List<dynamic> allRecipes = [];
+  List<String> availableTags = [];
+  List<String> selectedTags = [];
+  String searchQuery = '';
   bool isLoading = true;
   String? error;
 
@@ -42,8 +46,11 @@ class _SimpleRecipesScreenState extends State<SimpleRecipesScreen> {
         
         setState(() {
           if (data['data'] != null) {
-            recipes = data['data'] is List ? data['data'] : [data['data']];
+            allRecipes = data['data'] is List ? data['data'] : [data['data']];
+            recipes = List.from(allRecipes);
+            _extractTags();
           } else {
+            allRecipes = [];
             recipes = [];
           }
           isLoading = false;
@@ -62,6 +69,65 @@ class _SimpleRecipesScreenState extends State<SimpleRecipesScreen> {
         error = e.toString();
       });
     }
+  }
+
+  void _extractTags() {
+    Set<String> tags = {};
+    for (var recipe in allRecipes) {
+      if (recipe['tags'] != null) {
+        if (recipe['tags'] is List) {
+          for (var tag in recipe['tags']) {
+            if (tag is String) tags.add(tag);
+          }
+        } else if (recipe['tags'] is String) {
+          tags.add(recipe['tags']);
+        }
+      }
+    }
+    availableTags = tags.toList()..sort();
+  }
+
+  void _filterRecipes() {
+    setState(() {
+      recipes = allRecipes.where((recipe) {
+        // Filtre par recherche
+        bool matchesSearch = searchQuery.isEmpty || 
+          recipe['title']?.toString().toLowerCase().contains(searchQuery.toLowerCase()) == true ||
+          recipe['description']?.toString().toLowerCase().contains(searchQuery.toLowerCase()) == true;
+        
+        // Filtre par tags
+        bool matchesTags = selectedTags.isEmpty;
+        if (!matchesTags && recipe['tags'] != null) {
+          List<String> recipeTags = [];
+          if (recipe['tags'] is List) {
+            recipeTags = recipe['tags'].whereType<String>().toList();
+          } else if (recipe['tags'] is String) {
+            recipeTags = [recipe['tags']];
+          }
+          matchesTags = selectedTags.every((tag) => recipeTags.contains(tag));
+        }
+        
+        return matchesSearch && matchesTags;
+      }).toList();
+    });
+  }
+
+  void _onSearchChanged(String query) {
+    setState(() {
+      searchQuery = query;
+    });
+    _filterRecipes();
+  }
+
+  void _onTagSelected(String tag) {
+    setState(() {
+      if (selectedTags.contains(tag)) {
+        selectedTags.remove(tag);
+      } else {
+        selectedTags.add(tag);
+      }
+    });
+    _filterRecipes();
   }
 
   @override
@@ -85,12 +151,89 @@ class _SimpleRecipesScreenState extends State<SimpleRecipesScreen> {
           onPressed: () => NavigationService.pop(),
         ),
       ),
-      body: _buildBody(),
+      body: Column(
+        children: [
+          // Barre de recherche
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.all(16),
+            child: TextField(
+              onChanged: _onSearchChanged,
+              decoration: InputDecoration(
+                hintText: 'Rechercher une recette...',
+                prefixIcon: const Icon(Icons.search, color: Color(0xFF718096)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFE53E3E)),
+                ),
+                filled: true,
+                fillColor: const Color(0xFFF7FAFC),
+              ),
+            ),
+          ),
+
+          // Filtres par tags
+          if (availableTags.isNotEmpty)
+            Container(
+              color: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Filtrer par tags:',
+                    style: TextStyle(
+                      fontFamily: 'Roboto',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF4A5568),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: availableTags.map<Widget>((tag) {
+                      bool isSelected = selectedTags.contains(tag);
+                      return FilterChip(
+                        label: Text(tag),
+                        selected: isSelected,
+                        onSelected: (_) => _onTagSelected(tag),
+                        backgroundColor: const Color(0xFFF7FAFC),
+                        selectedColor: const Color(0xFFE53E3E),
+                        labelStyle: TextStyle(
+                          color: isSelected ? Colors.white : const Color(0xFF4A5568),
+                          fontSize: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            ),
+
+          // Liste des recettes
+          Expanded(
+            child: _buildRecipesList(),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildBody() {
-    print('🔄 [SimpleRecipes] _buildBody appelé - isLoading: $isLoading, recipes: ${recipes.length}');
+  Widget _buildRecipesList() {
+    print('🔄 [SimpleRecipes] _buildRecipesList appelé - isLoading: $isLoading, recipes: ${recipes.length}');
     
     if (isLoading) {
       return const Center(
@@ -116,77 +259,78 @@ class _SimpleRecipesScreenState extends State<SimpleRecipesScreen> {
 
     if (error != null) {
       return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.error_outline,
-                size: 64,
-                color: Color(0xFFE53E3E),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.error_outline,
+              size: 64,
+              color: Color(0xFFE53E3E),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Erreur: $error',
+              style: const TextStyle(
+                fontFamily: 'Roboto',
+                fontSize: 16,
+                color: Color(0xFF4A5568),
               ),
-              const SizedBox(height: 16),
-              const Text(
-                'Erreur de connexion',
-                style: TextStyle(
-                  fontFamily: 'OpenSans',
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF2D3748),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadRecipes,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFE53E3E),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                error!,
-                style: const TextStyle(
-                  fontFamily: 'Roboto',
-                  fontSize: 14,
-                  color: Color(0xFF4A5568),
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    isLoading = true;
-                    error = null;
-                  });
-                  _loadRecipes();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE53E3E),
-                  foregroundColor: Colors.white,
-                ),
-                child: const Text('Réessayer'),
-              ),
-            ],
-          ),
+              child: const Text('Réessayer'),
+            ),
+          ],
         ),
       );
     }
 
     if (recipes.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.restaurant,
+            const Icon(
+              Icons.restaurant_menu,
               size: 64,
-              color: Color(0xFF718096),
+              color: Color(0xFFCBD5E0),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text(
-              'Aucune recette trouvée',
-              style: TextStyle(
-                fontFamily: 'OpenSans',
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF2D3748),
+              searchQuery.isNotEmpty || selectedTags.isNotEmpty
+                ? 'Aucune recette trouvée'
+                : 'Aucune recette disponible',
+              style: const TextStyle(
+                fontFamily: 'Roboto',
+                fontSize: 18,
+                color: Color(0xFF4A5568),
               ),
             ),
+            if (searchQuery.isNotEmpty || selectedTags.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    searchQuery = '';
+                    selectedTags.clear();
+                  });
+                  _filterRecipes();
+                },
+                child: const Text(
+                  'Effacer les filtres',
+                  style: TextStyle(color: Color(0xFFE53E3E)),
+                ),
+              ),
+            ],
           ],
         ),
       );
@@ -194,8 +338,9 @@ class _SimpleRecipesScreenState extends State<SimpleRecipesScreen> {
 
     return RefreshIndicator(
       onRefresh: _loadRecipes,
+      color: const Color(0xFFE53E3E),
       child: ListView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.zero,
         itemCount: recipes.length,
         itemBuilder: (context, index) {
           final recipe = recipes[index];
@@ -206,128 +351,202 @@ class _SimpleRecipesScreenState extends State<SimpleRecipesScreen> {
   }
 
   Widget _buildRecipeCard(Map<String, dynamic> recipe) {
-    final title = recipe['title'] ?? recipe['name'] ?? 'Recette sans titre';
-    final description = recipe['description'] ?? recipe['excerpt'] ?? 'Aucune description';
-    final imageUrl = recipe['image'] ?? recipe['featured_image'] ?? recipe['thumbnail'];
-    
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
+            blurRadius: 10,
             offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Image
-          if (imageUrl != null)
-            Container(
-              height: 200,
-              decoration: BoxDecoration(
+      child: InkWell(
+        onTap: () {
+          NavigationService.pushNamed('/recipe-detail', arguments: {'id': recipe['id'].toString()});
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image de la recette
+            if (recipe['featured_image_url'] != null)
+              ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                color: const Color(0xFFF7FAFC),
-              ),
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                child: Image.network(
-                  imageUrl,
-                  width: double.infinity,
-                  height: 200,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      height: 200,
-                      color: const Color(0xFFF7FAFC),
-                      child: const Center(
-                        child: Icon(
+                child: AspectRatio(
+                  aspectRatio: 16 / 9,
+                  child: Image.network(
+                    recipe['featured_image_url'],
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: const Color(0xFFF7FAFC),
+                        child: const Icon(
                           Icons.restaurant,
                           size: 48,
-                          color: Color(0xFFE53E3E),
+                          color: Color(0xFFCBD5E0),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
               ),
-            ),
-          
-          // Contenu
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontFamily: 'OpenSans',
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF2D3748),
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  description,
-                  style: const TextStyle(
-                    fontFamily: 'Roboto',
-                    fontSize: 14,
-                    color: Color(0xFF4A5568),
-                    height: 1.5,
-                  ),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.access_time,
-                      size: 16,
-                      color: Color(0xFF718096),
+
+            // Contenu de la carte
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Titre
+                  Text(
+                    recipe['title'] ?? 'Sans titre',
+                    style: const TextStyle(
+                      fontFamily: 'OpenSans',
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF2D3748),
                     ),
-                    const SizedBox(width: 4),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Description
+                  if (recipe['description'] != null) ...[
                     Text(
-                      recipe['cook_time'] ?? recipe['duration'] ?? '30 min',
+                      recipe['description'],
                       style: const TextStyle(
                         fontFamily: 'Roboto',
-                        fontSize: 12,
+                        fontSize: 14,
                         color: Color(0xFF718096),
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE53E3E).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        recipe['difficulty'] ?? 'Facile',
-                        style: const TextStyle(
-                          fontFamily: 'Roboto',
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
+                    const SizedBox(height: 8),
+                  ],
+
+                  // Tags
+                  if (recipe['tags'] != null && recipe['tags'].isNotEmpty) ...[
+                                         Wrap(
+                       spacing: 4,
+                       runSpacing: 4,
+                       children: (recipe['tags'] is List 
+                         ? recipe['tags'] 
+                         : [recipe['tags']]).map<Widget>((tag) {
+                         return Container(
+                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                           decoration: BoxDecoration(
+                             color: const Color(0xFFF7FAFC),
+                             borderRadius: BorderRadius.circular(12),
+                           ),
+                           child: Text(
+                             tag.toString(),
+                             style: const TextStyle(
+                               fontSize: 10,
+                               color: Color(0xFF718096),
+                             ),
+                           ),
+                         );
+                       }).toList(),
+                     ),
+                    const SizedBox(height: 8),
+                  ],
+
+                  // Stats
+                  Row(
+                    children: [
+                      if (recipe['difficulty_level'] != null) ...[
+                        Icon(
+                          Icons.star,
+                          size: 16,
+                          color: _getDifficultyColor(recipe['difficulty_level']),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          _getDifficultyLabel(recipe['difficulty_level']),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF718096),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                      ],
+                      if (recipe['total_time'] != null) ...[
+                        const Icon(
+                          Icons.schedule,
+                          size: 16,
+                          color: Color(0xFF718096),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${recipe['total_time']} min',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF718096),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                      ],
+                      if (recipe['likes_count'] != null) ...[
+                        const Icon(
+                          Icons.favorite,
+                          size: 16,
                           color: Color(0xFFE53E3E),
                         ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                        const SizedBox(width: 4),
+                        Text(
+                          '${recipe['likes_count']}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF718096),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
+  }
+
+  Color _getDifficultyColor(String? difficulty) {
+    switch (difficulty?.toLowerCase()) {
+      case 'easy':
+      case 'beginner':
+        return Colors.green;
+      case 'medium':
+      case 'intermediate':
+        return Colors.orange;
+      case 'hard':
+      case 'advanced':
+        return Colors.red;
+      default:
+        return const Color(0xFF718096);
+    }
+  }
+
+  String _getDifficultyLabel(String? difficulty) {
+    switch (difficulty?.toLowerCase()) {
+      case 'easy':
+      case 'beginner':
+        return 'Facile';
+      case 'medium':
+      case 'intermediate':
+        return 'Moyen';
+      case 'hard':
+      case 'advanced':
+        return 'Difficile';
+      default:
+        return difficulty ?? 'Facile';
+    }
   }
 }

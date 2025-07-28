@@ -16,7 +16,8 @@ class _SimpleEventDetailScreenState extends State<SimpleEventDetailScreen> {
   Map<String, dynamic>? event;
   bool isLoading = true;
   String? error;
-  bool isInterested = false;
+  bool isFavorite = false;
+  bool isLiked = false;
 
   @override
   void initState() {
@@ -78,7 +79,7 @@ class _SimpleEventDetailScreenState extends State<SimpleEventDetailScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF38A169)),
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFE53E3E)),
               ),
               SizedBox(height: 16),
               Text(
@@ -99,363 +100,200 @@ class _SimpleEventDetailScreenState extends State<SimpleEventDetailScreen> {
       return Scaffold(
         backgroundColor: const Color(0xFFF5F5F5),
         appBar: AppBar(
-          title: const Text('Erreur'),
+          title: const Text('Événement'),
           backgroundColor: Colors.white,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3748)),
+            icon: const Icon(Icons.arrow_back),
             onPressed: () => NavigationService.pop(),
           ),
         ),
         body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.error_outline,
-                  size: 64,
-                  color: Color(0xFF38A169),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.error_outline,
+                size: 64,
+                color: Color(0xFFE53E3E),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Erreur: $error',
+                style: const TextStyle(
+                  fontFamily: 'Roboto',
+                  fontSize: 16,
+                  color: Color(0xFF4A5568),
                 ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Événement introuvable',
-                  style: TextStyle(
-                    fontFamily: 'OpenSans',
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF2D3748),
-                  ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _loadEvent,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFE53E3E),
+                  foregroundColor: Colors.white,
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  error ?? 'Cet événement n\'existe pas ou plus.',
-                  style: const TextStyle(
-                    fontFamily: 'Roboto',
-                    fontSize: 14,
-                    color: Color(0xFF4A5568),
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () => NavigationService.pop(),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF38A169),
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text('Retour'),
-                ),
-              ],
-            ),
+                child: const Text('Réessayer'),
+              ),
+            ],
           ),
         ),
       );
     }
 
-    final title = event!['title'] ?? event!['name'] ?? 'Événement';
-    final description = event!['description'] ?? event!['excerpt'] ?? '';
-    final location = event!['location'] ?? event!['venue'] ?? 'Lieu à définir';
-    final date = event!['date'] ?? event!['start_date'] ?? event!['event_date'];
-    final time = event!['time'] ?? event!['start_time'] ?? '';
-    final price = event!['price'] ?? event!['cost'] ?? 'Gratuit';
-    final imageUrl = event!['image'] ?? event!['featured_image'] ?? event!['thumbnail'];
-    final organizer = event!['organizer'] ?? event!['host'] ?? 'Dinor';
-
     return CustomScrollView(
       slivers: [
-        // App Bar avec image
+        // AppBar avec image de fond
         SliverAppBar(
           expandedHeight: 300,
           pinned: true,
-          backgroundColor: const Color(0xFF38A169),
-          elevation: 0,
-          leading: Container(
-            margin: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.9),
-              shape: BoxShape.circle,
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3748)),
-              onPressed: () => NavigationService.pop(),
-            ),
+          backgroundColor: const Color(0xFFE53E3E),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => NavigationService.pop(),
           ),
           actions: [
-            Container(
-              margin: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
-                shape: BoxShape.circle,
+            IconButton(
+              icon: Icon(
+                isFavorite ? Icons.favorite : Icons.favorite_border,
+                color: Colors.white,
               ),
-              child: IconButton(
-                icon: Icon(
-                  isInterested ? Icons.bookmark : Icons.bookmark_border,
-                  color: isInterested ? const Color(0xFF38A169) : const Color(0xFF2D3748),
-                ),
-                onPressed: () {
-                  setState(() {
-                    isInterested = !isInterested;
-                  });
-                },
-              ),
+              onPressed: _toggleFavorite,
             ),
-            Container(
-              margin: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
-                shape: BoxShape.circle,
-              ),
-              child: IconButton(
-                icon: const Icon(Icons.share, color: Color(0xFF2D3748)),
-                onPressed: () {
-                  // TODO: Implémenter le partage
-                },
-              ),
+            IconButton(
+              icon: const Icon(Icons.share, color: Colors.white),
+              onPressed: _shareEvent,
             ),
           ],
           flexibleSpace: FlexibleSpaceBar(
-            background: imageUrl != null
-                ? Image.network(
-                    imageUrl,
+            background: Stack(
+              fit: StackFit.expand,
+              children: [
+                // Image de fond
+                if (event!['image_url'] != null)
+                  Image.network(
+                    event!['image_url'],
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Color(0xFF38A169), Color(0xFF2F855A)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                        ),
-                        child: const Center(
-                          child: Icon(
-                            Icons.event,
-                            size: 64,
-                            color: Colors.white,
-                          ),
+                        color: const Color(0xFFE53E3E),
+                        child: const Icon(
+                          Icons.event,
+                          size: 64,
+                          color: Colors.white,
                         ),
                       );
                     },
-                  )
-                : Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Color(0xFF38A169), Color(0xFF2F855A)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.event,
-                        size: 64,
-                        color: Colors.white,
-                      ),
+                  ),
+                // Overlay gradient
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withOpacity(0.7),
+                      ],
                     ),
                   ),
-          ),
-        ),
-        
-        // Contenu
-        SliverToBoxAdapter(
-          child: Container(
-            color: Colors.white,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Titre et informations principales
-                Padding(
-                  padding: const EdgeInsets.all(20),
+                ),
+                // Titre en bas
+                Positioned(
+                  bottom: 16,
+                  left: 16,
+                  right: 16,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Badge événement
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF38A169).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.event,
-                              size: 16,
-                              color: Color(0xFF38A169),
-                            ),
-                            SizedBox(width: 6),
-                            Text(
-                              'Événement',
-                              style: TextStyle(
-                                fontFamily: 'Roboto',
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF38A169),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 16),
-                      
-                      // Titre
                       Text(
-                        title,
+                        event!['title'] ?? 'Sans titre',
                         style: const TextStyle(
                           fontFamily: 'OpenSans',
-                          fontSize: 28,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF2D3748),
-                          height: 1.2,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
                       ),
-                      
-                      if (description.isNotEmpty) ...[
-                        const SizedBox(height: 12),
+                      if (event!['short_description'] != null) ...[
+                        const SizedBox(height: 8),
                         Text(
-                          description,
+                          event!['short_description'],
                           style: const TextStyle(
                             fontFamily: 'Roboto',
                             fontSize: 16,
-                            color: Color(0xFF4A5568),
-                            height: 1.5,
+                            color: Colors.white70,
                           ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ],
                   ),
                 ),
-                
-                // Informations de l'événement
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 20),
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        const Color(0xFF38A169).withOpacity(0.1),
-                        const Color(0xFF2F855A).withOpacity(0.05),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFF38A169).withOpacity(0.2)),
-                  ),
-                  child: Column(
-                    children: [
-                      _buildEventInfo(Icons.schedule, 'Date et heure', '$date${time.isNotEmpty ? ' à $time' : ''}'),
-                      const Divider(height: 24, color: Color(0xFFE2E8F0)),
-                      _buildEventInfo(Icons.location_on, 'Lieu', location),
-                      const Divider(height: 24, color: Color(0xFFE2E8F0)),
-                      _buildEventInfo(Icons.person, 'Organisateur', organizer),
-                      const Divider(height: 24, color: Color(0xFFE2E8F0)),
-                      _buildEventInfo(Icons.attach_money, 'Prix', price),
-                    ],
-                  ),
-                ),
-                
+              ],
+            ),
+          ),
+        ),
+
+        // Contenu principal
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Stats de l'événement
+                _buildEventStats(),
                 const SizedBox(height: 24),
-                
-                // Boutons d'action
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            // TODO: Implémenter l'inscription
-                          },
-                          icon: const Icon(Icons.event_available),
-                          label: const Text('S\'inscrire'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF38A169),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
+
+                // Description
+                if (event!['description'] != null) ...[
+                  _buildSection(
+                    'Description',
+                    Text(
+                      event!['description'],
+                      style: const TextStyle(
+                        fontFamily: 'Roboto',
+                        fontSize: 16,
+                        color: Color(0xFF4A5568),
+                        height: 1.6,
                       ),
-                      const SizedBox(width: 12),
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          // TODO: Implémenter l'ajout au calendrier
-                        },
-                        icon: const Icon(Icons.calendar_month),
-                        label: const Text('Calendrier'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: const Color(0xFF38A169),
-                          side: const BorderSide(color: Color(0xFF38A169)),
-                          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                
-                const SizedBox(height: 24),
-                
-                // Section description détaillée
-                if (description.isNotEmpty) ...[
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Row(
-                          children: [
-                            Icon(
-                              Icons.info_outline,
-                              size: 24,
-                              color: Color(0xFF38A169),
-                            ),
-                            SizedBox(width: 12),
-                            Text(
-                              'À propos de cet événement',
-                              style: TextStyle(
-                                fontFamily: 'OpenSans',
-                                fontSize: 20,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF2D3748),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
-                          ),
-                          child: Text(
-                            _cleanHtmlContent(description),
-                            style: const TextStyle(
-                              fontFamily: 'Roboto',
-                              fontSize: 14,
-                              color: Color(0xFF2D3748),
-                              height: 1.5,
-                            ),
-                          ),
-                        ),
-                      ],
                     ),
                   ),
+                  const SizedBox(height: 24),
                 ],
-                
-                const SizedBox(height: 40),
+
+                // Détails de l'événement
+                if (event!['details'] != null) ...[
+                  _buildSection(
+                    'Détails',
+                    _buildEventDetails(),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+
+                // Vidéo
+                if (event!['video_url'] != null) ...[
+                  _buildSection(
+                    'Vidéo de présentation',
+                    _buildVideoContainer(),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+
+                // Tags
+                if (event!['tags'] != null && event!['tags'].isNotEmpty) ...[
+                  _buildSection(
+                    'Tags',
+                    _buildTagsList(),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+
+                // Actions
+                _buildActions(),
               ],
             ),
           ),
@@ -464,61 +302,344 @@ class _SimpleEventDetailScreenState extends State<SimpleEventDetailScreen> {
     );
   }
 
-  Widget _buildEventInfo(IconData icon, String label, String value) {
-    return Row(
+  Widget _buildEventStats() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          if (event!['start_date'] != null) ...[
+            Expanded(
+              child: _buildStatItem(
+                Icons.calendar_today,
+                _formatDate(event!['start_date']),
+                const Color(0xFFE53E3E),
+              ),
+            ),
+          ],
+          if (event!['location'] != null) ...[
+            Expanded(
+              child: _buildStatItem(
+                Icons.location_on,
+                event!['location'],
+                const Color(0xFF718096),
+              ),
+            ),
+          ],
+          if (event!['status'] != null) ...[
+            Expanded(
+              child: _buildStatItem(
+                Icons.info,
+                _getStatusLabel(event!['status']),
+                _getStatusColor(event!['status']),
+              ),
+            ),
+          ],
+          if (event!['likes_count'] != null) ...[
+            Expanded(
+              child: _buildStatItem(
+                Icons.favorite,
+                '${event!['likes_count']}',
+                const Color(0xFFE53E3E),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatItem(IconData icon, String label, Color color) {
+    return Column(
+      children: [
+        Icon(icon, color: color, size: 24),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: const TextStyle(
+            fontFamily: 'Roboto',
+            fontSize: 12,
+            color: Color(0xFF4A5568),
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSection(String title, Widget content) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontFamily: 'OpenSans',
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF2D3748),
+            ),
+          ),
+          const SizedBox(height: 16),
+          content,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEventDetails() {
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: const Color(0xFF38A169).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
+        if (event!['start_date'] != null) ...[
+          _buildDetailItem('Date de début', _formatDate(event!['start_date'])),
+        ],
+        if (event!['end_date'] != null) ...[
+          _buildDetailItem('Date de fin', _formatDate(event!['end_date'])),
+        ],
+        if (event!['location'] != null) ...[
+          _buildDetailItem('Lieu', event!['location']),
+        ],
+        if (event!['organizer'] != null) ...[
+          _buildDetailItem('Organisateur', event!['organizer']),
+        ],
+        if (event!['category'] != null) ...[
+          _buildDetailItem('Catégorie', event!['category']['name'] ?? event!['category']),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildDetailItem(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 100,
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontFamily: 'Roboto',
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF4A5568),
+              ),
+            ),
           ),
-          child: Icon(
-            icon,
-            size: 20,
-            color: const Color(0xFF38A169),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontFamily: 'Roboto',
+                fontSize: 14,
+                color: Color(0xFF2D3748),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVideoContainer() {
+    return Container(
+      height: 200,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7FAFC),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.play_circle_outline,
+              size: 48,
+              color: Color(0xFFE53E3E),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Vidéo de présentation disponible',
+              style: const TextStyle(
+                fontFamily: 'Roboto',
+                fontSize: 14,
+                color: Color(0xFF718096),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTagsList() {
+    List<String> tags = [];
+    if (event!['tags'] is List) {
+      tags = event!['tags'].whereType<String>().toList();
+    } else if (event!['tags'] is String) {
+      tags = [event!['tags']];
+    }
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: tags.map((tag) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: const Color(0xFFE53E3E).withOpacity(0.1),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: const Color(0xFFE53E3E).withOpacity(0.3),
+            ),
+          ),
+          child: Text(
+            tag,
+            style: const TextStyle(
+              fontFamily: 'Roboto',
+              fontSize: 12,
+              color: Color(0xFFE53E3E),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildActions() {
+    return Row(
+      children: [
+        // Like button
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: _toggleLike,
+            icon: Icon(
+              isLiked ? Icons.favorite : Icons.favorite_border,
+              color: isLiked ? Colors.white : const Color(0xFFE53E3E),
+            ),
+            label: Text(
+              isLiked ? 'Aimé' : 'J\'aime',
+              style: TextStyle(
+                color: isLiked ? Colors.white : const Color(0xFFE53E3E),
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isLiked ? const Color(0xFFE53E3E) : Colors.white,
+              side: BorderSide(
+                color: const Color(0xFFE53E3E),
+                width: 1,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 12),
+        // Share button
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  fontFamily: 'Roboto',
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF718096),
-                ),
+          child: ElevatedButton.icon(
+            onPressed: _shareEvent,
+            icon: const Icon(Icons.share, color: Colors.white),
+            label: const Text(
+              'Partager',
+              style: TextStyle(color: Colors.white),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFE53E3E),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
               ),
-              const SizedBox(height: 4),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontFamily: 'Roboto',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF2D3748),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ],
     );
   }
 
-  String _cleanHtmlContent(String content) {
-    return content
-        .replaceAll(RegExp(r'<[^>]*>'), '') // Supprimer les balises HTML
-        .replaceAll('&nbsp;', ' ')
-        .replaceAll('&amp;', '&')
-        .replaceAll('&lt;', '<')
-        .replaceAll('&gt;', '>')
-        .replaceAll('&quot;', '"')
-        .trim();
+  void _toggleFavorite() {
+    setState(() {
+      isFavorite = !isFavorite;
+    });
+    // TODO: Implémenter l'API pour les favoris
+  }
+
+  void _toggleLike() {
+    setState(() {
+      isLiked = !isLiked;
+    });
+    // TODO: Implémenter l'API pour les likes
+  }
+
+  void _shareEvent() {
+    // TODO: Implémenter le partage
+    print('Partager l\'événement: ${event?['title']}');
+  }
+
+  String _formatDate(String? dateString) {
+    if (dateString == null) return '';
+    try {
+      final date = DateTime.parse(dateString);
+      return '${date.day}/${date.month}/${date.year}';
+    } catch (e) {
+      return dateString;
+    }
+  }
+
+  String _getStatusLabel(String? status) {
+    switch (status?.toLowerCase()) {
+      case 'active':
+        return 'Actif';
+      case 'upcoming':
+        return 'À venir';
+      case 'completed':
+        return 'Terminé';
+      case 'cancelled':
+        return 'Annulé';
+      default:
+        return status ?? 'Actif';
+    }
+  }
+
+  Color _getStatusColor(String? status) {
+    switch (status?.toLowerCase()) {
+      case 'active':
+        return Colors.green;
+      case 'upcoming':
+        return Colors.blue;
+      case 'completed':
+        return Colors.grey;
+      case 'cancelled':
+        return Colors.red;
+      default:
+        return const Color(0xFF718096);
+    }
   }
 }
