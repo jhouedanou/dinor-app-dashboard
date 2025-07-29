@@ -61,7 +61,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
       await ShareService.shareContent({
         title: title,
         text: `Découvrez ${title} sur Dinor`,
-        url: 'https://dinor.app',
+        url: 'https://new.dinor.app',
         type: favoriteType as any,
         id: favoriteItemId,
       });

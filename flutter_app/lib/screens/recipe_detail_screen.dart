@@ -37,6 +37,7 @@ import '../components/dinor_icon.dart';
 
 // Services et composables
 import '../services/api_service.dart';
+import '../services/offline_service.dart';
 import '../composables/use_comments.dart';
 import '../composables/use_auth_handler.dart';
 import '../composables/use_social_share.dart';
@@ -68,9 +69,13 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
   
   // Erreurs
   String? _error;
+  bool _isOffline = false;
 
   // Commentaires
   final TextEditingController _commentController = TextEditingController();
+  
+  // Services
+  final OfflineService _offlineService = OfflineService();
 
   @override
   bool get wantKeepAlive => true;
@@ -89,22 +94,23 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
     super.dispose();
   }
 
-  // REPRODUCTION EXACTE du chargement de données Vue
+  // REPRODUCTION EXACTE du chargement de données Vue avec support hors ligne
   Future<void> _loadRecipe({bool forceRefresh = false}) async {
     try {
       print('🔄 [RecipeDetailScreen] Chargement recette ID: ${widget.id}, ForceRefresh: $forceRefresh');
       setState(() => _loading = true);
       
-      // Utiliser l'API service (même que React Native)
-      final apiService = ref.read(apiServiceProvider);
-      final data = forceRefresh 
-        ? await apiService.request('/recipes/${widget.id}', forceRefresh: true)
-        : await apiService.get('/recipes/${widget.id}');
+      final result = await _offlineService.loadDetailWithOfflineSupport(
+        endpoint: 'https://new.dinorapp.com/api/v1/recipes/${widget.id}',
+        cacheKey: 'recipe_detail',
+        id: widget.id,
+      );
         
-      if (data['success']) {
+      if (result['success']) {
         setState(() {
-          _recipe = data['data'];
+          _recipe = result['data'];
           _loading = false;
+          _isOffline = result['offline'] ?? false;
         });
         
         // Charger les commentaires
@@ -112,7 +118,17 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
         await _checkUserLike();
         await _checkUserFavorite();
         
+        // Afficher un indicateur si en mode hors ligne
+        if (result['offline'] == true) {
+          _showOfflineIndicator();
+        }
+        
         print('✅ [RecipeDetailScreen] Recette chargée avec succès');
+      } else {
+        setState(() {
+          _error = result['error'];
+          _loading = false;
+        });
       }
     } catch (error) {
       print('❌ [RecipeDetailScreen] Erreur lors du chargement de la recette: $error');
@@ -156,6 +172,24 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
     } catch (error) {
       print('❌ [RecipeDetailScreen] Erreur vérification favori: $error');
     }
+  }
+
+  void _showOfflineIndicator() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(Icons.wifi_off, color: Colors.white, size: 20),
+            SizedBox(width: 8),
+            Expanded(
+              child: Text('Mode hors ligne - Données en cache'),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.orange,
+        duration: Duration(seconds: 3),
+      ),
+    );
   }
 
   Future<void> _addComment() async {
@@ -214,7 +248,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
     final shareData = {
       'title': _recipe!['title'],
       'text': _recipe!['description'] ?? 'Découvrez cette délicieuse recette : ${_recipe!['title']}',
-      'url': 'https://dinor.app/recipe/${widget.id}',
+      'url': 'https://new.dinor.app/recipe/${widget.id}',
       'image': _recipe!['featured_image_url'],
     };
     
@@ -239,22 +273,58 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
     return DateTime.parse(date).toLocal().toString().split(' ')[0];
   }
 
-  String _getEmbedUrl(String videoUrl) {
-    if (videoUrl.isEmpty) return '';
+  void _openVideo(String videoUrl) async {
+    print('🎥 [RecipeDetail] _openVideo appelé avec URL: $videoUrl');
     
-    // Gérer les URLs YouTube
-    final youtubeMatch = RegExp(r'(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)').firstMatch(videoUrl);
-    if (youtubeMatch != null) {
-      return 'https://www.youtube.com/embed/${youtubeMatch.group(1)}?rel=0&modestbranding=1';
+    if (videoUrl.isEmpty) {
+      print('❌ [RecipeDetail] URL vidéo vide');
+      _showSnackBar('URL de la vidéo non disponible', Colors.red);
+      return;
     }
     
-    // Gérer les URLs Vimeo
-    final vimeoMatch = RegExp(r'vimeo\.com\/(\d+)').firstMatch(videoUrl);
-    if (vimeoMatch != null) {
-      return 'https://player.vimeo.com/video/${vimeoMatch.group(1)}';
+    // Convertir URL embed en URL normale pour YouTube externe
+    final normalUrl = _convertEmbedToNormalUrl(videoUrl);
+    print('🔄 [RecipeDetail] URL convertie: $normalUrl');
+    
+    try {
+      final uri = Uri.parse(normalUrl);
+      if (await canLaunchUrl(uri)) {
+        print('📺 [RecipeDetail] Ouverture avec YouTube externe...');
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+        print('✅ [RecipeDetail] Vidéo ouverte avec succès');
+      } else {
+        print('❌ [RecipeDetail] Impossible d\'ouvrir l\'URL');
+        _showSnackBar('Impossible d\'ouvrir la vidéo', Colors.red);
+      }
+    } catch (e) {
+      print('❌ [RecipeDetail] Erreur lors de l\'ouverture: $e');
+      _showSnackBar('Erreur lors de l\'ouverture de la vidéo', Colors.red);
+    }
+  }
+  
+  String _convertEmbedToNormalUrl(String url) {
+    // Si c'est une URL embed, la convertir en URL normale
+    if (url.contains('/embed/')) {
+      final regex = RegExp(r'/embed/([a-zA-Z0-9_-]+)');
+      final match = regex.firstMatch(url);
+      if (match != null) {
+        final videoId = match.group(1);
+        return 'https://www.youtube.com/watch?v=$videoId';
+      }
     }
     
-    return videoUrl;
+    // Si c'est déjà une URL normale, la retourner telle quelle
+    return url;
+  }
+
+  void _showSnackBar(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
   String _formatIngredientDisplay(dynamic ingredient) {
@@ -337,15 +407,20 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
   Widget build(BuildContext context) {
     super.build(context); // Required for AutomaticKeepAliveClientMixin
     
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
-      body: _loading
-        ? _buildLoadingState()
-        : _error != null
-          ? _buildErrorState()
-          : _recipe == null
-            ? _buildNotFoundState()
-            : _buildRecipeContent(),
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: const Color(0xFFFFFFFF),
+          body: _loading
+            ? _buildLoadingState()
+            : _error != null
+              ? _buildErrorState()
+              : _recipe == null
+                ? _buildNotFoundState()
+                : _buildRecipeContent(),
+        ),
+        
+      ],
     );
   }
 
@@ -438,12 +513,18 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
         // Recipe Info
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Recipe Stats
                 _buildRecipeStats(),
+                const SizedBox(height: 16),
+                
+                // Indicateur hors ligne
+                if (_isOffline) _buildOfflineIndicator(),
+                if (_isOffline) const SizedBox(height: 16),
+                
                 const SizedBox(height: 24),
 
                 // Description
@@ -459,7 +540,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
                 if (_recipe!['summary_video_url'] != null) ...[
                   _buildSection(
                     'Résumé en vidéo',
-                    _buildVideoContainer(_getEmbedUrl(_recipe!['summary_video_url'])),
+                    _buildVideoContainer(_recipe!['summary_video_url']),
                   ),
                   const SizedBox(height: 24),
                 ],
@@ -468,7 +549,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
                 if (_recipe!['video_url'] != null) ...[
                   _buildSection(
                     'Vidéo de la recette',
-                    _buildVideoContainer(_getEmbedUrl(_recipe!['video_url'])),
+                    _buildVideoContainer(_recipe!['video_url']),
                   ),
                   const SizedBox(height: 24),
                 ],
@@ -610,6 +691,36 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
     );
   }
 
+  Widget _buildOfflineIndicator() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.orange.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.orange.withOpacity(0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.wifi_off,
+            size: 16,
+            color: Colors.orange[700],
+          ),
+          const SizedBox(width: 8),
+          Text(
+            'Mode hors ligne - Données en cache',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.orange[700],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSection(String title, Widget content) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -629,17 +740,73 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
     );
   }
 
-  Widget _buildVideoContainer(String embedUrl) {
-    return Container(
-      height: 200,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: HtmlWidget(
-          '<iframe src="$embedUrl" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>',
+  Widget _buildVideoContainer(String videoUrl) {
+    return GestureDetector(
+      onTap: () => _openVideo(videoUrl),
+      child: Container(
+        height: 200,
+        decoration: BoxDecoration(
+          color: const Color(0xFFF7FAFC),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: Stack(
+          children: [
+            // Arrière-plan avec dégradé
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    const Color(0xFF1A202C).withOpacity(0.8),
+                    const Color(0xFF2D3748).withOpacity(0.6),
+                  ],
+                ),
+              ),
+            ),
+            // Contenu centré
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.9),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.play_arrow,
+                      color: Colors.white,
+                      size: 40,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Regarder la vidéo',
+                    style: TextStyle(
+                      fontFamily: 'OpenSans',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Appuyez pour ouvrir',
+                    style: TextStyle(
+                      fontFamily: 'Roboto',
+                      fontSize: 12,
+                      color: Colors.white70,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

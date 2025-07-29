@@ -17,6 +17,7 @@ import '../services/navigation_service.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -154,13 +155,13 @@ class _DinorTVScreenState extends ConsumerState<DinorTVScreen> with AutomaticKee
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
-        title: const Text(
-          'Dinor TV',
-          style: TextStyle(
-            fontFamily: 'OpenSans',
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF2D3748),
+        title: SvgPicture.asset(
+          'assets/images/LOGO_DINOR_monochrome.svg',
+          width: 32,
+          height: 32,
+          colorFilter: const ColorFilter.mode(
+            Color(0xFF2D3748),
+            BlendMode.srcIn,
           ),
         ),
         backgroundColor: Colors.white,

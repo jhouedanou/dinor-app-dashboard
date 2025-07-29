@@ -12,7 +12,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../../services/api_service.dart';
+import '../../services/likes_service.dart';
+import '../../composables/use_auth_handler.dart';
 
 class LikeButton extends ConsumerStatefulWidget {
   final String type; // 'recipe', 'tip', 'event', 'video'
@@ -41,66 +42,100 @@ class LikeButton extends ConsumerStatefulWidget {
 }
 
 class _LikeButtonState extends ConsumerState<LikeButton> {
-  late bool _isLiked;
-  late int _count;
-
   @override
   void initState() {
     super.initState();
-    _isLiked = widget.initialLiked;
-    _count = widget.initialCount;
+    // Initialize the likes service with the provided data
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(likesProvider.notifier).setInitialData(
+        widget.type,
+        widget.itemId,
+        widget.initialLiked,
+        widget.initialCount,
+      );
+    });
   }
 
   Future<void> _toggleLike() async {
+    print('❤️ [LikeButton] _toggleLike appelé pour ${widget.type}:${widget.itemId}');
+    
+    // Check if user is authenticated
+    final authState = ref.read(useAuthHandlerProvider);
+    if (!authState.isAuthenticated) {
+      print('🔐 [LikeButton] User not authenticated, calling onAuthRequired');
+      widget.onAuthRequired?.call();
+      return;
+    }
+    
     try {
-      final apiService = ref.read(apiServiceProvider);
+      print('🔄 [LikeButton] Tentative de toggle like...');
+      final success = await ref.read(likesProvider.notifier).toggleLike(
+        widget.type, 
+        widget.itemId
+      );
       
-      final response = await apiService.post('/likes/toggle', {
-        'likeable_type': widget.type,
-        'likeable_id': widget.itemId,
-      });
-      
-      if (response['success']) {
-        setState(() {
-          _isLiked = !_isLiked;
-          _count = response['data']['total_likes'] ?? _count;
-        });
-        
-        print('❤️ [LikeButton] Like toggled: $_isLiked, count: $_count');
+      if (success) {
+        print('✅ [LikeButton] Like toggled successfully');
+        // Afficher un feedback visuel
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Like mis à jour'),
+            duration: const Duration(seconds: 1),
+            backgroundColor: const Color(0xFFE53E3E),
+          ),
+        );
+      } else {
+        print('❌ [LikeButton] Failed to toggle like, requesting auth');
+        widget.onAuthRequired?.call();
       }
     } catch (error) {
-      print('❌ [LikeButton] Erreur toggle like: $error');
-      
-      // Si erreur 401, demander authentification
+      print('❌ [LikeButton] Exception lors du toggle like: $error');
       if (error.toString().contains('401') || error.toString().contains('connecté')) {
+        print('🔐 [LikeButton] Erreur d\'authentification, appel onAuthRequired');
         widget.onAuthRequired?.call();
+      } else {
+        // Afficher un message d'erreur
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur lors de la mise à jour du like'),
+            duration: const Duration(seconds: 2),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final likesState = ref.watch(likesProvider);
+    final isLiked = ref.read(likesProvider.notifier).isLiked(widget.type, widget.itemId);
+    final count = ref.read(likesProvider.notifier).getLikeCount(widget.type, widget.itemId);
+    
     return GestureDetector(
-      onTap: _toggleLike,
+      onTap: () {
+        print('❤️ [LikeButton] GestureDetector onTap appelé pour ${widget.type}:${widget.itemId}');
+        _toggleLike();
+      },
       child: Container(
         padding: _getPadding(),
-        decoration: _getDecoration(),
+        decoration: _getDecoration(isLiked),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              _isLiked ? LucideIcons.heart : LucideIcons.heart,
+              isLiked ? LucideIcons.heart : LucideIcons.heart,
               size: _getIconSize(),
-              color: _getIconColor(),
+              color: _getIconColor(isLiked),
             ),
             if (widget.showCount) ...[
               const SizedBox(width: 4),
               Text(
-                '$_count',
+                '$count',
                 style: TextStyle(
                   fontSize: _getFontSize(),
                   fontWeight: FontWeight.w500,
-                  color: _getTextColor(),
+                  color: _getTextColor(isLiked),
                   fontFamily: 'Roboto',
                 ),
               ),
@@ -144,20 +179,20 @@ class _LikeButtonState extends ConsumerState<LikeButton> {
     }
   }
 
-  BoxDecoration? _getDecoration() {
+  BoxDecoration? _getDecoration(bool isLiked) {
     switch (widget.variant) {
       case 'minimal':
         return null;
       case 'filled':
         return BoxDecoration(
-          color: _isLiked ? const Color(0xFFE53E3E) : Colors.grey[200],
+          color: isLiked ? const Color(0xFFE53E3E) : Colors.grey[200],
           borderRadius: BorderRadius.circular(_getBorderRadius()),
         );
       default: // standard
         return BoxDecoration(
           color: Colors.transparent,
           border: Border.all(
-            color: _isLiked ? const Color(0xFFE53E3E) : Colors.grey[300]!,
+            color: isLiked ? const Color(0xFFE53E3E) : Colors.grey[300]!,
             width: 1,
           ),
           borderRadius: BorderRadius.circular(_getBorderRadius()),
@@ -176,8 +211,8 @@ class _LikeButtonState extends ConsumerState<LikeButton> {
     }
   }
 
-  Color _getIconColor() {
-    if (_isLiked) {
+  Color _getIconColor(bool isLiked) {
+    if (isLiked) {
       return const Color(0xFFE53E3E);
     }
     
@@ -189,8 +224,8 @@ class _LikeButtonState extends ConsumerState<LikeButton> {
     }
   }
 
-  Color _getTextColor() {
-    if (_isLiked) {
+  Color _getTextColor(bool isLiked) {
+    if (isLiked) {
       return const Color(0xFFE53E3E);
     }
     

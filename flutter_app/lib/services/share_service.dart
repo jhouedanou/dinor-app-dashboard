@@ -15,7 +15,8 @@ class ShareService {
     try {
       print('📡 [ShareService] Récupération données de partage: $type/$id');
       
-      final shareData = await ApiService.getCompleteShareData(
+      final apiService = ApiService();
+      final shareData = await apiService.getCompleteShareData(
         type: type,
         id: id,
         platform: platform,
@@ -41,7 +42,8 @@ class ShareService {
     required String platform,
   }) async {
     try {
-      await ApiService.trackShare(
+      final apiService = ApiService();
+      await apiService.trackShare(
         type: type,
         id: id,
         platform: platform,

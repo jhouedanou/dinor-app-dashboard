@@ -103,13 +103,17 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
       case 'route':
         // Navigation interne standard
         if (item['path'] != null) {
-          NavigationService.pushReplacementNamed(item['path']);
+          if (item['path'] == '/') {
+            NavigationService.pushNamedAndClearStack('/');
+          } else {
+            NavigationService.pushNamed(item['path']);
+          }
         }
         break;
 
       case 'web_embed':
         // Charger la dernière page depuis le système Pages dans WebEmbed
-        NavigationService.pushReplacementNamed('/web-embed');
+        NavigationService.pushNamed('/web-embed');
         break;
 
       case 'external_link':
@@ -120,7 +124,11 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
       default:
         // Type d'action non géré - Fallback vers navigation route si définie
         if (item['path'] != null) {
-          NavigationService.pushReplacementNamed(item['path']);
+          if (item['path'] == '/') {
+            NavigationService.pushNamedAndClearStack('/');
+          } else {
+            NavigationService.pushNamed(item['path']);
+          }
         }
     }
   }

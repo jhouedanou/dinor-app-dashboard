@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import '../services/navigation_service.dart';
 import '../services/cache_service.dart';
+import '../services/offline_service.dart';
 import '../components/app_header.dart';
+import 'cache_management_screen.dart';
 
 class WorkingHomeScreen extends StatefulWidget {
   const WorkingHomeScreen({Key? key}) : super(key: key);
@@ -29,6 +32,23 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
   String? errorVideos;
 
   final CacheService _cacheService = CacheService();
+  final OfflineService _offlineService = OfflineService();
+
+  // Helper pour tronquer le contenu HTML pour les cartes
+  String _stripHtmlAndTruncate(String htmlContent, int maxLength) {
+    // Supprimer les balises HTML de base
+    String text = htmlContent
+        .replaceAll(RegExp(r'<[^>]*>'), '') // Supprimer toutes les balises HTML
+        .replaceAll(RegExp(r'\s+'), ' ') // Normaliser les espaces
+        .trim();
+    
+    // Tronquer si nécessaire
+    if (text.length > maxLength) {
+      text = '${text.substring(0, maxLength)}...';
+    }
+    
+    return text;
+  }
 
   @override
   void initState() {
@@ -47,39 +67,31 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
 
   Future<void> _loadRecipes() async {
     try {
-      // Vérifier d'abord le cache
-      final cachedRecipes = await _cacheService.getCachedRecipes();
-      if (cachedRecipes != null) {
-        setState(() {
-          recipes = cachedRecipes.take(4).toList();
-          isLoadingRecipes = false;
-        });
-      }
+      final result = await _offlineService.loadDataWithOfflineSupport(
+        endpoint: 'https://new.dinorapp.com/api/v1/recipes',
+        cacheKey: 'home_recipes',
+        params: {'limit': '4'},
+      );
 
-      // Charger depuis l'API
-      final response = await http.get(
-        Uri.parse('https://new.dinorapp.com/api/v1/recipes?limit=4'),
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-      ).timeout(const Duration(seconds: 10));
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+      if (result['success']) {
+        final data = result['data'];
         final newRecipes = data['data'] is List ? data['data'] : [data['data']];
-        
-        // Mettre en cache
-        await _cacheService.cacheRecipes(newRecipes);
-        await _cacheService.updateCacheTimestamp();
         
         setState(() {
           recipes = newRecipes;
           isLoadingRecipes = false;
           errorRecipes = null;
         });
+
+        // Afficher un indicateur si en mode hors ligne
+        if (result['offline'] == true) {
+          _showOfflineIndicator();
+        }
       } else {
-        throw Exception('Erreur API: ${response.statusCode}');
+        setState(() {
+          isLoadingRecipes = false;
+          errorRecipes = result['error'];
+        });
       }
     } catch (e) {
       print('❌ [Home] Erreur chargement recettes: $e');
@@ -92,38 +104,31 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
 
   Future<void> _loadTips() async {
     try {
-      // Vérifier d'abord le cache
-      final cachedTips = await _cacheService.getCachedTips();
-      if (cachedTips != null) {
-        setState(() {
-          tips = cachedTips.take(4).toList();
-          isLoadingTips = false;
-        });
-      }
+      final result = await _offlineService.loadDataWithOfflineSupport(
+        endpoint: 'https://new.dinorapp.com/api/v1/tips',
+        cacheKey: 'home_tips',
+        params: {'limit': '4'},
+      );
 
-      // Charger depuis l'API
-      final response = await http.get(
-        Uri.parse('https://new.dinorapp.com/api/v1/tips?limit=4'),
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-      ).timeout(const Duration(seconds: 10));
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+      if (result['success']) {
+        final data = result['data'];
         final newTips = data['data'] is List ? data['data'] : [data['data']];
-        
-        // Mettre en cache
-        await _cacheService.cacheTips(newTips);
         
         setState(() {
           tips = newTips;
           isLoadingTips = false;
           errorTips = null;
         });
+
+        // Afficher un indicateur si en mode hors ligne
+        if (result['offline'] == true) {
+          _showOfflineIndicator();
+        }
       } else {
-        throw Exception('Erreur API: ${response.statusCode}');
+        setState(() {
+          isLoadingTips = false;
+          errorTips = result['error'];
+        });
       }
     } catch (e) {
       print('❌ [Home] Erreur chargement astuces: $e');
@@ -136,38 +141,31 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
 
   Future<void> _loadEvents() async {
     try {
-      // Vérifier d'abord le cache
-      final cachedEvents = await _cacheService.getCachedEvents();
-      if (cachedEvents != null) {
-        setState(() {
-          events = cachedEvents.take(4).toList();
-          isLoadingEvents = false;
-        });
-      }
+      final result = await _offlineService.loadDataWithOfflineSupport(
+        endpoint: 'https://new.dinorapp.com/api/v1/events',
+        cacheKey: 'home_events',
+        params: {'limit': '4'},
+      );
 
-      // Charger depuis l'API
-      final response = await http.get(
-        Uri.parse('https://new.dinorapp.com/api/v1/events?limit=4'),
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-      ).timeout(const Duration(seconds: 10));
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+      if (result['success']) {
+        final data = result['data'];
         final newEvents = data['data'] is List ? data['data'] : [data['data']];
-        
-        // Mettre en cache
-        await _cacheService.cacheEvents(newEvents);
         
         setState(() {
           events = newEvents;
           isLoadingEvents = false;
           errorEvents = null;
         });
+
+        // Afficher un indicateur si en mode hors ligne
+        if (result['offline'] == true) {
+          _showOfflineIndicator();
+        }
       } else {
-        throw Exception('Erreur API: ${response.statusCode}');
+        setState(() {
+          isLoadingEvents = false;
+          errorEvents = result['error'];
+        });
       }
     } catch (e) {
       print('❌ [Home] Erreur chargement événements: $e');
@@ -180,17 +178,14 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
 
   Future<void> _loadVideos() async {
     try {
-      // Charger depuis l'API
-      final response = await http.get(
-        Uri.parse('https://new.dinorapp.com/api/v1/dinor-tv?limit=4'),
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-      ).timeout(const Duration(seconds: 10));
+      final result = await _offlineService.loadDataWithOfflineSupport(
+        endpoint: 'https://new.dinorapp.com/api/v1/dinor-tv',
+        cacheKey: 'home_videos',
+        params: {'limit': '4'},
+      );
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+      if (result['success']) {
+        final data = result['data'];
         final newVideos = data['data'] is List ? data['data'] : [data['data']];
         
         setState(() {
@@ -198,8 +193,16 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
           isLoadingVideos = false;
           errorVideos = null;
         });
+
+        // Afficher un indicateur si en mode hors ligne
+        if (result['offline'] == true) {
+          _showOfflineIndicator();
+        }
       } else {
-        throw Exception('Erreur API: ${response.statusCode}');
+        setState(() {
+          isLoadingVideos = false;
+          errorVideos = result['error'];
+        });
       }
     } catch (e) {
       print('❌ [Home] Erreur chargement vidéos: $e');
@@ -210,21 +213,37 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
     }
   }
 
+  void _showOfflineIndicator() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(Icons.wifi_off, color: Colors.white, size: 20),
+            SizedBox(width: 8),
+            Expanded(
+              child: Text('Mode hors ligne - Données en cache'),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.orange,
+        duration: Duration(seconds: 3),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       body: Column(
         children: [
-          // En-tête avec logo
-          const AppHeader(title: 'Dinor'),
           // Contenu principal avec pull-to-refresh
           Expanded(
             child: RefreshIndicator(
               onRefresh: _loadAllData,
               color: const Color(0xFFE53E3E),
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -306,23 +325,50 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Bienvenue sur Dinor',
-            style: TextStyle(
-              fontFamily: 'OpenSans',
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Découvrez nos recettes, astuces et événements',
-            style: TextStyle(
-              fontFamily: 'Roboto',
-              fontSize: 16,
-              color: Colors.white70,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Bienvenue sur Dinor',
+                      style: TextStyle(
+                        fontFamily: 'OpenSans',
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Découvrez nos recettes, astuces et événements',
+                      style: TextStyle(
+                        fontFamily: 'Roboto',
+                        fontSize: 16,
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const CacheManagementScreen(),
+                    ),
+                  );
+                },
+                icon: const Icon(
+                  Icons.storage,
+                  color: Colors.white,
+                  size: 24,
+                ),
+                tooltip: 'Gestion du cache',
+              ),
+            ],
           ),
         ],
       ),
@@ -477,15 +523,13 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
                   ),
                   const SizedBox(height: 8),
                   if (recipe['short_description'] != null) ...[
-                    Text(
+                    HtmlWidget(
                       recipe['short_description'],
-                      style: const TextStyle(
+                      textStyle: const TextStyle(
                         fontFamily: 'Roboto',
                         fontSize: 14,
                         color: Color(0xFF718096),
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 8),
                   ],
@@ -585,15 +629,13 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
                   ),
                   const SizedBox(height: 8),
                   if (tip['content'] != null) ...[
-                    Text(
-                      tip['content'],
-                      style: const TextStyle(
+                    HtmlWidget(
+                      _stripHtmlAndTruncate(tip['content'] ?? '', 100),
+                      textStyle: const TextStyle(
                         fontFamily: 'Roboto',
                         fontSize: 14,
                         color: Color(0xFF718096),
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 8),
                   ],
@@ -695,15 +737,13 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
                   ),
                   const SizedBox(height: 8),
                   if (event['short_description'] != null) ...[
-                    Text(
+                    HtmlWidget(
                       event['short_description'],
-                      style: const TextStyle(
+                      textStyle: const TextStyle(
                         fontFamily: 'Roboto',
                         fontSize: 14,
                         color: Color(0xFF718096),
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 8),
                   ],
@@ -828,15 +868,13 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
                   ),
                   const SizedBox(height: 8),
                   if (video['description'] != null) ...[
-                    Text(
-                      video['description'],
-                      style: const TextStyle(
+                    HtmlWidget(
+                      _stripHtmlAndTruncate(video['description'] ?? '', 100),
+                      textStyle: const TextStyle(
                         fontFamily: 'Roboto',
                         fontSize: 14,
                         color: Color(0xFF718096),
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 8),
                   ],

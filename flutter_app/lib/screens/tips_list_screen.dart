@@ -249,7 +249,7 @@ class _TipsListScreenState extends ConsumerState<TipsListScreen> with AutomaticK
     final shareData = {
       'title': tip['title'],
       'text': tip['short_description'] ?? 'Découvrez cette astuce : ${tip['title']}',
-      'url': 'https://dinor.app/tips/${tip['id']}',
+      'url': 'https://new.dinor.app/tips/${tip['id']}',
       'image': tip['featured_image_url'],
     };
     

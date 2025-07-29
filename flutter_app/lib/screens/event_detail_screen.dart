@@ -20,6 +20,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:share_plus/share_plus.dart';
 
 // Composables
 import '../composables/use_auth_handler.dart';
@@ -129,15 +130,14 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
   void _handleShareTap() async {
     if (_event == null) return;
 
-    final shareService = ref.read(useSocialShareProvider.notifier);
-    await shareService.shareEvent(
-      title: _event!['title'] ?? 'Événement',
-      description: _event!['description'] ?? '',
-      url: 'https://dinor.app/events/${_event!['id']}',
-      date: _event!['date'],
-      location: _event!['location'],
-      imageUrl: _event!['featured_image_url'],
-    );
+    final title = _event!['title'] ?? 'Événement Dinor';
+    final description = _event!['description'] ?? 'Découvrez cet événement sur Dinor';
+    final url = 'https://new.dinor.app/events/${widget.id}';
+    
+    final shareText = '$title\\n\\n$description\\n\\nDécouvrez plus d\'événements sur Dinor:\\n$url';
+    
+    Share.share(shareText, subject: title);
+    print('📤 [EventDetail] Contenu partagé: $title');
   }
 
   void _closeAuthModal() {
@@ -301,7 +301,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
           // Contenu
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

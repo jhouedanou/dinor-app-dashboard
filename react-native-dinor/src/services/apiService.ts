@@ -15,7 +15,7 @@ interface ApiResponse {
 }
 
 class ApiService {
-  private static baseUrl = 'https://dinor.app/api/v1';
+  private static baseUrl = 'https://new.dinor.app/api/v1';
 
   private static getDefaultHeaders(): Record<string, string> {
     return {

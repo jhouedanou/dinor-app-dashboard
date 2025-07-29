@@ -214,7 +214,7 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
     final shareData = {
       'title': _tip!['title'],
       'text': _tip!['short_description'] ?? 'Découvrez cette astuce : ${_tip!['title']}',
-      'url': 'https://dinor.app/tips/${widget.id}',
+      'url': 'https://new.dinor.app/tips/${widget.id}',
       'image': _tip!['featured_image_url'],
     };
     
@@ -250,22 +250,58 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
     return DateTime.parse(date).toLocal().toString().split(' ')[0];
   }
 
-  String _getEmbedUrl(String videoUrl) {
-    if (videoUrl.isEmpty) return '';
+  void _openVideo(String videoUrl) async {
+    print('🎥 [TipDetail] _openVideo appelé avec URL: $videoUrl');
     
-    // Gérer les URLs YouTube
-    final youtubeMatch = RegExp(r'(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)').firstMatch(videoUrl);
-    if (youtubeMatch != null) {
-      return 'https://www.youtube.com/embed/${youtubeMatch.group(1)}?rel=0&modestbranding=1';
+    if (videoUrl.isEmpty) {
+      print('❌ [TipDetail] URL vidéo vide');
+      _showSnackBar('URL de la vidéo non disponible', Colors.red);
+      return;
     }
     
-    // Gérer les URLs Vimeo
-    final vimeoMatch = RegExp(r'vimeo\.com\/(\d+)').firstMatch(videoUrl);
-    if (vimeoMatch != null) {
-      return 'https://player.vimeo.com/video/${vimeoMatch.group(1)}';
+    // Convertir URL embed en URL normale pour YouTube externe
+    final normalUrl = _convertEmbedToNormalUrl(videoUrl);
+    print('🔄 [TipDetail] URL convertie: $normalUrl');
+    
+    try {
+      final uri = Uri.parse(normalUrl);
+      if (await canLaunchUrl(uri)) {
+        print('📺 [TipDetail] Ouverture avec YouTube externe...');
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+        print('✅ [TipDetail] Vidéo ouverte avec succès');
+      } else {
+        print('❌ [TipDetail] Impossible d\'ouvrir l\'URL');
+        _showSnackBar('Impossible d\'ouvrir la vidéo', Colors.red);
+      }
+    } catch (e) {
+      print('❌ [TipDetail] Erreur lors de l\'ouverture: $e');
+      _showSnackBar('Erreur lors de l\'ouverture de la vidéo', Colors.red);
+    }
+  }
+  
+  String _convertEmbedToNormalUrl(String url) {
+    // Si c'est une URL embed, la convertir en URL normale
+    if (url.contains('/embed/')) {
+      final regex = RegExp(r'/embed/([a-zA-Z0-9_-]+)');
+      final match = regex.firstMatch(url);
+      if (match != null) {
+        final videoId = match.group(1);
+        return 'https://www.youtube.com/watch?v=$videoId';
+      }
     }
     
-    return videoUrl;
+    // Si c'est déjà une URL normale, la retourner telle quelle
+    return url;
+  }
+
+  void _showSnackBar(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
   void _openGalleryModal(int index) {
@@ -291,15 +327,20 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
   Widget build(BuildContext context) {
     super.build(context); // Required for AutomaticKeepAliveClientMixin
     
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
-      body: _loading
-        ? _buildLoadingState()
-        : _error != null
-          ? _buildErrorState()
-          : _tip == null
-            ? _buildNotFoundState()
-            : _buildTipContent(),
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: const Color(0xFFFFFFFF),
+          body: _loading
+            ? _buildLoadingState()
+            : _error != null
+              ? _buildErrorState()
+              : _tip == null
+                ? _buildNotFoundState()
+                : _buildTipContent(),
+        ),
+        
+      ],
     );
   }
 
@@ -392,7 +433,7 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
         // Tip Info
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -413,7 +454,7 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
                 if (_tip!['video_url'] != null) ...[
                   _buildSection(
                     'Vidéo explicative',
-                    _buildVideoContainer(_getEmbedUrl(_tip!['video_url'])),
+                    _buildVideoContainer(_tip!['video_url']),
                   ),
                   const SizedBox(height: 24),
                 ],
@@ -575,17 +616,73 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
     );
   }
 
-  Widget _buildVideoContainer(String embedUrl) {
-    return Container(
-      height: 200,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: HtmlWidget(
-          '<iframe src="$embedUrl" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>',
+  Widget _buildVideoContainer(String videoUrl) {
+    return GestureDetector(
+      onTap: () => _openVideo(videoUrl),
+      child: Container(
+        height: 200,
+        decoration: BoxDecoration(
+          color: const Color(0xFFF7FAFC),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: Stack(
+          children: [
+            // Arrière-plan avec dégradé
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    const Color(0xFF1A202C).withOpacity(0.8),
+                    const Color(0xFF2D3748).withOpacity(0.6),
+                  ],
+                ),
+              ),
+            ),
+            // Contenu centré
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.9),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.play_arrow,
+                      color: Colors.white,
+                      size: 40,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Regarder la vidéo',
+                    style: TextStyle(
+                      fontFamily: 'OpenSans',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Appuyez pour ouvrir',
+                    style: TextStyle(
+                      fontFamily: 'Roboto',
+                      fontSize: 12,
+                      color: Colors.white70,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -600,7 +697,13 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
             title: 'Contenu',
             initiallyOpen: true,
             child: HtmlWidget(
-              _tip!['content'],
+              _formatTipContent(_tip!['content']),
+              textStyle: const TextStyle(
+                fontFamily: 'Roboto',
+                fontSize: 16,
+                color: Color(0xFF4A5568),
+                height: 1.6,
+              ),
             ),
           ),
 
@@ -649,6 +752,35 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
         ),
       ],
     );
+  }
+
+  String _formatTipContent(dynamic content) {
+    if (content == null) return '';
+    
+    // Si c'est déjà une chaîne, la retourner
+    if (content is String) return content;
+    
+    // Si c'est un Map avec une propriété 'text'
+    if (content is Map && content['text'] != null) {
+      return content['text'];
+    }
+    
+    // Si c'est un Map avec une propriété 'content'
+    if (content is Map && content['content'] != null) {
+      return content['content'];
+    }
+    
+    // Si c'est un Map avec une propriété 'description'
+    if (content is Map && content['description'] != null) {
+      return content['description'];
+    }
+    
+    // Si c'est une liste, joindre les éléments
+    if (content is List) {
+      return content.map((item) => _formatTipContent(item)).join('\n\n');
+    }
+    
+    return content.toString();
   }
 
   Widget _buildCommentsSection() {

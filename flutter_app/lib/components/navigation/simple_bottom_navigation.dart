@@ -10,6 +10,8 @@ class SimpleBottomNavigation extends StatefulWidget {
 
 class _SimpleBottomNavigationState extends State<SimpleBottomNavigation> {
   String _currentRoute = '/';
+  bool _isNavigating = false;
+  String? _lastPressedItem;
   
   // Menu statique
   final List<Map<String, dynamic>> _menuItems = [
@@ -43,6 +45,12 @@ class _SimpleBottomNavigationState extends State<SimpleBottomNavigation> {
       'icon': Icons.play_circle,
       'label': 'DinorTV',
     },
+    {
+      'name': 'profile',
+      'path': '/profile',
+      'icon': Icons.person,
+      'label': 'Profil',
+    },
   ];
 
   @override
@@ -59,24 +67,80 @@ class _SimpleBottomNavigationState extends State<SimpleBottomNavigation> {
     super.dispose();
   }
 
+  // Méthode de sécurité pour réinitialiser l'état de navigation
+  void _resetNavigationState() {
+    if (mounted) {
+      setState(() {
+        _isNavigating = false;
+        _lastPressedItem = null;
+      });
+      print('🔄 [BottomNav] État de navigation réinitialisé');
+    }
+  }
+
   void _onRouteChanged(String newRoute) {
     if (mounted) {
       setState(() {
         _currentRoute = newRoute;
+        // Force reset navigation state when route changes
+        _isNavigating = false;
+        _lastPressedItem = null;
       });
       print('🧭 [BottomNav] Route changée: $_currentRoute');
     }
   }
 
-  void _handleItemClick(Map<String, dynamic> item) {
+  void _handleItemClick(Map<String, dynamic> item) async {
     final path = item['path'] as String;
+    final itemName = item['name'] as String;
+    
+    // Prevent double navigation only, allow same route navigation
+    if (_isNavigating) {
+      print('🚫 [BottomNav] Already navigating, ignoring: $path');
+      return;
+    }
+    
     print('🎯 [BottomNav] Navigation vers: $path');
     
-    if (path == '/') {
-      NavigationService.pushNamedAndClearStack('/');
-    } else {
-      NavigationService.pushNamed(path);
+    // Set navigation state immediately for UI feedback
+    setState(() {
+      _isNavigating = true;
+      _lastPressedItem = itemName;
+    });
+    
+    try {
+      // Use pushNamed for normal navigation, pushReplacementNamed only for home
+      if (path == '/') {
+        await NavigationService.pushNamedAndClearStack('/');
+      } else {
+        await NavigationService.pushNamed(path);
+      }
+      
+      // Reset navigation state immediately after successful navigation
+      if (mounted) {
+        setState(() {
+          _isNavigating = false;
+          _lastPressedItem = null;
+        });
+      }
+    } catch (e) {
+      print('❌ [BottomNav] Erreur navigation: $e');
+      // Reset navigation state on error
+      if (mounted) {
+        setState(() {
+          _isNavigating = false;
+          _lastPressedItem = null;
+        });
+      }
     }
+    
+    // Timeout de sécurité pour éviter le blocage
+    Future.delayed(const Duration(milliseconds: 2000), () {
+      if (mounted && _isNavigating) {
+        print('⚠️ [BottomNav] Timeout de sécurité - réinitialisation de l\'état');
+        _resetNavigationState();
+      }
+    });
   }
 
   bool _isActive(Map<String, dynamic> item) {
@@ -114,21 +178,35 @@ class _SimpleBottomNavigationState extends State<SimpleBottomNavigation> {
     final isActive = _isActive(item);
     final icon = item['icon'] as IconData;
     final label = item['label'] as String;
+    final itemName = item['name'] as String;
+    final isPressed = _lastPressedItem == itemName;
 
     return GestureDetector(
       onTap: () => _handleItemClick(item),
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        decoration: BoxDecoration(
+          color: isPressed 
+            ? const Color(0xFFFF6B35).withOpacity(0.1)
+            : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Icône
-            Icon(
-              icon,
-              size: 24,
-              color: isActive 
-                ? const Color(0xFFFF6B35) // Orange actif
-                : const Color(0xFF2D3748), // Gris inactif
+            // Icône avec animation
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              transform: Matrix4.identity()
+                ..scale(isPressed ? 0.95 : 1.0),
+              child: Icon(
+                icon,
+                size: 24,
+                color: isActive 
+                  ? const Color(0xFFFF6B35) // Orange actif
+                  : const Color(0xFF2D3748), // Gris inactif
+              ),
             ),
             const SizedBox(height: 4),
             // Label

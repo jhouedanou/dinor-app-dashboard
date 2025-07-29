@@ -194,7 +194,7 @@ class NavigationService {
         final arguments = settings.arguments as Map<String, dynamic>?;
         if (arguments == null || arguments['id'] == null) return _errorRoute();
         return MaterialPageRoute(
-          builder: (_) => SimpleTipDetailScreen(arguments: arguments),
+          builder: (_) => SimpleTipDetailScreen(id: arguments['id']),
           settings: settings,
         );
         

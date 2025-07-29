@@ -1,25 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
+
 import '../services/navigation_service.dart';
 import '../services/cache_service.dart';
+import '../components/common/like_button.dart';
+import '../components/common/share_modal.dart';
+import '../components/common/auth_modal.dart';
+import '../components/common/youtube_video_modal.dart';
+import '../components/common/comments_section.dart';
 
-class SimpleTipDetailScreen extends StatefulWidget {
-  final Map<String, dynamic> arguments;
-
-  const SimpleTipDetailScreen({Key? key, required this.arguments}) : super(key: key);
+class SimpleTipDetailScreen extends ConsumerStatefulWidget {
+  final String id;
+  
+  const SimpleTipDetailScreen({Key? key, required this.id}) : super(key: key);
 
   @override
-  State<SimpleTipDetailScreen> createState() => _SimpleTipDetailScreenState();
+  ConsumerState<SimpleTipDetailScreen> createState() => _SimpleTipDetailScreenState();
 }
 
-class _SimpleTipDetailScreenState extends State<SimpleTipDetailScreen> {
+class _SimpleTipDetailScreenState extends ConsumerState<SimpleTipDetailScreen> {
   Map<String, dynamic>? tip;
   bool isLoading = true;
   String? error;
-  bool isLiked = false;
-  bool isFavorite = false;
-
+  bool _showAuthModal = false;
+  bool _isShareModalVisible = false;
+  bool _showVideoModal = false;
+  Map<String, dynamic>? _shareData;
+  
   final CacheService _cacheService = CacheService();
 
   @override
@@ -29,7 +42,7 @@ class _SimpleTipDetailScreenState extends State<SimpleTipDetailScreen> {
   }
 
   Future<void> _loadTipDetail() async {
-    final tipId = widget.arguments['id'] as String;
+    final tipId = widget.id;
     
     try {
       // Vérifier d'abord le cache
@@ -39,10 +52,13 @@ class _SimpleTipDetailScreenState extends State<SimpleTipDetailScreen> {
           tip = cachedTip;
           isLoading = false;
         });
+        print('✅ [SimpleTipDetail] Astuce chargée depuis le cache');
         return;
       }
 
-      // Charger depuis l'API
+      // Sinon, charger depuis l'API
+      print('🔄 [SimpleTipDetail] Chargement depuis l\'API pour ID: $tipId');
+      
       final response = await http.get(
         Uri.parse('https://new.dinorapp.com/api/v1/tips/$tipId'),
         headers: {
@@ -53,218 +69,142 @@ class _SimpleTipDetailScreenState extends State<SimpleTipDetailScreen> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final tipData = data['data'] ?? data;
-        
-        // Mettre en cache
-        await _cacheService.cacheTipDetail(tipId, tipData);
-        
-        setState(() {
-          tip = tipData;
-          isLoading = false;
-          error = null;
-        });
+        if (data['success'] && data['data'] != null) {
+          setState(() {
+            tip = data['data'];
+            isLoading = false;
+          });
+          
+          // Mettre en cache
+          await _cacheService.cacheTipDetail(tipId, data['data']);
+          print('✅ [SimpleTipDetail] Astuce chargée et mise en cache');
+        } else {
+          setState(() {
+            error = data['message'] ?? 'Astuce non trouvée';
+            isLoading = false;
+          });
+        }
       } else if (response.statusCode == 404) {
         setState(() {
-          isLoading = false;
           error = 'Astuce non trouvée';
+          isLoading = false;
         });
       } else {
-        throw Exception('Erreur API: ${response.statusCode}');
+        throw Exception('HTTP ${response.statusCode}');
       }
     } catch (e) {
-      print('❌ [TipDetail] Erreur chargement: $e');
+      print('❌ [SimpleTipDetail] Erreur chargement: $e');
       setState(() {
+        error = 'Erreur de chargement';
         isLoading = false;
-        error = e.toString();
       });
     }
   }
 
+  void _openVideo(String? videoUrl) {
+    if (videoUrl == null || videoUrl.isEmpty) {
+      print('❌ [SimpleTipDetail] URL vidéo vide ou nulle');
+      return;
+    }
+    
+    print('🎥 [SimpleTipDetail] Ouverture de la vidéo: $videoUrl');
+    setState(() {
+      _showVideoModal = true;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      body: isLoading
-          ? const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFE53E3E)),
-              ),
-            )
-          : error != null
-              ? _buildErrorWidget()
-              : tip != null
-                  ? _buildTipDetail()
-                  : const Center(child: Text('Astuce non trouvée')),
-    );
-  }
-
-  Widget _buildErrorWidget() {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFE53E3E),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => NavigationService.pop(),
+    if (isLoading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
         ),
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.error_outline,
-                size: 64,
-                color: Color(0xFFE53E3E),
+      );
+    }
+
+    if (error != null) {
+      return Scaffold(
+        body: Center(
+          child: Text('Erreur: $error'),
+        ),
+      );
+    }
+
+    if (tip == null) {
+      return const Scaffold(
+        body: Center(
+          child: Text('Astuce non trouvée'),
+        ),
+      );
+    }
+
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: const Color(0xFFF5F5F5),
+          body: _buildContent(),
+        ),
+        
+        // Modal d'authentification
+        if (_showAuthModal) ...[
+          Positioned.fill(
+            child: Container(
+              color: Colors.black54,
+              child: GestureDetector(
+                onTap: () => setState(() => _showAuthModal = false),
+                child: Container(color: Colors.transparent),
               ),
-              const SizedBox(height: 16),
-              Text(
-                error == 'Astuce non trouvée' ? 'Astuce non trouvée' : 'Erreur de chargement',
-                style: const TextStyle(
-                  fontFamily: 'OpenSans',
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF2D3748),
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                error == 'Astuce non trouvée' 
-                    ? 'Cette astuce n\'existe pas ou a été supprimée.'
-                    : 'Impossible de charger les détails de l\'astuce.',
-                style: const TextStyle(
-                  fontFamily: 'Roboto',
-                  fontSize: 16,
-                  color: Color(0xFF718096),
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _loadTipDetail,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE53E3E),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: const Text('Réessayer'),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
+          Positioned.fill(
+            child: AuthModal(
+              isOpen: _showAuthModal,
+              onClose: () => setState(() => _showAuthModal = false),
+              onAuthenticated: () => setState(() => _showAuthModal = false),
+            ),
+          ),
+        ],
+        
+        // Modal de partage
+        if (_isShareModalVisible && _shareData != null)
+          Positioned.fill(
+            child: Container(
+              color: Colors.black54,
+              child: ShareModal(
+                isOpen: _isShareModalVisible,
+                shareData: _shareData!,
+                onClose: () => setState(() => _isShareModalVisible = false),
+              ),
+            ),
+          ),
+        
+        // Modal vidéo YouTube
+        if (_showVideoModal && tip!['video_url'] != null)
+          Positioned.fill(
+            child: YouTubeVideoModal(
+              isOpen: _showVideoModal,
+              videoUrl: tip!['video_url'],
+              title: tip!['title'] ?? 'Vidéo',
+              onClose: () => setState(() => _showVideoModal = false),
+            ),
+          ),
+      ],
     );
   }
 
-  Widget _buildTipDetail() {
+  Widget _buildContent() {
     return CustomScrollView(
       slivers: [
-        // AppBar avec image hero
-        SliverAppBar(
-          expandedHeight: 300,
-          pinned: true,
-          backgroundColor: const Color(0xFFE53E3E),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () => NavigationService.pop(),
-          ),
-          actions: [
-            IconButton(
-              icon: Icon(
-                isFavorite ? Icons.favorite : Icons.favorite_border,
-                color: Colors.white,
-              ),
-              onPressed: _toggleFavorite,
-            ),
-            IconButton(
-              icon: const Icon(Icons.share, color: Colors.white),
-              onPressed: _shareTip,
-            ),
-          ],
-          flexibleSpace: FlexibleSpaceBar(
-            background: Stack(
-              children: [
-                // Image de fond
-                Positioned.fill(
-                  child: Image.network(
-                    tip!['image_url'] ?? 'https://via.placeholder.com/400x300',
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: const Color(0xFFE53E3E),
-                        child: const Icon(
-                          Icons.lightbulb,
-                          size: 64,
-                          color: Colors.white,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                // Gradient overlay
-                Positioned.fill(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          Colors.black.withOpacity(0.7),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                // Titre et description en bas
-                Positioned(
-                  bottom: 16,
-                  left: 16,
-                  right: 16,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        tip!['title'] ?? 'Sans titre',
-                        style: const TextStyle(
-                          fontFamily: 'OpenSans',
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      if (tip!['short_description'] != null) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          tip!['short_description'],
-                          style: const TextStyle(
-                            fontFamily: 'Roboto',
-                            fontSize: 16,
-                            color: Colors.white70,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+        // Hero Image
+        SliverToBoxAdapter(
+          child: _buildHeroImage(),
         ),
 
-        // Contenu principal
+        // Tip Content
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -274,7 +214,7 @@ class _SimpleTipDetailScreenState extends State<SimpleTipDetailScreen> {
 
                 // Contenu
                 if (tip!['content'] != null) ...[
-                  _buildSection('Contenu', _buildContent()),
+                  _buildSection('Contenu', _buildContentWidget()),
                   const SizedBox(height: 24),
                 ],
 
@@ -292,8 +232,95 @@ class _SimpleTipDetailScreenState extends State<SimpleTipDetailScreen> {
 
                 // Actions
                 _buildActions(),
+                const SizedBox(height: 24),
+
+                // Section des commentaires
+                CommentsSection(
+                  contentType: 'tip',
+                  contentId: widget.id,
+                  contentTitle: tip!['title'] ?? 'Astuce',
+                  onAuthRequired: () => setState(() => _showAuthModal = true),
+                ),
               ],
             ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeroImage() {
+    return Stack(
+      children: [
+        SizedBox(
+          height: 250,
+          width: double.infinity,
+          child: CachedNetworkImage(
+            imageUrl: tip!['featured_image_url'] ?? tip!['image_url'] ?? '/images/default-tip.jpg',
+            fit: BoxFit.cover,
+            placeholder: (context, url) => Container(
+              color: const Color(0xFFF4D03F),
+            ),
+            errorWidget: (context, url, error) => Container(
+              color: const Color(0xFFF4D03F),
+              child: const Icon(
+                Icons.lightbulb,
+                size: 64,
+                color: Color(0xFF2D3748),
+              ),
+            ),
+          ),
+        ),
+        
+        // Overlay avec gradient
+        Container(
+          height: 250,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.transparent,
+                Colors.black.withOpacity(0.7),
+              ],
+            ),
+          ),
+        ),
+        
+        // Contenu en overlay
+        Positioned(
+          bottom: 20,
+          left: 16,
+          right: 16,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                tip!['title'] ?? 'Astuce',
+                style: const TextStyle(
+                  fontFamily: 'OpenSans',
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                  height: 1.2,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (tip!['summary'] != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  tip!['summary'],
+                  style: const TextStyle(
+                    fontFamily: 'Roboto',
+                    fontSize: 16,
+                    color: Colors.white70,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ],
           ),
         ),
       ],
@@ -315,31 +342,26 @@ class _SimpleTipDetailScreenState extends State<SimpleTipDetailScreen> {
         ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _buildStatItem(
-            Icons.trending_up,
-            'Difficulté',
-            _getDifficultyLabel(tip!['difficulty_level']),
-            _getDifficultyColor(tip!['difficulty_level']),
+            Icons.lightbulb,
+            'Catégorie',
+            tip!['category'] ?? 'Astuce',
+            const Color(0xFFF4D03F),
           ),
-          _buildStatItem(
-            Icons.schedule,
-            'Temps estimé',
-            '${tip!['estimated_time'] ?? 0} min',
-            const Color(0xFFE53E3E),
-          ),
+          const SizedBox(width: 16),
           _buildStatItem(
             Icons.favorite,
             'Likes',
             '${tip!['likes_count'] ?? 0}',
             const Color(0xFFE53E3E),
           ),
+          const SizedBox(width: 16),
           _buildStatItem(
-            Icons.comment,
-            'Commentaires',
-            '${tip!['comments_count'] ?? 0}',
-            const Color(0xFF38A169),
+            Icons.visibility,
+            'Vues',
+            '${tip!['views_count'] ?? 0}',
+            const Color(0xFF4A5568),
           ),
         ],
       ),
@@ -347,32 +369,56 @@ class _SimpleTipDetailScreenState extends State<SimpleTipDetailScreen> {
   }
 
   Widget _buildStatItem(IconData icon, String label, String value, Color color) {
-    return Column(
-      children: [
-        Icon(icon, color: color, size: 24),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            fontFamily: 'OpenSans',
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF2D3748),
+    return Expanded(
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: TextStyle(
+              fontFamily: 'OpenSans',
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
           ),
-        ),
-        Text(
-          label,
-          style: const TextStyle(
-            fontFamily: 'Roboto',
-            fontSize: 12,
-            color: Color(0xFF718096),
+          Text(
+            label,
+            style: const TextStyle(
+              fontFamily: 'Roboto',
+              fontSize: 12,
+              color: Color(0xFF718096),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
   Widget _buildSection(String title, Widget content) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontFamily: 'OpenSans',
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF2D3748),
+          ),
+        ),
+        const SizedBox(height: 12),
+        content,
+      ],
+    );
+  }
+
+  Widget _buildContentWidget() {
+    final content = tip!['content'];
+    if (content == null) return const SizedBox.shrink();
+    
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -386,60 +432,75 @@ class _SimpleTipDetailScreenState extends State<SimpleTipDetailScreen> {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontFamily: 'OpenSans',
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF2D3748),
-            ),
-          ),
-          const SizedBox(height: 12),
-          content,
-        ],
-      ),
-    );
-  }
-
-  Widget _buildContent() {
-    return Text(
-      tip!['content'],
-      style: const TextStyle(
-        fontFamily: 'Roboto',
-        fontSize: 16,
-        color: Color(0xFF4A5568),
-        height: 1.6,
+      child: HtmlWidget(
+        content.toString(),
+        textStyle: const TextStyle(
+          fontFamily: 'Roboto',
+          fontSize: 16,
+          color: Color(0xFF4A5568),
+          height: 1.6,
+        ),
       ),
     );
   }
 
   Widget _buildVideoContainer() {
-    return Container(
-      height: 200,
-      decoration: BoxDecoration(
-        color: const Color(0xFFF7FAFC),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+    final videoUrl = tip!['video_url'];
+    
+    return GestureDetector(
+      onTap: () => _openVideo(videoUrl),
+      child: Container(
+        height: 200,
+        decoration: BoxDecoration(
+          color: const Color(0xFFF7FAFC),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: Stack(
           children: [
-            Icon(
-              Icons.play_circle_outline,
-              size: 48,
-              color: Color(0xFFCBD5E0),
+            // Arrière-plan avec dégradé
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    const Color(0xFF667EEA).withOpacity(0.8),
+                    const Color(0xFF764BA2).withOpacity(0.8),
+                  ],
+                ),
+              ),
             ),
-            SizedBox(height: 8),
-            Text(
-              'Vidéo disponible',
-              style: TextStyle(
-                fontFamily: 'Roboto',
-                fontSize: 14,
-                color: Color(0xFF718096),
+            
+            // Contenu centré
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: const Icon(
+                      Icons.play_arrow,
+                      size: 48,
+                      color: Color(0xFFE53E3E),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Regarder la vidéo',
+                    style: TextStyle(
+                      fontFamily: 'OpenSans',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -450,8 +511,8 @@ class _SimpleTipDetailScreenState extends State<SimpleTipDetailScreen> {
 
   Widget _buildTagsList() {
     final tags = tip!['tags'];
-    if (tags == null) return const Text('Aucun tag disponible');
-
+    if (tags == null) return const SizedBox.shrink();
+    
     final tagsList = tags is List ? tags : [tags];
     
     return Wrap(
@@ -461,16 +522,20 @@ class _SimpleTipDetailScreenState extends State<SimpleTipDetailScreen> {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: const Color(0xFFF7FAFC),
+            color: const Color(0xFFF4D03F).withOpacity(0.2),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            border: Border.all(
+              color: const Color(0xFFF4D03F),
+              width: 1,
+            ),
           ),
           child: Text(
             tag.toString(),
             style: const TextStyle(
               fontFamily: 'Roboto',
               fontSize: 12,
-              color: Color(0xFF4A5568),
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF2D3748),
             ),
           ),
         );
@@ -479,87 +544,65 @@ class _SimpleTipDetailScreenState extends State<SimpleTipDetailScreen> {
   }
 
   Widget _buildActions() {
-    return Row(
-      children: [
-        Expanded(
-          child: ElevatedButton.icon(
-            onPressed: _toggleLike,
-            icon: Icon(isLiked ? Icons.favorite : Icons.favorite_border),
-            label: Text(isLiked ? 'Aimé' : 'J\'aime'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: isLiked ? const Color(0xFFE53E3E) : Colors.white,
-              foregroundColor: isLiked ? Colors.white : const Color(0xFFE53E3E),
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-                side: BorderSide(
-                  color: isLiked ? Colors.transparent : const Color(0xFFE53E3E),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Like Button
+          Expanded(
+            child: LikeButton(
+              type: 'tip',
+              itemId: widget.id,
+              initialLiked: tip!['user_liked'] ?? false,
+              initialCount: tip!['likes_count'] ?? 0,
+              showCount: true,
+              size: 'medium',
+              variant: 'standard',
+              onAuthRequired: () => setState(() => _showAuthModal = true),
+            ),
+          ),
+          
+          const SizedBox(width: 12),
+          
+          // Share Button
+          Expanded(
+            child: ElevatedButton.icon(
+              onPressed: () {
+                setState(() {
+                  _shareData = {
+                    'title': tip!['title'] ?? 'Astuce Dinor',
+                    'text': 'Découvrez cette astuce sur Dinor',
+                    'url': 'https://new.dinor.app/tip/${widget.id}',
+                    'type': 'tip',
+                    'id': widget.id,
+                  };
+                  _isShareModalVisible = true;
+                });
+              },
+              icon: const Icon(Icons.share, size: 18),
+              label: const Text('Partager'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4A5568),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),
           ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: OutlinedButton.icon(
-            onPressed: _shareTip,
-            icon: const Icon(Icons.share),
-            label: const Text('Partager'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFFE53E3E),
-              side: const BorderSide(color: Color(0xFFE53E3E)),
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          ),
-        ),
-      ],
+        ],
+      ),
     );
-  }
-
-  void _toggleFavorite() {
-    setState(() {
-      isFavorite = !isFavorite;
-    });
-    // TODO: Implémenter l'API pour les favoris
-  }
-
-  void _toggleLike() {
-    setState(() {
-      isLiked = !isLiked;
-    });
-    // TODO: Implémenter l'API pour les likes
-  }
-
-  void _shareTip() {
-    // TODO: Implémenter le partage
-  }
-
-  String _getDifficultyLabel(String? difficulty) {
-    if (difficulty == null) return 'Non spécifiée';
-    final labels = {
-      'easy': 'Facile',
-      'medium': 'Moyen',
-      'hard': 'Difficile',
-      'beginner': 'Débutant',
-      'intermediate': 'Intermédiaire',
-      'advanced': 'Avancé',
-    };
-    return labels[difficulty] ?? difficulty;
-  }
-
-  Color _getDifficultyColor(String? difficulty) {
-    if (difficulty == null) return const Color(0xFF718096);
-    final colors = {
-      'easy': const Color(0xFF38A169),
-      'medium': const Color(0xFFF4D03F),
-      'hard': const Color(0xFFE53E3E),
-      'beginner': const Color(0xFF38A169),
-      'intermediate': const Color(0xFFF4D03F),
-      'advanced': const Color(0xFFE53E3E),
-    };
-    return colors[difficulty] ?? const Color(0xFF718096);
   }
 }

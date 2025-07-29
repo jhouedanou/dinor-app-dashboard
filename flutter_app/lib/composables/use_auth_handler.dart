@@ -1,6 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
+import '../services/likes_service.dart';
+
+final apiServiceProvider = Provider<ApiService>((ref) {
+  return ApiService();
+});
 
 class AuthState {
   final bool isAuthenticated;
@@ -36,8 +41,9 @@ class AuthState {
 
 class AuthNotifier extends StateNotifier<AuthState> {
   final ApiService _apiService;
+  final LikesService _likesService;
   
-  AuthNotifier(this._apiService) : super(const AuthState()) {
+  AuthNotifier(this._apiService, this._likesService) : super(const AuthState()) {
     _loadStoredAuth();
   }
 
@@ -89,15 +95,30 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> login(String email, String password) async {
     try {
       print('🔐 [AuthNotifier] Tentative de connexion pour: $email');
+      print('🔐 [AuthNotifier] Endpoint: https://new.dinorapp.com/api/v1/auth/login');
       
       final response = await _apiService.post('/auth/login', {
         'email': email,
         'password': password,
       });
       
-      if (response['success']) {
-        final user = response['data']['user'];
-        final token = response['data']['token'];
+      print('🔐 [AuthNotifier] Réponse de l\'API: $response');
+      
+      if (response['success'] == true) {
+        print('✅ [AuthNotifier] Réponse API positive');
+        final data = response['data'];
+        print('🔐 [AuthNotifier] Data structure: ${data.keys.toList()}');
+        
+        final user = data['user'];
+        final token = data['token'];
+        
+        if (user == null || token == null) {
+          print('❌ [AuthNotifier] Données manquantes - user: $user, token: $token');
+          return false;
+        }
+        
+        print('🔐 [AuthNotifier] User data: ${user.toString()}');
+        print('🔐 [AuthNotifier] Token: ${token.toString().substring(0, 20)}...');
         
         // Sauvegarder l'authentification
         await _storeAuth(
@@ -116,12 +137,21 @@ class AuthNotifier extends StateNotifier<AuthState> {
         );
         
         print('✅ [AuthNotifier] Connexion réussie pour: ${user['name']}');
+        
+        // Sync user likes after successful login
+        await _likesService.syncWithServer();
+        
         return true;
+      } else {
+        print('❌ [AuthNotifier] Échec de connexion - response success: ${response['success']}');
+        print('❌ [AuthNotifier] Error: ${response['error']}');
+        print('❌ [AuthNotifier] Message: ${response['message']}');
+        return false;
       }
       
-      return false;
     } catch (error) {
-      print('❌ [AuthNotifier] Erreur connexion: $error');
+      print('❌ [AuthNotifier] Exception lors de la connexion: $error');
+      print('❌ [AuthNotifier] Stack trace: ${StackTrace.current}');
       return false;
     }
   }
@@ -129,6 +159,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> register(String name, String email, String password, String passwordConfirmation) async {
     try {
       print('📝 [AuthNotifier] Tentative d\'inscription pour: $email');
+      print('📝 [AuthNotifier] Endpoint: https://new.dinorapp.com/api/v1/auth/register');
       
       final response = await _apiService.post('/auth/register', {
         'name': name,
@@ -137,9 +168,18 @@ class AuthNotifier extends StateNotifier<AuthState> {
         'password_confirmation': passwordConfirmation,
       });
       
-      if (response['success']) {
-        final user = response['data']['user'];
-        final token = response['data']['token'];
+      print('📝 [AuthNotifier] Réponse de l\'API: $response');
+      
+      if (response['success'] == true) {
+        print('✅ [AuthNotifier] Réponse API positive');
+        final data = response['data'];
+        final user = data['user'];
+        final token = data['token'];
+        
+        if (user == null || token == null) {
+          print('❌ [AuthNotifier] Données manquantes - user: $user, token: $token');
+          return false;
+        }
         
         // Sauvegarder l'authentification
         await _storeAuth(
@@ -158,12 +198,21 @@ class AuthNotifier extends StateNotifier<AuthState> {
         );
         
         print('✅ [AuthNotifier] Inscription réussie pour: ${user['name']}');
+        
+        // Sync user likes after successful registration
+        await _likesService.syncWithServer();
+        
         return true;
+      } else {
+        print('❌ [AuthNotifier] Échec d\'inscription - response success: ${response['success']}');
+        print('❌ [AuthNotifier] Error: ${response['error']}');
+        print('❌ [AuthNotifier] Message: ${response['message']}');
+        print('❌ [AuthNotifier] Validation errors: ${response['validation_errors']}');
+        return false;
       }
       
-      return false;
     } catch (error) {
-      print('❌ [AuthNotifier] Erreur inscription: $error');
+      print('❌ [AuthNotifier] Exception lors de l\'inscription: $error');
       return false;
     }
   }
@@ -184,6 +233,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
       // Nettoyer le stockage
       await _clearStoredAuth();
       
+      // Clear user likes
+      _likesService.clearUserLikes();
+      
       // Réinitialiser l'état
       state = const AuthState();
       
@@ -193,14 +245,55 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  Future<bool> loginAsGuest() async {
+    try {
+      print('👤 [AuthNotifier] Connexion en tant qu\'invité');
+      
+      // Créer un token invité simple avec timestamp
+      final guestToken = 'guest_${DateTime.now().millisecondsSinceEpoch}';
+      
+      state = AuthState(
+        isAuthenticated: true,
+        userName: 'Invité',
+        userEmail: 'invite@dinor.app',
+        token: guestToken,
+      );
+      
+      await _storeAuth(guestToken, 'Invité', 'invite@dinor.app');
+      print('✅ [AuthNotifier] Connexion invité réussie');
+      return true;
+    } catch (error) {
+      print('❌ [AuthNotifier] Erreur connexion invité: $error');
+      return false;
+    }
+  }
+
   Future<bool> checkAuth() async {
     try {
+      print('🔐 [AuthNotifier] Vérification de l\'authentification...');
+      print('🔐 [AuthNotifier] État actuel: isAuthenticated=${state.isAuthenticated}, token=${state.token != null ? "Présent" : "Absent"}');
+      
       if (!state.isAuthenticated || state.token == null) {
+        print('❌ [AuthNotifier] Pas authentifié ou token manquant');
         return false;
       }
       
+      // Si c'est un token invité, considérer comme valide
+      if (state.token!.startsWith('guest_')) {
+        print('✅ [AuthNotifier] Token invité valide');
+        return true;
+      }
+      
       final response = await _apiService.get('/auth/me');
-      return response['success'];
+      final isValid = response['success'];
+      print('🔐 [AuthNotifier] Vérification API: $isValid');
+      
+      if (!isValid) {
+        print('❌ [AuthNotifier] Token invalide, déconnexion...');
+        await logout();
+      }
+      
+      return isValid;
     } catch (error) {
       print('❌ [AuthNotifier] Erreur vérification auth: $error');
       // Si erreur, considérer comme non authentifié
@@ -218,5 +311,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
 final useAuthHandlerProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final apiService = ref.read(apiServiceProvider);
-  return AuthNotifier(apiService);
+  final likesService = ref.read(likesServiceProvider);
+  return AuthNotifier(apiService, likesService);
 }); 

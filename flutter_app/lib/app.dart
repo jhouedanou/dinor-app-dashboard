@@ -22,6 +22,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // Services
 import 'services/navigation_service.dart';
 import 'services/modal_service.dart';
+import 'services/offline_service.dart';
+import 'services/likes_service.dart';
 
 // Components (équivalent des imports Vue)
 import 'components/common/loading_screen.dart';
@@ -83,6 +85,24 @@ class _DinorAppState extends ConsumerState<DinorApp> {
       _showLoading = false;
     });
     print('🎉 [App] Chargement terminé, app prête !');
+    
+    // Synchroniser le cache en arrière-plan
+    _syncCacheInBackground();
+  }
+
+  Future<void> _syncCacheInBackground() async {
+    try {
+      final offlineService = OfflineService();
+      await offlineService.backgroundSync();
+      print('🔄 [App] Synchronisation du cache terminée');
+      
+      // Initialize likes service
+      final likesService = LikesService();
+      await likesService.loadUserLikes();
+      print('❤️ [App] Service des likes initialisé');
+    } catch (e) {
+      print('❌ [App] Erreur synchronisation cache: $e');
+    }
   }
 
   // REPRODUCTION EXACTE de updateTitle() Vue
@@ -167,7 +187,7 @@ class _DinorAppState extends ConsumerState<DinorApp> {
     final shareData = {
       'title': _currentPageTitle,
       'text': 'Découvrez $_currentPageTitle sur Dinor',
-      'url': 'https://dinor.app$currentRoute', // URL complète pour partage
+      'url': 'https://new.dinor.app$currentRoute', // URL complète pour partage
     };
     
     // Si nous sommes sur une page de détail, ajouter des informations spécifiques
@@ -228,6 +248,8 @@ class _DinorAppState extends ConsumerState<DinorApp> {
       },
       onAuthenticated: () {
         setState(() => _showAuthModal = false);
+        // Rediriger vers le profil après authentification réussie
+        NavigationService.pushReplacementNamed('/profile');
       },
     );
   }

@@ -1,31 +1,11 @@
-import '../services/navigation_service.dart';
-/**
- * PROFILE_SCREEN.DART - ÉCRAN PROFIL UTILISATEUR
- * 
- * FIDÉLITÉ VISUELLE :
- * - Design moderne avec avatar utilisateur
- * - Informations du profil
- * - Section paramètres
- * - Section favoris et historique
- * 
- * FIDÉLITÉ FONCTIONNELLE :
- * - Gestion du profil utilisateur
- * - Authentification et déconnexion
- * - Paramètres de l'application
- * - Navigation vers les favoris
- */
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-
-// Composables
-import '../composables/use_auth_handler.dart';
-
-// Services
 import '../services/api_service.dart';
+import '../services/favorites_service.dart';
+import '../composables/use_auth_handler.dart';
+import '../components/common/auth_modal.dart';
+import '../components/dinor_icon.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -34,263 +14,232 @@ class ProfileScreen extends ConsumerStatefulWidget {
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends ConsumerState<ProfileScreen> with AutomaticKeepAliveClientMixin {
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  final ApiService _apiService = ApiService();
+  
+  bool _loading = false;
+  bool _showAuthModal = false;
+  String _activeSection = 'favorites';
+  String _selectedFilter = 'all';
+  
   Map<String, dynamic>? _user;
-  bool _loading = true;
-  String? _error;
+  List<dynamic> _favorites = [];
+  Map<String, dynamic>? _predictionsStats;
+  bool _predictionsLoading = false;
 
-  @override
-  bool get wantKeepAlive => true;
+  final List<Map<String, dynamic>> _profileSections = [
+    {'key': 'favorites', 'label': 'Mes Favoris', 'icon': LucideIcons.heart},
+    {'key': 'predictions', 'label': 'Mes Pronostics', 'icon': LucideIcons.target},
+    {'key': 'account', 'label': 'Mon Compte', 'icon': LucideIcons.user},
+    {'key': 'security', 'label': 'Sécurité', 'icon': LucideIcons.lock},
+  ];
+
+  final List<Map<String, dynamic>> _filterTabs = [
+    {'key': 'all', 'label': 'Tout', 'icon': LucideIcons.grid},
+    {'key': 'recipes', 'label': 'Recettes', 'icon': LucideIcons.utensils},
+    {'key': 'tips', 'label': 'Astuces', 'icon': LucideIcons.lightbulb},
+    {'key': 'events', 'label': 'Événements', 'icon': LucideIcons.calendar},
+    {'key': 'videos', 'label': 'Vidéos', 'icon': LucideIcons.play},
+  ];
 
   @override
   void initState() {
     super.initState();
-    print('👤 [ProfileScreen] Écran profil initialisé');
-    _loadUserProfile();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final authState = ref.read(useAuthHandlerProvider);
+    print('🔐 [ProfileScreen] État authentification:');
+    print('   - isAuthenticated: ${authState.isAuthenticated}');
+    print('   - userName: ${authState.userName}');
+    print('   - token: ${authState.token != null ? "Présent" : "Absent"}');
+    
+    if (!authState.isAuthenticated) {
+      print('❌ [ProfileScreen] Utilisateur non authentifié, arrêt du chargement');
+      return;
+    }
+    
+    setState(() => _loading = true);
+    
+    try {
+      await Future.wait([
+        _loadUserProfile(),
+        _loadFavorites(),
+        _loadPredictionsStats(),
+      ]);
+    } catch (e) {
+      print('❌ [ProfileScreen] Erreur chargement données: $e');
+    } finally {
+      setState(() => _loading = false);
+    }
   }
 
   Future<void> _loadUserProfile() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-
     try {
-      print('👤 [ProfileScreen] Chargement profil utilisateur');
-      final apiService = ref.read(apiServiceProvider);
-      final data = await apiService.get('/auth/me');
+      final response = await _apiService.get('/user/profile');
+      if (response['success']) {
+        setState(() => _user = response['data']);
+      }
+    } catch (e) {
+      print('❌ [ProfileScreen] Erreur chargement profil: $e');
+    }
+  }
 
-      if (data['success'] == true) {
-        setState(() {
-          _user = data['data'];
-          _loading = false;
-        });
-        print('✅ [ProfileScreen] Profil utilisateur chargé');
+  Future<void> _loadFavorites() async {
+    try {
+      print('🔍 [ProfileScreen] Chargement des favoris...');
+      
+      // Utiliser le service de favoris
+      await ref.read(favoritesServiceProvider.notifier).loadFavorites(refresh: true);
+      
+      // Observer l'état du service
+      final favoritesState = ref.read(favoritesServiceProvider);
+      
+      if (favoritesState.error != null) {
+        print('❌ [ProfileScreen] Erreur favoris: ${favoritesState.error}');
+        setState(() => _favorites = []);
       } else {
-        throw Exception(data['message'] ?? 'Erreur lors du chargement du profil');
+        final favoritesData = favoritesState.favorites.map((favorite) => {
+          'id': favorite.id,
+          'type': favorite.type,
+          'content': favorite.content,
+          'favorited_at': favorite.favoritedAt.toIso8601String(),
+        }).toList();
+        
+        setState(() => _favorites = favoritesData);
+        print('✅ [ProfileScreen] Favoris chargés: ${favoritesData.length} éléments');
       }
-    } catch (error) {
-      print('❌ [ProfileScreen] Erreur: $error');
-      setState(() {
-        _error = error.toString();
-        _loading = false;
-      });
+    } catch (e) {
+      print('❌ [ProfileScreen] Erreur chargement favoris: $e');
+      setState(() => _favorites = []);
     }
   }
 
-  Future<void> _handleLogout() async {
+  Future<void> _loadPredictionsStats() async {
+    setState(() => _predictionsLoading = true);
+    
     try {
-      print('🚪 [ProfileScreen] Déconnexion...');
-      final apiService = ref.read(apiServiceProvider);
-      await apiService.post('/auth/logout', {});
-      
-      final authHandler = ref.read(useAuthHandlerProvider.notifier);
-      await authHandler.logout();
-      
-      if (mounted) {
-        NavigationService.pushNamed('/login');
+      final response = await _apiService.get('/user/predictions/stats');
+      if (response['success']) {
+        setState(() => _predictionsStats = response['data']);
       }
-    } catch (error) {
-      print('❌ [ProfileScreen] Erreur déconnexion: $error');
+    } catch (e) {
+      print('❌ [ProfileScreen] Erreur chargement stats pronostics: $e');
+    } finally {
+      setState(() => _predictionsLoading = false);
     }
   }
 
-  void _handleEditProfile() {
-    // TODO: Navigation vers écran d'édition du profil
-    print('✏️ [ProfileScreen] Édition du profil');
-  }
-
-  void _handleFavorites() {
-    // TODO: Navigation vers les favoris
-    print('⭐ [ProfileScreen] Navigation vers favoris');
-  }
-
-  void _handleHistory() {
-    // TODO: Navigation vers l'historique
-    print('📚 [ProfileScreen] Navigation vers historique');
-  }
-
-  void _handleSettings() {
-    // TODO: Navigation vers les paramètres
-    print('⚙️ [ProfileScreen] Navigation vers paramètres');
-  }
-
-  void _handleAbout() {
-    // TODO: Navigation vers à propos
-    print('ℹ️ [ProfileScreen] Navigation vers à propos');
+  List<dynamic> get _filteredFavorites {
+    if (_selectedFilter == 'all') return _favorites;
+    return _favorites.where((favorite) => favorite['type'] == _selectedFilter).toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
-    
-    final authHandler = ref.watch(useAuthHandlerProvider);
-    
-    if (!authHandler.isAuthenticated) {
-      return _buildNotAuthenticated();
-    }
-
-    if (_loading) {
-      return _buildLoading();
-    }
-
-    if (_error != null) {
-      return _buildError();
-    }
-
-    return _buildProfile();
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: const Color(0xFFF5F5F5),
+          appBar: AppBar(
+            title: const Text(
+              'Profil',
+              style: TextStyle(
+                fontFamily: 'OpenSans',
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+            backgroundColor: const Color(0xFFE53E3E),
+            elevation: 0,
+          ),
+          body: _loading
+              ? const Center(child: CircularProgressIndicator())
+              : ref.watch(useAuthHandlerProvider).isAuthenticated
+                  ? _buildAuthenticatedContent()
+                  : _buildAuthRequired(),
+        ),
+        
+        // Modal d'authentification
+        if (_showAuthModal) ...[
+          Positioned.fill(
+            child: Container(
+              color: Colors.black54,
+              child: GestureDetector(
+                onTap: () => setState(() => _showAuthModal = false),
+                child: Container(color: Colors.transparent),
+              ),
+            ),
+          ),
+          Positioned.fill(
+            child: AuthModal(
+              isOpen: _showAuthModal,
+              onClose: () => setState(() => _showAuthModal = false),
+              onAuthenticated: () async {
+                setState(() => _showAuthModal = false);
+                await _loadUserData(); // Recharger les données utilisateur
+              },
+            ),
+          ),
+        ],
+      ],
+    );
   }
 
-  Widget _buildNotAuthenticated() {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      appBar: AppBar(
-        title: const Text(
-          'Profil',
-          style: TextStyle(
-            fontFamily: 'OpenSans',
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF2D3748),
-          ),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3748)),
-          onPressed: () => NavigationService.pop(),
-        ),
-      ),
-      body: Center(
+  Widget _buildAuthRequired() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.person_outline,
-              size: 64,
-              color: Color(0xFFCBD5E0),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Connectez-vous pour voir votre profil',
-              style: TextStyle(
-                fontFamily: 'OpenSans',
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF2D3748),
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE53E3E).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(40),
               ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Accédez à vos favoris et paramètres',
-              style: TextStyle(
-                fontFamily: 'OpenSans',
-                fontSize: 14,
-                color: Color(0xFF718096),
+              child: const Icon(
+                LucideIcons.user,
+                size: 48,
+                color: Color(0xFFE53E3E),
               ),
             ),
             const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () => NavigationService.pushNamed('/login'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFF4D03F),
-                foregroundColor: const Color(0xFF2D3748),
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                'Se connecter',
-                style: TextStyle(
-                  fontFamily: 'OpenSans',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLoading() {
-    return const Scaffold(
-      backgroundColor: Color(0xFFF8F9FA),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFF4D03F)),
-            ),
-            SizedBox(height: 16),
-            Text(
-              'Chargement du profil...',
-              style: TextStyle(
-                fontFamily: 'OpenSans',
-                fontSize: 16,
-                color: Color(0xFF718096),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildError() {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      appBar: AppBar(
-        title: const Text('Erreur'),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3748)),
-          onPressed: () => NavigationService.pop(),
-        ),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Color(0xFFE53E3E),
-            ),
-            const SizedBox(height: 16),
             const Text(
-              'Erreur de chargement',
+              'Profil utilisateur',
               style: TextStyle(
                 fontFamily: 'OpenSans',
-                fontSize: 18,
+                fontSize: 24,
                 fontWeight: FontWeight.w600,
                 color: Color(0xFF2D3748),
               ),
             ),
             const SizedBox(height: 8),
-            Text(
-              _error!,
-              style: const TextStyle(
-                fontFamily: 'OpenSans',
-                fontSize: 14,
-                color: Color(0xFF718096),
+            const Text(
+              'Connectez-vous pour voir votre profil et vos favoris',
+              style: TextStyle(
+                fontFamily: 'Roboto',
+                fontSize: 16,
+                color: Color(0xFF4A5568),
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: _loadUserProfile,
+              onPressed: () => setState(() => _showAuthModal = true),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFF4D03F),
-                foregroundColor: const Color(0xFF2D3748),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                backgroundColor: const Color(0xFFE53E3E),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
-              child: const Text('Réessayer'),
+              child: const Text('Se connecter'),
             ),
           ],
         ),
@@ -298,102 +247,419 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with AutomaticKee
     );
   }
 
-  Widget _buildProfile() {
-    final name = _user?['name'] ?? 'Utilisateur';
-    final email = _user?['email'] ?? '';
-    final avatar = _user?['avatar'] ?? '';
+  Widget _buildAuthenticatedContent() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // User Info Section
+          _buildUserInfoSection(),
+          const SizedBox(height: 24),
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      appBar: AppBar(
-        title: const Text(
-          'Profil',
-          style: TextStyle(
-            fontFamily: 'OpenSans',
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF2D3748),
-          ),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3748)),
-          onPressed: () => NavigationService.pop(),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit, color: Color(0xFF2D3748)),
-            onPressed: _handleEditProfile,
-          ),
+          // Profile Navigation
+          _buildProfileNavigation(),
+          const SizedBox(height: 24),
+
+          // Profile Sections
+          _buildProfileSections(),
+          
+          // Account Section
+          if (_activeSection == 'account') _buildAccountSection(),
+          
+          // Security Section
+          if (_activeSection == 'security') _buildSecuritySection(),
         ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // Section profil utilisateur
-            _buildUserSection(name, email, avatar),
-            const SizedBox(height: 24),
-            // Section actions
-            _buildActionsSection(),
-            const SizedBox(height: 24),
-            // Section paramètres
-            _buildSettingsSection(),
-          ],
-        ),
       ),
     );
   }
 
-  Widget _buildUserSection(String name, String email, String avatar) {
+  Widget _buildUserInfoSection() {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        gradient: const LinearGradient(
+          colors: [Color(0xFFE53E3E), Color(0xFFC53030)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(32),
+            ),
+            child: const Icon(
+              LucideIcons.user,
+              size: 32,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _user?['name'] ?? ref.watch(useAuthHandlerProvider).userName ?? 'Utilisateur',
+                  style: const TextStyle(
+                    fontFamily: 'OpenSans',
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                if (_user?['email'] != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    _user!['email'],
+                    style: const TextStyle(
+                      fontFamily: 'Roboto',
+                      fontSize: 14,
+                      color: Colors.white70,
+                    ),
+                  ),
+                ],
+                if (_user?['created_at'] != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    'Membre depuis ${_formatDate(_user!['created_at'])}',
+                    style: const TextStyle(
+                      fontFamily: 'Roboto',
+                      fontSize: 12,
+                      color: Colors.white60,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileNavigation() {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Column(
-        children: [
-          // Avatar
-          CircleAvatar(
-            radius: 50,
-            backgroundColor: const Color(0xFFE2E8F0),
-            backgroundImage: avatar.isNotEmpty ? CachedNetworkImageProvider(avatar) : null,
-            child: avatar.isEmpty
-                ? const Icon(
-                    Icons.person,
-                    size: 50,
-                    color: Color(0xFFCBD5E0),
-                  )
-                : null,
-          ),
-          const SizedBox(height: 16),
-          // Nom
-          Text(
-            name,
-            style: const TextStyle(
-              fontFamily: 'OpenSans',
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF2D3748),
+      child: Row(
+        children: _profileSections.map((section) {
+          final isActive = _activeSection == section['key'];
+          return Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => _activeSection = section['key']),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: isActive ? const Color(0xFFE53E3E) : Colors.transparent,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  children: [
+                    Icon(
+                      section['icon'],
+                      size: 20,
+                      color: isActive ? Colors.white : const Color(0xFF4A5568),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      section['label'],
+                      style: TextStyle(
+                        fontFamily: 'Roboto',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: isActive ? Colors.white : const Color(0xFF4A5568),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildProfileSections() {
+    switch (_activeSection) {
+      case 'favorites':
+        return _buildFavoritesSection();
+      case 'predictions':
+        return _buildPredictionsSection();
+      case 'settings':
+        return _buildSettingsSection();
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  Widget _buildFavoritesSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section Header
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Mes Favoris',
+              style: TextStyle(
+                fontFamily: 'OpenSans',
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF2D3748),
+              ),
+            ),
+            if (_favorites.isNotEmpty) ...[
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE53E3E),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '${_filteredFavorites.length}',
+                  style: const TextStyle(
+                    fontFamily: 'Roboto',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 16),
+
+        // Filter Tabs
+        if (_favorites.isNotEmpty) ...[
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: _filterTabs.map((tab) {
+                final isActive = _selectedFilter == tab['key'];
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: GestureDetector(
+                    onTap: () => setState(() => _selectedFilter = tab['key']),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: isActive ? const Color(0xFFE53E3E) : Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isActive ? const Color(0xFFE53E3E) : const Color(0xFFE2E8F0),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            tab['icon'],
+                            size: 16,
+                            color: isActive ? Colors.white : const Color(0xFF4A5568),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            tab['label'],
+                            style: TextStyle(
+                              fontFamily: 'Roboto',
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: isActive ? Colors.white : const Color(0xFF4A5568),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
             ),
           ),
-          const SizedBox(height: 4),
-          // Email
-          Text(
-            email,
-            style: const TextStyle(
-              fontFamily: 'OpenSans',
-              fontSize: 14,
+          const SizedBox(height: 16),
+        ],
+
+        // Debug: Bouton de rechargement
+        Container(
+          padding: const EdgeInsets.all(8),
+          margin: const EdgeInsets.only(bottom: 8),
+          decoration: BoxDecoration(
+            color: Colors.orange.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(color: Colors.orange),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Debug: ${_favorites.length} favoris chargés',
+                  style: TextStyle(fontSize: 12, color: Colors.orange[800]),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: _loadFavorites,
+                child: Text('Recharger', style: TextStyle(fontSize: 10)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                ),
+              ),
+            ],
+          ),
+        ),
+        
+        // Favorites List
+        if (_filteredFavorites.isNotEmpty)
+          _buildFavoritesList()
+        else
+          _buildEmptyFavorites(),
+      ],
+    );
+  }
+
+  Widget _buildFavoritesList() {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: _filteredFavorites.length,
+      itemBuilder: (context, index) {
+        final favorite = _filteredFavorites[index];
+        return _buildFavoriteItem(favorite);
+      },
+    );
+  }
+
+  Widget _buildFavoriteItem(Map<String, dynamic> favorite) {
+    final content = favorite['content'] ?? {};
+    final type = favorite['type'];
+    
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Image
+          ClipRRect(
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(12),
+              bottomLeft: Radius.circular(12),
+            ),
+            child: Container(
+              width: 80,
+              height: 80,
+              child: Image.network(
+                content['image'] ?? _getDefaultImage(type),
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: const Color(0xFFF4D03F),
+                    child: Icon(
+                      _getTypeIcon(type),
+                      color: const Color(0xFF2D3748),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          
+          // Content
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    content['title'] ?? 'Sans titre',
+                    style: const TextStyle(
+                      fontFamily: 'OpenSans',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF2D3748),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _getShortDescription(content['description']),
+                    style: const TextStyle(
+                      fontFamily: 'Roboto',
+                      fontSize: 14,
+                      color: Color(0xFF4A5568),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Text(
+                        'Ajouté ${_formatDate(favorite['favorited_at'])}',
+                        style: const TextStyle(
+                          fontFamily: 'Roboto',
+                          fontSize: 12,
+                          color: Color(0xFF718096),
+                        ),
+                      ),
+                      const Spacer(),
+                      Icon(
+                        LucideIcons.heart,
+                        size: 16,
+                        color: const Color(0xFFE53E3E),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${content['likes_count'] ?? 0}',
+                        style: const TextStyle(
+                          fontFamily: 'Roboto',
+                          fontSize: 12,
+                          color: Color(0xFF718096),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          
+          // Remove button
+          IconButton(
+            onPressed: () => _removeFavorite(favorite),
+            icon: const Icon(
+              LucideIcons.x,
+              size: 16,
               color: Color(0xFF718096),
             ),
           ),
@@ -402,81 +668,318 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with AutomaticKee
     );
   }
 
-  Widget _buildActionsSection() {
+  Widget _buildEmptyFavorites() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          children: [
+            Icon(
+              LucideIcons.heart,
+              size: 64,
+              color: const Color(0xFFCBD5E0),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              _getEmptyMessage(),
+              style: const TextStyle(
+                fontFamily: 'OpenSans',
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF2D3748),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _getEmptyDescription(),
+              style: const TextStyle(
+                fontFamily: 'Roboto',
+                fontSize: 14,
+                color: Color(0xFF4A5568),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () {
+                // Naviguer vers la page d'accueil
+                Navigator.of(context).pop();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFE53E3E),
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Découvrir du contenu'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPredictionsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Mes Pronostics',
+          style: TextStyle(
+            fontFamily: 'OpenSans',
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF2D3748),
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        if (_predictionsLoading)
+          const Center(
+            child: Column(
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Chargement de vos statistiques...'),
+              ],
+            ),
+          )
+        else if (_predictionsStats != null)
+          _buildPredictionsDashboard()
+        else
+          _buildEmptyPredictions(),
+      ],
+    );
+  }
+
+  Widget _buildPredictionsDashboard() {
+    return Column(
+      children: [
+        // Stats Grid
+        GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: 2,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          childAspectRatio: 1.5,
+          children: [
+            _buildStatCard(
+              'Total prédictions',
+              '${_predictionsStats!['total_predictions'] ?? 0}',
+              LucideIcons.target,
+              const Color(0xFFE53E3E),
+            ),
+            _buildStatCard(
+              'Points gagnés',
+              '${_predictionsStats!['total_points'] ?? 0}',
+              LucideIcons.trophy,
+              const Color(0xFFF4D03F),
+            ),
+            _buildStatCard(
+              'Précision',
+              '${_predictionsStats!['accuracy_percentage'] ?? 0}%',
+              LucideIcons.target,
+              const Color(0xFF38A169),
+            ),
+            if (_predictionsStats!['current_rank'] != null)
+              _buildStatCard(
+                'Classement',
+                '#${_predictionsStats!['current_rank']}',
+                LucideIcons.activity,
+                const Color(0xFF9B59B6),
+              ),
+          ],
+        ),
+        const SizedBox(height: 24),
+
+        // Quick Actions
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  // Naviguer vers les pronostics
+                },
+                icon: const Icon(LucideIcons.plus),
+                label: const Text('Faire un pronostic'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFE53E3E),
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  // Naviguer vers le classement
+                },
+                icon: const Icon(LucideIcons.activity),
+                label: const Text('Voir le classement'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFFE53E3E),
+                  side: const BorderSide(color: Color(0xFFE53E3E)),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatCard(String label, String value, IconData icon, Color color) {
     return Container(
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _buildActionTile(
-            icon: Icons.favorite_outline,
-            title: 'Mes favoris',
-            subtitle: 'Recettes, astuces et événements',
-            onTap: _handleFavorites,
+          Icon(icon, size: 32, color: color),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: const TextStyle(
+              fontFamily: 'OpenSans',
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF2D3748),
+            ),
           ),
-          _buildDivider(),
-          _buildActionTile(
-            icon: Icons.history,
-            title: 'Historique',
-            subtitle: 'Vos dernières activités',
-            onTap: _handleHistory,
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: const TextStyle(
+              fontFamily: 'Roboto',
+              fontSize: 12,
+              color: Color(0xFF4A5568),
+            ),
+            textAlign: TextAlign.center,
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyPredictions() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          children: [
+            Icon(
+              LucideIcons.target,
+              size: 64,
+              color: const Color(0xFFCBD5E0),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Aucun pronostic',
+              style: TextStyle(
+                fontFamily: 'OpenSans',
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF2D3748),
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Commencez à faire des pronostics pour voir vos statistiques',
+              style: TextStyle(
+                fontFamily: 'Roboto',
+                fontSize: 14,
+                color: Color(0xFF4A5568),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () {
+                // Naviguer vers les pronostics
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFE53E3E),
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Faire un pronostic'),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildSettingsSection() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Paramètres',
+          style: TextStyle(
+            fontFamily: 'OpenSans',
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF2D3748),
           ),
-        ],
-      ),
-      child: Column(
-        children: [
-          _buildActionTile(
-            icon: Icons.settings_outlined,
-            title: 'Paramètres',
-            subtitle: 'Préférences de l\'application',
-            onTap: _handleSettings,
+        ),
+        const SizedBox(height: 16),
+
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-          _buildDivider(),
-          _buildActionTile(
-            icon: Icons.info_outline,
-            title: 'À propos',
-            subtitle: 'Informations sur l\'application',
-            onTap: _handleAbout,
+          child: Column(
+            children: [
+              _buildSettingsItem(
+                icon: LucideIcons.bell,
+                title: 'Notifications',
+                subtitle: 'Gérer les notifications',
+                onTap: () {},
+              ),
+              _buildSettingsItem(
+                icon: LucideIcons.shield,
+                title: 'Confidentialité',
+                subtitle: 'Paramètres de confidentialité',
+                onTap: () {},
+              ),
+              _buildSettingsItem(
+                icon: LucideIcons.helpCircle,
+                title: 'Aide',
+                subtitle: 'Centre d\'aide et support',
+                onTap: () {},
+              ),
+              _buildSettingsItem(
+                icon: LucideIcons.logOut,
+                title: 'Se déconnecter',
+                subtitle: 'Déconnecter votre compte',
+                onTap: _logout,
+                isDestructive: true,
+              ),
+            ],
           ),
-          _buildDivider(),
-          _buildActionTile(
-            icon: Icons.logout,
-            title: 'Se déconnecter',
-            subtitle: 'Fermer votre session',
-            onTap: _handleLogout,
-            isDestructive: true,
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  Widget _buildActionTile({
+  Widget _buildSettingsItem({
     required IconData icon,
     required String title,
     required String subtitle,
@@ -486,39 +989,480 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with AutomaticKee
     return ListTile(
       leading: Icon(
         icon,
-        color: isDestructive ? const Color(0xFFE53E3E) : const Color(0xFFF4D03F),
-        size: 24,
+        color: isDestructive ? const Color(0xFFE53E3E) : const Color(0xFF4A5568),
       ),
       title: Text(
         title,
         style: TextStyle(
           fontFamily: 'OpenSans',
           fontSize: 16,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w500,
           color: isDestructive ? const Color(0xFFE53E3E) : const Color(0xFF2D3748),
         ),
       ),
       subtitle: Text(
         subtitle,
         style: const TextStyle(
-          fontFamily: 'OpenSans',
+          fontFamily: 'Roboto',
           fontSize: 14,
-          color: Color(0xFF718096),
+          color: Color(0xFF4A5568),
         ),
       ),
       trailing: const Icon(
-        Icons.chevron_right,
+        LucideIcons.chevronRight,
+        size: 20,
         color: Color(0xFFCBD5E0),
       ),
       onTap: onTap,
     );
   }
 
-  Widget _buildDivider() {
-    return const Divider(
-      height: 1,
-      color: Color(0xFFE2E8F0),
-      indent: 56,
+  // Helper methods
+  String _formatDate(String? dateString) {
+    if (dateString == null) return '';
+    try {
+      final date = DateTime.parse(dateString);
+      return '${date.day}/${date.month}/${date.year}';
+    } catch (e) {
+      return dateString;
+    }
+  }
+
+  String _getShortDescription(String? description) {
+    if (description == null || description.isEmpty) return 'Aucune description';
+    return description.length > 100 
+        ? '${description.substring(0, 100)}...'
+        : description;
+  }
+
+  String _getDefaultImage(String type) {
+    switch (type) {
+      case 'recipe':
+        return 'https://new.dinor.app/images/default-recipe.jpg';
+      case 'tip':
+        return 'https://new.dinor.app/images/default-tip.jpg';
+      case 'event':
+        return 'https://new.dinor.app/images/default-event.jpg';
+      case 'dinor_tv':
+        return 'https://new.dinor.app/images/default-video.jpg';
+      default:
+        return 'https://new.dinor.app/images/default-content.jpg';
+    }
+  }
+
+  IconData _getTypeIcon(String type) {
+    switch (type) {
+      case 'recipe':
+        return LucideIcons.utensils;
+      case 'tip':
+        return LucideIcons.lightbulb;
+      case 'event':
+        return LucideIcons.calendar;
+      case 'dinor_tv':
+        return LucideIcons.play;
+      default:
+        return LucideIcons.file;
+    }
+  }
+
+  String _getEmptyMessage() {
+    switch (_selectedFilter) {
+      case 'recipes':
+        return 'Aucune recette favorite';
+      case 'tips':
+        return 'Aucune astuce favorite';
+      case 'events':
+        return 'Aucun événement favori';
+      case 'videos':
+        return 'Aucune vidéo favorite';
+      default:
+        return 'Aucun favori';
+    }
+  }
+
+  String _getEmptyDescription() {
+    switch (_selectedFilter) {
+      case 'recipes':
+        return 'Ajoutez des recettes à vos favoris pour les retrouver facilement';
+      case 'tips':
+        return 'Ajoutez des astuces à vos favoris pour les retrouver facilement';
+      case 'events':
+        return 'Ajoutez des événements à vos favoris pour les retrouver facilement';
+      case 'videos':
+        return 'Ajoutez des vidéos à vos favoris pour les retrouver facilement';
+      default:
+        return 'Ajoutez du contenu à vos favoris pour le retrouver facilement';
+    }
+  }
+
+  Future<void> _removeFavorite(Map<String, dynamic> favorite) async {
+    try {
+      final response = await _apiService.delete('/user/favorites/${favorite['id']}');
+      if (response['success']) {
+        setState(() {
+          _favorites.removeWhere((f) => f['id'] == favorite['id']);
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Favori supprimé'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      print('❌ [ProfileScreen] Erreur suppression favori: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Erreur lors de la suppression'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _logout() async {
+    try {
+      await ref.read(useAuthHandlerProvider.notifier).logout();
+      setState(() {
+        _user = null;
+        _favorites = [];
+        _predictionsStats = null;
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Déconnexion réussie'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      print('❌ [ProfileScreen] Erreur déconnexion: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Erreur lors de la déconnexion'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Widget _buildAccountSection() {
+    return Container(
+      margin: const EdgeInsets.only(top: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Mon Compte',
+            style: TextStyle(
+              fontFamily: 'OpenSans',
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF2D3748),
+            ),
+          ),
+          const SizedBox(height: 16),
+          
+          // Informations utilisateur
+          _buildInfoRow('Nom', _user?['name'] ?? ref.watch(useAuthHandlerProvider).userName ?? 'Non défini'),
+          _buildInfoRow('Email', _user?['email'] ?? ref.watch(useAuthHandlerProvider).userEmail ?? 'Non défini'),
+          if (_user?['created_at'] != null)
+            _buildInfoRow('Membre depuis', _formatDate(_user!['created_at'])),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSecuritySection() {
+    return Container(
+      margin: const EdgeInsets.only(top: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Sécurité',
+            style: TextStyle(
+              fontFamily: 'OpenSans',
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF2D3748),
+            ),
+          ),
+          const SizedBox(height: 16),
+          
+          // Bouton changer mot de passe
+          ElevatedButton.icon(
+            onPressed: _showChangePasswordDialog,
+            icon: const Icon(LucideIcons.lock),
+            label: const Text('Changer le mot de passe'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFE53E3E),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+          
+          const SizedBox(height: 12),
+          
+          // Bouton déconnexion
+          OutlinedButton.icon(
+            onPressed: _handleLogout,
+            icon: const Icon(LucideIcons.logOut),
+            label: const Text('Se déconnecter'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: const Color(0xFFE53E3E),
+              side: const BorderSide(color: Color(0xFFE53E3E)),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontFamily: 'Roboto',
+              fontSize: 14,
+              color: Color(0xFF4A5568),
+            ),
+          ),
+          Text(
+            value,
+            style: const TextStyle(
+              fontFamily: 'Roboto',
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF2D3748),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showChangePasswordDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => _ChangePasswordDialog(
+        onPasswordChanged: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Mot de passe mis à jour avec succès'),
+              backgroundColor: Color(0xFF38A169),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _handleLogout() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Déconnexion'),
+        content: const Text('Êtes-vous sûr de vouloir vous déconnecter ?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Annuler'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Déconnexion'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await _logout();
+    }
+  }
+}
+
+// Dialog pour changer le mot de passe
+class _ChangePasswordDialog extends StatefulWidget {
+  final VoidCallback onPasswordChanged;
+
+  const _ChangePasswordDialog({required this.onPasswordChanged});
+
+  @override
+  State<_ChangePasswordDialog> createState() => _ChangePasswordDialogState();
+}
+
+class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _currentPasswordController = TextEditingController();
+  final _newPasswordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _currentPasswordController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _changePassword() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final apiService = ApiService();
+      final response = await apiService.put('/profile/password', {
+        'current_password': _currentPasswordController.text,
+        'new_password': _newPasswordController.text,
+        'new_password_confirmation': _confirmPasswordController.text,
+      });
+
+      if (response['success']) {
+        Navigator.of(context).pop();
+        widget.onPasswordChanged();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response['message'] ?? 'Erreur lors du changement de mot de passe'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erreur: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Changer le mot de passe'),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              controller: _currentPasswordController,
+              decoration: const InputDecoration(
+                labelText: 'Mot de passe actuel',
+                border: OutlineInputBorder(),
+              ),
+              obscureText: true,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Veuillez saisir votre mot de passe actuel';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _newPasswordController,
+              decoration: const InputDecoration(
+                labelText: 'Nouveau mot de passe',
+                border: OutlineInputBorder(),
+              ),
+              obscureText: true,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Veuillez saisir un nouveau mot de passe';
+                }
+                if (value.length < 8) {
+                  return 'Le mot de passe doit contenir au moins 8 caractères';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _confirmPasswordController,
+              decoration: const InputDecoration(
+                labelText: 'Confirmer le nouveau mot de passe',
+                border: OutlineInputBorder(),
+              ),
+              obscureText: true,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Veuillez confirmer le nouveau mot de passe';
+                }
+                if (value != _newPasswordController.text) {
+                  return 'Les mots de passe ne correspondent pas';
+                }
+                return null;
+              },
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
+          child: const Text('Annuler'),
+        ),
+        ElevatedButton(
+          onPressed: _isLoading ? null : _changePassword,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFFE53E3E),
+            foregroundColor: Colors.white,
+          ),
+          child: _isLoading
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Changer'),
+        ),
+      ],
     );
   }
 }

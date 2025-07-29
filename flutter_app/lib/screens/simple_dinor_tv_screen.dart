@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../services/navigation_service.dart';
+import '../components/common/youtube_video_modal.dart';
 
 class SimpleDinorTVScreen extends StatefulWidget {
   const SimpleDinorTVScreen({Key? key}) : super(key: key);
@@ -50,6 +53,17 @@ class _SimpleDinorTVScreenState extends State<SimpleDinorTVScreen> {
         });
         
         print('📺 [SimpleDinorTV] ${videos.length} vidéos chargées');
+        
+        // Debug: Afficher les URLs des vidéos
+        for (int i = 0; i < videos.length; i++) {
+          final video = videos[i];
+          print('🎥 [SimpleDinorTV] Vidéo $i:');
+          print('   - ID: ${video['id']}');
+          print('   - Title: ${video['title']}');
+          print('   - Video URL: ${video['video_url']}');
+          print('   - YouTube URL: ${video['youtube_url']}');
+          print('   - All keys: ${video.keys.toList()}');
+        }
       } else {
         throw Exception('Erreur API: ${response.statusCode}');
       }
@@ -62,17 +76,72 @@ class _SimpleDinorTVScreenState extends State<SimpleDinorTVScreen> {
     }
   }
 
+  void _openVideo(Map<String, dynamic> video) {
+    print('🎥 [SimpleDinorTV] _openVideo appelé pour vidéo: ${video['title']}');
+    
+    // Chercher une URL de vidéo dans différents champs possibles
+    String? videoUrl = video['video_url'] ?? video['youtube_url'] ?? video['url'];
+    
+    print('🎥ِ [SimpleDinorTV] URL trouvée: $videoUrl');
+    
+    if (videoUrl == null || videoUrl.isEmpty) {
+      print('❌ [SimpleDinorTV] Aucune URL de vidéo trouvée');
+      _showSnackBar('Aucune URL de vidéo disponible', Colors.red);
+      return;
+    }
+    
+    print('🎬 [SimpleDinorTV] Ouverture vidéo intégrée');
+    
+    // Afficher la modal vidéo YouTube intégrée
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => YouTubeVideoModal(
+        isOpen: true,
+        videoUrl: videoUrl,
+        title: video['title'] ?? 'Vidéo Dinor TV',
+        onClose: () => Navigator.of(context).pop(),
+      ),
+    );
+  }
+  
+  String _convertEmbedToNormalUrl(String url) {
+    // Si c'est une URL embed, la convertir en URL normale
+    if (url.contains('/embed/')) {
+      final regex = RegExp(r'/embed/([a-zA-Z0-9_-]+)');
+      final match = regex.firstMatch(url);
+      if (match != null) {
+        final videoId = match.group(1);
+        return 'https://www.youtube.com/watch?v=$videoId';
+      }
+    }
+    
+    // Si c'est déjà une URL normale, la retourner telle quelle
+    return url;
+  }
+
+  void _showSnackBar(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        title: const Text(
-          'DinorTV',
-          style: TextStyle(
-            fontFamily: 'OpenSans',
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF2D3748),
+        title: SvgPicture.asset(
+          'assets/images/LOGO_DINOR_monochrome.svg',
+          width: 32,
+          height: 32,
+          colorFilter: const ColorFilter.mode(
+            Color(0xFF2D3748),
+            BlendMode.srcIn,
           ),
         ),
         backgroundColor: Colors.white,
@@ -207,7 +276,12 @@ class _SimpleDinorTVScreenState extends State<SimpleDinorTVScreen> {
     final imageUrl = video['image'] ?? video['thumbnail'] ?? video['featured_image'];
     final duration = video['duration'] ?? video['length'] ?? '5:00';
     
-    return Container(
+    return GestureDetector(
+      onTap: () {
+        print('🎥 [SimpleDinorTV] Card cliquée pour: $title');
+        _openVideo(video);
+      },
+      child: Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -356,6 +430,7 @@ class _SimpleDinorTVScreenState extends State<SimpleDinorTVScreen> {
             ),
           ),
         ],
+      ),
       ),
     );
   }

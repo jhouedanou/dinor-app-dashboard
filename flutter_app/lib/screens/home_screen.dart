@@ -22,12 +22,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // Components (équivalent des imports Vue)
 import '../components/common/banner_section.dart';
 import '../components/common/content_carousel.dart';
 import '../components/common/like_button.dart';
 import '../components/common/auth_modal.dart';
+import '../components/common/youtube_video_modal.dart';
+import '../components/common/home_video_modal.dart';
 import '../components/dinor_icon.dart';
 
 // Services et composables
@@ -274,7 +277,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
   }
 
   void _handleVideoClick(Map<String, dynamic> video) {
-    NavigationService.pushNamed('/dinor-tv'); // Vue redirige vers /video/${video.id} puis /dinor-tv
+    final videoUrl = video['video_url'] as String?;
+    final title = video['title'] as String? ?? 'Vidéo Dinor TV';
+    final description = video['description'] as String?;
+    
+    if (videoUrl != null && videoUrl.isNotEmpty) {
+      print('🎬 [HomeScreen] Ouverture vidéo intégrée: $title');
+      print('🎬 [HomeScreen] URL: $videoUrl');
+      
+      // Afficher la modal vidéo optimisée pour la page d'accueil
+      showDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (context) => HomeVideoModal(
+          isOpen: true,
+          videoUrl: videoUrl,
+          title: title,
+          description: description,
+          onClose: () => Navigator.of(context).pop(),
+        ),
+      );
+    } else {
+      print('⚠️ [HomeScreen] URL vidéo manquante pour: $title');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('URL de vidéo non disponible'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   // IDENTIQUE à handleAuthError Vue

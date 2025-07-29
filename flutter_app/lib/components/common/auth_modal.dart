@@ -61,55 +61,108 @@ class _AuthModalState extends ConsumerState<AuthModal> {
   }
 
   Future<void> _submitForm() async {
-    if (!_formKey.currentState!.validate()) return;
+    print('🔐 [AuthModal] _submitForm appelé - Mode: ${_isLogin ? "Connexion" : "Inscription"}');
+    
+    if (!_formKey.currentState!.validate()) {
+      print('❌ [AuthModal] Validation du formulaire échouée');
+      return;
+    }
 
+    print('🔐 [AuthModal] Validation réussie, début du processus d\'authentification');
     setState(() {
       _isLoading = true;
       _error = null;
     });
 
     try {
+      print('🔐 [AuthModal] Récupération du provider d\'authentification');
       final authHandler = ref.read(useAuthHandlerProvider.notifier);
       bool success;
 
       if (_isLogin) {
+        print('🔐 [AuthModal] Tentative de connexion pour: ${_emailController.text.trim()}');
         success = await authHandler.login(
           _emailController.text.trim(),
           _passwordController.text,
         );
+        print('🔐 [AuthModal] Résultat connexion: $success');
       } else {
+        print('🔐 [AuthModal] Tentative d\'inscription pour: ${_emailController.text.trim()}');
         success = await authHandler.register(
           _nameController.text.trim(),
           _emailController.text.trim(),
           _passwordController.text,
           _passwordConfirmationController.text,
         );
+        print('🔐 [AuthModal] Résultat inscription: $success');
       }
 
       if (success) {
+        print('✅ [AuthModal] Authentification réussie, fermeture de la modal');
+        
+        // Afficher un message de succès
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_isLogin ? 'Connexion réussie !' : 'Compte créé avec succès !'),
+            duration: const Duration(seconds: 2),
+            backgroundColor: const Color(0xFF38A169),
+          ),
+        );
+        
         widget.onAuthenticated?.call();
         widget.onClose?.call();
       } else {
+        print('❌ [AuthModal] Authentification échouée');
         setState(() {
           _error = _isLogin 
-            ? 'Email ou mot de passe incorrect'
-            : 'Erreur lors de l\'inscription';
+            ? 'Connexion échouée. Vérifiez vos identifiants et votre connexion internet.'
+            : 'Inscription échouée. Vérifiez les informations saisies et votre connexion internet.';
         });
       }
     } catch (error) {
+      print('❌ [AuthModal] Exception lors de l\'authentification: $error');
       setState(() {
-        _error = error.toString();
+        _error = 'Erreur de connexion au serveur. Vérifiez votre connexion internet et réessayez.';
       });
     } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _continueAsGuest() async {
+    print('👤 [AuthModal] _continueAsGuest appelé');
+    
+    try {
+      print('👤 [AuthModal] Récupération du provider d\'authentification');
+      final authHandler = ref.read(useAuthHandlerProvider.notifier);
+      
+      print('👤 [AuthModal] Tentative de connexion en tant qu\'invité');
+      await authHandler.loginAsGuest();
+      
+      print('✅ [AuthModal] Connexion invité réussie, fermeture de la modal');
+      widget.onAuthenticated?.call();
+      widget.onClose?.call();
+    } catch (error) {
+      print('❌ [AuthModal] Erreur connexion invité: $error');
       setState(() {
-        _isLoading = false;
+        _error = 'Erreur lors de la connexion invité';
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.isOpen) return const SizedBox.shrink();
+    print('🔐 [AuthModal] build appelé - isOpen: ${widget.isOpen}');
+    if (!widget.isOpen) {
+      print('🔐 [AuthModal] Modal fermée, retour SizedBox.shrink()');
+      return const SizedBox.shrink();
+    }
+    
+    print('🔐 [AuthModal] Rendu de la modal d\'authentification');
 
     return Dialog(
       shape: RoundedRectangleBorder(
@@ -283,6 +336,29 @@ class _AuthModalState extends ConsumerState<AuthModal> {
                   style: const TextStyle(
                     color: Color(0xFFE53E3E),
                     fontSize: 14,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              // Guest Login
+              Container(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: _isLoading ? null : () {
+                    print('👤 [AuthModal] Bouton "Continuer en tant qu\'invité" appuyé');
+                    _continueAsGuest();
+                  },
+                  icon: const Icon(Icons.person_outline),
+                  label: const Text('Continuer en tant qu\'invité'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF4A5568),
+                    side: const BorderSide(color: Color(0xFFE2E8F0)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                 ),
               ),

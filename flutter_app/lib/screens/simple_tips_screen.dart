@@ -17,6 +17,7 @@ class _SimpleTipsScreenState extends State<SimpleTipsScreen> {
   List<String> selectedTags = [];
   String searchQuery = '';
   bool isLoading = true;
+  bool showTags = true;  // Toggle for showing/hiding tags
   String? error;
 
   @override
@@ -129,6 +130,12 @@ class _SimpleTipsScreenState extends State<SimpleTipsScreen> {
     _filterTips();
   }
 
+  void _toggleTagsVisibility() {
+    setState(() {
+      showTags = !showTags;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -180,21 +187,46 @@ class _SimpleTipsScreenState extends State<SimpleTipsScreen> {
           ),
 
           // Filtres par tags
-          if (availableTags.isNotEmpty)
+          if (availableTags.isNotEmpty && showTags)
             Container(
               color: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Filtrer par tags:',
-                    style: TextStyle(
-                      fontFamily: 'Roboto',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF4A5568),
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Filtrer par tags:',
+                        style: TextStyle(
+                          fontFamily: 'Roboto',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF4A5568),
+                        ),
+                      ),
+                      TextButton.icon(
+                        onPressed: _toggleTagsVisibility,
+                        icon: Icon(
+                          showTags ? Icons.visibility_off : Icons.visibility,
+                          size: 16,
+                          color: const Color(0xFF4A5568),
+                        ),
+                        label: Text(
+                          showTags ? 'Masquer tags' : 'Afficher tags',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF4A5568),
+                          ),
+                        ),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 8),
                   Wrap(
@@ -427,8 +459,8 @@ class _SimpleTipsScreenState extends State<SimpleTipsScreen> {
                     const SizedBox(height: 8),
                   ],
 
-                  // Tags
-                  if (tip['tags'] != null && tip['tags'].isNotEmpty) ...[
+                  // Tags (conditionally displayed)
+                  if (showTags && tip['tags'] != null && tip['tags'].isNotEmpty) ...[
                                          Wrap(
                        spacing: 4,
                        runSpacing: 4,

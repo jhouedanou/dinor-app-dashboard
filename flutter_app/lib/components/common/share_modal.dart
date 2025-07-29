@@ -10,6 +10,8 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/services.dart';
 
 class ShareModal extends StatelessWidget {
   final bool isOpen;
@@ -143,7 +145,7 @@ class ShareModal extends StatelessWidget {
                 _buildShareOption(
                   icon: LucideIcons.copy,
                   label: 'Copier le lien',
-                  onTap: () => _copyLink(),
+                  onTap: () => _copyLink(context),
                 ),
                 _buildShareOption(
                   icon: LucideIcons.messageCircle,
@@ -162,17 +164,17 @@ class ShareModal extends StatelessWidget {
                 _buildShareOption(
                   icon: LucideIcons.facebook,
                   label: 'Facebook',
-                  onTap: () => _shareToFacebook(),
+                  onTap: () => _shareToFacebook(context),
                 ),
                 _buildShareOption(
                   icon: LucideIcons.twitter,
                   label: 'Twitter',
-                  onTap: () => _shareToTwitter(),
+                  onTap: () => _shareToTwitter(context),
                 ),
                 _buildShareOption(
                   icon: LucideIcons.mail,
                   label: 'Email',
-                  onTap: () => _shareViaEmail(),
+                  onTap: () => _shareViaEmail(context),
                 ),
               ],
             ),
@@ -222,13 +224,39 @@ class ShareModal extends StatelessWidget {
   }
 
   void _shareContent() {
-    final text = '${shareData['title']}\n\n${shareData['text'] ?? ''}\n\n${shareData['url'] ?? ''}';
-    Share.share(text, subject: shareData['title']);
+    final title = shareData['title'] ?? 'Contenu Dinor';
+    final description = shareData['text'] ?? shareData['description'] ?? '';
+    final url = shareData['url'] ?? '';
+    
+    final text = '$title\n\n$description\n\nDécouvrez plus sur Dinor:\n$url';
+    Share.share(text, subject: title);
+    print('📤 [ShareModal] Partage natif: $title');
   }
 
-  void _copyLink() {
-    // TODO: Implement copy to clipboard
-    print('📋 [ShareModal] Copier le lien: ${shareData['url']}');
+  void _copyLink(BuildContext context) async {
+    try {
+      final url = shareData['url'] ?? '';
+      await Clipboard.setData(ClipboardData(text: url));
+      
+      // Afficher un feedback visuel
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Lien copié dans le presse-papier'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      
+      print('📋 [ShareModal] Lien copié: $url');
+    } catch (e) {
+      print('❌ [ShareModal] Erreur copie: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Erreur lors de la copie'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _shareViaSMS() {
@@ -236,24 +264,54 @@ class ShareModal extends StatelessWidget {
     Share.share(text, subject: shareData['title']);
   }
 
-  void _shareToFacebook() {
-    final url = 'https://www.facebook.com/sharer/sharer.php?u=${Uri.encodeComponent(shareData['url'] ?? '')}';
-    // TODO: Launch URL
-    print('📘 [ShareModal] Partager sur Facebook: $url');
+  void _shareToFacebook(BuildContext context) async {
+    final shareUrl = shareData['url'] ?? 'https://new.dinor.app';
+    final url = 'https://www.facebook.com/sharer/sharer.php?u=${Uri.encodeComponent(shareUrl)}';
+    await _launchUrl(context, url);
+    print('📘 [ShareModal] Partager sur Facebook: $shareUrl');
   }
 
-  void _shareToTwitter() {
-    final text = '${shareData['title']} ${shareData['url'] ?? ''}';
+  void _shareToTwitter(BuildContext context) async {
+    final title = shareData['title'] ?? 'Contenu Dinor';
+    final shareUrl = shareData['url'] ?? 'https://new.dinor.app';
+    final text = '$title $shareUrl';
     final url = 'https://twitter.com/intent/tweet?text=${Uri.encodeComponent(text)}';
-    // TODO: Launch URL
-    print('🐦 [ShareModal] Partager sur Twitter: $url');
+    await _launchUrl(context, url);
+    print('🐦 [ShareModal] Partager sur Twitter: $shareUrl');
   }
 
-  void _shareViaEmail() {
+  void _shareViaEmail(BuildContext context) async {
     final subject = shareData['title'] ?? 'Partage Dinor';
-    final body = '${shareData['text'] ?? ''}\n\n${shareData['url'] ?? ''}';
+    final description = shareData['text'] ?? shareData['description'] ?? 'Découvrez ce contenu sur Dinor';
+    final shareUrl = shareData['url'] ?? 'https://new.dinor.app';
+    final body = '$description\n\n$shareUrl';
     final url = 'mailto:?subject=${Uri.encodeComponent(subject)}&body=${Uri.encodeComponent(body)}';
-    // TODO: Launch URL
-    print('📧 [ShareModal] Partager par email: $url');
+    await _launchUrl(context, url);
+    print('📧 [ShareModal] Partager par email: $shareUrl');
+  }
+
+  Future<void> _launchUrl(BuildContext context, String url) async {
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        print('❌ [ShareModal] Impossible d\'ouvrir l\'URL: $url');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Impossible d\'ouvrir l\'application'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    } catch (e) {
+      print('❌ [ShareModal] Erreur ouverture URL: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Erreur lors de l\'ouverture'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }

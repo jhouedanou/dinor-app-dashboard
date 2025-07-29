@@ -59,6 +59,12 @@ dependencies:
   # HTML rendering for recipe instructions
   flutter_widget_from_html: ^0.15.3
   flutter_widget_from_html_core: ^0.15.0
+  
+  # YouTube video player
+  youtube_player_flutter: ^9.0.4
+
+  # Time formatting for comments
+  timeago: ^3.6.1
 
   # Material 3 design
   cupertino_icons: ^1.0.6

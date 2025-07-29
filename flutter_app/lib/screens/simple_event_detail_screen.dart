@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
 import '../services/navigation_service.dart';
 import '../services/cache_service.dart';
 
@@ -468,28 +470,71 @@ class _SimpleEventDetailScreenState extends State<SimpleEventDetailScreen> {
   }
 
   Widget _buildVideoContainer() {
-    return Container(
-      height: 200,
-      decoration: BoxDecoration(
-        color: const Color(0xFFF7FAFC),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+    final videoUrl = event!['video_url'];
+    
+    return GestureDetector(
+      onTap: () => _openVideo(videoUrl),
+      child: Container(
+        height: 200,
+        decoration: BoxDecoration(
+          color: const Color(0xFFF7FAFC),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: Stack(
           children: [
-            Icon(
-              Icons.play_circle_outline,
-              size: 48,
-              color: Color(0xFFCBD5E0),
+            // Arrière-plan avec dégradé
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    const Color(0xFF1A202C).withOpacity(0.8),
+                    const Color(0xFF2D3748).withOpacity(0.6),
+                  ],
+                ),
+              ),
             ),
-            SizedBox(height: 8),
-            Text(
-              'Vidéo disponible',
-              style: TextStyle(
-                fontFamily: 'Roboto',
-                fontSize: 14,
-                color: Color(0xFF718096),
+            // Contenu centré
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.9),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.play_arrow,
+                      color: Colors.white,
+                      size: 40,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Regarder la vidéo',
+                    style: TextStyle(
+                      fontFamily: 'OpenSans',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Appuyez pour ouvrir',
+                    style: TextStyle(
+                      fontFamily: 'Roboto',
+                      fontSize: 12,
+                      color: Colors.white70,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -584,7 +629,42 @@ class _SimpleEventDetailScreenState extends State<SimpleEventDetailScreen> {
   }
 
   void _shareEvent() {
-    // TODO: Implémenter le partage
+    if (event == null) return;
+    
+    final title = event!['title'] ?? 'Événement Dinor';
+    final description = event!['short_description'] ?? event!['description'] ?? 'Découvrez cet événement sur Dinor';
+    final eventId = widget.arguments['id'] as String;
+    final url = 'https://new.dinor.app/events/$eventId';
+    
+    final shareText = '$title\n\n$description\n\nDécouvrez plus d\'événements sur Dinor:\n$url';
+    
+    Share.share(shareText, subject: title);
+    print('📤 [EventDetail] Contenu partagé: $title');
+  }
+
+  Future<void> _openVideo(String videoUrl) async {
+    try {
+      final uri = Uri.parse(videoUrl);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+        print('🎥 [EventDetail] Vidéo ouverte: $videoUrl');
+      } else {
+        _showSnackBar('Impossible d\'ouvrir la vidéo', Colors.red);
+      }
+    } catch (e) {
+      print('❌ [EventDetail] Erreur ouverture vidéo: $e');
+      _showSnackBar('Erreur lors de l\'ouverture de la vidéo', Colors.red);
+    }
+  }
+
+  void _showSnackBar(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
   String _formatDate(String? dateString) {

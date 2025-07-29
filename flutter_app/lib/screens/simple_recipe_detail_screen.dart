@@ -1,24 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
 import '../services/navigation_service.dart';
 import '../services/cache_service.dart';
+import '../components/common/comments_section.dart';
+import '../components/common/auth_modal.dart';
+import '../components/common/youtube_video_modal.dart';
 
-class SimpleRecipeDetailScreen extends StatefulWidget {
+class SimpleRecipeDetailScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> arguments;
 
   const SimpleRecipeDetailScreen({Key? key, required this.arguments}) : super(key: key);
 
   @override
-  State<SimpleRecipeDetailScreen> createState() => _SimpleRecipeDetailScreenState();
+  ConsumerState<SimpleRecipeDetailScreen> createState() => _SimpleRecipeDetailScreenState();
 }
 
-class _SimpleRecipeDetailScreenState extends State<SimpleRecipeDetailScreen> {
+class _SimpleRecipeDetailScreenState extends ConsumerState<SimpleRecipeDetailScreen> {
   Map<String, dynamic>? recipe;
   bool isLoading = true;
   String? error;
   bool isLiked = false;
   bool isFavorite = false;
+  bool _showAuthModal = false;
 
   final CacheService _cacheService = CacheService();
 
@@ -82,19 +89,43 @@ class _SimpleRecipeDetailScreenState extends State<SimpleRecipeDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      body: isLoading
-          ? const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFE53E3E)),
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: const Color(0xFFF5F5F5),
+          body: isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFE53E3E)),
+                  ),
+                )
+              : error != null
+                  ? _buildErrorWidget()
+                  : recipe != null
+                      ? _buildRecipeDetail()
+                      : const Center(child: Text('Recette non trouvée')),
+        ),
+        
+        // Modal d'authentification
+        if (_showAuthModal) ...[
+          Positioned.fill(
+            child: Container(
+              color: Colors.black54,
+              child: GestureDetector(
+                onTap: () => setState(() => _showAuthModal = false),
+                child: Container(color: Colors.transparent),
               ),
-            )
-          : error != null
-              ? _buildErrorWidget()
-              : recipe != null
-                  ? _buildRecipeDetail()
-                  : const Center(child: Text('Recette non trouvée')),
+            ),
+          ),
+          Positioned.fill(
+            child: AuthModal(
+              isOpen: _showAuthModal,
+              onClose: () => setState(() => _showAuthModal = false),
+              onAuthenticated: () => setState(() => _showAuthModal = false),
+            ),
+          ),
+        ],
+      ],
     );
   }
 
@@ -264,7 +295,7 @@ class _SimpleRecipeDetailScreenState extends State<SimpleRecipeDetailScreen> {
         // Contenu principal
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -298,6 +329,15 @@ class _SimpleRecipeDetailScreenState extends State<SimpleRecipeDetailScreen> {
 
                 // Actions
                 _buildActions(),
+                const SizedBox(height: 24),
+
+                // Section des commentaires
+                CommentsSection(
+                  contentType: 'recipe',
+                  contentId: widget.arguments['id'] as String,
+                  contentTitle: recipe!['title'] ?? 'Recette',
+                  onAuthRequired: () => setState(() => _showAuthModal = true),
+                ),
               ],
             ),
           ),
@@ -435,7 +475,7 @@ class _SimpleRecipeDetailScreenState extends State<SimpleRecipeDetailScreen> {
               ),
               Expanded(
                 child: Text(
-                  ingredient.toString(),
+                  _formatIngredient(ingredient),
                   style: const TextStyle(
                     fontFamily: 'Roboto',
                     fontSize: 16,
@@ -448,6 +488,47 @@ class _SimpleRecipeDetailScreenState extends State<SimpleRecipeDetailScreen> {
         );
       }).toList(),
     );
+  }
+
+  String _formatIngredient(dynamic ingredient) {
+    if (ingredient == null) return '';
+    
+    // Si c'est déjà une chaîne, la retourner
+    if (ingredient is String) return ingredient;
+    
+    // Si c'est un Map, le formater
+    if (ingredient is Map) {
+      String result = '';
+      
+      // Ajouter la quantité si elle existe
+      if (ingredient['quantity'] != null) {
+        result += '${ingredient['quantity']} ';
+      }
+      
+      // Ajouter l'unité si elle existe
+      if (ingredient['unit'] != null) {
+        result += '${ingredient['unit']} ';
+      }
+      
+      // Ajouter le nom de l'ingrédient
+      if (ingredient['name'] != null) {
+        result += 'de ${ingredient['name']}';
+      }
+      
+      // Ajouter les notes si elles existent
+      if (ingredient['notes'] != null) {
+        result += ' (${ingredient['notes']})';
+      }
+      
+      // Ajouter la marque recommandée si elle existe
+      if (ingredient['recommended_brand'] != null) {
+        result += ' [${ingredient['recommended_brand']}]';
+      }
+      
+      return result.trim();
+    }
+    
+    return ingredient.toString();
   }
 
   Widget _buildInstructionsList() {
@@ -485,7 +566,7 @@ class _SimpleRecipeDetailScreenState extends State<SimpleRecipeDetailScreen> {
               ),
               Expanded(
                 child: Text(
-                  instruction.toString(),
+                  _formatInstruction(instruction),
                   style: const TextStyle(
                     fontFamily: 'Roboto',
                     fontSize: 16,
@@ -501,29 +582,96 @@ class _SimpleRecipeDetailScreenState extends State<SimpleRecipeDetailScreen> {
     );
   }
 
+  String _formatInstruction(dynamic instruction) {
+    if (instruction == null) return '';
+    
+    // Si c'est déjà une chaîne, la retourner
+    if (instruction is String) return instruction;
+    
+    // Si c'est un Map avec une propriété 'step'
+    if (instruction is Map && instruction['step'] != null) {
+      return instruction['step'];
+    }
+    
+    // Si c'est un Map avec une propriété 'instruction'
+    if (instruction is Map && instruction['instruction'] != null) {
+      return instruction['instruction'];
+    }
+    
+    // Si c'est un Map avec une propriété 'text'
+    if (instruction is Map && instruction['text'] != null) {
+      return instruction['text'];
+    }
+    
+    return instruction.toString();
+  }
+
   Widget _buildVideoContainer() {
-    return Container(
-      height: 200,
-      decoration: BoxDecoration(
-        color: const Color(0xFFF7FAFC),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+    final videoUrl = recipe!['video_url'];
+    
+    return GestureDetector(
+      onTap: () => _openVideo(videoUrl),
+      child: Container(
+        height: 200,
+        decoration: BoxDecoration(
+          color: const Color(0xFFF7FAFC),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: Stack(
           children: [
-            Icon(
-              Icons.play_circle_outline,
-              size: 48,
-              color: Color(0xFFCBD5E0),
+            // Arrière-plan avec dégradé
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    const Color(0xFF1A202C).withOpacity(0.8),
+                    const Color(0xFF2D3748).withOpacity(0.6),
+                  ],
+                ),
+              ),
             ),
-            SizedBox(height: 8),
-            Text(
-              'Vidéo disponible',
-              style: TextStyle(
-                fontFamily: 'Roboto',
-                fontSize: 14,
-                color: Color(0xFF718096),
+            // Contenu centré
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.9),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.play_arrow,
+                      color: Colors.white,
+                      size: 40,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Regarder la vidéo',
+                    style: TextStyle(
+                      fontFamily: 'OpenSans',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Appuyez pour ouvrir',
+                    style: TextStyle(
+                      fontFamily: 'Roboto',
+                      fontSize: 12,
+                      color: Colors.white70,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -618,7 +766,51 @@ class _SimpleRecipeDetailScreenState extends State<SimpleRecipeDetailScreen> {
   }
 
   void _shareRecipe() {
-    // TODO: Implémenter le partage
+    if (recipe == null) return;
+    
+    final title = recipe!['title'] ?? 'Recette Dinor';
+    final description = recipe!['short_description'] ?? recipe!['description'] ?? 'Découvrez cette délicieuse recette sur Dinor';
+    final recipeId = widget.arguments['id'] as String;
+    final url = 'https://new.dinor.app/recipes/$recipeId';
+    
+    final shareText = '$title\n\n$description\n\nDécouvrez plus de recettes sur Dinor:\n$url';
+    
+    Share.share(shareText, subject: title);
+    print('📤 [RecipeDetail] Contenu partagé: $title');
+  }
+
+  void _openVideo(String videoUrl) {
+    print('🎥 [RecipeDetail] _openVideo appelé avec URL: $videoUrl');
+    
+    if (videoUrl.isEmpty) {
+      print('❌ [RecipeDetail] URL vidéo vide');
+      _showSnackBar('URL de la vidéo non disponible', Colors.red);
+      return;
+    }
+    
+    print('🎬 [RecipeDetail] Ouverture vidéo intégrée');
+    
+    // Afficher la modal vidéo YouTube intégrée
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => YouTubeVideoModal(
+        isOpen: true,
+        videoUrl: videoUrl,
+        title: recipe?['title'] ?? 'Vidéo de la recette',
+        onClose: () => Navigator.of(context).pop(),
+      ),
+    );
+  }
+
+  void _showSnackBar(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
   String _getDifficultyLabel(String? difficulty) {

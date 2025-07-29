@@ -50,35 +50,17 @@ class AppHeader extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              // Bouton retour si nécessaire
-              if (backPath != null)
-                IconButton(
-                  onPressed: onBack ?? () {
-                    // Navigation de retour
-                    Navigator.of(context).pop();
-                  },
-                  icon: const Icon(
-                    Icons.arrow_back,
-                    color: Colors.white,
-                    size: 24,
-                  ),
-                  padding: EdgeInsets.zero,
-                ),
-              
-              // Titre centré
+              // Logo Dinor SVG centré
               Expanded(
                 child: Center(
-                  child: Text(
-                    title,
-                    style: const TextStyle(
-                      fontFamily: 'OpenSans',
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                  child: SvgPicture.asset(
+                    'assets/images/LOGO_DINOR_monochrome.svg',
+                    width: 32,
+                    height: 32,
+                    colorFilter: const ColorFilter.mode(
+                      Colors.white,
+                      BlendMode.srcIn,
                     ),
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ),
@@ -131,7 +113,7 @@ class AppHeader extends StatelessWidget {
       await ShareService.shareContent(
         title: title,
         text: 'Découvrez $title sur Dinor',
-        url: 'https://dinor.app',
+        url: 'https://new.dinor.app',
         type: favoriteType,
         id: favoriteItemId,
         platform: 'native',
