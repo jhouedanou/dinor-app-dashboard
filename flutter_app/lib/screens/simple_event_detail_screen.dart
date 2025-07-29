@@ -6,22 +6,26 @@ import 'package:share_plus/share_plus.dart';
 import '../services/navigation_service.dart';
 import '../services/cache_service.dart';
 import '../services/image_service.dart';
+import '../components/common/favorite_button.dart';
+import '../components/common/auth_modal.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class SimpleEventDetailScreen extends StatefulWidget {
+class SimpleEventDetailScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> arguments;
 
   const SimpleEventDetailScreen({Key? key, required this.arguments}) : super(key: key);
 
   @override
-  State<SimpleEventDetailScreen> createState() => _SimpleEventDetailScreenState();
+  ConsumerState<SimpleEventDetailScreen> createState() => _SimpleEventDetailScreenState();
 }
 
-class _SimpleEventDetailScreenState extends State<SimpleEventDetailScreen> {
+class _SimpleEventDetailScreenState extends ConsumerState<SimpleEventDetailScreen> {
   Map<String, dynamic>? event;
   bool isLoading = true;
   String? error;
   bool isLiked = false;
   bool isFavorite = false;
+  bool _showAuthModal = false;
 
   final CacheService _cacheService = CacheService();
 
@@ -85,7 +89,9 @@ class _SimpleEventDetailScreenState extends State<SimpleEventDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Stack(
+      children: [
+        Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       body: isLoading
           ? const Center(
@@ -98,6 +104,30 @@ class _SimpleEventDetailScreenState extends State<SimpleEventDetailScreen> {
               : event != null
                   ? _buildEventDetail()
                   : const Center(child: Text('Événement non trouvé')),
+        ),
+        
+        // Modal d'authentification
+        if (_showAuthModal) ...[
+          Positioned.fill(
+            child: Container(
+              color: Colors.black54,
+              child: GestureDetector(
+                onTap: () => setState(() => _showAuthModal = false),
+                child: Container(color: Colors.transparent),
+              ),
+            ),
+          ),
+          Positioned.fill(
+            child: AuthModal(
+              isOpen: _showAuthModal,
+              onClose: () => setState(() => _showAuthModal = false),
+              onAuthenticated: () async {
+                setState(() => _showAuthModal = false);
+              },
+            ),
+          ),
+        ],
+      ],
     );
   }
 
@@ -179,12 +209,18 @@ class _SimpleEventDetailScreenState extends State<SimpleEventDetailScreen> {
             onPressed: () => NavigationService.pop(),
           ),
           actions: [
-            IconButton(
-              icon: Icon(
-                isFavorite ? Icons.favorite : Icons.favorite_border,
-                color: Colors.white,
-              ),
-              onPressed: _toggleFavorite,
+            FavoriteButton(
+              type: 'event',
+              itemId: event!['id'].toString(),
+              initialFavorited: isFavorite,
+              showCount: false,
+              size: 24,
+              onFavoriteChanged: (isFavorited) {
+                setState(() {
+                  isFavorite = isFavorited;
+                });
+              },
+              onAuthRequired: () => setState(() => _showAuthModal = true),
             ),
             IconButton(
               icon: const Icon(Icons.share, color: Colors.white),
@@ -604,13 +640,6 @@ class _SimpleEventDetailScreenState extends State<SimpleEventDetailScreen> {
         ),
       ],
     );
-  }
-
-  void _toggleFavorite() {
-    setState(() {
-      isFavorite = !isFavorite;
-    });
-    // TODO: Implémenter l'API pour les favoris
   }
 
   void _toggleLike() {

@@ -56,9 +56,11 @@ class _CommentsSectionState extends ConsumerState<CommentsSection> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Recharger les commentaires quand les dépendances changent
-    ref.read(commentsServiceProvider.notifier)
-        .loadComments(widget.contentType, widget.contentId, refresh: true);
+    // Recharger les commentaires après que le widget tree soit construit
+    Future(() {
+      ref.read(commentsServiceProvider.notifier)
+          .loadComments(widget.contentType, widget.contentId, refresh: true);
+    });
   }
 
   Future<void> _checkAuthentication() async {

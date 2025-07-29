@@ -180,11 +180,21 @@ class FavoritesService extends StateNotifier<FavoritesState> {
           print('✅ [FavoritesService] Favori ajouté avec succès');
           return true;
         }
+      } else if (response.statusCode == 401) {
+        print('❌ [FavoritesService] Erreur 401: Authentication requise');
+        throw Exception('Authentication required (401)');
+      } else {
+        print('❌ [FavoritesService] Erreur HTTP ${response.statusCode}');
+        throw Exception('HTTP ${response.statusCode}: ${response.body}');
       }
       
       return false;
     } catch (e) {
       print('❌ [FavoritesService] Erreur ajout favori: $e');
+      // Relancer les exceptions d'authentification
+      if (e.toString().contains('401') || e.toString().contains('Authentication')) {
+        rethrow;
+      }
       return false;
     }
   }
@@ -212,11 +222,20 @@ class FavoritesService extends StateNotifier<FavoritesState> {
         
         print('✅ [FavoritesService] Favori supprimé avec succès');
         return true;
+      } else if (response.statusCode == 401) {
+        print('❌ [FavoritesService] Erreur 401: Authentication requise');
+        throw Exception('Authentication required (401)');
+      } else {
+        print('❌ [FavoritesService] Erreur HTTP ${response.statusCode}');
+        throw Exception('HTTP ${response.statusCode}: ${response.body}');
       }
       
-      return false;
     } catch (e) {
       print('❌ [FavoritesService] Erreur suppression favori: $e');
+      // Relancer les exceptions d'authentification
+      if (e.toString().contains('401') || e.toString().contains('Authentication')) {
+        rethrow;
+      }
       return false;
     }
   }

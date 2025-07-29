@@ -145,7 +145,7 @@ class CommentsService extends StateNotifier<Map<String, CommentsState>> {
 
       // Charger depuis l'API
       final response = await http.get(
-        Uri.parse('$baseUrl/comments?commentable_type=App\\\\Models\\\\${contentType.substring(0, 1).toUpperCase() + contentType.substring(1)}&commentable_id=$contentId&page=1&per_page=$perPage'),
+        Uri.parse('$baseUrl/$contentType/$contentId/comments'),
         headers: await _getHeaders(),
       ).timeout(const Duration(seconds: 10));
 

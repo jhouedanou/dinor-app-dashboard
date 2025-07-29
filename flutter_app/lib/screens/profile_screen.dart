@@ -7,6 +7,7 @@ import '../services/likes_service.dart';
 import '../composables/use_auth_handler.dart';
 import '../components/common/auth_modal.dart';
 import '../components/dinor_icon.dart';
+import 'favorites_screen.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -459,24 +460,63 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 color: Color(0xFF2D3748),
               ),
             ),
-            if (_favorites.isNotEmpty) ...[
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE53E3E),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  '${_filteredFavorites.length}',
-                  style: const TextStyle(
-                    fontFamily: 'Roboto',
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white,
+            Row(
+              children: [
+                if (_favorites.isNotEmpty) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE53E3E),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '${_filteredFavorites.length}',
+                      style: const TextStyle(
+                        fontFamily: 'Roboto',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                GestureDetector(
+                  onTap: _navigateToFavorites,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE53E3E).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: const Color(0xFFE53E3E),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Text(
+                          'Voir tout',
+                          style: TextStyle(
+                            fontFamily: 'Roboto',
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFFE53E3E),
+                          ),
+                        ),
+                        SizedBox(width: 4),
+                        Icon(
+                          LucideIcons.chevronRight,
+                          size: 14,
+                          color: Color(0xFFE53E3E),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ],
         ),
         const SizedBox(height: 16),
@@ -1195,6 +1235,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
       );
     }
+  }
+
+  void _navigateToFavorites() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const FavoritesScreen(),
+      ),
+    );
   }
 
   Widget _buildAccountSection() {

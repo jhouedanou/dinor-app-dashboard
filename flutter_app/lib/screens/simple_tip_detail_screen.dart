@@ -15,6 +15,7 @@ import '../components/common/share_modal.dart';
 import '../components/common/auth_modal.dart';
 import '../components/common/youtube_video_modal.dart';
 import '../components/common/comments_section.dart';
+import '../components/common/favorite_button.dart';
 
 class SimpleTipDetailScreen extends ConsumerStatefulWidget {
   final String id;
@@ -32,6 +33,7 @@ class _SimpleTipDetailScreenState extends ConsumerState<SimpleTipDetailScreen> {
   bool _showAuthModal = false;
   bool _isShareModalVisible = false;
   bool _showVideoModal = false;
+  bool isFavorite = false;
   Map<String, dynamic>? _shareData;
   
   final CacheService _cacheService = CacheService();
@@ -274,6 +276,31 @@ class _SimpleTipDetailScreenState extends ConsumerState<SimpleTipDetailScreen> {
                 Colors.transparent,
                 Colors.black.withOpacity(0.7),
               ],
+            ),
+          ),
+        ),
+        
+        // Bouton favori en haut à droite
+        Positioned(
+          top: 16,
+          right: 16,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: FavoriteButton(
+              type: 'tip',
+              itemId: tip!['id'].toString(),
+              initialFavorited: isFavorite,
+              showCount: false,
+              size: 24,
+              onFavoriteChanged: (isFavorited) {
+                setState(() {
+                  isFavorite = isFavorited;
+                });
+              },
+              onAuthRequired: () => setState(() => _showAuthModal = true),
             ),
           ),
         ),

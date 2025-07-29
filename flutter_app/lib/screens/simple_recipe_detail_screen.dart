@@ -10,6 +10,7 @@ import '../services/image_service.dart';
 import '../components/common/comments_section.dart';
 import '../components/common/auth_modal.dart';
 import '../components/common/youtube_video_modal.dart';
+import '../components/common/favorite_button.dart';
 
 class SimpleRecipeDetailScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> arguments;
@@ -208,12 +209,18 @@ class _SimpleRecipeDetailScreenState extends ConsumerState<SimpleRecipeDetailScr
             onPressed: () => NavigationService.pop(),
           ),
           actions: [
-            IconButton(
-              icon: Icon(
-                isFavorite ? Icons.favorite : Icons.favorite_border,
-                color: Colors.white,
-              ),
-              onPressed: _toggleFavorite,
+            FavoriteButton(
+              type: 'recipe',
+              itemId: recipe!['id'].toString(),
+              initialFavorited: isFavorite,
+              showCount: false,
+              size: 24,
+              onFavoriteChanged: (isFavorited) {
+                setState(() {
+                  isFavorite = isFavorited;
+                });
+              },
+              onAuthRequired: () => setState(() => _showAuthModal = true),
             ),
             IconButton(
               icon: const Icon(Icons.share, color: Colors.white),
@@ -743,12 +750,6 @@ class _SimpleRecipeDetailScreenState extends ConsumerState<SimpleRecipeDetailScr
     );
   }
 
-  void _toggleFavorite() {
-    setState(() {
-      isFavorite = !isFavorite;
-    });
-    // TODO: Implémenter l'API pour les favoris
-  }
 
   void _toggleLike() {
     setState(() {
