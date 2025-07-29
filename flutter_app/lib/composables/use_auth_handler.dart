@@ -50,10 +50,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> _loadStoredAuth() async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      print('🟦 [AuthNotifier] Lecture SharedPreferences (auth_token, user_name, user_email)');
       final token = prefs.getString('auth_token');
       final userName = prefs.getString('user_name');
       final userEmail = prefs.getString('user_email');
-      
+      print('🟦 [AuthNotifier] Valeurs lues: token=${token != null ? token.substring(0, 10) + '...' : 'null'}, userName=$userName, userEmail=$userEmail');
       if (token != null) {
         state = AuthState(
           isAuthenticated: true,
@@ -61,7 +62,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
           userEmail: userEmail,
           token: token,
         );
-        print('🔐 [AuthNotifier] Authentification restaurée depuis le stockage');
+        print('🔑 [AuthNotifier] Authentification restaurée depuis le stockage');
       }
     } catch (error) {
       print('❌ [AuthNotifier] Erreur chargement auth stockée: $error');
@@ -71,9 +72,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> _storeAuth(String token, String userName, String userEmail) async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      print('🟦 [AuthNotifier] Sauvegarde SharedPreferences (auth_token, user_name, user_email)');
       await prefs.setString('auth_token', token);
       await prefs.setString('user_name', userName);
       await prefs.setString('user_email', userEmail);
+      print('🟦 [AuthNotifier] Valeurs écrites: token=${token.substring(0, 10)}..., userName=$userName, userEmail=$userEmail');
       print('💾 [AuthNotifier] Authentification sauvegardée');
     } catch (error) {
       print('❌ [AuthNotifier] Erreur sauvegarde auth: $error');
@@ -313,4 +316,4 @@ final useAuthHandlerProvider = StateNotifierProvider<AuthNotifier, AuthState>((r
   final apiService = ref.read(apiServiceProvider);
   final likesService = ref.read(likesServiceProvider);
   return AuthNotifier(apiService, likesService);
-}); 
+});

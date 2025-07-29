@@ -58,22 +58,22 @@ class _LikeButtonState extends ConsumerState<LikeButton> {
 
   Future<void> _toggleLike() async {
     print('❤️ [LikeButton] _toggleLike appelé pour ${widget.type}:${widget.itemId}');
-    
-    // Check if user is authenticated
     final authState = ref.read(useAuthHandlerProvider);
     if (!authState.isAuthenticated) {
       print('🔐 [LikeButton] User not authenticated, calling onAuthRequired');
       widget.onAuthRequired?.call();
       return;
     }
-    
     try {
       print('🔄 [LikeButton] Tentative de toggle like...');
+      final beforeState = ref.read(likesProvider.notifier).isLiked(widget.type, widget.itemId);
+      print('🔄 [LikeButton] État avant toggle: $beforeState');
       final success = await ref.read(likesProvider.notifier).toggleLike(
         widget.type, 
         widget.itemId
       );
-      
+      final afterState = ref.read(likesProvider.notifier).isLiked(widget.type, widget.itemId);
+      print('🔄 [LikeButton] État après toggle: $afterState');
       if (success) {
         print('✅ [LikeButton] Like toggled successfully');
         // Afficher un feedback visuel

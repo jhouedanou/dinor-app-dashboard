@@ -186,7 +186,7 @@ class _SimpleTipDetailScreenState extends ConsumerState<SimpleTipDetailScreen> {
             child: YouTubeVideoModal(
               isOpen: _showVideoModal,
               videoUrl: tip!['video_url'],
-              title: tip!['title'] ?? 'Vidéo',
+              title: _formatText(tip!['title']) ?? 'Vidéo',
               onClose: () => setState(() => _showVideoModal = false),
             ),
           ),
@@ -239,7 +239,7 @@ class _SimpleTipDetailScreenState extends ConsumerState<SimpleTipDetailScreen> {
                 CommentsSection(
                   contentType: 'tip',
                   contentId: widget.id,
-                  contentTitle: tip!['title'] ?? 'Astuce',
+                  contentTitle: _formatText(tip!['title']) ?? 'Astuce',
                   onAuthRequired: () => setState(() => _showAuthModal = true),
                 ),
               ],
@@ -287,7 +287,7 @@ class _SimpleTipDetailScreenState extends ConsumerState<SimpleTipDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                tip!['title'] ?? 'Astuce',
+                _formatText(tip!['title']) ?? 'Astuce',
                 style: const TextStyle(
                   fontFamily: 'OpenSans',
                   fontSize: 24,
@@ -301,7 +301,7 @@ class _SimpleTipDetailScreenState extends ConsumerState<SimpleTipDetailScreen> {
               if (tip!['summary'] != null) ...[
                 const SizedBox(height: 8),
                 Text(
-                  tip!['summary'],
+                  _formatText(tip!['summary']),
                   style: const TextStyle(
                     fontFamily: 'Roboto',
                     fontSize: 16,
@@ -337,7 +337,7 @@ class _SimpleTipDetailScreenState extends ConsumerState<SimpleTipDetailScreen> {
           _buildStatItem(
             Icons.lightbulb,
             'Catégorie',
-            tip!['category'] ?? 'Astuce',
+            _formatText(tip!['category']) ?? 'Astuce',
             const Color(0xFFF4D03F),
           ),
           const SizedBox(width: 16),
@@ -424,7 +424,7 @@ class _SimpleTipDetailScreenState extends ConsumerState<SimpleTipDetailScreen> {
         ],
       ),
       child: HtmlWidget(
-        content.toString(),
+        _formatTipContent(content),
         textStyle: const TextStyle(
           fontFamily: 'Roboto',
           fontSize: 16,
@@ -433,6 +433,35 @@ class _SimpleTipDetailScreenState extends ConsumerState<SimpleTipDetailScreen> {
         ),
       ),
     );
+  }
+
+  String _formatTipContent(dynamic content) {
+    if (content == null) return '';
+    
+    // Si c'est déjà une chaîne, la retourner
+    if (content is String) return content;
+    
+    // Si c'est un Map avec une propriété 'text'
+    if (content is Map && content['text'] != null) {
+      return content['text'];
+    }
+    
+    // Si c'est un Map avec une propriété 'content'
+    if (content is Map && content['content'] != null) {
+      return content['content'];
+    }
+    
+    // Si c'est un Map avec une propriété 'description'
+    if (content is Map && content['description'] != null) {
+      return content['description'];
+    }
+    
+    // Si c'est une liste, joindre les éléments
+    if (content is List) {
+      return content.map((item) => _formatTipContent(item)).join('\n\n');
+    }
+    
+    return content.toString();
   }
 
   Widget _buildVideoContainer() {
@@ -510,6 +539,8 @@ class _SimpleTipDetailScreenState extends ConsumerState<SimpleTipDetailScreen> {
       spacing: 8,
       runSpacing: 8,
       children: tagsList.map<Widget>((tag) {
+        final tagText = _formatTagText(tag);
+        
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
@@ -521,7 +552,7 @@ class _SimpleTipDetailScreenState extends ConsumerState<SimpleTipDetailScreen> {
             ),
           ),
           child: Text(
-            tag.toString(),
+            tagText,
             style: const TextStyle(
               fontFamily: 'Roboto',
               fontSize: 12,
@@ -532,6 +563,44 @@ class _SimpleTipDetailScreenState extends ConsumerState<SimpleTipDetailScreen> {
         );
       }).toList(),
     );
+  }
+
+  String _formatTagText(dynamic tag) {
+    if (tag == null) return '';
+    
+    // Si c'est déjà une chaîne, la retourner
+    if (tag is String) return tag;
+    
+    // Si c'est un Map, essayer d'extraire le nom
+    if (tag is Map) {
+      return tag['name'] ?? tag['text'] ?? tag['title'] ?? tag['label'] ?? tag.toString();
+    }
+    
+    // Si c'est une liste, joindre les éléments
+    if (tag is List) {
+      return tag.map((item) => _formatTagText(item)).join(', ');
+    }
+    
+    return tag.toString();
+  }
+
+  String _formatText(dynamic text) {
+    if (text == null) return '';
+    
+    // Si c'est déjà une chaîne, la retourner
+    if (text is String) return text;
+    
+    // Si c'est un Map, essayer d'extraire le texte
+    if (text is Map) {
+      return text['text'] ?? text['content'] ?? text['title'] ?? text['name'] ?? text.toString();
+    }
+    
+    // Si c'est une liste, joindre les éléments
+    if (text is List) {
+      return text.map((item) => _formatText(item)).join(' ');
+    }
+    
+    return text.toString();
   }
 
   Widget _buildActions() {
@@ -572,7 +641,7 @@ class _SimpleTipDetailScreenState extends ConsumerState<SimpleTipDetailScreen> {
               onPressed: () {
                 setState(() {
                   _shareData = {
-                    'title': tip!['title'] ?? 'Astuce Dinor',
+                    'title': _formatText(tip!['title']) ?? 'Astuce Dinor',
                     'text': 'Découvrez cette astuce sur Dinor',
                     'url': 'https://new.dinor.app/tip/${widget.id}',
                     'type': 'tip',

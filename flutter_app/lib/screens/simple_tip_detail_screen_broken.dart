@@ -291,7 +291,7 @@ class _SimpleTipDetailScreenState extends ConsumerState<SimpleTipDetailScreen> {
             child: YouTubeVideoModal(
               isOpen: _showVideoModal,
               videoUrl: tip!['video_url'],
-              title: tip!['title'] ?? 'Vidéo',
+              title: _formatText(tip!['title']) ?? 'Vidéo',
               onClose: () {
                 print('🎥 [TipDetail] Fermeture de la modal vidéo');
                 setState(() => _showVideoModal = false);
@@ -342,7 +342,7 @@ class _SimpleTipDetailScreenState extends ConsumerState<SimpleTipDetailScreen> {
           left: 16,
           right: 16,
           child: Text(
-            tip!['title'] ?? 'Astuce sans titre',
+                            _formatText(tip!['title']) ?? 'Astuce sans titre',
             style: const TextStyle(
               fontFamily: 'OpenSans',
               fontSize: 24,
@@ -629,8 +629,8 @@ class _SimpleTipDetailScreenState extends ConsumerState<SimpleTipDetailScreen> {
   void _shareContent() {
     if (tip == null) return;
     
-    final title = tip!['title'] ?? 'Astuce Dinor';
-    final description = tip!['short_description'] ?? tip!['description'] ?? 'Découvrez cette astuce sur Dinor';
+    final title = _formatText(tip!['title']) ?? 'Astuce Dinor';
+          final description = _formatText(tip!['short_description']) ?? _formatText(tip!['description']) ?? 'Découvrez cette astuce sur Dinor';
     final url = 'https://new.dinor.app/tips/${widget.id}';
     
     final shareText = '$title\n\n$description\n\nDécouvrez plus d\'astuces sur Dinor:\n$url';
@@ -644,9 +644,9 @@ class _SimpleTipDetailScreenState extends ConsumerState<SimpleTipDetailScreen> {
     
     setState(() {
       _shareData = {
-        'title': tip!['title'] ?? 'Astuce Dinor',
-        'text': tip!['short_description'] ?? tip!['description'] ?? 'Découvrez cette astuce sur Dinor',
-        'description': tip!['short_description'] ?? tip!['description'] ?? 'Découvrez cette astuce sur Dinor',
+        'title': _formatText(tip!['title']) ?? 'Astuce Dinor',
+        'text': _formatText(tip!['short_description']) ?? _formatText(tip!['description']) ?? 'Découvrez cette astuce sur Dinor',
+        'description': _formatText(tip!['short_description']) ?? _formatText(tip!['description']) ?? 'Découvrez cette astuce sur Dinor',
         'url': 'https://new.dinor.app/tips/${widget.id}',
       };
       _isShareModalVisible = true;
@@ -674,6 +674,8 @@ class _SimpleTipDetailScreenState extends ConsumerState<SimpleTipDetailScreen> {
       spacing: 8,
       runSpacing: 8,
       children: tagsList.map<Widget>((tag) {
+        final tagText = _formatTagText(tag);
+        
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
@@ -682,7 +684,7 @@ class _SimpleTipDetailScreenState extends ConsumerState<SimpleTipDetailScreen> {
             border: Border.all(color: const Color(0xFFE2E8F0)),
           ),
           child: Text(
-            tag.toString(),
+            tagText,
             style: const TextStyle(
               fontFamily: 'Roboto',
               fontSize: 12,
@@ -692,6 +694,44 @@ class _SimpleTipDetailScreenState extends ConsumerState<SimpleTipDetailScreen> {
         );
       }).toList(),
     );
+  }
+
+  String _formatTagText(dynamic tag) {
+    if (tag == null) return '';
+    
+    // Si c'est déjà une chaîne, la retourner
+    if (tag is String) return tag;
+    
+    // Si c'est un Map, essayer d'extraire le nom
+    if (tag is Map) {
+      return tag['name'] ?? tag['text'] ?? tag['title'] ?? tag['label'] ?? tag.toString();
+    }
+    
+    // Si c'est une liste, joindre les éléments
+    if (tag is List) {
+      return tag.map((item) => _formatTagText(item)).join(', ');
+    }
+    
+    return tag.toString();
+  }
+
+  String _formatText(dynamic text) {
+    if (text == null) return '';
+    
+    // Si c'est déjà une chaîne, la retourner
+    if (text is String) return text;
+    
+    // Si c'est un Map, essayer d'extraire le texte
+    if (text is Map) {
+      return text['text'] ?? text['content'] ?? text['title'] ?? text['name'] ?? text.toString();
+    }
+    
+    // Si c'est une liste, joindre les éléments
+    if (text is List) {
+      return text.map((item) => _formatText(item)).join(' ');
+    }
+    
+    return text.toString();
   }
 
   Widget _buildActions() {
@@ -732,8 +772,8 @@ class _SimpleTipDetailScreenState extends ConsumerState<SimpleTipDetailScreen> {
   void _showShareModal() {
     setState(() {
       _shareData = {
-        'title': tip!['title'],
-        'text': tip!['short_description'] ?? 'Découvrez cette astuce : ${tip!['title']}',
+        'title': _formatText(tip!['title']),
+        'text': _formatText(tip!['short_description']) ?? 'Découvrez cette astuce : ${_formatText(tip!['title'])}',
         'url': 'https://new.dinor.app/tips/${widget.id}',
         'image': tip!['featured_image_url'] ?? tip!['image_url'],
       };

@@ -116,6 +116,8 @@ class FavoritesService extends StateNotifier<FavoritesState> {
         headers: await _getHeaders(),
       ).timeout(const Duration(seconds: 10));
 
+      print('🟦 [FavoritesService] Réponse brute API: ${response.body}'); // <-- LOG DEBUG
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final favoritesData = data['data'] ?? [];
@@ -304,4 +306,4 @@ class FavoritesService extends StateNotifier<FavoritesState> {
 // Provider pour le service de favoris
 final favoritesServiceProvider = StateNotifierProvider<FavoritesService, FavoritesState>((ref) {
   return FavoritesService();
-}); 
+});

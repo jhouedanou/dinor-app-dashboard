@@ -46,7 +46,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    Future.microtask(() {
+      _loadUserData();
+    });
   }
 
   Future<void> _loadUserData() async {

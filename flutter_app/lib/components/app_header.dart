@@ -56,7 +56,7 @@ class AppHeader extends StatelessWidget {
                   child: SvgPicture.asset(
                     'assets/images/LOGO_DINOR_monochrome.svg',
                     width: 32,
-                    height: 32,
+                    height: 20,
                     colorFilter: const ColorFilter.mode(
                       Colors.white,
                       BlendMode.srcIn,

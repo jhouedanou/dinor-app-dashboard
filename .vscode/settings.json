@@ -2,5 +2,6 @@
     "i18n-ally.localesPaths": [
         "lang"
     ],
-    "i18n-ally.sourceLanguage": "fr"
+    "i18n-ally.sourceLanguage": "fr",
+    "java.compile.nullAnalysis.mode": "automatic"
 }
