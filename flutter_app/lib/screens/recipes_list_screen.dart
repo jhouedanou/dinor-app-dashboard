@@ -32,6 +32,7 @@ import '../components/dinor_icon.dart';
 
 // Services et composables
 import '../services/api_service.dart';
+import '../services/image_service.dart';
 import '../composables/use_recipes.dart';
 import '../composables/use_banners.dart';
 import '../composables/use_auth_handler.dart';
@@ -541,18 +542,11 @@ class _RecipesListScreenState extends ConsumerState<RecipesListScreen> with Auto
                 children: [
                   ClipRRect(
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                    child: CachedNetworkImage(
-                      imageUrl: recipe['featured_image_url'] ?? '/images/default-recipe.jpg',
+                    child: ImageService.buildCachedNetworkImage(
+                      imageUrl: recipe['featured_image_url'] ?? '',
+                      contentType: 'recipe',
                       fit: BoxFit.cover,
                       width: double.infinity,
-                      placeholder: (context, url) => Container(
-                        color: Colors.grey[300],
-                        child: const Center(child: CircularProgressIndicator()),
-                      ),
-                      errorWidget: (context, url, error) => Container(
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.error),
-                      ),
                     ),
                   ),
                   // Recipe Overlay

@@ -24,6 +24,7 @@ import 'services/navigation_service.dart';
 import 'services/modal_service.dart';
 import 'services/offline_service.dart';
 import 'services/likes_service.dart';
+import 'services/app_initialization_service.dart';
 
 // Components (équivalent des imports Vue)
 import 'components/common/loading_screen.dart';
@@ -96,10 +97,10 @@ class _DinorAppState extends ConsumerState<DinorApp> {
       await offlineService.backgroundSync();
       print('🔄 [App] Synchronisation du cache terminée');
       
-      // Initialize likes service
-      final likesService = LikesService();
-      await likesService.loadUserLikes();
-      print('❤️ [App] Service des likes initialisé');
+      // Initialiser l'app avec le nouveau service
+      final appInitService = ref.read(appInitializationServiceProvider);
+      await appInitService.initializeApp(ref);
+      print('✅ [App] Initialisation de l\'app terminée');
     } catch (e) {
       print('❌ [App] Erreur synchronisation cache: $e');
     }

@@ -35,6 +35,7 @@ import '../components/dinor_icon.dart';
 
 // Services et composables
 import '../services/api_service.dart';
+import '../services/image_service.dart';
 import '../composables/use_recipes.dart';
 import '../composables/use_tips.dart';
 import '../composables/use_events.dart';
@@ -289,12 +290,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
       showDialog(
         context: context,
         barrierDismissible: true,
+        useRootNavigator: true,
         builder: (context) => HomeVideoModal(
           isOpen: true,
           videoUrl: videoUrl,
           title: title,
           description: description,
-          onClose: () => Navigator.of(context).pop(),
+          onClose: () {
+            if (Navigator.of(context, rootNavigator: true).canPop()) {
+              Navigator.of(context, rootNavigator: true).pop();
+            }
+          },
         ),
       );
     } else {
@@ -368,14 +374,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
   }
 
   String _getVideoThumbnail(String? videoUrl) {
-    if (videoUrl == null) return '/images/default-video.jpg';
+    if (videoUrl == null) return ImageService.getImageUrl('', 'video');
     
     final youtubeMatch = RegExp(r'(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)').firstMatch(videoUrl);
     if (youtubeMatch != null) {
       return 'https://img.youtube.com/vi/${youtubeMatch.group(1)}/maxresdefault.jpg';
     }
     
-    return '/images/default-video.jpg';
+    return ImageService.getImageUrl('', 'video');
   }
 
   String _formatDuration(int? seconds) {
@@ -545,7 +551,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
               borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
               image: DecorationImage(
                 image: CachedNetworkImageProvider(
-                  item['featured_image_url'] ?? '/images/default-recipe.jpg'
+                  ImageService.getRecipeImageUrl(item)
                 ),
                 fit: BoxFit.cover,
               ),
@@ -815,7 +821,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
               borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
               image: DecorationImage(
                 image: CachedNetworkImageProvider(
-                  item['featured_image_url'] ?? '/images/default-event.jpg'
+                  ImageService.getEventImageUrl(item)
                 ),
                 fit: BoxFit.cover,
               ),

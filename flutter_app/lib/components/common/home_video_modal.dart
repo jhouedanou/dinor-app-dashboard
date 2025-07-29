@@ -38,6 +38,7 @@ class _HomeVideoModalState extends State<HomeVideoModal>
   late Animation<double> _scaleAnimation;
   late Animation<double> _opacityAnimation;
   final GlobalKey<YouTubeVideoPlayerState> _playerKey = GlobalKey<YouTubeVideoPlayerState>();
+  bool _isClosing = false;
 
   @override
   void initState() {
@@ -86,7 +87,13 @@ class _HomeVideoModalState extends State<HomeVideoModal>
   }
 
   void _handleClose() {
+    if (_isClosing) {
+      print('⚠️ [HomeVideoModal] Fermeture déjà en cours, ignoré');
+      return;
+    }
+    
     print('📺 [HomeVideoModal] Fermeture demandée');
+    _isClosing = true;
     
     // Arrêter la vidéo avant de fermer
     try {
@@ -99,7 +106,12 @@ class _HomeVideoModalState extends State<HomeVideoModal>
       print('⚠️ [HomeVideoModal] Erreur lors de la pause: $e');
     }
     
-    widget.onClose?.call();
+    // Utiliser un délai pour éviter les conflits de navigation
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (mounted) {
+        widget.onClose?.call();
+      }
+    });
   }
 
   @override

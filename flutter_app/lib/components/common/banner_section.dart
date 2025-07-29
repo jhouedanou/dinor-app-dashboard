@@ -11,6 +11,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import '../../services/image_service.dart';
 
 class BannerSection extends StatelessWidget {
   final String type;
@@ -61,26 +62,11 @@ class BannerSection extends StatelessWidget {
           children: [
             // Background Image
             Positioned.fill(
-              child: CachedNetworkImage(
-                imageUrl: banner['image_url'] ?? '/images/default-banner.jpg',
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Container(
-                  color: const Color(0xFFF4D03F),
-                  child: const Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0xFF2D3748),
-                    ),
-                  ),
-                ),
-                errorWidget: (context, url, error) => Container(
-                  color: const Color(0xFFF4D03F),
-                  child: const Icon(
-                    LucideIcons.image,
-                    size: 48,
-                    color: Color(0xFF2D3748),
-                  ),
-                ),
-              ),
+                          child: ImageService.buildCachedNetworkImage(
+              imageUrl: banner['image_url'] ?? '',
+              contentType: 'banner',
+              fit: BoxFit.cover,
+            ),
             ),
             
             // Gradient Overlay

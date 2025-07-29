@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 import '../services/navigation_service.dart';
 import '../services/cache_service.dart';
+import '../services/image_service.dart';
 
 class SimpleEventDetailScreen extends StatefulWidget {
   final Map<String, dynamic> arguments;
@@ -195,19 +196,10 @@ class _SimpleEventDetailScreenState extends State<SimpleEventDetailScreen> {
               children: [
                 // Image de fond
                 Positioned.fill(
-                  child: Image.network(
-                    event!['image_url'] ?? 'https://via.placeholder.com/400x300',
+                  child: ImageService.buildNetworkImage(
+                    imageUrl: event!['image_url'] ?? '',
+                    contentType: 'event',
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: const Color(0xFFE53E3E),
-                        child: const Icon(
-                          Icons.event,
-                          size: 64,
-                          color: Colors.white,
-                        ),
-                      );
-                    },
                   ),
                 ),
                 // Gradient overlay

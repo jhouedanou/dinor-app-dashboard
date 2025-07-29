@@ -53,6 +53,14 @@ class _CommentsSectionState extends ConsumerState<CommentsSection> {
     });
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Recharger les commentaires quand les dépendances changent
+    ref.read(commentsServiceProvider.notifier)
+        .loadComments(widget.contentType, widget.contentId, refresh: true);
+  }
+
   Future<void> _checkAuthentication() async {
     final authHandler = ref.read(useAuthHandlerProvider.notifier);
     final isValid = await authHandler.checkAuth();
@@ -68,21 +76,29 @@ class _CommentsSectionState extends ConsumerState<CommentsSection> {
     print('🔄 [CommentsSection] Connexion invité: $success');
     
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Connexion invité réussie'),
-          backgroundColor: Color(0xFF38A169),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      // Recharger les commentaires après connexion
+      await ref.read(commentsServiceProvider.notifier)
+          .loadComments(widget.contentType, widget.contentId, refresh: true);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Connexion invité réussie'),
+            backgroundColor: Color(0xFF38A169),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Erreur de reconnexion'),
-          backgroundColor: Color(0xFFE53E3E),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Erreur de reconnexion'),
+            backgroundColor: Color(0xFFE53E3E),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
     }
   }
 

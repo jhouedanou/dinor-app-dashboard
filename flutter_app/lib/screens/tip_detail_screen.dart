@@ -37,6 +37,8 @@ import '../components/dinor_icon.dart';
 
 // Services et composables
 import '../services/api_service.dart';
+import '../services/image_service.dart';
+import '../services/comments_service.dart';
 import '../composables/use_comments.dart';
 import '../composables/use_auth_handler.dart';
 import '../composables/use_social_share.dart';
@@ -125,8 +127,11 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
 
   Future<void> _loadComments() async {
     try {
-      final comments = await ref.read(useCommentsProvider.notifier).loadComments('Tip', widget.id);
-      setState(() => _comments = comments);
+      await ref.read(commentsServiceProvider.notifier).loadComments('tip', widget.id);
+      final commentsState = ref.read(commentsServiceProvider)[('tip_${widget.id}')];
+      if (commentsState != null) {
+        setState(() => _comments = commentsState.comments.map((c) => c.toJson()).toList());
+      }
     } catch (error) {
       print('❌ [TipDetailScreen] Erreur chargement commentaires: $error');
     }
@@ -164,16 +169,38 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
     try {
       print('📝 [TipDetailScreen] Envoi du commentaire pour Tip: ${widget.id}');
       
-      await ref.read(useCommentsProvider.notifier).addComment(
-        'Tip', 
+      final success = await ref.read(commentsServiceProvider.notifier).addComment(
+        'tip', 
         widget.id, 
         _commentController.text.trim()
       );
       
-      _commentController.clear();
-      await _loadComments(); // Recharger les commentaires
-      
-      print('✅ [TipDetailScreen] Commentaire ajouté avec succès');
+      if (success) {
+        _commentController.clear();
+        await _loadComments(); // Recharger les commentaires
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Commentaire ajouté avec succès'),
+              backgroundColor: Color(0xFF38A169),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+        
+        print('✅ [TipDetailScreen] Commentaire ajouté avec succès');
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Erreur lors de l\'ajout du commentaire'),
+              backgroundColor: Color(0xFFE53E3E),
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+      }
     } catch (error) {
       print('❌ [TipDetailScreen] Erreur lors de l\'ajout du commentaire: $error');
       
@@ -479,17 +506,10 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
         SizedBox(
           height: 300,
           width: double.infinity,
-          child: CachedNetworkImage(
-            imageUrl: _tip!['featured_image_url'] ?? '/images/default-tip.jpg',
+          child: ImageService.buildCachedNetworkImage(
+            imageUrl: _tip!['featured_image_url'] ?? '',
+            contentType: 'tip',
             fit: BoxFit.cover,
-            placeholder: (context, url) => Container(
-              color: Colors.grey[300],
-              child: const Center(child: CircularProgressIndicator()),
-            ),
-            errorWidget: (context, url, error) => Container(
-              color: Colors.grey[300],
-              child: const Icon(Icons.error),
-            ),
           ),
         ),
         // Tip Overlay

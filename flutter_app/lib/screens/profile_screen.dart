@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../services/api_service.dart';
 import '../services/favorites_service.dart';
+import '../services/likes_service.dart';
 import '../composables/use_auth_handler.dart';
 import '../components/common/auth_modal.dart';
 import '../components/dinor_icon.dart';
@@ -113,6 +114,35 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     } catch (e) {
       print('❌ [ProfileScreen] Erreur chargement favoris: $e');
       setState(() => _favorites = []);
+    }
+  }
+
+  Future<void> _forceSyncLikes() async {
+    try {
+      print('🔄 [ProfileScreen] Forçage synchronisation likes...');
+      
+      // Forcer la synchronisation des likes
+      await ref.read(likesProvider.notifier).forceSync();
+      
+      // Afficher un feedback
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Synchronisation des likes terminée'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      
+      print('✅ [ProfileScreen] Synchronisation likes terminée');
+    } catch (e) {
+      print('❌ [ProfileScreen] Erreur synchronisation likes: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erreur synchronisation: $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 2),
+        ),
+      );
     }
   }
 
@@ -497,7 +527,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           const SizedBox(height: 16),
         ],
 
-        // Debug: Bouton de rechargement
+        // Debug: Panneau de debug
         Container(
           padding: const EdgeInsets.all(8),
           margin: const EdgeInsets.only(bottom: 8),
@@ -506,22 +536,40 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             borderRadius: BorderRadius.circular(4),
             border: Border.all(color: Colors.orange),
           ),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Text(
-                  'Debug: ${_favorites.length} favoris chargés',
-                  style: TextStyle(fontSize: 12, color: Colors.orange[800]),
-                ),
+              Text(
+                'Debug: ${_favorites.length} favoris chargés',
+                style: TextStyle(fontSize: 12, color: Colors.orange[800]),
               ),
-              ElevatedButton(
-                onPressed: _loadFavorites,
-                child: Text('Recharger', style: TextStyle(fontSize: 10)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _loadFavorites,
+                      child: Text('Recharger Favoris', style: TextStyle(fontSize: 10)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _forceSyncLikes,
+                      child: Text('Sync Likes', style: TextStyle(fontSize: 10)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

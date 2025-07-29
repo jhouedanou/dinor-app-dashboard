@@ -145,7 +145,7 @@ class CommentsService extends StateNotifier<Map<String, CommentsState>> {
 
       // Charger depuis l'API
       final response = await http.get(
-        Uri.parse('$baseUrl/${contentType}s/$contentId/comments?page=1&per_page=$perPage'),
+        Uri.parse('$baseUrl/comments?commentable_type=App\\\\Models\\\\${contentType.substring(0, 1).toUpperCase() + contentType.substring(1)}&commentable_id=$contentId&page=1&per_page=$perPage'),
         headers: await _getHeaders(),
       ).timeout(const Duration(seconds: 10));
 
@@ -203,7 +203,7 @@ class CommentsService extends StateNotifier<Map<String, CommentsState>> {
       final nextPage = currentState.currentPage + 1;
       
       final response = await http.get(
-        Uri.parse('$baseUrl/${contentType}s/$contentId/comments?page=$nextPage&per_page=$perPage'),
+        Uri.parse('$baseUrl/comments?commentable_type=App\\\\Models\\\\${contentType.substring(0, 1).toUpperCase() + contentType.substring(1)}&commentable_id=$contentId&page=$nextPage&per_page=$perPage'),
         headers: await _getHeaders(),
       ).timeout(const Duration(seconds: 10));
 
@@ -244,12 +244,12 @@ class CommentsService extends StateNotifier<Map<String, CommentsState>> {
       print('📝 [CommentsService] Ajout commentaire pour $contentType:$contentId');
       
       final response = await http.post(
-        Uri.parse('$baseUrl/${contentType}s/$contentId/comments'),
+        Uri.parse('$baseUrl/comments'),
         headers: await _getHeaders(),
         body: json.encode({
+          'commentable_type': 'App\\Models\\${contentType.substring(0, 1).toUpperCase() + contentType.substring(1)}',
+          'commentable_id': contentId,
           'content': content,
-          'content_type': contentType,
-          'content_id': contentId,
         }),
       ).timeout(const Duration(seconds: 10));
 

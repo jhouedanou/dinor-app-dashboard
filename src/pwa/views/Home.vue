@@ -141,6 +141,7 @@
       :error="errorVideos"
       content-type="videos"
       view-all-link="/dinor-tv"
+      :disable-auto-navigation="true"
       @item-click="handleVideoClick"
       class="dinor-tv-section"
     >
@@ -189,6 +190,13 @@
       @update:modelValue="closeAuthModal"
       @authenticated="handleAuthSuccess"
     />
+
+    <!-- Modal de vidéo -->
+    <VideoModal
+      v-if="selectedVideo"
+      :video="selectedVideo"
+      @close="closeVideo"
+    />
   </div> <!-- Fermer home -->
 </template>
 
@@ -207,6 +215,7 @@ import BannerSection from '@/components/common/BannerSection.vue'
 import DinorIcon from '@/components/DinorIcon.vue'
 import LikeButton from '@/components/common/LikeButton.vue'
 import AuthModal from '@/components/common/AuthModal.vue'
+import VideoModal from '@/components/common/VideoModal.vue'
 
 export default {
   name: 'Home',
@@ -216,6 +225,7 @@ export default {
     DinorIcon,
     LikeButton,
     AuthModal,
+    VideoModal,
   },
   setup() {
     const router = useRouter()
@@ -287,7 +297,11 @@ export default {
     const latestRecipes = computed(() => recipesData.value?.data?.slice(0, 4) || [])
     const latestTips = computed(() => tipsData.value?.data?.slice(0, 4) || [])
     const latestEvents = computed(() => eventsData.value?.data?.slice(0, 4) || [])
-    const latestVideos = computed(() => videosData.value?.data?.slice(0, 4) || [])
+    const latestVideos = computed(() => {
+      const videos = videosData.value?.data?.slice(0, 4) || []
+      console.log('📺 [Home] latestVideos computed:', videos)
+      return videos
+    })
     
     // Système de rafraîchissement
     const { refreshContentType, onRefresh } = useRefresh()
@@ -384,9 +398,45 @@ export default {
     }
     
     const handleVideoClick = (video) => {
-      router.push(`/video/${video.id}`)
+      console.log('🎬 [Home] handleVideoClick appelé avec:', video)
+      console.log('🎬 [Home] video.video_url:', video.video_url)
+      
+      if (video.video_url && video.video_url.trim()) {
+        console.log('🎬 [Home] Ouverture vidéo dans modal:', video.title)
+        playVideo(video)
+      } else {
+        console.warn('⚠️ [Home] URL de vidéo manquante pour:', video.title)
+        // Optionnel : afficher un message d'erreur à l'utilisateur
+      }
     }
 
+    // État pour la vidéo sélectionnée dans le modal
+    const selectedVideo = ref(null)
+    
+    // Fonction pour ouvrir la vidéo dans le modal
+    const playVideo = (video) => {
+      selectedVideo.value = video
+      document.body.style.overflow = 'hidden'
+    }
+    
+    // Fonction pour fermer le modal vidéo
+    const closeVideo = () => {
+      selectedVideo.value = null
+      document.body.style.overflow = 'auto'
+    }
+    
+    // Fonction pour obtenir l'URL d'embed YouTube
+    const getEmbedUrl = (videoUrl) => {
+      if (!videoUrl) return ''
+      
+      // Convertir l'URL YouTube en URL d'embed
+      const youtubeMatch = videoUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)
+      if (youtubeMatch) {
+        return `https://www.youtube.com/embed/${youtubeMatch[1]}?autoplay=1&rel=0`
+      }
+      
+      return videoUrl
+    }
     
     const getShortDescription = (text) => {
       if (!text) return ''
@@ -509,7 +559,13 @@ export default {
       authModalMessage,
       handleAuthError,
       closeAuthModal,
-      handleAuthSuccess
+      handleAuthSuccess,
+
+      // Modal de vidéo
+      selectedVideo,
+      playVideo,
+      closeVideo,
+      getEmbedUrl,
     }
   }
 }

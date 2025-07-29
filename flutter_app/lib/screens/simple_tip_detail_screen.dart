@@ -9,6 +9,7 @@ import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 
 import '../services/navigation_service.dart';
 import '../services/cache_service.dart';
+import '../services/image_service.dart';
 import '../components/common/like_button.dart';
 import '../components/common/share_modal.dart';
 import '../components/common/auth_modal.dart';
@@ -255,20 +256,10 @@ class _SimpleTipDetailScreenState extends ConsumerState<SimpleTipDetailScreen> {
         SizedBox(
           height: 250,
           width: double.infinity,
-          child: CachedNetworkImage(
-            imageUrl: tip!['featured_image_url'] ?? tip!['image_url'] ?? '/images/default-tip.jpg',
+          child: ImageService.buildCachedNetworkImage(
+            imageUrl: tip!['featured_image_url'] ?? tip!['image_url'] ?? '',
+            contentType: 'tip',
             fit: BoxFit.cover,
-            placeholder: (context, url) => Container(
-              color: const Color(0xFFF4D03F),
-            ),
-            errorWidget: (context, url, error) => Container(
-              color: const Color(0xFFF4D03F),
-              child: const Icon(
-                Icons.lightbulb,
-                size: 64,
-                color: Color(0xFF2D3748),
-              ),
-            ),
           ),
         ),
         

@@ -33,6 +33,7 @@ import '../components/dinor_icon.dart';
 
 // Services et composables
 import '../services/api_service.dart';
+import '../services/image_service.dart';
 import '../composables/use_tips.dart';
 import '../composables/use_banners.dart';
 import '../composables/use_auth_handler.dart';
@@ -490,18 +491,11 @@ class _TipsListScreenState extends ConsumerState<TipsListScreen> with AutomaticK
               flex: 3,
               child: ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                child: CachedNetworkImage(
-                  imageUrl: tip['featured_image_url'] ?? '/images/default-tip.jpg',
+                child: ImageService.buildCachedNetworkImage(
+                  imageUrl: tip['featured_image_url'] ?? '',
+                  contentType: 'tip',
                   fit: BoxFit.cover,
                   width: double.infinity,
-                  placeholder: (context, url) => Container(
-                    color: const Color(0xFFF4D03F),
-                    child: const Center(child: CircularProgressIndicator()),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    color: const Color(0xFFF4D03F),
-                    child: const Icon(LucideIcons.lightbulb, size: 32),
-                  ),
                 ),
               ),
             ),

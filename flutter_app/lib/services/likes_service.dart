@@ -111,7 +111,7 @@ class LikesService {
 
   Future<void> syncWithServer() async {
     try {
-      print('🔄 [LikesService] Syncing user likes with server...');
+      print('🔄 [LikesService] Synchronisation avec le serveur...');
       
       final response = await _apiService.get('/user/likes');
       if (response['success'] && response['data'] != null) {
@@ -119,6 +119,7 @@ class LikesService {
         
         // Clear current likes
         _userLikes.clear();
+        _likeCounts.clear();
         
         // Update with server data
         for (final like in serverLikes) {
@@ -126,13 +127,28 @@ class LikesService {
           final itemId = like['likeable_id'].toString();
           final key = _getLikeKey(type, itemId);
           _userLikes[key] = true;
+          _likeCounts[key] = like['total_likes'] ?? 1;
         }
         
         await _saveUserLikes();
-        print('✅ [LikesService] Synced ${serverLikes.length} likes from server');
+        print('✅ [LikesService] Synchronisé ${serverLikes.length} likes depuis le serveur');
+      } else {
+        print('❌ [LikesService] Erreur réponse serveur: ${response['message']}');
       }
     } catch (e) {
-      print('❌ [LikesService] Error syncing with server: $e');
+      print('❌ [LikesService] Erreur synchronisation serveur: $e');
+    }
+  }
+
+  // Méthode pour forcer la synchronisation et recharger
+  Future<void> forceSyncAndReload() async {
+    try {
+      print('🔄 [LikesService] Forçage synchronisation...');
+      await syncWithServer();
+      await loadUserLikes();
+      print('✅ [LikesService] Synchronisation forcée terminée');
+    } catch (e) {
+      print('❌ [LikesService] Erreur synchronisation forcée: $e');
     }
   }
 
@@ -178,11 +194,13 @@ class LikesNotifier extends StateNotifier<LikesState> {
   }
 
   Future<void> _loadLikes() async {
+    print('🔄 [LikesNotifier] Chargement des likes...');
     await _likesService.loadUserLikes();
     state = LikesState(
       userLikes: Map<String, bool>.from(_likesService._userLikes),
       likeCounts: Map<String, int>.from(_likesService._likeCounts),
     );
+    print('✅ [LikesNotifier] Likes chargés: ${state.userLikes.length} éléments');
   }
 
   Future<bool> toggleLike(String type, String itemId) async {
@@ -237,6 +255,13 @@ class LikesNotifier extends StateNotifier<LikesState> {
   Future<void> syncWithServer() async {
     await _likesService.syncWithServer();
     await _loadLikes();
+  }
+
+  Future<void> forceSync() async {
+    print('🔄 [LikesNotifier] Forçage synchronisation...');
+    await _likesService.forceSyncAndReload();
+    await _loadLikes();
+    print('✅ [LikesNotifier] Synchronisation forcée terminée');
   }
 
   void clearLikes() {

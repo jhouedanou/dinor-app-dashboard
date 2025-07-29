@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 import '../services/navigation_service.dart';
 import '../services/cache_service.dart';
+import '../services/image_service.dart';
 import '../components/common/comments_section.dart';
 import '../components/common/auth_modal.dart';
 import '../components/common/youtube_video_modal.dart';
@@ -224,19 +225,10 @@ class _SimpleRecipeDetailScreenState extends ConsumerState<SimpleRecipeDetailScr
               children: [
                 // Image de fond
                 Positioned.fill(
-                  child: Image.network(
-                    recipe!['featured_image_url'] ?? 'https://via.placeholder.com/400x300',
+                  child: ImageService.buildNetworkImage(
+                    imageUrl: recipe!['featured_image_url'] ?? '',
+                    contentType: 'recipe',
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: const Color(0xFFE53E3E),
-                        child: const Icon(
-                          Icons.restaurant,
-                          size: 64,
-                          color: Colors.white,
-                        ),
-                      );
-                    },
                   ),
                 ),
                 // Gradient overlay
@@ -794,11 +786,16 @@ class _SimpleRecipeDetailScreenState extends ConsumerState<SimpleRecipeDetailScr
     showDialog(
       context: context,
       barrierDismissible: true,
+      useRootNavigator: true,
       builder: (context) => YouTubeVideoModal(
         isOpen: true,
         videoUrl: videoUrl,
         title: recipe?['title'] ?? 'Vidéo de la recette',
-        onClose: () => Navigator.of(context).pop(),
+        onClose: () {
+          if (Navigator.of(context, rootNavigator: true).canPop()) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
+        },
       ),
     );
   }

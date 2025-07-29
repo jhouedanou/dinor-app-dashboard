@@ -36,6 +36,7 @@ class _YouTubeVideoModalState extends State<YouTubeVideoModal>
   late Animation<double> _scaleAnimation;
   late Animation<double> _opacityAnimation;
   final GlobalKey<YouTubeVideoPlayerState> _playerKey = GlobalKey<YouTubeVideoPlayerState>();
+  bool _isClosing = false;
 
   @override
   void initState() {
@@ -84,7 +85,13 @@ class _YouTubeVideoModalState extends State<YouTubeVideoModal>
   }
 
   void _handleClose() {
+    if (_isClosing) {
+      print('⚠️ [YouTubeVideoModal] Fermeture déjà en cours, ignoré');
+      return;
+    }
+    
     print('📺 [YouTubeVideoModal] Fermeture demandée');
+    _isClosing = true;
     
     // Arrêter la vidéo avant de fermer
     try {
@@ -97,7 +104,12 @@ class _YouTubeVideoModalState extends State<YouTubeVideoModal>
       print('⚠️ [YouTubeVideoModal] Erreur lors de la pause: $e');
     }
     
-    widget.onClose?.call();
+    // Utiliser un délai pour éviter les conflits de navigation
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (mounted) {
+        widget.onClose?.call();
+      }
+    });
   }
 
   @override

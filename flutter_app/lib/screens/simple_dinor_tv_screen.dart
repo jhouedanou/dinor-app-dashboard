@@ -96,11 +96,16 @@ class _SimpleDinorTVScreenState extends State<SimpleDinorTVScreen> {
     showDialog(
       context: context,
       barrierDismissible: true,
+      useRootNavigator: true,
       builder: (context) => YouTubeVideoModal(
         isOpen: true,
         videoUrl: videoUrl,
         title: video['title'] ?? 'Vidéo Dinor TV',
-        onClose: () => Navigator.of(context).pop(),
+        onClose: () {
+          if (Navigator.of(context, rootNavigator: true).canPop()) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
+        },
       ),
     );
   }

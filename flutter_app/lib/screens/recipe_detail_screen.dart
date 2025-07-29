@@ -38,6 +38,8 @@ import '../components/dinor_icon.dart';
 // Services et composables
 import '../services/api_service.dart';
 import '../services/offline_service.dart';
+import '../services/image_service.dart';
+import '../services/comments_service.dart';
 import '../composables/use_comments.dart';
 import '../composables/use_auth_handler.dart';
 import '../composables/use_social_share.dart';
@@ -141,8 +143,11 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
 
   Future<void> _loadComments() async {
     try {
-      final comments = await ref.read(useCommentsProvider.notifier).loadComments('Recipe', widget.id);
-      setState(() => _comments = comments);
+      await ref.read(commentsServiceProvider.notifier).loadComments('recipe', widget.id);
+      final commentsState = ref.read(commentsServiceProvider)[('recipe_${widget.id}')];
+      if (commentsState != null) {
+        setState(() => _comments = commentsState.comments.map((c) => c.toJson()).toList());
+      }
     } catch (error) {
       print('❌ [RecipeDetailScreen] Erreur chargement commentaires: $error');
     }
@@ -198,16 +203,38 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
     try {
       print('📝 [RecipeDetailScreen] Envoi du commentaire pour Recipe: ${widget.id}');
       
-      await ref.read(useCommentsProvider.notifier).addComment(
-        'Recipe', 
+      final success = await ref.read(commentsServiceProvider.notifier).addComment(
+        'recipe', 
         widget.id, 
         _commentController.text.trim()
       );
       
-      _commentController.clear();
-      await _loadComments(); // Recharger les commentaires
-      
-      print('✅ [RecipeDetailScreen] Commentaire ajouté avec succès');
+      if (success) {
+        _commentController.clear();
+        await _loadComments(); // Recharger les commentaires
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Commentaire ajouté avec succès'),
+              backgroundColor: Color(0xFF38A169),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+        
+        print('✅ [RecipeDetailScreen] Commentaire ajouté avec succès');
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Erreur lors de l\'ajout du commentaire'),
+              backgroundColor: Color(0xFFE53E3E),
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+      }
     } catch (error) {
       print('❌ [RecipeDetailScreen] Erreur lors de l\'ajout du commentaire: $error');
       
@@ -574,17 +601,10 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
         SizedBox(
           height: 300,
           width: double.infinity,
-          child: CachedNetworkImage(
-            imageUrl: _recipe!['featured_image_url'] ?? '/images/default-recipe.jpg',
+          child: ImageService.buildCachedNetworkImage(
+            imageUrl: _recipe!['featured_image_url'] ?? '',
+            contentType: 'recipe',
             fit: BoxFit.cover,
-            placeholder: (context, url) => Container(
-              color: Colors.grey[300],
-              child: const Center(child: CircularProgressIndicator()),
-            ),
-            errorWidget: (context, url, error) => Container(
-              color: Colors.grey[300],
-              child: const Icon(Icons.error),
-            ),
           ),
         ),
         // Recipe Overlay

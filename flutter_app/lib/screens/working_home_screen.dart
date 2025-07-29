@@ -5,7 +5,9 @@ import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import '../services/navigation_service.dart';
 import '../services/cache_service.dart';
 import '../services/offline_service.dart';
+import '../services/image_service.dart';
 import '../components/app_header.dart';
+import '../components/common/home_video_modal.dart';
 import 'cache_management_screen.dart';
 
 class WorkingHomeScreen extends StatefulWidget {
@@ -229,6 +231,43 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
         duration: Duration(seconds: 3),
       ),
     );
+  }
+
+  void _openVideo(Map<String, dynamic> video) {
+    final videoUrl = video['video_url'] as String?;
+    final title = video['title'] as String? ?? 'Vidéo Dinor TV';
+    final description = video['description'] as String?;
+    
+    if (videoUrl != null && videoUrl.isNotEmpty) {
+      print('🎬 [WorkingHome] Ouverture vidéo intégrée: $title');
+      print('🎬 [WorkingHome] URL: $videoUrl');
+      
+      // Afficher la modal vidéo optimisée pour la page d'accueil
+      showDialog(
+        context: context,
+        barrierDismissible: true,
+        useRootNavigator: true,
+        builder: (context) => HomeVideoModal(
+          isOpen: true,
+          videoUrl: videoUrl,
+          title: title,
+          description: description,
+          onClose: () {
+            if (Navigator.of(context, rootNavigator: true).canPop()) {
+              Navigator.of(context, rootNavigator: true).pop();
+            }
+          },
+        ),
+      );
+    } else {
+      print('⚠️ [WorkingHome] URL vidéo manquante pour: $title');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('URL de vidéo non disponible'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -487,19 +526,10 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
               borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
               child: AspectRatio(
                 aspectRatio: 16 / 9,
-                child: Image.network(
-                  recipe['featured_image_url'] ?? 'https://via.placeholder.com/300x200',
+                child: ImageService.buildNetworkImage(
+                  imageUrl: recipe['featured_image_url'] ?? '',
+                  contentType: 'recipe',
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: const Color(0xFFF7FAFC),
-                      child: const Icon(
-                        Icons.restaurant,
-                        size: 48,
-                        color: Color(0xFFCBD5E0),
-                      ),
-                    );
-                  },
                 ),
               ),
             ),
@@ -701,19 +731,10 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
               borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
               child: AspectRatio(
                 aspectRatio: 16 / 9,
-                child: Image.network(
-                  event['image_url'] ?? 'https://via.placeholder.com/300x200',
+                child: ImageService.buildNetworkImage(
+                  imageUrl: event['image_url'] ?? '',
+                  contentType: 'event',
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: const Color(0xFFF7FAFC),
-                      child: const Icon(
-                        Icons.event,
-                        size: 48,
-                        color: Color(0xFFCBD5E0),
-                      ),
-                    );
-                  },
                 ),
               ),
             ),
@@ -798,7 +819,7 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
       ),
       child: InkWell(
         onTap: () {
-          // Navigation vers la vidéo
+          _openVideo(video);
         },
         borderRadius: BorderRadius.circular(16),
         child: Column(
@@ -811,19 +832,10 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
                 aspectRatio: 16 / 9,
                 child: Stack(
                   children: [
-                    Image.network(
-                      video['thumbnail_url'] ?? 'https://via.placeholder.com/300x200',
+                    ImageService.buildNetworkImage(
+                      imageUrl: video['thumbnail_url'] ?? '',
+                      contentType: 'video',
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: const Color(0xFFF7FAFC),
-                          child: const Icon(
-                            Icons.play_circle,
-                            size: 48,
-                            color: Color(0xFFCBD5E0),
-                          ),
-                        );
-                      },
                     ),
                     Container(
                       decoration: BoxDecoration(

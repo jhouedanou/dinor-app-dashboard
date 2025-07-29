@@ -163,6 +163,10 @@ export default {
     itemsPerView: {
       type: Number,
       default: 4
+    },
+    disableAutoNavigation: {
+      type: Boolean,
+      default: false
     }
   },
   emits: ['item-click'],
@@ -228,7 +232,7 @@ export default {
       }
       
       const route = routes[props.contentType]
-      if (route) {
+      if (route && !props.disableAutoNavigation) {
         router.push(route)
       }
     }

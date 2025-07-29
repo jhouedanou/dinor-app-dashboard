@@ -105,6 +105,27 @@ class ApiService {
     }
   }
 
+  // Requête avec gestion du cache et force refresh
+  Future<Map<String, dynamic>> request(String endpoint, {
+    Map<String, String>? params,
+    bool forceRefresh = false,
+  }) async {
+    try {
+      final uri = Uri.parse('$_baseUrl$endpoint').replace(queryParameters: params);
+      final headers = await _getHeaders();
+      
+      if (forceRefresh) {
+        headers['Cache-Control'] = 'no-cache';
+      }
+      
+      final response = await http.get(uri, headers: headers);
+      return _handleResponse(response);
+    } catch (e) {
+      print('❌ [ApiService] Erreur request $endpoint: $e');
+      return {'success': false, 'error': e.toString()};
+    }
+  }
+
   // Obtenir les headers avec authentification
   Future<Map<String, String>> _getHeaders() async {
     final headers = {
@@ -208,15 +229,15 @@ class ApiService {
   // Méthodes spécifiques pour les commentaires
   Future<Map<String, dynamic>> getComments(String type, String id) async {
     return await get('/comments', params: {
-      'type': type,
-      'id': id,
+      'commentable_type': 'App\\Models\\${type.substring(0, 1).toUpperCase() + type.substring(1)}',
+      'commentable_id': id,
     });
   }
 
   Future<Map<String, dynamic>> addComment(String type, String id, String content) async {
     return await post('/comments', {
-      'type': type,
-      'id': id,
+      'commentable_type': 'App\\Models\\${type.substring(0, 1).toUpperCase() + type.substring(1)}',
+      'commentable_id': id,
       'content': content,
     });
   }

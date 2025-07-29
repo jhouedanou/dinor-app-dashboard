@@ -11,7 +11,7 @@ class CommentsNotifier extends StateNotifier<List<dynamic>> {
       print('📝 [CommentsNotifier] Chargement commentaires pour $contextType:$contextId');
       
       final response = await _apiService.get('/comments', params: {
-        'commentable_type': contextType,
+        'commentable_type': 'App\\Models\\${contextType.substring(0, 1).toUpperCase() + contextType.substring(1)}',
         'commentable_id': contextId,
       });
       
@@ -34,7 +34,7 @@ class CommentsNotifier extends StateNotifier<List<dynamic>> {
       print('🔄 [CommentsNotifier] Rechargement commentaires pour $contextType:$contextId');
       
       final response = await _apiService.request('/comments', forceRefresh: true, params: {
-        'commentable_type': contextType,
+        'commentable_type': 'App\\Models\\${contextType.substring(0, 1).toUpperCase() + contextType.substring(1)}',
         'commentable_id': contextId,
       });
       
@@ -57,7 +57,7 @@ class CommentsNotifier extends StateNotifier<List<dynamic>> {
       print('📝 [CommentsNotifier] Ajout commentaire pour $contextType:$contextId');
       
       final response = await _apiService.post('/comments', {
-        'commentable_type': contextType,
+        'commentable_type': 'App\\Models\\${contextType.substring(0, 1).toUpperCase() + contextType.substring(1)}',
         'commentable_id': contextId,
         'content': content,
       });
