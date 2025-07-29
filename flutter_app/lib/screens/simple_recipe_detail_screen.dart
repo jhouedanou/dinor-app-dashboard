@@ -764,7 +764,7 @@ class _SimpleRecipeDetailScreenState extends ConsumerState<SimpleRecipeDetailScr
     final title = recipe!['title'] ?? 'Recette Dinor';
     final description = recipe!['short_description'] ?? recipe!['description'] ?? 'Découvrez cette délicieuse recette sur Dinor';
     final recipeId = widget.arguments['id'] as String;
-    final url = 'https://new.dinor.app/recipes/$recipeId';
+    final url = 'https://new.dinorapp.com/recipes/$recipeId';
     
     final shareText = '$title\n\n$description\n\nDécouvrez plus de recettes sur Dinor:\n$url';
     

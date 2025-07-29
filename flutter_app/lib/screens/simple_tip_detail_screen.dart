@@ -670,7 +670,7 @@ class _SimpleTipDetailScreenState extends ConsumerState<SimpleTipDetailScreen> {
                   _shareData = {
                     'title': _formatText(tip!['title']) ?? 'Astuce Dinor',
                     'text': 'Découvrez cette astuce sur Dinor',
-                    'url': 'https://new.dinor.app/tip/${widget.id}',
+                    'url': 'https://new.dinorapp.com/tip/${widget.id}',
                     'type': 'tip',
                     'id': widget.id,
                   };

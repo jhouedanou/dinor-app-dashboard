@@ -123,7 +123,7 @@ const App: React.FC = () => {
     const shareData = {
       title: headerState.title || 'Dinor',
       text: `Découvrez ${headerState.title} sur Dinor`,
-      url: 'https://new.dinor.app'
+      url: 'https://new.dinorapp.com'
     };
     
     setCurrentShareData(shareData);

@@ -132,7 +132,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
 
     final title = _event!['title'] ?? 'Événement Dinor';
     final description = _event!['description'] ?? 'Découvrez cet événement sur Dinor';
-    final url = 'https://new.dinor.app/events/${widget.id}';
+    final url = 'https://new.dinorapp.com/events/${widget.id}';
     
     final shareText = '$title\\n\\n$description\\n\\nDécouvrez plus d\'événements sur Dinor:\\n$url';
     

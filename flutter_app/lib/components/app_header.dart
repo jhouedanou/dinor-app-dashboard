@@ -113,7 +113,7 @@ class AppHeader extends StatelessWidget {
       await ShareService.shareContent(
         title: title,
         text: 'Découvrez $title sur Dinor',
-        url: 'https://new.dinor.app',
+        url: 'https://new.dinorapp.com',
         type: favoriteType,
         id: favoriteItemId,
         platform: 'native',

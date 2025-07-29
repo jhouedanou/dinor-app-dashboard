@@ -19,7 +19,7 @@ import '../screens/pages_list_screen.dart';
 import '../screens/terms_of_service_screen.dart';
 import '../screens/privacy_policy_screen.dart';
 import '../screens/cookie_policy_screen.dart';
-import '../screens/predictions_screen.dart';
+import '../screens/predictions_screen_simple.dart';
 
 class NavigationService {
   static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();

@@ -5,6 +5,10 @@ import '../services/favorites_service.dart';
 import '../composables/use_auth_handler.dart';
 import '../components/common/favorite_button.dart';
 import '../components/common/auth_modal.dart';
+import 'simple_recipe_detail_screen.dart';
+import 'simple_tip_detail_screen.dart';
+import 'simple_event_detail_screen.dart';
+import 'dinor_tv_screen.dart';
 
 class FavoritesScreen extends ConsumerStatefulWidget {
   const FavoritesScreen({Key? key}) : super(key: key);
@@ -601,18 +605,52 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
 
   // Helper Methods
   void _goToContent(Favorite favorite) {
-    // Navigation vers le contenu - à implémenter selon les routes disponibles
-    final routes = {
-      'recipe': '/recipe/${favorite.content['id']}',
-      'tip': '/tip/${favorite.content['id']}',
-      'event': '/event/${favorite.content['id']}',
-      'dinor_tv': '/dinor-tv',
-    };
-    
-    final route = routes[favorite.type];
-    if (route != null) {
-      // Navigator vers la page de détail
-      print('🔗 [FavoritesScreen] Navigation vers: $route');
+    final contentId = favorite.content['id']?.toString();
+    if (contentId == null) return;
+
+    print('🔗 [FavoritesScreen] Navigation vers ${favorite.type}:$contentId');
+
+    switch (favorite.type) {
+      case 'recipe':
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => SimpleRecipeDetailScreen(
+              arguments: {'id': contentId}
+            ),
+          ),
+        );
+        break;
+      case 'tip':
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => SimpleTipDetailScreen(id: contentId),
+          ),
+        );
+        break;
+      case 'event':
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => SimpleEventDetailScreen(
+              arguments: {'eventId': contentId}
+            ),
+          ),
+        );
+        break;
+      case 'dinor_tv':
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => const DinorTVScreen(),
+          ),
+        );
+        break;
+      default:
+        print('❌ [FavoritesScreen] Type de contenu non supporté: ${favorite.type}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Type de contenu non supporté: ${favorite.type}'),
+            backgroundColor: Colors.red,
+          ),
+        );
     }
   }
 
@@ -645,12 +683,12 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
 
   String _getDefaultImage(String type) {
     final defaults = {
-      'recipe': 'https://new.dinor.app/images/default-recipe.jpg',
-      'tip': 'https://new.dinor.app/images/default-tip.jpg',
-      'event': 'https://new.dinor.app/images/default-event.jpg',
-      'dinor_tv': 'https://new.dinor.app/images/default-video.jpg',
+      'recipe': 'https://new.dinorapp.com/images/default-recipe.jpg',
+      'tip': 'https://new.dinorapp.com/images/default-tip.jpg',
+      'event': 'https://new.dinorapp.com/images/default-event.jpg',
+      'dinor_tv': 'https://new.dinorapp.com/images/default-video.jpg',
     };
-    return defaults[type] ?? 'https://new.dinor.app/images/default-content.jpg';
+    return defaults[type] ?? 'https://new.dinorapp.com/images/default-content.jpg';
   }
 
   IconData _getTypeIcon(String type) {

@@ -3,11 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../services/api_service.dart';
 import '../services/favorites_service.dart';
-import '../services/likes_service.dart';
 import '../composables/use_auth_handler.dart';
 import '../components/common/auth_modal.dart';
-import '../components/dinor_icon.dart';
 import 'favorites_screen.dart';
+import 'terms_of_service_screen.dart';
+import 'privacy_policy_screen.dart';
+import 'cookie_policy_screen.dart';
+import 'simple_recipe_detail_screen.dart';
+import 'simple_tip_detail_screen.dart';
+import 'simple_event_detail_screen.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -34,6 +38,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     {'key': 'predictions', 'label': 'Mes Pronostics', 'icon': LucideIcons.target},
     {'key': 'account', 'label': 'Mon Compte', 'icon': LucideIcons.user},
     {'key': 'security', 'label': 'Sécurité', 'icon': LucideIcons.lock},
+    {'key': 'legal', 'label': 'Légal', 'icon': LucideIcons.scale},
   ];
 
   final List<Map<String, dynamic>> _filterTabs = [
@@ -120,34 +125,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
   }
 
-  Future<void> _forceSyncLikes() async {
-    try {
-      print('🔄 [ProfileScreen] Forçage synchronisation likes...');
-      
-      // Forcer la synchronisation des likes
-      await ref.read(likesProvider.notifier).forceSync();
-      
-      // Afficher un feedback
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Synchronisation des likes terminée'),
-          backgroundColor: Colors.green,
-          duration: Duration(seconds: 2),
-        ),
-      );
-      
-      print('✅ [ProfileScreen] Synchronisation likes terminée');
-    } catch (e) {
-      print('❌ [ProfileScreen] Erreur synchronisation likes: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erreur synchronisation: $e'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 2),
-        ),
-      );
-    }
-  }
 
   Future<void> _loadPredictionsStats() async {
     setState(() => _predictionsLoading = true);
@@ -438,6 +415,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         return _buildPredictionsSection();
       case 'settings':
         return _buildSettingsSection();
+      case 'legal':
+        return _buildLegalSection();
       default:
         return const SizedBox.shrink();
     }
@@ -569,53 +548,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           const SizedBox(height: 16),
         ],
 
-        // Debug: Panneau de debug
-        Container(
-          padding: const EdgeInsets.all(8),
-          margin: const EdgeInsets.only(bottom: 8),
-          decoration: BoxDecoration(
-            color: Colors.orange.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(4),
-            border: Border.all(color: Colors.orange),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Debug: ${_favorites.length} favoris chargés',
-                style: TextStyle(fontSize: 12, color: Colors.orange[800]),
-              ),
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: _loadFavorites,
-                      child: Text('Recharger Favoris', style: TextStyle(fontSize: 10)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: _forceSyncLikes,
-                      child: Text('Sync Likes', style: TextStyle(fontSize: 10)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
         
         // Favorites List
         if (_filteredFavorites.isNotEmpty)
@@ -642,20 +574,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final content = favorite['content'] ?? {};
     final type = favorite['type'];
     
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
+    return GestureDetector(
+      onTap: () => _navigateToContent(type, content),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
         children: [
           // Image
           ClipRRect(
@@ -723,20 +657,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ),
                       ),
                       const Spacer(),
-                      Icon(
-                        LucideIcons.heart,
-                        size: 16,
-                        color: const Color(0xFFE53E3E),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${content['likes_count'] ?? 0}',
-                        style: const TextStyle(
-                          fontFamily: 'Roboto',
-                          fontSize: 12,
-                          color: Color(0xFF718096),
-                        ),
-                      ),
                     ],
                   ),
                 ],
@@ -754,6 +674,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
           ),
         ],
+        ),
       ),
     );
   }
@@ -1128,15 +1049,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   String _getDefaultImage(String type) {
     switch (type) {
       case 'recipe':
-        return 'https://new.dinor.app/images/default-recipe.jpg';
+        return 'https://new.dinorapp.com/images/default-recipe.jpg';
       case 'tip':
-        return 'https://new.dinor.app/images/default-tip.jpg';
+        return 'https://new.dinorapp.com/images/default-tip.jpg';
       case 'event':
-        return 'https://new.dinor.app/images/default-event.jpg';
+        return 'https://new.dinorapp.com/images/default-event.jpg';
       case 'dinor_tv':
-        return 'https://new.dinor.app/images/default-video.jpg';
+        return 'https://new.dinorapp.com/images/default-video.jpg';
       default:
-        return 'https://new.dinor.app/images/default-content.jpg';
+        return 'https://new.dinorapp.com/images/default-content.jpg';
     }
   }
 
@@ -1245,6 +1166,37 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
+  void _navigateToContent(String type, Map<String, dynamic> content) {
+    final contentId = content['id']?.toString();
+    if (contentId == null) return;
+
+    switch (type) {
+      case 'recipe':
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => SimpleRecipeDetailScreen(arguments: {'recipeId': contentId}),
+          ),
+        );
+        break;
+      case 'tip':
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => SimpleTipDetailScreen(id: contentId),
+          ),
+        );
+        break;
+      case 'event':
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => SimpleEventDetailScreen(arguments: {'eventId': contentId}),
+          ),
+        );
+        break;
+      default:
+        print('Type de contenu non supporté: $type');
+    }
+  }
+
   Widget _buildAccountSection() {
     return Container(
       margin: const EdgeInsets.only(top: 16),
@@ -1346,6 +1298,103 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildLegalSection() {
+    return Container(
+      margin: const EdgeInsets.only(top: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Légal & Confidentialité',
+            style: TextStyle(
+              fontFamily: 'OpenSans',
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF2D3748),
+            ),
+          ),
+          const SizedBox(height: 16),
+          
+          // Legal links
+          _buildLegalLink(
+            icon: LucideIcons.fileText,
+            title: 'Conditions générales d\'utilisation',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const TermsOfServiceScreen()),
+            ),
+          ),
+          _buildLegalLink(
+            icon: LucideIcons.shield,
+            title: 'Politique de confidentialité',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const PrivacyPolicyScreen()),
+            ),
+          ),
+          _buildLegalLink(
+            icon: LucideIcons.cookie,
+            title: 'Politique des cookies',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const CookiePolicyScreen()),
+            ),
+            isLast: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLegalLink({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    bool isLast = false,
+  }) {
+    return Column(
+      children: [
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: Icon(
+            icon,
+            color: const Color(0xFFE53E3E),
+            size: 20,
+          ),
+          title: Text(
+            title,
+            style: const TextStyle(
+              fontFamily: 'Roboto',
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF2D3748),
+            ),
+          ),
+          trailing: const Icon(
+            LucideIcons.chevronRight,
+            size: 16,
+            color: Color(0xFFCBD5E0),
+          ),
+          onTap: onTap,
+        ),
+        if (!isLast)
+          const Divider(
+            height: 1,
+            color: Color(0xFFE2E8F0),
+          ),
+      ],
     );
   }
 

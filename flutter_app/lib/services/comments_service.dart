@@ -244,11 +244,9 @@ class CommentsService extends StateNotifier<Map<String, CommentsState>> {
       print('📝 [CommentsService] Ajout commentaire pour $contentType:$contentId');
       
       final response = await http.post(
-        Uri.parse('$baseUrl/comments'),
+        Uri.parse('$baseUrl/$contentType/$contentId/comments'),
         headers: await _getHeaders(),
         body: json.encode({
-          'commentable_type': 'App\\Models\\${contentType.substring(0, 1).toUpperCase() + contentType.substring(1)}',
-          'commentable_id': contentId,
           'content': content,
         }),
       ).timeout(const Duration(seconds: 10));

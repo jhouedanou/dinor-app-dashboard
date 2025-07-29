@@ -265,7 +265,7 @@ class ShareModal extends StatelessWidget {
   }
 
   void _shareToFacebook(BuildContext context) async {
-    final shareUrl = shareData['url'] ?? 'https://new.dinor.app';
+    final shareUrl = shareData['url'] ?? 'https://new.dinorapp.com';
     final url = 'https://www.facebook.com/sharer/sharer.php?u=${Uri.encodeComponent(shareUrl)}';
     await _launchUrl(context, url);
     print('📘 [ShareModal] Partager sur Facebook: $shareUrl');
@@ -273,7 +273,7 @@ class ShareModal extends StatelessWidget {
 
   void _shareToTwitter(BuildContext context) async {
     final title = shareData['title'] ?? 'Contenu Dinor';
-    final shareUrl = shareData['url'] ?? 'https://new.dinor.app';
+    final shareUrl = shareData['url'] ?? 'https://new.dinorapp.com';
     final text = '$title $shareUrl';
     final url = 'https://twitter.com/intent/tweet?text=${Uri.encodeComponent(text)}';
     await _launchUrl(context, url);
@@ -283,7 +283,7 @@ class ShareModal extends StatelessWidget {
   void _shareViaEmail(BuildContext context) async {
     final subject = shareData['title'] ?? 'Partage Dinor';
     final description = shareData['text'] ?? shareData['description'] ?? 'Découvrez ce contenu sur Dinor';
-    final shareUrl = shareData['url'] ?? 'https://new.dinor.app';
+    final shareUrl = shareData['url'] ?? 'https://new.dinorapp.com';
     final body = '$description\n\n$shareUrl';
     final url = 'mailto:?subject=${Uri.encodeComponent(subject)}&body=${Uri.encodeComponent(body)}';
     await _launchUrl(context, url);

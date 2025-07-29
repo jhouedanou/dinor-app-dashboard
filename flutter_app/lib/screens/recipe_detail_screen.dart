@@ -275,7 +275,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
     final shareData = {
       'title': _recipe!['title'],
       'text': _recipe!['description'] ?? 'Découvrez cette délicieuse recette : ${_recipe!['title']}',
-      'url': 'https://new.dinor.app/recipe/${widget.id}',
+      'url': 'https://new.dinorapp.com/recipe/${widget.id}',
       'image': _recipe!['featured_image_url'],
     };
     

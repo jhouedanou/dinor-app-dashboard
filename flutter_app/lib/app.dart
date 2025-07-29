@@ -188,7 +188,7 @@ class _DinorAppState extends ConsumerState<DinorApp> {
     final shareData = {
       'title': _currentPageTitle,
       'text': 'Découvrez $_currentPageTitle sur Dinor',
-      'url': 'https://new.dinor.app$currentRoute', // URL complète pour partage
+      'url': 'https://new.dinorapp.com$currentRoute', // URL complète pour partage
     };
     
     // Si nous sommes sur une page de détail, ajouter des informations spécifiques

@@ -631,7 +631,7 @@ class _SimpleTipDetailScreenState extends ConsumerState<SimpleTipDetailScreen> {
     
     final title = _formatText(tip!['title']) ?? 'Astuce Dinor';
           final description = _formatText(tip!['short_description']) ?? _formatText(tip!['description']) ?? 'Découvrez cette astuce sur Dinor';
-    final url = 'https://new.dinor.app/tips/${widget.id}';
+    final url = 'https://new.dinorapp.com/tips/${widget.id}';
     
     final shareText = '$title\n\n$description\n\nDécouvrez plus d\'astuces sur Dinor:\n$url';
     
@@ -647,7 +647,7 @@ class _SimpleTipDetailScreenState extends ConsumerState<SimpleTipDetailScreen> {
         'title': _formatText(tip!['title']) ?? 'Astuce Dinor',
         'text': _formatText(tip!['short_description']) ?? _formatText(tip!['description']) ?? 'Découvrez cette astuce sur Dinor',
         'description': _formatText(tip!['short_description']) ?? _formatText(tip!['description']) ?? 'Découvrez cette astuce sur Dinor',
-        'url': 'https://new.dinor.app/tips/${widget.id}',
+        'url': 'https://new.dinorapp.com/tips/${widget.id}',
       };
       _isShareModalVisible = true;
     });
@@ -774,7 +774,7 @@ class _SimpleTipDetailScreenState extends ConsumerState<SimpleTipDetailScreen> {
       _shareData = {
         'title': _formatText(tip!['title']),
         'text': _formatText(tip!['short_description']) ?? 'Découvrez cette astuce : ${_formatText(tip!['title'])}',
-        'url': 'https://new.dinor.app/tips/${widget.id}',
+        'url': 'https://new.dinorapp.com/tips/${widget.id}',
         'image': tip!['featured_image_url'] ?? tip!['image_url'],
       };
       _isShareModalVisible = true;

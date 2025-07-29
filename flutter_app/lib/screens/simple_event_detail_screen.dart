@@ -7,6 +7,7 @@ import '../services/navigation_service.dart';
 import '../services/cache_service.dart';
 import '../services/image_service.dart';
 import '../components/common/favorite_button.dart';
+import '../components/common/like_button.dart';
 import '../components/common/auth_modal.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -209,6 +210,17 @@ class _SimpleEventDetailScreenState extends ConsumerState<SimpleEventDetailScree
             onPressed: () => NavigationService.pop(),
           ),
           actions: [
+            LikeButton(
+              type: 'event',
+              itemId: event!['id'].toString(),
+              initialLiked: isLiked,
+              initialCount: event!['likes_count'] ?? 0,
+              showCount: false,
+              size: 'medium',
+              variant: 'minimal',
+              onAuthRequired: () => setState(() => _showAuthModal = true),
+            ),
+            const SizedBox(width: 4),
             FavoriteButton(
               type: 'event',
               itemId: event!['id'].toString(),
@@ -655,7 +667,7 @@ class _SimpleEventDetailScreenState extends ConsumerState<SimpleEventDetailScree
     final title = event!['title'] ?? 'Événement Dinor';
     final description = event!['short_description'] ?? event!['description'] ?? 'Découvrez cet événement sur Dinor';
     final eventId = widget.arguments['id'] as String;
-    final url = 'https://new.dinor.app/events/$eventId';
+    final url = 'https://new.dinorapp.com/events/$eventId';
     
     final shareText = '$title\n\n$description\n\nDécouvrez plus d\'événements sur Dinor:\n$url';
     

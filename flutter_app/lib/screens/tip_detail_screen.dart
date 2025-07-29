@@ -241,7 +241,7 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
     final shareData = {
       'title': _tip!['title'],
       'text': _tip!['short_description'] ?? 'Découvrez cette astuce : ${_tip!['title']}',
-      'url': 'https://new.dinor.app/tips/${widget.id}',
+      'url': 'https://new.dinorapp.com/tips/${widget.id}',
       'image': _tip!['featured_image_url'],
     };
     
