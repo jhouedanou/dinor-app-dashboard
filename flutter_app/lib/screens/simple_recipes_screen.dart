@@ -40,7 +40,7 @@ class _SimpleRecipesScreenState extends State<SimpleRecipesScreen> {
         itemsPerPage: 4,
         enableSearch: true,
         enableFilters: true,
-        useGridView: true,
+        useGridView: false,
         itemBuilder: (item) => ContentItemCard(
           contentType: 'recipe',
           item: item,

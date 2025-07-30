@@ -929,13 +929,31 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
               children: (_recipe!['ingredients'] as List).map((ingredient) {
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Text(
-                    _formatIngredientDisplay(ingredient),
-                    style: const TextStyle(
-                      fontFamily: 'Roboto',
-                      fontSize: 16,
-                      color: Color(0xFF4A5568),
-                    ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Puce (bullet point)
+                      Container(
+                        margin: const EdgeInsets.only(top: 6, right: 12),
+                        width: 6,
+                        height: 6,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFE53E3E),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      // Texte de l'ingrédient
+                      Expanded(
+                        child: Text(
+                          _formatIngredientDisplay(ingredient),
+                          style: const TextStyle(
+                            fontFamily: 'Roboto',
+                            fontSize: 16,
+                            color: Color(0xFF4A5568),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 );
               }).toList(),

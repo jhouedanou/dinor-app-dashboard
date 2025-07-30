@@ -19,6 +19,8 @@ import '../components/common/unified_content_actions.dart';
 // Services
 import '../services/api_service.dart';
 import '../services/share_service.dart';
+import '../services/likes_service.dart';
+import '../composables/use_auth_handler.dart';
 
 class EventDetailScreenUnified extends ConsumerStatefulWidget {
   final String id;
@@ -55,6 +57,7 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
       final data = await apiService.get('/events/${widget.id}');
 
       if (data['success'] == true) {
+        print('📅 [EventDetailUnified] Données reçues: ${data['data']}');
         setState(() {
           _event = data['data'];
           _loading = false;
@@ -72,8 +75,48 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
   }
 
   Future<void> _checkUserLike() async {
-    // TODO: Implémenter la vérification du like utilisateur
-    setState(() => _userLiked = false);
+    if (_event != null) {
+      final likesState = ref.read(likesProvider);
+      final isLiked = likesState.getLikes('event', widget.id)?.isLiked ?? false;
+      setState(() => _userLiked = isLiked);
+    }
+  }
+
+  Future<void> _handleLikeAction() async {
+    final authState = ref.read(useAuthHandlerProvider);
+    
+    if (!authState.isAuthenticated) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Connectez-vous pour liker cet événement'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    try {
+      final success = await ref.read(likesProvider.notifier).toggleLike('event', widget.id);
+      
+      if (success) {
+        setState(() => _userLiked = !_userLiked);
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_userLiked ? '❤️ Événement ajouté aux favoris' : '💔 Événement retiré des favoris'),
+            backgroundColor: const Color(0xFFE53E3E),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erreur: ${error.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   String _formatDate(String? dateString) {
@@ -82,7 +125,58 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
       final date = DateTime.parse(dateString);
       return '${date.day}/${date.month}/${date.year}';
     } catch (e) {
+      print('❌ [EventDetailUnified] Erreur parsing date: $dateString');
       return dateString;
+    }
+  }
+
+  String _getEventDate() {
+    if (_event == null) return '';
+    
+    // Essayer différents champs possibles pour la date
+    final possibleDateFields = ['date', 'event_date', 'start_date', 'scheduled_date'];
+    for (final field in possibleDateFields) {
+      final value = _event![field];
+      if (value != null && value.toString().isNotEmpty) {
+        print('📅 [EventDetailUnified] Date trouvée dans $field: $value');
+        return _formatDate(value.toString());
+      }
+    }
+    
+    print('⚠️ [EventDetailUnified] Aucune date trouvée dans: ${_event!.keys.toList()}');
+    return '';
+  }
+
+  String _getEventTime() {
+    if (_event == null) return '';
+    
+    // Essayer différents champs possibles pour l'heure
+    final possibleTimeFields = ['time', 'event_time', 'start_time', 'scheduled_time'];
+    for (final field in possibleTimeFields) {
+      final value = _event![field];
+      if (value != null && value.toString().isNotEmpty) {
+        print('🕐 [EventDetailUnified] Heure trouvée dans $field: $value');
+        return _formatTime(value.toString());
+      }
+    }
+    
+    print('⚠️ [EventDetailUnified] Aucune heure trouvée dans: ${_event!.keys.toList()}');
+    return 'Non défini';
+  }
+
+  String _formatTime(String timeString) {
+    // Si c'est déjà au bon format (HH:mm), le retourner
+    if (RegExp(r'^\d{1,2}:\d{2}$').hasMatch(timeString)) {
+      return timeString;
+    }
+    
+    // Essayer de parser comme DateTime ISO pour extraire l'heure
+    try {
+      final dateTime = DateTime.parse(timeString);
+      return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+    } catch (e) {
+      // Si ce n'est pas parsable, retourner tel quel
+      return timeString;
     }
   }
 
@@ -151,11 +245,11 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
                     stats: [
                       {
                         'icon': LucideIcons.calendar,
-                        'text': _formatDate(_event!['date']),
+                        'text': _getEventDate(),
                       },
                       {
                         'icon': LucideIcons.clock,
-                        'text': _event!['time'] ?? 'Non défini',
+                        'text': _getEventTime(),
                       },
                       {
                         'icon': LucideIcons.heart,
@@ -255,6 +349,17 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
           heroTag: 'back_fab',
           backgroundColor: Colors.white,
           child: const Icon(LucideIcons.arrowLeft, color: Color(0xFF2D3748)),
+        ),
+        const SizedBox(height: 16),
+        // Bouton Like flottant
+        FloatingActionButton(
+          onPressed: () => _handleLikeAction(),
+          heroTag: 'like_fab',
+          backgroundColor: _userLiked ? const Color(0xFFE53E3E) : Colors.white,
+          child: Icon(
+            _userLiked ? LucideIcons.heart : LucideIcons.heart,
+            color: _userLiked ? Colors.white : const Color(0xFFE53E3E),
+          ),
         ),
         const SizedBox(height: 16),
         FloatingActionButton(
@@ -396,12 +501,12 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
   }
 
   Widget _buildEventDetails() {
-    final date = _event!['date'] ?? '';
-    final time = _event!['time'] ?? '';
-    final location = _event!['location'] ?? '';
-    final organizer = _event!['organizer'] ?? '';
+    final date = _getEventDate();
+    final time = _getEventTime();
+    final location = _event!['location'] ?? _event!['venue'] ?? '';
+    final organizer = _event!['organizer'] ?? _event!['organiser'] ?? '';
 
-    if (date.isEmpty && time.isEmpty && location.isEmpty && organizer.isEmpty) {
+    if (date.isEmpty && time == 'Non défini' && location.isEmpty && organizer.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -432,10 +537,10 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
           ),
           const SizedBox(height: 16),
           if (date.isNotEmpty) ...[
-            _buildDetailRow(LucideIcons.calendar, 'Date', _formatDate(date)),
+            _buildDetailRow(LucideIcons.calendar, 'Date', date),
             const SizedBox(height: 12),
           ],
-          if (time.isNotEmpty) ...[
+          if (time != 'Non défini') ...[
             _buildDetailRow(LucideIcons.clock, 'Heure', time),
             const SizedBox(height: 12),
           ],

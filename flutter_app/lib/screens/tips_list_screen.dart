@@ -310,6 +310,15 @@ class _TipsListScreenState extends ConsumerState<TipsListScreen> with AutomaticK
            _selectedFilters.isNotEmpty;
   }
 
+  // Compter le nombre de filtres actifs
+  int get _activeFiltersCount {
+    int count = 0;
+    if (_searchQuery.isNotEmpty) count++;
+    if (_selectedCategory != null) count++;
+    count += _selectedFilters.values.where((filter) => filter != null).length;
+    return count;
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context); // Required for AutomaticKeepAliveClientMixin
@@ -417,22 +426,19 @@ class _TipsListScreenState extends ConsumerState<TipsListScreen> with AutomaticK
             ),
           ),
 
-        // Tips Grid
+        // Tips List (1 colonne)
         SliverPadding(
           padding: const EdgeInsets.all(16),
           sliver: _filteredTips.isEmpty
             ? SliverToBoxAdapter(
                 child: _buildEmptyState(),
               )
-            : SliverGrid(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.75,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                ),
+            : SliverList(
                 delegate: SliverChildBuilderDelegate(
-                  (context, index) => _buildTipCard(_filteredTips[index]),
+                  (context, index) => Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: _buildTipCard(_filteredTips[index]),
+                  ),
                   childCount: _filteredTips.length,
                 ),
               ),

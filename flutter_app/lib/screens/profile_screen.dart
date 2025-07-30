@@ -1063,7 +1063,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     try {
       final apiService = ref.read(apiServiceProvider);
       // Correction: La méthode pour supprimer un favori est sur le service des favoris
-      final favoritesService = ref.read(favoritesProvider.notifier);
+      final favoritesService = ref.read(favoritesServiceProvider.notifier);
       await favoritesService.removeFavorite(favorite['id']);
       
       setState(() {

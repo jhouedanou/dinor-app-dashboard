@@ -16,13 +16,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:video_player/video_player.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:async';
 
 import '../services/navigation_service.dart';
-import '../components/common/unified_like_button.dart';
+import '../components/common/like_button.dart';
+import '../components/common/youtube_video_player.dart';
 import '../composables/use_auth_handler.dart';
 import '../components/common/auth_modal.dart';
 
@@ -153,15 +153,14 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
   int _currentIndex = 0;
   bool _showAuthModal = false;
   
-  // Gestion des contrôleurs vidéo
-  final Map<int, VideoPlayerController> _controllers = {};
-  final Map<int, bool> _initialized = {};
-  
   // Animation des contrôles
   late AnimationController _controlsAnimationController;
   late Animation<double> _controlsAnimation;
   bool _showControls = false;
   Timer? _hideControlsTimer;
+  
+  // Gestion des lecteurs YouTube
+  final Map<int, GlobalKey<YouTubeVideoPlayerState>> _playerKeys = {};
 
   @override
   void initState() {
@@ -183,14 +182,10 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
       curve: Curves.easeInOut,
     ));
 
-    // Charger les vidéos dans le provider
-    ref.read(videoPlayerProvider.notifier).loadVideos(widget.videos);
-    ref.read(videoPlayerProvider.notifier).setCurrentIndex(_currentIndex);
-
-    // Initialiser la première vidéo et précharger les suivantes
+    // Charger les vidéos dans le provider après la construction
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initializeVideo(_currentIndex);
-      _preloadAdjacentVideos(_currentIndex);
+      ref.read(videoPlayerProvider.notifier).loadVideos(widget.videos);
+      ref.read(videoPlayerProvider.notifier).setCurrentIndex(_currentIndex);
     });
 
     // Mettre en plein écran
@@ -199,11 +194,8 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
 
   @override
   void dispose() {
-    // Nettoyer tous les contrôleurs
-    for (final controller in _controllers.values) {
-      controller.dispose();
-    }
-    _controllers.clear();
+    // Nettoyer les références aux lecteurs
+    _playerKeys.clear();
     
     _pageController.dispose();
     _controlsAnimationController.dispose();
@@ -215,59 +207,12 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
     super.dispose();
   }
 
-  // Initialiser une vidéo
-  Future<void> _initializeVideo(int index) async {
-    if (index < 0 || index >= widget.videos.length) return;
-    if (_controllers.containsKey(index)) return;
-
-    final video = widget.videos[index];
-    if (video.videoUrl.isEmpty) return;
-
-    try {
-      print('🎥 [TikTokVideo] Initialisation vidéo $index: ${video.title}');
-      
-      VideoPlayerController controller;
-      
-      // Supporter différents types d'URL
-      if (video.videoUrl.startsWith('http')) {
-        controller = VideoPlayerController.networkUrl(Uri.parse(video.videoUrl));
-      } else {
-        controller = VideoPlayerController.asset(video.videoUrl);
+  // Pauser tous les autres lecteurs sauf le courant
+  void _pauseOtherPlayers(int currentIndex) {
+    for (final entry in _playerKeys.entries) {
+      if (entry.key != currentIndex) {
+        entry.value.currentState?.pause();
       }
-
-      _controllers[index] = controller;
-      
-      await controller.initialize();
-      
-      setState(() {
-        _initialized[index] = true;
-      });
-
-      // Auto-play si c'est la vidéo courante
-      if (index == _currentIndex) {
-        controller.play();
-        controller.setLooping(true);
-      }
-
-      print('✅ [TikTokVideo] Vidéo $index initialisée');
-    } catch (e) {
-      print('❌ [TikTokVideo] Erreur initialisation vidéo $index: $e');
-      setState(() {
-        _initialized[index] = false;
-      });
-    }
-  }
-
-  // Précharger les vidéos adjacentes
-  void _preloadAdjacentVideos(int currentIndex) {
-    // Précharger la vidéo précédente
-    if (currentIndex > 0) {
-      _initializeVideo(currentIndex - 1);
-    }
-    
-    // Précharger la vidéo suivante
-    if (currentIndex < widget.videos.length - 1) {
-      _initializeVideo(currentIndex + 1);
     }
   }
 
@@ -277,55 +222,23 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
       _currentIndex = index;
     });
     
-    ref.read(videoPlayerProvider.notifier).setCurrentIndex(index);
+    // Modifier le provider de manière sécurisée
+    Future(() {
+      ref.read(videoPlayerProvider.notifier).setCurrentIndex(index);
+    });
 
-    // Pause toutes les autres vidéos
-    for (int i = 0; i < _controllers.length; i++) {
-      if (i != index && _controllers[i] != null) {
-        _controllers[i]!.pause();
-      }
-    }
-
-    // Play la vidéo courante
-    if (_controllers[index] != null && _initialized[index] == true) {
-      _controllers[index]!.play();
-    } else {
-      _initializeVideo(index);
-    }
-
-    // Précharger les adjacentes
-    _preloadAdjacentVideos(index);
+    // Pauser tous les autres lecteurs
+    _pauseOtherPlayers(index);
     
-    // Nettoyer les vidéos trop éloignées pour économiser la mémoire
-    _cleanupDistantVideos(index);
+    print('🎬 [TikTokVideo] Changement vers vidéo $index: ${widget.videos[index].title}');
   }
 
-  // Nettoyer les vidéos éloignées
-  void _cleanupDistantVideos(int currentIndex) {
-    final toRemove = <int>[];
-    
-    for (final index in _controllers.keys) {
-      if ((index - currentIndex).abs() > 2) {
-        toRemove.add(index);
-      }
-    }
-    
-    for (final index in toRemove) {
-      _controllers[index]?.dispose();
-      _controllers.remove(index);
-      _initialized.remove(index);
-    }
-  }
-
-  // Toggle play/pause
+  // Toggle play/pause pour le lecteur YouTube courant
   void _togglePlayPause() {
-    final controller = _controllers[_currentIndex];
-    if (controller != null && _initialized[_currentIndex] == true) {
-      if (controller.value.isPlaying) {
-        controller.pause();
-      } else {
-        controller.play();
-      }
+    final playerKey = _playerKeys[_currentIndex];
+    if (playerKey?.currentState != null) {
+      // Note: YouTubeVideoPlayer gère son propre toggle via les contrôles intégrés
+      print('🎵 [TikTokVideo] Toggle play/pause via contrôles YouTube');
     }
     
     _showControlsTemporarily();
@@ -410,8 +323,11 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
   // Page vidéo individuelle
   Widget _buildVideoPage(int index) {
     final video = widget.videos[index];
-    final controller = _controllers[index];
-    final isInitialized = _initialized[index] ?? false;
+    
+    // Créer une clé unique pour ce lecteur
+    if (!_playerKeys.containsKey(index)) {
+      _playerKeys[index] = GlobalKey<YouTubeVideoPlayerState>();
+    }
 
     return GestureDetector(
       onTap: _togglePlayPause,
@@ -422,16 +338,28 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // Vidéo ou placeholder
-            if (controller != null && isInitialized)
+            // Lecteur YouTube
+            if (video.videoUrl.isNotEmpty)
               Center(
                 child: AspectRatio(
-                  aspectRatio: controller.value.aspectRatio,
-                  child: VideoPlayer(controller),
+                  aspectRatio: 9 / 16, // Format portrait pour TikTok
+                  child: YouTubeVideoPlayer(
+                    key: _playerKeys[index],
+                    videoUrl: video.videoUrl,
+                    title: '', // Pas de titre sur le player
+                    autoPlay: index == _currentIndex, // Auto-play seulement pour la vidéo courante
+                    showControls: true,
+                    onReady: () {
+                      print('✅ [TikTokVideo] Player $index ready: ${video.title}');
+                    },
+                    onPause: () {
+                      print('⏸️ [TikTokVideo] Player $index paused');
+                    },
+                  ),
                 ),
               )
             else if (video.thumbnailUrl != null)
-              // Thumbnail en attendant la vidéo
+              // Thumbnail si pas d'URL vidéo
               Image.network(
                 video.thumbnailUrl!,
                 fit: BoxFit.cover,
@@ -439,23 +367,6 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
               )
             else
               _buildVideoPlaceholder(),
-
-            // Indicateur de chargement
-            if (!isInitialized)
-              const Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              ),
-
-            // Bouton play/pause central (quand contrôles visibles)
-            if (_showControls)
-              FadeTransition(
-                opacity: _controlsAnimation,
-                child: Center(
-                  child: _buildPlayPauseButton(),
-                ),
-              ),
           ],
         ),
       ),
@@ -476,27 +387,8 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
     );
   }
 
-  // Bouton play/pause central
-  Widget _buildPlayPauseButton() {
-    final controller = _controllers[_currentIndex];
-    final isPlaying = controller?.value.isPlaying ?? false;
-
-    return GestureDetector(
-      onTap: _togglePlayPause,
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.black54,
-          shape: BoxShape.circle,
-        ),
-        child: Icon(
-          isPlaying ? LucideIcons.pause : LucideIcons.play,
-          size: 48,
-          color: Colors.white,
-        ),
-      ),
-    );
-  }
+  // Note: Le bouton play/pause central n'est plus nécessaire 
+  // car YouTubeVideoPlayer a ses propres contrôles intégrés
 
   // Interface superposée
   Widget _buildOverlayInterface() {
@@ -541,13 +433,7 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
             child: _buildVideoInfo(video),
           ),
 
-          // Barre de progression en bas
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: _buildProgressBar(),
-          ),
+          // Note: Barre de progression gérée par YouTubeVideoPlayer
         ],
       ),
     );
@@ -559,15 +445,28 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
       children: [
         // Like
         _buildActionButton(
-          child: UnifiedLikeButton(
-            type: 'video',
-            itemId: video.id,
-            initialLiked: video.isLiked,
-            initialCount: video.likesCount,
-            showCount: true,
-            size: 'large',
-            variant: 'minimal',
-            onAuthRequired: () => setState(() => _showAuthModal = true),
+          child: Column(
+            children: [
+              LikeButton(
+                type: 'video',
+                itemId: video.id,
+                initialLiked: video.isLiked,
+                initialCount: video.likesCount,
+                showCount: false, // On affiche le count séparément pour le design TikTok
+                size: 'large',
+                variant: 'minimal',
+                onAuthRequired: () => setState(() => _showAuthModal = true),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '${video.likesCount}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
         ),
         
@@ -716,39 +615,7 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
     );
   }
 
-  // Barre de progression
-  Widget _buildProgressBar() {
-    final controller = _controllers[_currentIndex];
-    
-    if (controller == null || !(_initialized[_currentIndex] ?? false)) {
-      return const SizedBox.shrink();
-    }
-
-    return StreamBuilder<Duration>(
-      stream: Stream.periodic(const Duration(milliseconds: 100), (_) => controller.value.position),
-      builder: (context, snapshot) {
-        final position = snapshot.data ?? Duration.zero;
-        final duration = controller.value.duration;
-        
-        if (duration == Duration.zero) return const SizedBox.shrink();
-        
-        final progress = position.inMilliseconds / duration.inMilliseconds;
-        
-        return Container(
-          height: 3,
-          width: double.infinity,
-          color: Colors.white24,
-          child: FractionallySizedBox(
-            alignment: Alignment.centerLeft,
-            widthFactor: progress.clamp(0.0, 1.0),
-            child: Container(
-              color: Colors.white,
-            ),
-          ),
-        );
-      },
-    );
-  }
+  // Note: Barre de progression maintenant gérée par YouTubeVideoPlayer
 
   // Sheet des commentaires
   Widget _buildCommentsSheet(VideoData video) {

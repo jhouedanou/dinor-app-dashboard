@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'api_service.dart';
-import '../composables/use_auth_handler.dart';
 
 final shareServiceProvider = Provider<ShareService>((ref) {
   return ShareService(ref.read(apiServiceProvider));

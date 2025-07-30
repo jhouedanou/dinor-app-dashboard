@@ -30,8 +30,9 @@ class EnhancedDinorTVScreen extends ConsumerStatefulWidget {
 }
 
 class _EnhancedDinorTVScreenState extends ConsumerState<EnhancedDinorTVScreen>
-    with AutomaticKeepAliveClientMixin {
+with AutomaticKeepAliveClientMixin {
   bool _showAuthModal = false;
+  bool _hasLaunchedTikTok = false; // Pour éviter les lancements multiples
 
   @override
   bool get wantKeepAlive => true;
@@ -44,6 +45,31 @@ class _EnhancedDinorTVScreenState extends ConsumerState<EnhancedDinorTVScreen>
     Future.delayed(Duration.zero, () {
       if (mounted) {
         ref.read(videoServiceProvider.notifier).loadVideos();
+      }
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    
+    // Écouter les changements d'état du service vidéo
+    ref.listen<VideoState>(videoServiceProvider, (previous, next) {
+      // Lancer automatiquement le mode TikTok quand les vidéos sont chargées
+      if (!_hasLaunchedTikTok && 
+          !next.isLoading && 
+          next.videos.isNotEmpty && 
+          next.error == null) {
+        
+        _hasLaunchedTikTok = true;
+        print('🚀 [EnhancedDinorTV] Lancement automatique du mode TikTok avec ${next.videos.length} vidéos');
+        
+        // Lancer le mode TikTok après un petit délai pour éviter les conflits
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) {
+            _openTikTokPlayer();
+          }
+        });
       }
     });
   }

@@ -635,6 +635,7 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen>
                           match.homeTeamLogo!,
                           width: 40,
                           height: 40,
+                          fit: BoxFit.contain,
                           errorBuilder: (context, error, stackTrace) => 
                               const Icon(LucideIcons.shield, size: 40),
                         )
@@ -668,6 +669,7 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen>
                           match.awayTeamLogo!,
                           width: 40,
                           height: 40,
+                          fit: BoxFit.contain,
                           errorBuilder: (context, error, stackTrace) => 
                               const Icon(LucideIcons.shield, size: 40),
                         )

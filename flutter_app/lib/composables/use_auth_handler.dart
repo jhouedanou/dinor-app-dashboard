@@ -3,10 +3,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../services/api_service.dart';
 import '../services/likes_service.dart';
 
-final apiServiceProvider = Provider<ApiService>((ref) {
-  return ApiService(ref);
-});
-
 class AuthState {
   final bool isAuthenticated;
   final String? userName;

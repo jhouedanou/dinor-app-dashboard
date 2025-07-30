@@ -40,7 +40,7 @@ class _SimpleTipsScreenState extends State<SimpleTipsScreen> {
         itemsPerPage: 4,
         enableSearch: true,
         enableFilters: true,
-        useGridView: true,
+        useGridView: false,
         itemBuilder: (item) => ContentItemCard(
           contentType: 'tip',
           item: item,

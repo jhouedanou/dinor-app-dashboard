@@ -3,7 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'api_service.dart';
-import '../composables/use_auth_handler.dart';
 
 class LikesService {
   LikesService(this._apiService);

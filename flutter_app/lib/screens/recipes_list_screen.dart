@@ -225,6 +225,15 @@ class _RecipesListScreenState extends ConsumerState<RecipesListScreen> with Auto
     return _selectedFilters.values.any((filter) => filter != null);
   }
 
+  // Compter le nombre de filtres actifs
+  int get _activeFiltersCount {
+    int count = 0;
+    if (_searchQuery.isNotEmpty) count++;
+    if (_selectedCategory != null) count++;
+    count += _selectedFilters.values.where((filter) => filter != null).length;
+    return count;
+  }
+
   bool get _isLoading {
     return _loadingRecipes || _loadingCategories || _loadingBanners;
   }
@@ -340,7 +349,9 @@ class _RecipesListScreenState extends ConsumerState<RecipesListScreen> with Auto
                         size: 20,
                       ),
                       label: Text(
-                        _showFilters ? 'Masquer les filtres' : 'Afficher les filtres',
+                        _showFilters 
+                          ? 'Masquer les filtres' 
+                          : 'Afficher les filtres${_activeFiltersCount > 0 ? ' ($_activeFiltersCount)' : ''}',
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
@@ -499,20 +510,18 @@ class _RecipesListScreenState extends ConsumerState<RecipesListScreen> with Auto
                       ),
                     )
                   else
-                    // Recipes Grid
-                    GridView.builder(
+                    // Recipes List (1 colonne)
+                    ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 0.8,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                      ),
+                      padding: EdgeInsets.zero,
                       itemCount: _filteredRecipes.length,
                       itemBuilder: (context, index) {
                         final recipe = _filteredRecipes[index];
-                        return _buildRecipeCard(recipe);
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: _buildRecipeCard(recipe),
+                        );
                       },
                     ),
                 ]),

@@ -41,6 +41,13 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> with Automa
   String _authModalMessage = '';
   String? _selectedCategory;
 
+  // Compter le nombre de filtres actifs
+  int get _activeFiltersCount {
+    int count = 0;
+    if (_selectedCategory != null) count++;
+    return count;
+  }
+
   @override
   bool get wantKeepAlive => true;
 
@@ -182,9 +189,38 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> with Automa
           onPressed: () => NavigationService.pop(),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_list, color: Color(0xFF2D3748)),
-            onPressed: () => _showCategoryFilter(),
+          Stack(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.filter_list, color: Color(0xFF2D3748)),
+                onPressed: () => _showCategoryFilter(),
+              ),
+              if (_activeFiltersCount > 0)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE53E3E),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Text(
+                      '$_activeFiltersCount',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
           ),
         ],
       ),

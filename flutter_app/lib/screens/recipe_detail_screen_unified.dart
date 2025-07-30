@@ -26,6 +26,7 @@ import '../services/comments_service.dart';
 import '../composables/use_comments.dart';
 import '../composables/use_auth_handler.dart';
 import '../services/share_service.dart';
+import '../services/likes_service.dart';
 
 class RecipeDetailScreenUnified extends ConsumerStatefulWidget {
   final String id;
@@ -97,8 +98,48 @@ class _RecipeDetailScreenUnifiedState extends ConsumerState<RecipeDetailScreenUn
   }
 
   Future<void> _checkUserLike() async {
-    // TODO: Implémenter la vérification du like utilisateur
-    setState(() => _userLiked = false);
+    if (_recipe != null) {
+      final likesState = ref.read(likesProvider);
+      final isLiked = likesState.getLikes('recipe', widget.id)?.isLiked ?? false;
+      setState(() => _userLiked = isLiked);
+    }
+  }
+
+  Future<void> _handleLikeAction() async {
+    final authState = ref.read(useAuthHandlerProvider);
+    
+    if (!authState.isAuthenticated) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Connectez-vous pour liker cette recette'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    try {
+      final success = await ref.read(likesProvider.notifier).toggleLike('recipe', widget.id);
+      
+      if (success) {
+        setState(() => _userLiked = !_userLiked);
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_userLiked ? '❤️ Recette ajoutée aux favoris' : '💔 Recette retirée des favoris'),
+            backgroundColor: const Color(0xFFE53E3E),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erreur: ${error.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _showOfflineIndicator() {
@@ -206,6 +247,17 @@ class _RecipeDetailScreenUnifiedState extends ConsumerState<RecipeDetailScreenUn
           heroTag: 'back_fab',
           backgroundColor: Colors.white,
           child: const Icon(LucideIcons.arrowLeft, color: Color(0xFF2D3748)),
+        ),
+        const SizedBox(height: 16),
+        // Bouton Like flottant
+        FloatingActionButton(
+          onPressed: () => _handleLikeAction(),
+          heroTag: 'like_fab',
+          backgroundColor: _userLiked ? const Color(0xFFE53E3E) : Colors.white,
+          child: Icon(
+            _userLiked ? LucideIcons.heart : LucideIcons.heart,
+            color: _userLiked ? Colors.white : const Color(0xFFE53E3E),
+          ),
         ),
         const SizedBox(height: 16),
         FloatingActionButton(
@@ -547,13 +599,31 @@ class _RecipeDetailScreenUnifiedState extends ConsumerState<RecipeDetailScreenUn
               children: (_recipe!['ingredients'] as List).map((ingredient) {
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Text(
-                    _formatIngredientDisplay(ingredient),
-                    style: const TextStyle(
-                      fontFamily: 'Roboto',
-                      fontSize: 16,
-                      color: Color(0xFF4A5568),
-                    ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Puce (bullet point)
+                      Container(
+                        margin: const EdgeInsets.only(top: 6, right: 12),
+                        width: 6,
+                        height: 6,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFE53E3E),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      // Texte de l'ingrédient
+                      Expanded(
+                        child: Text(
+                          _formatIngredientDisplay(ingredient),
+                          style: const TextStyle(
+                            fontFamily: 'Roboto',
+                            fontSize: 16,
+                            color: Color(0xFF4A5568),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 );
               }).toList(),

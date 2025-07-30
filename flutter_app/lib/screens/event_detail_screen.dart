@@ -74,6 +74,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
       final data = await apiService.get('/events/${widget.id}');
 
       if (data['success'] == true) {
+        print('📅 [EventDetailScreen] Données reçues: ${data['data']}');
         setState(() {
           _event = data['data'];
           _loading = false;
@@ -491,11 +492,72 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
     );
   }
 
+  String _formatDate(String? dateString) {
+    if (dateString == null || dateString.isEmpty) return '';
+    try {
+      final date = DateTime.parse(dateString);
+      return '${date.day}/${date.month}/${date.year}';
+    } catch (e) {
+      print('❌ [EventDetailScreen] Erreur parsing date: $dateString');
+      return dateString;
+    }
+  }
+
+  String _getEventDate() {
+    if (_event == null) return '';
+    
+    // Essayer différents champs possibles pour la date
+    final possibleDateFields = ['date', 'event_date', 'start_date', 'scheduled_date'];
+    for (final field in possibleDateFields) {
+      final value = _event![field];
+      if (value != null && value.toString().isNotEmpty) {
+        print('📅 [EventDetailScreen] Date trouvée dans $field: $value');
+        return _formatDate(value.toString());
+      }
+    }
+    
+    print('⚠️ [EventDetailScreen] Aucune date trouvée dans: ${_event!.keys.toList()}');
+    return '';
+  }
+
+  String _getEventTime() {
+    if (_event == null) return '';
+    
+    // Essayer différents champs possibles pour l'heure
+    final possibleTimeFields = ['time', 'event_time', 'start_time', 'scheduled_time'];
+    for (final field in possibleTimeFields) {
+      final value = _event![field];
+      if (value != null && value.toString().isNotEmpty) {
+        print('🕐 [EventDetailScreen] Heure trouvée dans $field: $value');
+        return _formatTime(value.toString());
+      }
+    }
+    
+    print('⚠️ [EventDetailScreen] Aucune heure trouvée dans: ${_event!.keys.toList()}');
+    return 'Non défini';
+  }
+
+  String _formatTime(String timeString) {
+    // Si c'est déjà au bon format (HH:mm), le retourner
+    if (RegExp(r'^\d{1,2}:\d{2}$').hasMatch(timeString)) {
+      return timeString;
+    }
+    
+    // Essayer de parser comme DateTime ISO pour extraire l'heure
+    try {
+      final dateTime = DateTime.parse(timeString);
+      return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+    } catch (e) {
+      // Si ce n'est pas parsable, retourner tel quel
+      return timeString;
+    }
+  }
+
   Widget _buildEventDetails() {
-    final date = _event!['date'] ?? '';
-    final time = _event!['time'] ?? '';
-    final location = _event!['location'] ?? '';
-    final organizer = _event!['organizer'] ?? '';
+    final date = _getEventDate();
+    final time = _getEventTime();
+    final location = _event!['location'] ?? _event!['venue'] ?? '';
+    final organizer = _event!['organizer'] ?? _event!['organiser'] ?? '';
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -527,7 +589,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
             _buildDetailRow(Icons.calendar_today_outlined, 'Date', date),
             const SizedBox(height: 12),
           ],
-          if (time.isNotEmpty) ...[
+          if (time != 'Non défini') ...[
             _buildDetailRow(Icons.access_time_outlined, 'Heure', time),
             const SizedBox(height: 12),
           ],

@@ -30,6 +30,9 @@ import '../composables/use_auth_handler.dart';
 import '../components/common/like_button.dart';
 import '../components/common/auth_modal.dart';
 
+// TikTok Mode
+import '../screens/tiktok_style_video_screen.dart';
+
 class DinorTVScreen extends ConsumerStatefulWidget {
   const DinorTVScreen({Key? key}) : super(key: key);
 
@@ -40,6 +43,7 @@ class DinorTVScreen extends ConsumerStatefulWidget {
 class _DinorTVScreenState extends ConsumerState<DinorTVScreen> with AutomaticKeepAliveClientMixin {
   bool _showAuthModal = false;
   String _authModalMessage = '';
+  bool _hasLaunchedTikTok = false; // Pour éviter les lancements multiples
 
   @override
   bool get wantKeepAlive => true;
@@ -49,6 +53,31 @@ class _DinorTVScreenState extends ConsumerState<DinorTVScreen> with AutomaticKee
     super.initState();
     print('📺 [DinorTVScreen] Écran DinorTV initialisé');
     _loadVideos();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    
+    // Écouter les changements d'état du provider DinorTV
+    ref.listen(dinorTVProvider, (previous, next) {
+      // Lancer automatiquement le mode TikTok quand les vidéos sont chargées
+      if (!_hasLaunchedTikTok && 
+          !next.loading && 
+          next.videos.isNotEmpty && 
+          next.error == null) {
+        
+        _hasLaunchedTikTok = true;
+        print('🚀 [DinorTVScreen] Lancement automatique du mode TikTok avec ${next.videos.length} vidéos');
+        
+        // Lancer le mode TikTok après un petit délai pour éviter les conflits
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) {
+            _openTikTokPlayer();
+          }
+        });
+      }
+    });
   }
 
   Future<void> _loadVideos() async {
@@ -64,6 +93,49 @@ class _DinorTVScreenState extends ConsumerState<DinorTVScreen> with AutomaticKee
   Future<void> _handleRefresh() async {
     print('🔄 [DinorTVScreen] Rafraîchissement des vidéos...');
     await ref.read(dinorTVProvider.notifier).refresh();
+  }
+
+  void _openTikTokPlayer({int startIndex = 0}) {
+    final dinorTVState = ref.read(dinorTVProvider);
+    
+    if (dinorTVState.videos.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Aucune vidéo disponible'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Convertir les vidéos DinorTV en VideoData pour TikTok
+    final tiktokVideos = dinorTVState.videos.map((video) {
+      return VideoData(
+        id: video['id']?.toString() ?? '',
+        title: video['title'] ?? '',
+        description: video['description'] ?? '',
+        author: video['author'] ?? video['user_name'] ?? 'Dinor',
+        authorAvatar: video['author_avatar'] ?? video['user_avatar'],
+        videoUrl: video['video_url'] ?? video['url'] ?? '',
+        thumbnailUrl: video['thumbnail'] ?? video['image'],
+        likesCount: video['likes_count'] ?? 0,
+        commentsCount: video['comments_count'] ?? 0,
+        sharesCount: video['shares_count'] ?? 0,
+        views: video['views'] ?? 0,
+        isLiked: video['is_liked'] ?? false,
+      );
+    }).toList();
+
+    // Naviguer vers le lecteur TikTok
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => TikTokStyleVideoScreen(
+          videos: tiktokVideos,
+          initialIndex: startIndex,
+        ),
+        fullscreenDialog: true,
+      ),
+    );
   }
 
   void _handleVideoTap(dynamic video) {

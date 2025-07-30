@@ -21,6 +21,8 @@ import '../services/nba_recommendation_service.dart';
 import '../services/navigation_service.dart';
 import '../composables/use_auth_handler.dart';
 import '../components/common/auth_modal.dart';
+import '../services/likes_service.dart';
+import '../services/share_service.dart';
 
 class NBAContentDetailScreen extends ConsumerStatefulWidget {
   final String contentId;
@@ -41,6 +43,7 @@ class _NBAContentDetailScreenState extends ConsumerState<NBAContentDetailScreen>
   bool _isLoading = true;
   String? _error;
   bool _showAuthModal = false;
+  bool _userLiked = false;
 
   @override
   void initState() {
@@ -144,6 +147,39 @@ class _NBAContentDetailScreenState extends ConsumerState<NBAContentDetailScreen>
       body: _isLoading ? _buildLoadingState() :
              _error != null ? _buildErrorState() :
              _buildContentDetail(),
+      floatingActionButton: _buildFloatingActionButtons(),
+    );
+  }
+
+  Widget _buildFloatingActionButtons() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        FloatingActionButton(
+          onPressed: () => NavigationService.pop(),
+          heroTag: 'back_fab',
+          backgroundColor: Colors.white,
+          child: const Icon(LucideIcons.arrowLeft, color: Color(0xFF2D3748)),
+        ),
+        const SizedBox(height: 16),
+        // Bouton Like flottant
+        FloatingActionButton(
+          onPressed: () => _handleLikeAction(),
+          heroTag: 'like_fab',
+          backgroundColor: _userLiked ? const Color(0xFFE53E3E) : Colors.white,
+          child: Icon(
+            _userLiked ? LucideIcons.heart : LucideIcons.heart,
+            color: _userLiked ? Colors.white : const Color(0xFFE53E3E),
+          ),
+        ),
+        const SizedBox(height: 16),
+        FloatingActionButton(
+          onPressed: () => _handleShareAction(),
+          heroTag: 'share_fab',
+          backgroundColor: const Color(0xFFE53E3E),
+          child: const Icon(LucideIcons.share2, color: Colors.white),
+        ),
+      ],
     );
   }
 
@@ -679,5 +715,55 @@ class _NBAContentDetailScreenState extends ConsumerState<NBAContentDetailScreen>
         ),
       ),
     );
+  }
+
+  Future<void> _handleLikeAction() async {
+    final authState = ref.read(useAuthHandlerProvider);
+    
+    if (!authState.isAuthenticated) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Connectez-vous pour liker ce contenu'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    try {
+      final success = await ref.read(likesProvider.notifier).toggleLike('nba_content', widget.contentId);
+      
+      if (success) {
+        setState(() => _userLiked = !_userLiked);
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_userLiked ? '❤️ Contenu ajouté aux favoris' : '💔 Contenu retiré des favoris'),
+            backgroundColor: const Color(0xFFE53E3E),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erreur: ${error.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  void _handleShareAction() {
+    if (_content != null) {
+      ref.read(shareServiceProvider).shareContent(
+        type: 'nba_content',
+        id: widget.contentId,
+        title: _content!.title,
+        description: _content!.description ?? 'Découvrez ce contenu NBA',
+        shareUrl: 'https://new.dinorapp.com/nba/${widget.contentId}',
+        imageUrl: _content!.imageUrl,
+      );
+    }
   }
 } 

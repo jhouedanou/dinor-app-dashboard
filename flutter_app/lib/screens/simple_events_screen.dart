@@ -40,7 +40,7 @@ class _SimpleEventsScreenState extends State<SimpleEventsScreen> {
         itemsPerPage: 4,
         enableSearch: true,
         enableFilters: true,
-        useGridView: true,
+        useGridView: false,
         itemBuilder: (item) => ContentItemCard(
           contentType: 'event',
           item: item,

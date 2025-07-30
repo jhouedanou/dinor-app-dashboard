@@ -305,3 +305,8 @@ class ApiService {
     });
   }
 }
+
+// Provider pour le service API
+final apiServiceProvider = Provider<ApiService>((ref) {
+  return ApiService(ref);
+});

@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/api_service.dart';
-import 'use_auth_handler.dart';
 
 class CommentsNotifier extends StateNotifier<List<dynamic>> {
   final ApiService _apiService;

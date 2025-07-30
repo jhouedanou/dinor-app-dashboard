@@ -21,6 +21,8 @@ import '../components/common/unified_content_actions.dart';
 // Services
 import '../services/api_service.dart';
 import '../services/share_service.dart';
+import '../services/likes_service.dart';
+import '../composables/use_auth_handler.dart';
 
 class TipDetailScreenUnified extends ConsumerStatefulWidget {
   final String id;
@@ -77,8 +79,48 @@ class _TipDetailScreenUnifiedState extends ConsumerState<TipDetailScreenUnified>
   }
 
   Future<void> _checkUserLike() async {
-    // TODO: Implémenter la vérification du like utilisateur
-    setState(() => _userLiked = false);
+    if (_tip != null) {
+      final likesState = ref.read(likesProvider);
+      final isLiked = likesState.getLikes('tip', widget.id)?.isLiked ?? false;
+      setState(() => _userLiked = isLiked);
+    }
+  }
+
+  Future<void> _handleLikeAction() async {
+    final authState = ref.read(useAuthHandlerProvider);
+    
+    if (!authState.isAuthenticated) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Connectez-vous pour liker cette astuce'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    try {
+      final success = await ref.read(likesProvider.notifier).toggleLike('tip', widget.id);
+      
+      if (success) {
+        setState(() => _userLiked = !_userLiked);
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_userLiked ? '❤️ Astuce ajoutée aux favoris' : '💔 Astuce retirée des favoris'),
+            backgroundColor: const Color(0xFFE53E3E),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erreur: ${error.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   String _getDifficultyLabel(String difficulty) {
@@ -153,6 +195,17 @@ class _TipDetailScreenUnifiedState extends ConsumerState<TipDetailScreenUnified>
           heroTag: 'back_fab',
           backgroundColor: Colors.white,
           child: const Icon(LucideIcons.arrowLeft, color: Color(0xFF2D3748)),
+        ),
+        const SizedBox(height: 16),
+        // Bouton Like flottant
+        FloatingActionButton(
+          onPressed: () => _handleLikeAction(),
+          heroTag: 'like_fab',
+          backgroundColor: _userLiked ? const Color(0xFFE53E3E) : Colors.white,
+          child: Icon(
+            _userLiked ? LucideIcons.heart : LucideIcons.heart,
+            color: _userLiked ? Colors.white : const Color(0xFFE53E3E),
+          ),
         ),
         const SizedBox(height: 16),
         FloatingActionButton(
