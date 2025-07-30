@@ -73,8 +73,8 @@ class LikesService {
       print('❤️ [LikesService] Toggling like for $type:$itemId (was: $wasLiked)');
       
       final response = await _apiService.post('/likes/toggle', {
-        'likeable_type': type,
-        'likeable_id': itemId,
+        'type': type,
+        'id': itemId,
       });
       
       if (response['success']) {

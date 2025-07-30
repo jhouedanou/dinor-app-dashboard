@@ -228,15 +228,15 @@ class ApiService {
   // Méthodes spécifiques pour les commentaires
   Future<Map<String, dynamic>> getComments(String type, String id) async {
     return await get('/comments', params: {
-      'commentable_type': 'App\\Models\\${type.substring(0, 1).toUpperCase() + type.substring(1)}',
-      'commentable_id': id,
+      'type': type,
+      'id': id,
     });
   }
 
   Future<Map<String, dynamic>> addComment(String type, String id, String content) async {
     return await post('/comments', {
-      'commentable_type': 'App\\Models\\${type.substring(0, 1).toUpperCase() + type.substring(1)}',
-      'commentable_id': id,
+      'type': type,
+      'id': id,
       'content': content,
     });
   }

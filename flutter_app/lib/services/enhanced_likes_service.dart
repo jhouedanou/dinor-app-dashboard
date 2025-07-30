@@ -242,8 +242,8 @@ class EnhancedLikesService extends StateNotifier<EnhancedLikesState> {
         Uri.parse('$baseUrl/likes/toggle'),
         headers: headers,
         body: json.encode({
-          'likeable_type': type,
-          'likeable_id': itemId,
+          'type': type,
+          'id': itemId,
         }),
       ).timeout(const Duration(seconds: 10));
 

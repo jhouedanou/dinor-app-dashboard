@@ -71,17 +71,6 @@ class CommentController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        // Vérifier que l'utilisateur est connecté
-        if (!Auth::check()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Vous devez vous connecter ou vous inscrire pour laisser un commentaire',
-                'requires_auth' => true,
-                'login_url' => '/login',
-                'register_url' => '/register'
-            ], 401);
-        }
-
         // Support both old format (type/id) and new format (commentable_type/commentable_id)
         $type = $request->input('type') ?: $this->extractTypeFromCommentableType($request->input('commentable_type'));
         $id = $request->input('id') ?: $request->input('commentable_id');
@@ -92,12 +81,21 @@ class CommentController extends Controller
         \Log::info('📝 [Comments] ID extrait:', ['id' => $id]);
         \Log::info('📝 [Comments] User connecté:', ['user' => Auth::check() ? Auth::user()->toArray() : 'Non connecté']);
 
+        // Validation différente selon si l'utilisateur est connecté ou non
+        $validationRules = [
+            'content' => 'required|string|min:3|max:1000',
+            'parent_id' => 'sometimes|integer|exists:comments,id',
+            'captcha_answer' => 'sometimes|integer'
+        ];
+
+        // Pour les utilisateurs anonymes, exiger nom et email
+        if (!Auth::check()) {
+            $validationRules['author_name'] = 'required|string|min:2|max:100';
+            $validationRules['author_email'] = 'required|email|max:255';
+        }
+
         try {
-            $request->validate([
-                'content' => 'required|string|min:3|max:1000',
-                'parent_id' => 'sometimes|integer|exists:comments,id',
-                'captcha_answer' => 'sometimes|integer'
-            ]);
+            $request->validate($validationRules);
         } catch (\Illuminate\Validation\ValidationException $e) {
             \Log::error('❌ [Comments] Erreur de validation:', ['errors' => $e->errors()]);
             return response()->json([
@@ -157,21 +155,38 @@ class CommentController extends Controller
             }
         }
 
-        $user = Auth::user();
-        $userId = $user->id;
         $ipAddress = $request->ip();
         $userAgent = $request->userAgent();
 
-        $comment = $model->addComment([
-            'user_id' => $userId,
-            'author_name' => $user->name,
-            'author_email' => $user->email,
-            'content' => $request->content,
-            'is_approved' => true, // Auto-approve for now, can be changed to false for moderation
-            'ip_address' => $ipAddress,
-            'user_agent' => $userAgent,
-            'parent_id' => $request->parent_id
-        ]);
+        // Différencier utilisateur connecté vs anonyme
+        if (Auth::check()) {
+            // Utilisateur connecté
+            $user = Auth::user();
+            $commentData = [
+                'user_id' => $user->id,
+                'author_name' => $user->name,
+                'author_email' => $user->email,
+                'content' => $request->content,
+                'is_approved' => true,
+                'ip_address' => $ipAddress,
+                'user_agent' => $userAgent,
+                'parent_id' => $request->parent_id
+            ];
+        } else {
+            // Utilisateur anonyme
+            $commentData = [
+                'user_id' => null,
+                'author_name' => $request->author_name,
+                'author_email' => $request->author_email,
+                'content' => $request->content,
+                'is_approved' => true, // Auto-approve for now, can be changed to false for moderation
+                'ip_address' => $ipAddress,
+                'user_agent' => $userAgent,
+                'parent_id' => $request->parent_id
+            ];
+        }
+
+        $comment = $model->addComment($commentData);
 
         // Effacer le captcha après utilisation (temporairement désactivé)
         // session()->forget('captcha_' . $request->ip());

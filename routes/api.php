@@ -179,8 +179,9 @@ Route::post('/event-categories/check-exists', [App\Http\Controllers\Api\EventCat
     Route::get('/likes/check', [LikeController::class, 'check']);
     Route::get('/likes', [LikeController::class, 'index']);
     
-    // Comments - Routes publiques (lecture seulement)
+    // Comments - Routes publiques (lecture et création pour support anonyme)
     Route::get('/comments', [CommentController::class, 'index']);
+    Route::post('/comments', [CommentController::class, 'store']);
     Route::get('/comments/{comment}/replies', [CommentController::class, 'replies']);
     Route::get('/comments/captcha/generate', [CommentController::class, 'generateCaptcha']);
     
@@ -350,8 +351,7 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     // Likes - Routes protégées
     Route::post('/likes/toggle', [LikeController::class, 'toggle']);
     
-    // Comments - Routes protégées
-    Route::post('/comments', [CommentController::class, 'store']);
+    // Comments - Routes protégées (modification et suppression seulement)
     Route::put('/comments/{comment}', [CommentController::class, 'update']);
     Route::delete('/comments/{id}', [CommentController::class, 'destroy']);
     
