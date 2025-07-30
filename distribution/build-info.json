@@ -1,0 +1,54 @@
+{
+  "buildDate": "2025-07-30T20:35:00Z",
+  "flutterVersion": "3.32.8",
+  "dartVersion": "3.8.1",
+  "applicationId": "com.dinorapp.mobile",
+  "minSdkVersion": 21,
+  "targetSdkVersion": 34,
+  "apks": [
+    {
+      "name": "dinor-app-universal-release.apk",
+      "type": "universal",
+      "size": "34.4MB",
+      "architectures": ["arm64-v8a", "armeabi-v7a", "x86_64"],
+      "recommended": true,
+      "description": "APK universel compatible avec tous les appareils Android"
+    },
+    {
+      "name": "dinor-app-arm64-release.apk", 
+      "type": "architecture-specific",
+      "size": "16.8MB",
+      "architectures": ["arm64-v8a"],
+      "recommended": false,
+      "description": "Optimisé pour smartphones modernes 64-bit (2017+)"
+    },
+    {
+      "name": "dinor-app-arm32-release.apk",
+      "type": "architecture-specific", 
+      "size": "16.4MB",
+      "architectures": ["armeabi-v7a"],
+      "recommended": false,
+      "description": "Compatible avec smartphones Android plus anciens 32-bit"
+    },
+    {
+      "name": "dinor-app-x86-release.apk",
+      "type": "architecture-specific",
+      "size": "16.9MB", 
+      "architectures": ["x86_64"],
+      "recommended": false,
+      "description": "Pour émulateurs Android et tablettes Intel/AMD"
+    }
+  ],
+  "features": [
+    "Mode Immersif restauré (anciennement Mode TikTok)",
+    "Player YouTube intégré dans les détails",
+    "Images centrées dans les cartes de contenu",
+    "Corrections de bugs et optimisations"
+  ],
+  "buildTools": {
+    "gradle": "8.x",
+    "kotlin": "1.9.x",
+    "androidCompileSdk": 34,
+    "ndkVersion": "27.0.12077973"
+  }
+}
