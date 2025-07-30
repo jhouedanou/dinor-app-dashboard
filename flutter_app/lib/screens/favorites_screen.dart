@@ -5,9 +5,6 @@ import '../services/favorites_service.dart';
 import '../composables/use_auth_handler.dart';
 import '../components/common/favorite_button.dart';
 import '../components/common/auth_modal.dart';
-import 'simple_recipe_detail_screen.dart';
-import 'simple_tip_detail_screen.dart';
-import 'simple_event_detail_screen.dart';
 import 'dinor_tv_screen.dart';
 import '../services/navigation_service.dart';
 
