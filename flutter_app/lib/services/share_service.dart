@@ -1,13 +1,21 @@
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'api_service.dart';
+import '../composables/use_auth_handler.dart';
+
+final shareServiceProvider = Provider<ShareService>((ref) {
+  return ShareService(ref.read(apiServiceProvider));
+});
 
 class ShareService {
-  static const MethodChannel _channel = MethodChannel('dinor_share');
+  final ApiService _apiService;
+
+  ShareService(this._apiService);
 
   /// Récupérer les données de partage depuis l'API
-  static Future<Map<String, dynamic>?> _getShareData({
+  Future<Map<String, dynamic>?> _getShareData({
     required String type,
     required String id,
     String? platform,
@@ -15,8 +23,7 @@ class ShareService {
     try {
       print('📡 [ShareService] Récupération données de partage: $type/$id');
       
-      final apiService = ApiService();
-      final shareData = await apiService.getCompleteShareData(
+      final shareData = await _apiService.getCompleteShareData(
         type: type,
         id: id,
         platform: platform,
@@ -36,14 +43,13 @@ class ShareService {
   }
 
   /// Tracker le partage dans l'API
-  static Future<void> _trackShare({
+  Future<void> _trackShare({
     required String type,
     required String id,
     required String platform,
   }) async {
     try {
-      final apiService = ApiService();
-      await apiService.trackShare(
+      await _apiService.trackShare(
         type: type,
         id: id,
         platform: platform,
@@ -55,49 +61,31 @@ class ShareService {
   }
 
   /// Partage natif via l'API système avec URL depuis l'API
-  static Future<void> shareContent({
+  Future<void> shareContent({
+    required String type,
+    required String id,
     required String title,
-    required String text,
-    String? url,
+    String? description,
+    String? shareUrl,
     String? imageUrl,
-    String? type,
-    String? id,
-    String? platform,
   }) async {
     try {
       print('📤 [ShareService] Partage natif: $title');
       
-      // Si on a un type et un ID, récupérer l'URL depuis l'API
-      if (type != null && id != null) {
-        final shareData = await _getShareData(type: type, id: id, platform: platform);
-        if (shareData != null) {
-          url = shareData['url'] as String? ?? url;
-          title = shareData['title'] as String? ?? title;
-          text = shareData['description'] as String? ?? text;
-          imageUrl = shareData['image'] as String? ?? imageUrl;
-        }
-      }
-      
-      String shareText = '$title\n\n$text';
-      if (url != null) {
-        shareText += '\n\n$url';
-      }
-      
-      await Share.share(
-        shareText,
-        subject: title,
-      );
-      
-      // Tracker le partage si on a les informations
-      if (type != null && id != null) {
-        await _trackShare(
-          type: type,
-          id: id,
-          platform: platform ?? 'native',
+      final shareData = await _getShareData(type: type, id: id);
+      final urlToShare = shareData?['url'] as String? ?? shareUrl;
+      final textToShare = shareData?['description'] as String? ?? description ?? title;
+
+      if (urlToShare != null) {
+        await Share.share(
+          '$title\n\n$textToShare\n\n$urlToShare',
+          subject: title,
         );
+        await _trackShare(type: type, id: id, platform: 'native');
+        print('✅ [ShareService] Partage réussi');
+      } else {
+        print('❌ [ShareService] Aucune URL de partage disponible');
       }
-      
-      print('✅ [ShareService] Partage réussi');
     } catch (error) {
       print('❌ [ShareService] Erreur partage: $error');
       rethrow;
@@ -105,7 +93,7 @@ class ShareService {
   }
 
   /// Partage via WhatsApp avec URL depuis l'API
-  static Future<void> shareToWhatsApp({
+  Future<void> shareToWhatsApp({
     required String title,
     required String text,
     String? url,
@@ -142,17 +130,29 @@ class ShareService {
         }
       } else {
         // Fallback au partage natif
-        await shareContent(title: title, text: text, url: url, type: type, id: id, platform: 'whatsapp');
+        await shareContent(
+          type: type ?? 'unknown', 
+          id: id ?? '0', 
+          title: title, 
+          description: text, 
+          shareUrl: url,
+        );
       }
     } catch (error) {
       print('❌ [ShareService] Erreur partage WhatsApp: $error');
       // Fallback au partage natif
-      await shareContent(title: title, text: text, url: url, type: type, id: id, platform: 'whatsapp');
+      await shareContent(
+        type: type ?? 'unknown', 
+        id: id ?? '0', 
+        title: title, 
+        description: text, 
+        shareUrl: url,
+      );
     }
   }
 
   /// Partage via Facebook avec URL depuis l'API
-  static Future<void> shareToFacebook({
+  Future<void> shareToFacebook({
     required String title,
     required String url,
     String? text,
@@ -189,17 +189,29 @@ class ShareService {
         }
       } else {
         // Fallback au partage natif
-        await shareContent(title: title, text: text ?? 'Découvrez ceci sur Dinor', url: url, type: type, id: id, platform: 'facebook');
+        await shareContent(
+          type: type ?? 'unknown', 
+          id: id ?? '0', 
+          title: title, 
+          description: text ?? 'Découvrez ceci sur Dinor', 
+          shareUrl: url,
+        );
       }
     } catch (error) {
       print('❌ [ShareService] Erreur partage Facebook: $error');
       // Fallback au partage natif
-      await shareContent(title: title, text: text ?? 'Découvrez ceci sur Dinor', url: url, type: type, id: id, platform: 'facebook');
+      await shareContent(
+        type: type ?? 'unknown', 
+        id: id ?? '0', 
+        title: title, 
+        description: text ?? 'Découvrez ceci sur Dinor', 
+        shareUrl: url,
+      );
     }
   }
 
   /// Partage via Twitter/X avec URL depuis l'API
-  static Future<void> shareToTwitter({
+  Future<void> shareToTwitter({
     required String title,
     required String url,
     String? text,
@@ -236,17 +248,29 @@ class ShareService {
         }
       } else {
         // Fallback au partage natif
-        await shareContent(title: title, text: text ?? 'Découvrez ceci sur Dinor', url: url, type: type, id: id, platform: 'twitter');
+        await shareContent(
+          type: type ?? 'unknown', 
+          id: id ?? '0', 
+          title: title, 
+          description: text ?? 'Découvrez ceci sur Dinor', 
+          shareUrl: url,
+        );
       }
     } catch (error) {
       print('❌ [ShareService] Erreur partage Twitter: $error');
       // Fallback au partage natif
-      await shareContent(title: title, text: text ?? 'Découvrez ceci sur Dinor', url: url, type: type, id: id, platform: 'twitter');
+      await shareContent(
+        type: type ?? 'unknown', 
+        id: id ?? '0', 
+        title: title, 
+        description: text ?? 'Découvrez ceci sur Dinor', 
+        shareUrl: url,
+      );
     }
   }
 
   /// Partage via Email avec URL depuis l'API
-  static Future<void> shareViaEmail({
+  Future<void> shareViaEmail({
     required String title,
     required String url,
     String? text,
@@ -280,17 +304,29 @@ class ShareService {
         }
       } else {
         // Fallback au partage natif
-        await shareContent(title: title, text: text ?? 'Découvrez ceci sur Dinor', url: url, type: type, id: id, platform: 'email');
+        await shareContent(
+          type: type ?? 'unknown', 
+          id: id ?? '0', 
+          title: title, 
+          description: text ?? 'Découvrez ceci sur Dinor', 
+          shareUrl: url,
+        );
       }
     } catch (error) {
       print('❌ [ShareService] Erreur partage Email: $error');
       // Fallback au partage natif
-      await shareContent(title: title, text: text ?? 'Découvrez ceci sur Dinor', url: url, type: type, id: id, platform: 'email');
+      await shareContent(
+        type: type ?? 'unknown', 
+        id: id ?? '0', 
+        title: title, 
+        description: text ?? 'Découvrez ceci sur Dinor', 
+        shareUrl: url,
+      );
     }
   }
 
   /// Partage via SMS avec URL depuis l'API
-  static Future<void> shareViaSMS({
+  Future<void> shareViaSMS({
     required String title,
     required String url,
     String? text,
@@ -323,17 +359,29 @@ class ShareService {
         }
       } else {
         // Fallback au partage natif
-        await shareContent(title: title, text: text ?? 'Découvrez ceci sur Dinor', url: url, type: type, id: id, platform: 'sms');
+        await shareContent(
+          type: type ?? 'unknown', 
+          id: id ?? '0', 
+          title: title, 
+          description: text ?? 'Découvrez ceci sur Dinor', 
+          shareUrl: url,
+        );
       }
     } catch (error) {
       print('❌ [ShareService] Erreur partage SMS: $error');
       // Fallback au partage natif
-      await shareContent(title: title, text: text ?? 'Découvrez ceci sur Dinor', url: url, type: type, id: id, platform: 'sms');
+      await shareContent(
+        type: type ?? 'unknown', 
+        id: id ?? '0', 
+        title: title, 
+        description: text ?? 'Découvrez ceci sur Dinor', 
+        shareUrl: url,
+      );
     }
   }
 
   /// Copier dans le presse-papier
-  static Future<bool> copyToClipboard(String text) async {
+  Future<bool> copyToClipboard(String text) async {
     try {
       print('📋 [ShareService] Copie dans le presse-papiers: $text');
       
@@ -347,7 +395,7 @@ class ShareService {
   }
 
   /// Partage de recette avec formatage spécial et URL depuis l'API
-  static Future<void> shareRecipe({
+  Future<void> shareRecipe({
     required String title,
     required String description,
     required String url,
@@ -389,11 +437,11 @@ class ShareService {
       
       await shareContent(
         title: title,
-        text: shareText,
-        url: url,
+        description: shareText,
+        shareUrl: url,
+        type: type ?? 'recipe',
+        id: id ?? '0',
         imageUrl: imageUrl,
-        type: type,
-        id: id,
       );
     } catch (error) {
       print('❌ [ShareService] Erreur partage recette: $error');
@@ -402,7 +450,7 @@ class ShareService {
   }
 
   /// Partage d'astuce avec formatage spécial et URL depuis l'API
-  static Future<void> shareTip({
+  Future<void> shareTip({
     required String title,
     required String content,
     required String url,
@@ -428,11 +476,11 @@ class ShareService {
       
       await shareContent(
         title: title,
-        text: shareText,
-        url: url,
+        description: shareText,
+        shareUrl: url,
+        type: type ?? 'tip',
+        id: id ?? '0',
         imageUrl: imageUrl,
-        type: type,
-        id: id,
       );
     } catch (error) {
       print('❌ [ShareService] Erreur partage astuce: $error');
@@ -441,7 +489,7 @@ class ShareService {
   }
 
   /// Partage d'événement avec formatage spécial et URL depuis l'API
-  static Future<void> shareEvent({
+  Future<void> shareEvent({
     required String title,
     required String description,
     required String url,
@@ -483,11 +531,11 @@ class ShareService {
       
       await shareContent(
         title: title,
-        text: shareText,
-        url: url,
+        description: shareText,
+        shareUrl: url,
+        type: type ?? 'event',
+        id: id ?? '0',
         imageUrl: imageUrl,
-        type: type,
-        id: id,
       );
     } catch (error) {
       print('❌ [ShareService] Erreur partage événement: $error');
@@ -496,7 +544,7 @@ class ShareService {
   }
 
   /// Partage de vidéo avec formatage spécial et URL depuis l'API
-  static Future<void> shareVideo({
+  Future<void> shareVideo({
     required String title,
     required String description,
     required String url,
@@ -533,11 +581,11 @@ class ShareService {
       
       await shareContent(
         title: title,
-        text: shareText,
-        url: url,
+        description: shareText,
+        shareUrl: url,
+        type: type ?? 'video',
+        id: id ?? '0',
         imageUrl: imageUrl,
-        type: type,
-        id: id,
       );
     } catch (error) {
       print('❌ [ShareService] Erreur partage vidéo: $error');

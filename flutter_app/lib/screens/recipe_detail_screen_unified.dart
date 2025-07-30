@@ -17,6 +17,7 @@ import '../components/common/unified_content_header.dart';
 import '../components/common/unified_video_player.dart';
 import '../components/common/unified_comments_section.dart';
 import '../components/common/unified_content_actions.dart';
+import '../components/common/youtube_video_modal.dart';
 
 // Services et composables
 import '../services/offline_service.dart';
@@ -24,6 +25,7 @@ import '../services/image_service.dart';
 import '../services/comments_service.dart';
 import '../composables/use_comments.dart';
 import '../composables/use_auth_handler.dart';
+import '../services/share_service.dart';
 
 class RecipeDetailScreenUnified extends ConsumerStatefulWidget {
   final String id;
@@ -191,6 +193,39 @@ class _RecipeDetailScreenUnifiedState extends ConsumerState<RecipeDetailScreenUn
           : _recipe == null
             ? _buildNotFoundState()
             : _buildRecipeContent(),
+      floatingActionButton: _buildFloatingActionButtons(),
+    );
+  }
+
+  Widget _buildFloatingActionButtons() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        FloatingActionButton(
+          onPressed: () => NavigationService.pop(),
+          heroTag: 'back_fab',
+          backgroundColor: Colors.white,
+          child: const Icon(LucideIcons.arrowLeft, color: Color(0xFF2D3748)),
+        ),
+        const SizedBox(height: 16),
+        FloatingActionButton(
+          onPressed: () {
+            if (_recipe != null) {
+              ref.read(shareServiceProvider).shareContent(
+                type: 'recipe',
+                id: widget.id,
+                title: _recipe!['title'] ?? 'Recette',
+                description: _recipe!['description'] ?? 'Découvrez cette délicieuse recette',
+                shareUrl: 'https://new.dinorapp.com/recipe/${widget.id}',
+                imageUrl: _recipe!['featured_image_url'],
+              );
+            }
+          },
+          heroTag: 'share_fab',
+          backgroundColor: const Color(0xFFE53E3E),
+          child: const Icon(LucideIcons.share2, color: Colors.white),
+        ),
+      ],
     );
   }
 
@@ -281,7 +316,7 @@ class _RecipeDetailScreenUnifiedState extends ConsumerState<RecipeDetailScreenUn
             imageUrl: _recipe!['featured_image_url'] ?? '',
             contentType: 'recipe',
             customOverlay: Positioned(
-              bottom: 16,
+              bottom: 50, // Descendre les badges
               left: 16,
               right: 16,
               child: Row(
@@ -375,10 +410,10 @@ class _RecipeDetailScreenUnifiedState extends ConsumerState<RecipeDetailScreenUn
                 if (_recipe!['summary_video_url'] != null) ...[
                   _buildSection(
                     'Résumé en vidéo',
-                    UnifiedVideoPlayer(
-                      videoUrl: _recipe!['summary_video_url'],
-                      title: 'Voir le résumé en vidéo',
-                      subtitle: 'Appuyez pour ouvrir',
+                    _buildVideoPlayerCard(
+                      _recipe!['summary_video_url'],
+                      'Voir le résumé en vidéo',
+                      'Appuyez pour ouvrir',
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -388,10 +423,10 @@ class _RecipeDetailScreenUnifiedState extends ConsumerState<RecipeDetailScreenUn
                 if (_recipe!['video_url'] != null) ...[
                   _buildSection(
                     'Vidéo de la recette',
-                    UnifiedVideoPlayer(
-                      videoUrl: _recipe!['video_url'],
-                      title: 'Voir la recette en vidéo',
-                      subtitle: 'Appuyez pour ouvrir',
+                    _buildVideoPlayerCard(
+                      _recipe!['video_url'],
+                      'Voir la recette en vidéo',
+                      'Appuyez pour ouvrir',
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -427,6 +462,27 @@ class _RecipeDetailScreenUnifiedState extends ConsumerState<RecipeDetailScreenUn
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildVideoPlayerCard(String videoUrl, String title, String subtitle) {
+    return GestureDetector(
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (context) => YouTubeVideoModal(
+            isOpen: true,
+            videoUrl: videoUrl,
+            title: title,
+            onClose: () => Navigator.of(context).pop(),
+          ),
+        );
+      },
+      child: UnifiedVideoPlayer(
+        videoUrl: videoUrl,
+        title: title,
+        subtitle: subtitle,
+      ),
     );
   }
 

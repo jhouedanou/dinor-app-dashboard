@@ -9,9 +9,7 @@ import 'favorites_screen.dart';
 import 'terms_of_service_screen.dart';
 import 'privacy_policy_screen.dart';
 import 'cookie_policy_screen.dart';
-import 'simple_recipe_detail_screen.dart';
-import 'simple_tip_detail_screen.dart';
-import 'simple_event_detail_screen.dart';
+import '../services/navigation_service.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -21,129 +19,84 @@ class ProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
-  final ApiService _apiService = ApiService();
-  
-  bool _loading = false;
-  bool _showAuthModal = false;
-  String _activeSection = 'favorites';
-  String _selectedFilter = 'all';
-  
-  Map<String, dynamic>? _user;
-  List<dynamic> _favorites = [];
+  final PageController _pageController = PageController();
+  int _currentPageIndex = 0;
+  bool _isLoading = true;
+  String? _error;
+  Map<String, dynamic>? _userProfile;
+  List<dynamic>? _userFavorites;
   Map<String, dynamic>? _predictionsStats;
-  bool _predictionsLoading = false;
 
-  final List<Map<String, dynamic>> _profileSections = [
-    {'key': 'favorites', 'label': 'Mes Favoris', 'icon': LucideIcons.heart},
-    {'key': 'predictions', 'label': 'Mes Pronostics', 'icon': LucideIcons.target},
-    {'key': 'account', 'label': 'Mon Compte', 'icon': LucideIcons.user},
-    {'key': 'security', 'label': 'Sécurité', 'icon': LucideIcons.lock},
-    {'key': 'legal', 'label': 'Légal', 'icon': LucideIcons.scale},
-  ];
+  bool _showAuthModal = false;
+  String _activeSection = 'favorites'; // 'favorites', 'predictions', 'settings', 'legal'
+  String _selectedFilter = 'all'; // 'all', 'recipes', 'tips', 'events', 'videos'
+  bool _predictionsLoading = true;
 
-  final List<Map<String, dynamic>> _filterTabs = [
-    {'key': 'all', 'label': 'Tout', 'icon': LucideIcons.grid},
-    {'key': 'recipes', 'label': 'Recettes', 'icon': LucideIcons.utensils},
-    {'key': 'tips', 'label': 'Astuces', 'icon': LucideIcons.lightbulb},
-    {'key': 'events', 'label': 'Événements', 'icon': LucideIcons.calendar},
-    {'key': 'videos', 'label': 'Vidéos', 'icon': LucideIcons.play},
-  ];
+  List<Map<String, dynamic>> _profileSections = [];
+  List<Map<String, dynamic>> _filterTabs = [];
+
+  List<dynamic> get _filteredFavorites {
+    if (_selectedFilter == 'all') {
+      return _userFavorites ?? [];
+    }
+    return _userFavorites?.where((f) => f['type'] == _selectedFilter).toList() ?? [];
+  }
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
-      _loadUserData();
-    });
+    _setupSections();
+    _loadProfileData();
+
+    _filterTabs = [
+      {'key': 'all', 'label': 'Tous', 'icon': LucideIcons.list},
+      {'key': 'recipe', 'label': 'Recettes', 'icon': LucideIcons.utensils},
+      {'key': 'tip', 'label': 'Astuces', 'icon': LucideIcons.lightbulb},
+      {'key': 'event', 'label': 'Événements', 'icon': LucideIcons.calendar},
+      {'key': 'dinor_tv', 'label': 'Vidéos', 'icon': LucideIcons.play},
+    ];
+  }
+
+  void _setupSections() {
+    _profileSections = [
+      {'key': 'favorites', 'label': 'Favoris', 'icon': LucideIcons.heart},
+      {'key': 'predictions', 'label': 'Pronostics', 'icon': LucideIcons.trendingUp},
+      {'key': 'settings', 'label': 'Paramètres', 'icon': LucideIcons.settings},
+      {'key': 'legal', 'label': 'Légal', 'icon': LucideIcons.gavel},
+    ];
   }
 
   Future<void> _loadUserData() async {
-    final authState = ref.read(useAuthHandlerProvider);
-    print('🔐 [ProfileScreen] État authentification:');
-    print('   - isAuthenticated: ${authState.isAuthenticated}');
-    print('   - userName: ${authState.userName}');
-    print('   - token: ${authState.token != null ? "Présent" : "Absent"}');
-    
-    if (!authState.isAuthenticated) {
-      print('❌ [ProfileScreen] Utilisateur non authentifié, arrêt du chargement');
+    // Alias for _loadProfileData
+    await _loadProfileData();
+  }
+
+  Future<void> _loadProfileData() async {
+    if (!ref.read(useAuthHandlerProvider).isAuthenticated) {
+      setState(() {
+        _isLoading = false;
+      });
       return;
     }
-    
-    setState(() => _loading = true);
-    
     try {
-      await Future.wait([
-        _loadUserProfile(),
-        _loadFavorites(),
-        _loadPredictionsStats(),
-      ]);
+      final apiService = ref.read(apiServiceProvider);
+      final profileResponse = await apiService.getUserProfile();
+      final favoritesResponse = await apiService.getUserFavorites();
+      final predictionsResponse = await apiService.getPredictionsStats();
+
+      setState(() {
+        _userProfile = profileResponse['success'] ? profileResponse['data'] : null;
+        _userFavorites = favoritesResponse['success'] ? favoritesResponse['data'] : [];
+        _predictionsStats = predictionsResponse['success'] ? predictionsResponse['data'] : null;
+        _isLoading = false;
+        _predictionsLoading = false;
+      });
     } catch (e) {
-      print('❌ [ProfileScreen] Erreur chargement données: $e');
-    } finally {
-      setState(() => _loading = false);
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
     }
-  }
-
-  Future<void> _loadUserProfile() async {
-    try {
-      final response = await _apiService.get('/user/profile');
-      if (response['success']) {
-        setState(() => _user = response['data']);
-      }
-    } catch (e) {
-      print('❌ [ProfileScreen] Erreur chargement profil: $e');
-    }
-  }
-
-  Future<void> _loadFavorites() async {
-    try {
-      print('🔍 [ProfileScreen] Chargement des favoris...');
-      
-      // Utiliser le service de favoris
-      await ref.read(favoritesServiceProvider.notifier).loadFavorites(refresh: true);
-      
-      // Observer l'état du service
-      final favoritesState = ref.read(favoritesServiceProvider);
-      
-      if (favoritesState.error != null) {
-        print('❌ [ProfileScreen] Erreur favoris: ${favoritesState.error}');
-        setState(() => _favorites = []);
-      } else {
-        final favoritesData = favoritesState.favorites.map((favorite) => {
-          'id': favorite.id,
-          'type': favorite.type,
-          'content': favorite.content,
-          'favorited_at': favorite.favoritedAt.toIso8601String(),
-        }).toList();
-        
-        setState(() => _favorites = favoritesData);
-        print('✅ [ProfileScreen] Favoris chargés: ${favoritesData.length} éléments');
-      }
-    } catch (e) {
-      print('❌ [ProfileScreen] Erreur chargement favoris: $e');
-      setState(() => _favorites = []);
-    }
-  }
-
-
-  Future<void> _loadPredictionsStats() async {
-    setState(() => _predictionsLoading = true);
-    
-    try {
-      final response = await _apiService.get('/user/predictions/stats');
-      if (response['success']) {
-        setState(() => _predictionsStats = response['data']);
-      }
-    } catch (e) {
-      print('❌ [ProfileScreen] Erreur chargement stats pronostics: $e');
-    } finally {
-      setState(() => _predictionsLoading = false);
-    }
-  }
-
-  List<dynamic> get _filteredFavorites {
-    if (_selectedFilter == 'all') return _favorites;
-    return _favorites.where((favorite) => favorite['type'] == _selectedFilter).toList();
   }
 
   @override
@@ -165,7 +118,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             backgroundColor: const Color(0xFFE53E3E),
             elevation: 0,
           ),
-          body: _loading
+          body: _isLoading
               ? const Center(child: CircularProgressIndicator())
               : ref.watch(useAuthHandlerProvider).isAuthenticated
                   ? _buildAuthenticatedContent()
@@ -316,7 +269,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _user?['name'] ?? ref.watch(useAuthHandlerProvider).userName ?? 'Utilisateur',
+                  _userProfile?['name'] ?? ref.watch(useAuthHandlerProvider).userName ?? 'Utilisateur',
                   style: const TextStyle(
                     fontFamily: 'OpenSans',
                     fontSize: 20,
@@ -324,10 +277,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     color: Colors.white,
                   ),
                 ),
-                if (_user?['email'] != null) ...[
+                if (_userProfile?['email'] != null) ...[
                   const SizedBox(height: 4),
                   Text(
-                    _user!['email'],
+                    _userProfile!['email'],
                     style: const TextStyle(
                       fontFamily: 'Roboto',
                       fontSize: 14,
@@ -335,10 +288,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ),
                   ),
                 ],
-                if (_user?['created_at'] != null) ...[
+                if (_userProfile?['created_at'] != null) ...[
                   const SizedBox(height: 4),
                   Text(
-                    'Membre depuis ${_formatDate(_user!['created_at'])}',
+                    'Membre depuis ${_formatDate(_userProfile!['created_at'])}',
                     style: const TextStyle(
                       fontFamily: 'Roboto',
                       fontSize: 12,
@@ -441,7 +394,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
             Row(
               children: [
-                if (_favorites.isNotEmpty) ...[
+                if (_userFavorites?.isNotEmpty == true) ...[
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
@@ -501,7 +454,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         const SizedBox(height: 16),
 
         // Filter Tabs
-        if (_favorites.isNotEmpty) ...[
+        if (_userFavorites?.isNotEmpty == true) ...[
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -575,7 +528,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final type = favorite['type'];
     
     return GestureDetector(
-      onTap: () => _navigateToContent(type, content),
+      onTap: () => _navigateToContent(type, content['id']?.toString() ?? ''),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
@@ -1108,19 +1061,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Future<void> _removeFavorite(Map<String, dynamic> favorite) async {
     try {
-      final response = await _apiService.delete('/user/favorites/${favorite['id']}');
-      if (response['success']) {
-        setState(() {
-          _favorites.removeWhere((f) => f['id'] == favorite['id']);
-        });
-        
-        ScaffoldMessenger.of(context).showSnackBar(
+      final apiService = ref.read(apiServiceProvider);
+      // Correction: La méthode pour supprimer un favori est sur le service des favoris
+      final favoritesService = ref.read(favoritesProvider.notifier);
+      await favoritesService.removeFavorite(favorite['id']);
+      
+      setState(() {
+        _userFavorites?.removeWhere((f) => f['id'] == favorite['id']);
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Favori supprimé'),
             backgroundColor: Colors.green,
           ),
         );
-      }
     } catch (e) {
       print('❌ [ProfileScreen] Erreur suppression favori: $e');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1136,8 +1091,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     try {
       await ref.read(useAuthHandlerProvider.notifier).logout();
       setState(() {
-        _user = null;
-        _favorites = [];
+        _userProfile = null;
+        _userFavorites = [];
         _predictionsStats = null;
       });
       
@@ -1166,34 +1121,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  void _navigateToContent(String type, Map<String, dynamic> content) {
-    final contentId = content['id']?.toString();
-    if (contentId == null) return;
-
+  void _navigateToContent(String type, String contentId) {
     switch (type) {
       case 'recipe':
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => SimpleRecipeDetailScreen(arguments: {'recipeId': contentId}),
-          ),
-        );
+        NavigationService.pushNamed('/recipe-detail-unified/$contentId');
         break;
       case 'tip':
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => SimpleTipDetailScreen(id: contentId),
-          ),
-        );
+        NavigationService.pushNamed('/tip-detail-unified/$contentId');
         break;
       case 'event':
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => SimpleEventDetailScreen(arguments: {'eventId': contentId}),
-          ),
-        );
+        NavigationService.pushNamed('/event-detail-unified/$contentId');
         break;
       default:
-        print('Type de contenu non supporté: $type');
+        print('Navigation non supportée pour le type: $type');
     }
   }
 
@@ -1227,10 +1167,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           const SizedBox(height: 16),
           
           // Informations utilisateur
-          _buildInfoRow('Nom', _user?['name'] ?? ref.watch(useAuthHandlerProvider).userName ?? 'Non défini'),
-          _buildInfoRow('Email', _user?['email'] ?? ref.watch(useAuthHandlerProvider).userEmail ?? 'Non défini'),
-          if (_user?['created_at'] != null)
-            _buildInfoRow('Membre depuis', _formatDate(_user!['created_at'])),
+          _buildInfoRow('Nom', _userProfile?['name'] ?? ref.watch(useAuthHandlerProvider).userName ?? 'Non défini'),
+          _buildInfoRow('Email', _userProfile?['email'] ?? ref.watch(useAuthHandlerProvider).userEmail ?? 'Non défini'),
+          if (_userProfile?['created_at'] != null)
+            _buildInfoRow('Membre depuis', _formatDate(_userProfile!['created_at'])),
         ],
       ),
     );
@@ -1468,16 +1408,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 }
 
 // Dialog pour changer le mot de passe
-class _ChangePasswordDialog extends StatefulWidget {
+class _ChangePasswordDialog extends ConsumerStatefulWidget {
   final VoidCallback onPasswordChanged;
 
   const _ChangePasswordDialog({required this.onPasswordChanged});
 
   @override
-  State<_ChangePasswordDialog> createState() => _ChangePasswordDialogState();
+  ConsumerState<_ChangePasswordDialog> createState() => _ChangePasswordDialogState();
 }
 
-class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
+class _ChangePasswordDialogState extends ConsumerState<_ChangePasswordDialog> {
   final _formKey = GlobalKey<FormState>();
   final _currentPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
@@ -1498,12 +1438,12 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
     setState(() => _isLoading = true);
 
     try {
-      final apiService = ApiService();
-      final response = await apiService.put('/profile/password', {
-        'current_password': _currentPasswordController.text,
-        'new_password': _newPasswordController.text,
-        'new_password_confirmation': _confirmPasswordController.text,
-      });
+      final apiService = ref.read(apiServiceProvider);
+      final response = await apiService.changePassword(
+        currentPassword: _currentPasswordController.text,
+        newPassword: _newPasswordController.text,
+        newPasswordConfirmation: _confirmPasswordController.text,
+      );
 
       if (response['success']) {
         Navigator.of(context).pop();

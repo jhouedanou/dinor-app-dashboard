@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../services/image_service.dart';
@@ -68,17 +69,32 @@ class ContentItemCard extends StatelessWidget {
               
               // Description
               if (_getDescription().isNotEmpty) ...[
-                Text(
-                  _getDescription(),
-                  style: const TextStyle(
-                    fontFamily: 'Roboto',
-                    fontSize: 14,
-                    color: Color(0xFF4A5568),
-                    height: 1.4,
+                if (contentType == 'tip')
+                  Html(
+                    data: _getDescription(),
+                    style: {
+                      "body": Style(
+                        fontFamily: 'Roboto',
+                        fontSize: FontSize(14),
+                        color: const Color(0xFF4A5568),
+                        lineHeight: const LineHeight(1.4),
+                        maxLines: 3,
+                        textOverflow: TextOverflow.ellipsis,
+                      ),
+                    },
+                  )
+                else
+                  Text(
+                    _getDescription(),
+                    style: const TextStyle(
+                      fontFamily: 'Roboto',
+                      fontSize: 14,
+                      color: Color(0xFF4A5568),
+                      height: 1.4,
+                    ),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                ),
                 const SizedBox(height: 12),
               ],
               
@@ -139,16 +155,30 @@ class ContentItemCard extends StatelessWidget {
                 ),
                 if (_getDescription().isNotEmpty) ...[
                   const SizedBox(height: 4),
-                  Text(
-                    _getDescription(),
-                    style: const TextStyle(
-                      fontFamily: 'Roboto',
-                      fontSize: 12,
-                      color: Color(0xFF718096),
+                  if (contentType == 'tip')
+                    Html(
+                      data: _getDescription(),
+                      style: {
+                        "body": Style(
+                          fontFamily: 'Roboto',
+                          fontSize: FontSize(12),
+                          color: const Color(0xFF718096),
+                          maxLines: 2,
+                          textOverflow: TextOverflow.ellipsis,
+                        ),
+                      },
+                    )
+                  else
+                    Text(
+                      _getDescription(),
+                      style: const TextStyle(
+                        fontFamily: 'Roboto',
+                        fontSize: 12,
+                        color: Color(0xFF718096),
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
                 ],
                 const SizedBox(height: 8),
                 _buildCompactStats(),

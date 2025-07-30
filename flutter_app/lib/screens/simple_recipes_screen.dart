@@ -37,9 +37,10 @@ class _SimpleRecipesScreenState extends State<SimpleRecipesScreen> {
       body: UnifiedContentList(
         contentType: 'recipe',
         apiEndpoint: 'https://new.dinorapp.com/api/v1/recipes',
-        itemsPerPage: 2,
+        itemsPerPage: 4,
         enableSearch: true,
         enableFilters: true,
+        useGridView: true,
         itemBuilder: (item) => ContentItemCard(
           contentType: 'recipe',
           item: item,
@@ -55,7 +56,7 @@ class _SimpleRecipesScreenState extends State<SimpleRecipesScreen> {
 
   void _navigateToRecipeDetail(String recipeId) {
     if (recipeId.isNotEmpty) {
-      NavigationService.navigateTo('/recipe-detail-unified/$recipeId');
+      NavigationService.pushNamed('/recipe-detail-unified/$recipeId');
     }
   }
 }

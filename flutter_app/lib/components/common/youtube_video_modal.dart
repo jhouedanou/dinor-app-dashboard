@@ -127,7 +127,7 @@ class _YouTubeVideoModalState extends State<YouTubeVideoModal>
           return Material(
             color: Colors.transparent,
             child: Container(
-              color: Colors.black.withOpacity(0.95 * _opacityAnimation.value),
+              color: Colors.black.withOpacity(0.9 * _opacityAnimation.value),
               child: SafeArea(
                 child: GestureDetector(
                   onTap: _handleClose,
@@ -139,15 +139,15 @@ class _YouTubeVideoModalState extends State<YouTubeVideoModal>
                         child: Transform.scale(
                           scale: _scaleAnimation.value,
                           child: Container(
-                            margin: const EdgeInsets.all(20),
+                            margin: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: Colors.black,
-                              borderRadius: BorderRadius.circular(12),
+                              color: const Color(0xFF1C1C1E),
+                              borderRadius: BorderRadius.circular(16),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.3),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 10),
+                                  color: Colors.black.withOpacity(0.5),
+                                  blurRadius: 30,
+                                  offset: const Offset(0, 15),
                                 ),
                               ],
                             ),
@@ -177,15 +177,15 @@ class _YouTubeVideoModalState extends State<YouTubeVideoModal>
 
   Widget _buildHeader() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: const BoxDecoration(
-        color: Colors.black,
+        color: Color(0xFF2C2C2E),
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(12),
-          topRight: Radius.circular(12),
+          topLeft: Radius.circular(16),
+          topRight: Radius.circular(16),
         ),
         border: Border(
-          bottom: BorderSide(color: Colors.white24, width: 1),
+          bottom: BorderSide(color: Colors.white12, width: 0.5),
         ),
       ),
       child: Row(
@@ -206,8 +206,8 @@ class _YouTubeVideoModalState extends State<YouTubeVideoModal>
           const SizedBox(width: 16),
           Container(
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
+              color: Colors.white.withOpacity(0.2),
+              shape: BoxShape.circle,
             ),
             child: IconButton(
               onPressed: _handleClose,
@@ -231,13 +231,13 @@ class _YouTubeVideoModalState extends State<YouTubeVideoModal>
   Widget _buildVideoPlayer() {
     return Container(
       constraints: BoxConstraints(
-        maxWidth: MediaQuery.of(context).size.width - 40,
+        maxWidth: MediaQuery.of(context).size.width - 32,
         maxHeight: MediaQuery.of(context).size.height * 0.7,
       ),
       child: ClipRRect(
         borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(12),
-          bottomRight: Radius.circular(12),
+          bottomLeft: Radius.circular(16),
+          bottomRight: Radius.circular(16),
         ),
         child: YouTubeVideoPlayer(
           key: _playerKey,

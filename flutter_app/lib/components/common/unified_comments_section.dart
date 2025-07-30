@@ -61,6 +61,10 @@ class _UnifiedCommentsSectionState extends ConsumerState<UnifiedCommentsSection>
     final commentsState = ref.watch(commentsProvider(commentsKey));
     final authHandler = ref.watch(useAuthHandlerProvider);
 
+    if (!authHandler.isAuthenticated) {
+      return _buildAuthPrompt();
+    }
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -268,69 +272,81 @@ class _UnifiedCommentsSectionState extends ConsumerState<UnifiedCommentsSection>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F9FA),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const Icon(
-            LucideIcons.user,
-            size: 20,
-            color: Color(0xFF4A5568),
+            LucideIcons.lock,
+            size: 32,
+            color: Color(0xFF718096),
           ),
-          const SizedBox(width: 12),
-          const Expanded(
-            child: Text(
-              'Connectez-vous pour laisser un commentaire',
-              style: TextStyle(
-                fontFamily: 'Roboto',
-                fontSize: 14,
-                color: Color(0xFF4A5568),
+          const SizedBox(height: 12),
+          const Text(
+            'Connectez-vous pour voir les commentaires',
+            style: TextStyle(
+              fontFamily: 'OpenSans',
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF2D3748),
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Créez un compte ou connectez-vous pour rejoindre la discussion.',
+            style: TextStyle(
+              fontFamily: 'Roboto',
+              fontSize: 14,
+              color: Color(0xFF718096),
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: widget.onAuthRequired ?? () {
+              // Fallback: Affiche une modal de dialogue par défaut
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Authentification requise'),
+                  content: const Text('Vous devez être connecté pour continuer.'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Annuler'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        // TODO: Implémenter la navigation vers la page de connexion
+                      },
+                      child: const Text('Se connecter'),
+                    ),
+                  ],
+                ),
+              );
+            },
+            icon: const Icon(LucideIcons.logIn, size: 16),
+            label: const Text('Se connecter ou s\'inscrire'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFE53E3E),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
               ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
           ),
-                      ElevatedButton(
-              onPressed: widget.onAuthRequired ?? () {
-                // Fallback : afficher une modal d'authentification ou rediriger
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Authentification requise'),
-                    content: const Text('Vous devez être connecté pour laisser un commentaire.'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: const Text('Annuler'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                          // TODO: Ouvrir la modal de connexion
-                        },
-                        child: const Text('Se connecter'),
-                      ),
-                    ],
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFE53E3E),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              ),
-              child: const Text(
-                'Se connecter',
-                style: TextStyle(
-                  fontFamily: 'Roboto',
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
         ],
       ),
     );

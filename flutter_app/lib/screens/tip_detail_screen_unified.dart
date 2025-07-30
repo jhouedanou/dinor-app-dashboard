@@ -20,6 +20,7 @@ import '../components/common/unified_content_actions.dart';
 
 // Services
 import '../services/api_service.dart';
+import '../services/share_service.dart';
 
 class TipDetailScreenUnified extends ConsumerStatefulWidget {
   final String id;
@@ -49,7 +50,7 @@ class _TipDetailScreenUnifiedState extends ConsumerState<TipDetailScreenUnified>
     try {
       setState(() => _loading = true);
       
-      final apiService = ApiService();
+      final apiService = ref.read(apiServiceProvider);
       final data = forceRefresh 
         ? await apiService.request('/tips/${widget.id}', forceRefresh: true)
         : await apiService.get('/tips/${widget.id}');
@@ -139,6 +140,39 @@ class _TipDetailScreenUnifiedState extends ConsumerState<TipDetailScreenUnified>
           : _tip == null
             ? _buildNotFoundState()
             : _buildTipContent(),
+      floatingActionButton: _buildFloatingActionButtons(),
+    );
+  }
+
+  Widget _buildFloatingActionButtons() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        FloatingActionButton(
+          onPressed: () => NavigationService.pop(),
+          heroTag: 'back_fab',
+          backgroundColor: Colors.white,
+          child: const Icon(LucideIcons.arrowLeft, color: Color(0xFF2D3748)),
+        ),
+        const SizedBox(height: 16),
+        FloatingActionButton(
+          onPressed: () {
+            if (_tip != null) {
+              ref.read(shareServiceProvider).shareContent(
+                type: 'tip',
+                id: widget.id,
+                title: _tip!['title'] ?? 'Astuce',
+                description: _tip!['short_description'] ?? 'Découvrez cette astuce',
+                shareUrl: 'https://new.dinorapp.com/tips/${widget.id}',
+                imageUrl: _tip!['featured_image_url'],
+              );
+            }
+          },
+          heroTag: 'share_fab',
+          backgroundColor: const Color(0xFFE53E3E),
+          child: const Icon(LucideIcons.share2, color: Colors.white),
+        ),
+      ],
     );
   }
 

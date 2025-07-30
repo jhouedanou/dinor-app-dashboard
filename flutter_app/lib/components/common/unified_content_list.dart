@@ -18,6 +18,7 @@ class UnifiedContentList extends ConsumerStatefulWidget {
   final int itemsPerPage;
   final bool enableSearch;
   final bool enableFilters;
+  final bool useGridView;
 
   const UnifiedContentList({
     super.key,
@@ -31,6 +32,7 @@ class UnifiedContentList extends ConsumerStatefulWidget {
     this.itemsPerPage = 2,
     this.enableSearch = true,
     this.enableFilters = true,
+    this.useGridView = false,
   });
 
   @override
@@ -46,7 +48,7 @@ class _UnifiedContentListState extends ConsumerState<UnifiedContentList> {
   String _searchQuery = '';
   bool _isLoading = true;
   bool _isLoadingMore = false;
-  bool _showTags = true;
+  bool _showTags = false;
   String? _error;
   int _currentPage = 0;
 
@@ -217,9 +219,31 @@ class _UnifiedContentListState extends ConsumerState<UnifiedContentList> {
           
           // Liste des éléments
           if (!_isLoading && _error == null)
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
+            if (widget.useGridView)
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                sliver: SliverGrid(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: 0.75,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      if (index < _displayedItems.length) {
+                        return widget.itemBuilder(_displayedItems[index]);
+                      }
+                      return null;
+                    },
+                    childCount: _displayedItems.length,
+                  ),
+                ),
+              )
+            else
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
                   if (index < _displayedItems.length) {
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -234,6 +258,12 @@ class _UnifiedContentListState extends ConsumerState<UnifiedContentList> {
               ),
             ),
           
+          // Bouton "Charger plus" pour la GridView
+          if (widget.useGridView && !_isLoading && _error == null && _hasMoreItems())
+            SliverToBoxAdapter(
+              child: _buildLoadMoreButton(),
+            ),
+
           // État vide
           if (!_isLoading && _error == null && _displayedItems.isEmpty)
             SliverToBoxAdapter(
@@ -310,6 +340,7 @@ class _UnifiedContentListState extends ConsumerState<UnifiedContentList> {
                         } else {
                           _selectedTags.remove(tag);
                         }
+                        print('Selected tags: $_selectedTags'); // Log pour le débogage
                       });
                       _filterItems();
                     },

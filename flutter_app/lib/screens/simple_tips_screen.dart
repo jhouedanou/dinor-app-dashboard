@@ -37,9 +37,10 @@ class _SimpleTipsScreenState extends State<SimpleTipsScreen> {
       body: UnifiedContentList(
         contentType: 'tip',
         apiEndpoint: 'https://new.dinorapp.com/api/v1/tips',
-        itemsPerPage: 2,
+        itemsPerPage: 4,
         enableSearch: true,
         enableFilters: true,
+        useGridView: true,
         itemBuilder: (item) => ContentItemCard(
           contentType: 'tip',
           item: item,
@@ -55,7 +56,7 @@ class _SimpleTipsScreenState extends State<SimpleTipsScreen> {
 
   void _navigateToTipDetail(String tipId) {
     if (tipId.isNotEmpty) {
-      NavigationService.navigateTo('/tip-detail-unified/$tipId');
+      NavigationService.pushNamed('/tip-detail-unified/$tipId');
     }
   }
 }

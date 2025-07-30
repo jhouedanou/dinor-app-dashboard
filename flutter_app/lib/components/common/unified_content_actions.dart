@@ -34,6 +34,7 @@ class UnifiedContentActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('❤️  [LikeButton] Building for: $contentType, ID: $contentId');
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
@@ -77,7 +78,7 @@ class UnifiedContentActions extends StatelessWidget {
 
           // Share Button
           IconButton(
-            onPressed: _handleShare,
+            onPressed: () => {}, // La logique est maintenant dans le FAB
             icon: const Icon(
               LucideIcons.share,
               size: 20,

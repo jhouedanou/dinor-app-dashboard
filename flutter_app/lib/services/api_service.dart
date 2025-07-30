@@ -16,16 +16,15 @@
  */
 
 import 'dart:convert';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
-import 'auth_service.dart';
+import '../composables/use_auth_handler.dart';
 
 class ApiService {
-  static final ApiService _instance = ApiService._internal();
-  factory ApiService() => _instance;
-  ApiService._internal();
-
+  final Ref _ref;
   static const String _baseUrl = 'https://new.dinorapp.com/api/v1';
-  final AuthService _authService = AuthService();
+
+  ApiService(this._ref);
 
   // Requête GET
   Future<Map<String, dynamic>> get(String endpoint, {Map<String, String>? params}) async {
@@ -134,7 +133,7 @@ class ApiService {
     };
 
     // Ajouter le token d'authentification si disponible
-    final token = _authService.token;
+    final token = _ref.read(useAuthHandlerProvider.notifier).token;
     if (token != null) {
       headers['Authorization'] = 'Bearer $token';
     }
@@ -257,6 +256,18 @@ class ApiService {
 
   Future<Map<String, dynamic>> getPredictionsStats() async {
     return await get('/user/predictions/stats');
+  }
+
+  Future<Map<String, dynamic>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+    required String newPasswordConfirmation,
+  }) async {
+    return await post('/user/change-password', {
+      'current_password': currentPassword,
+      'password': newPassword,
+      'password_confirmation': newPasswordConfirmation,
+    });
   }
 
   // Méthodes spécifiques pour le partage

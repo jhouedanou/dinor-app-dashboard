@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../services/share_service.dart';
 
-class AppHeader extends StatelessWidget {
+class AppHeader extends ConsumerWidget {
   final String title;
   final bool showFavorite;
   final String? favoriteType;
@@ -31,7 +32,7 @@ class AppHeader extends StatelessWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       width: double.infinity,
       height: 80,
@@ -89,7 +90,7 @@ class AppHeader extends StatelessWidget {
                     IconButton(
                       onPressed: onShare ?? () {
                         // Utiliser le partage natif
-                        _shareContent();
+                        _shareContent(ref);
                       },
                       icon: const Icon(
                         Icons.share,
@@ -107,16 +108,15 @@ class AppHeader extends StatelessWidget {
     );
   }
 
-  void _shareContent() async {
+  void _shareContent(WidgetRef ref) async {
     try {
       // Utiliser le partage natif via le service avec type et ID
-      await ShareService.shareContent(
+      await ref.read(shareServiceProvider).shareContent(
+        type: favoriteType ?? 'app',
+        id: favoriteItemId ?? 'home',
         title: title,
-        text: 'Découvrez $title sur Dinor',
-        url: 'https://new.dinorapp.com',
-        type: favoriteType,
-        id: favoriteItemId,
-        platform: 'native',
+        description: 'Découvrez $title sur Dinor',
+        shareUrl: 'https://new.dinorapp.com',
       );
       
       // Appeler le callback de partage si fourni

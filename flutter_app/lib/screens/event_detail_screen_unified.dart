@@ -18,6 +18,7 @@ import '../components/common/unified_content_actions.dart';
 
 // Services
 import '../services/api_service.dart';
+import '../services/share_service.dart';
 
 class EventDetailScreenUnified extends ConsumerStatefulWidget {
   final String id;
@@ -50,7 +51,7 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
     });
 
     try {
-      final apiService = ApiService();
+      final apiService = ref.read(apiServiceProvider);
       final data = await apiService.get('/events/${widget.id}');
 
       if (data['success'] == true) {
@@ -241,6 +242,39 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
           ),
         ],
       ),
+      floatingActionButton: _buildFloatingActionButtons(),
+    );
+  }
+
+  Widget _buildFloatingActionButtons() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        FloatingActionButton(
+          onPressed: () => NavigationService.pop(),
+          heroTag: 'back_fab',
+          backgroundColor: Colors.white,
+          child: const Icon(LucideIcons.arrowLeft, color: Color(0xFF2D3748)),
+        ),
+        const SizedBox(height: 16),
+        FloatingActionButton(
+          onPressed: () {
+            if (_event != null) {
+              ref.read(shareServiceProvider).shareContent(
+                type: 'event',
+                id: widget.id,
+                title: _event!['title'] ?? 'Événement',
+                description: _event!['description'] ?? 'Découvrez cet événement',
+                shareUrl: 'https://new.dinorapp.com/events/${widget.id}',
+                imageUrl: _event!['image'] ?? _event!['thumbnail'],
+              );
+            }
+          },
+          heroTag: 'share_fab',
+          backgroundColor: const Color(0xFFE53E3E),
+          child: const Icon(LucideIcons.share2, color: Colors.white),
+        ),
+      ],
     );
   }
 

@@ -9,6 +9,7 @@ import 'simple_recipe_detail_screen.dart';
 import 'simple_tip_detail_screen.dart';
 import 'simple_event_detail_screen.dart';
 import 'dinor_tv_screen.dart';
+import '../services/navigation_service.dart';
 
 class FavoritesScreen extends ConsumerStatefulWidget {
   const FavoritesScreen({Key? key}) : super(key: key);
@@ -612,36 +613,16 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
 
     switch (favorite.type) {
       case 'recipe':
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => SimpleRecipeDetailScreen(
-              arguments: {'id': contentId}
-            ),
-          ),
-        );
+        NavigationService.pushNamed('/recipe-detail-unified/$contentId');
         break;
       case 'tip':
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => SimpleTipDetailScreen(id: contentId),
-          ),
-        );
+        NavigationService.pushNamed('/tip-detail-unified/$contentId');
         break;
       case 'event':
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => SimpleEventDetailScreen(
-              arguments: {'eventId': contentId}
-            ),
-          ),
-        );
+        NavigationService.pushNamed('/event-detail-unified/$contentId');
         break;
       case 'dinor_tv':
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => const DinorTVScreen(),
-          ),
-        );
+        NavigationService.pushNamed('/dinor-tv-screen');
         break;
       default:
         print('❌ [FavoritesScreen] Type de contenu non supporté: ${favorite.type}');
@@ -737,5 +718,21 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
       'dinor_tv': 'Voir les vidéos',
     };
     return texts[_selectedFilter] ?? 'Explorer';
+  }
+
+  void _navigateToContent(String type, String contentId) {
+    switch (type) {
+      case 'recipe':
+        NavigationService.pushNamed('/recipe-detail-unified/$contentId');
+        break;
+      case 'tip':
+        NavigationService.pushNamed('/tip-detail-unified/$contentId');
+        break;
+      case 'event':
+        NavigationService.pushNamed('/event-detail-unified/$contentId');
+        break;
+      default:
+        print('Navigation non supportée pour le type: $type');
+    }
   }
 }

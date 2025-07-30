@@ -1,10 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../services/api_service.dart';
 import '../services/likes_service.dart';
 
 final apiServiceProvider = Provider<ApiService>((ref) {
-  return ApiService();
+  return ApiService(ref);
 });
 
 class AuthState {
@@ -42,6 +42,7 @@ class AuthState {
 class AuthNotifier extends StateNotifier<AuthState> {
   final ApiService _apiService;
   final LikesService _likesService;
+  final _storage = const FlutterSecureStorage();
   
   AuthNotifier(this._apiService, this._likesService) : super(const AuthState()) {
     _loadStoredAuth();
@@ -49,12 +50,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> _loadStoredAuth() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      print('🟦 [AuthNotifier] Lecture SharedPreferences (auth_token, user_name, user_email)');
-      final token = prefs.getString('auth_token');
-      final userName = prefs.getString('user_name');
-      final userEmail = prefs.getString('user_email');
-      print('🟦 [AuthNotifier] Valeurs lues: token=${token != null ? token.substring(0, 10) + '...' : 'null'}, userName=$userName, userEmail=$userEmail');
+      print('🟦 [AuthNotifier] Lecture FlutterSecureStorage (auth_token, user_name, user_email)');
+      final token = await _storage.read(key: 'auth_token');
+      final userName = await _storage.read(key: 'user_name');
+      final userEmail = await _storage.read(key: 'user_email');
+      
+      print('🟦 [AuthNotifier] Valeurs lues: token=${token != null ? "${token.substring(0, 10)}..." : "null"}, userName=$userName, userEmail=$userEmail');
+      
       if (token != null) {
         state = AuthState(
           isAuthenticated: true,
@@ -62,7 +64,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
           userEmail: userEmail,
           token: token,
         );
-        print('🔑 [AuthNotifier] Authentification restaurée depuis le stockage');
+        print('🔑 [AuthNotifier] Authentification restaurée depuis le stockage sécurisé');
       }
     } catch (error) {
       print('❌ [AuthNotifier] Erreur chargement auth stockée: $error');
@@ -71,22 +73,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> _storeAuth(String token, String userName, String userEmail, {bool rememberMe = true}) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      
       if (rememberMe) {
-        print('🟦 [AuthNotifier] Sauvegarde SharedPreferences (auth_token, user_name, user_email)');
-        await prefs.setString('auth_token', token);
-        await prefs.setString('user_name', userName);
-        await prefs.setString('user_email', userEmail);
-        await prefs.setBool('remember_me', true);
-        print('🟦 [AuthNotifier] Valeurs écrites: token=${token.substring(0, 10)}..., userName=$userName, userEmail=$userEmail');
+        print('🟦 [AuthNotifier] Sauvegarde FlutterSecureStorage (auth_token, user_name, user_email)');
+        await _storage.write(key: 'auth_token', value: token);
+        await _storage.write(key: 'user_name', value: userName);
+        await _storage.write(key: 'user_email', value: userEmail);
+        await _storage.write(key: 'remember_me', value: 'true');
         print('💾 [AuthNotifier] Authentification sauvegardée avec remember_me=true');
       } else {
         print('🟦 [AuthNotifier] Connexion temporaire - pas de sauvegarde persistante');
-        await prefs.remove('auth_token');
-        await prefs.remove('user_name');
-        await prefs.remove('user_email');
-        await prefs.setBool('remember_me', false);
+        await _storage.deleteAll();
         print('💾 [AuthNotifier] Session temporaire configurée');
       }
     } catch (error) {
@@ -96,11 +92,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> _clearStoredAuth() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('auth_token');
-      await prefs.remove('user_name');
-      await prefs.remove('user_email');
-      print('🧹 [AuthNotifier] Authentification supprimée du stockage');
+      await _storage.deleteAll();
+      print('🧹 [AuthNotifier] Authentification supprimée du stockage sécurisé');
     } catch (error) {
       print('❌ [AuthNotifier] Erreur suppression auth: $error');
     }

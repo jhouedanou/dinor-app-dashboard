@@ -7,13 +7,6 @@
 
 import 'package:flutter/material.dart';
 import '../screens/working_home_screen.dart';
-import '../screens/simple_recipes_screen.dart';
-import '../screens/simple_recipe_detail_screen.dart';
-import '../screens/simple_tips_screen.dart';
-import '../screens/simple_tip_detail_screen.dart';
-import '../screens/simple_events_screen.dart';
-import '../screens/simple_event_detail_screen.dart';
-import '../screens/simple_dinor_tv_screen.dart';
 import '../screens/enhanced_dinor_tv_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/pages_list_screen.dart';
@@ -172,6 +165,43 @@ class NavigationService {
   static Route<dynamic>? generateRoute(RouteSettings settings) {
     print('🧭 [NavigationService] Navigation vers: ${settings.name}');
     
+    final path = settings.name;
+    if (path == null) {
+      return _errorRoute();
+    }
+
+    // Gestion des routes dynamiques avec ID
+    if (path.startsWith('$recipeDetailUnified/')) {
+      final id = _extractIdFromPath(path);
+      if (id != null) {
+        return MaterialPageRoute(
+          builder: (_) => RecipeDetailScreenUnified(id: id),
+          settings: settings,
+        );
+      }
+    }
+
+    if (path.startsWith('$tipDetailUnified/')) {
+      final id = _extractIdFromPath(path);
+      if (id != null) {
+        return MaterialPageRoute(
+          builder: (_) => TipDetailScreenUnified(id: id),
+          settings: settings,
+        );
+      }
+    }
+
+    if (path.startsWith('$eventDetailUnified/')) {
+      final id = _extractIdFromPath(path);
+      if (id != null) {
+        return MaterialPageRoute(
+          builder: (_) => EventDetailScreenUnified(id: id),
+          settings: settings,
+        );
+      }
+    }
+
+    // Gestion des routes statiques
     switch (settings.name) {
       case home:
         return MaterialPageRoute(
@@ -189,15 +219,7 @@ class NavigationService {
         final arguments = settings.arguments as Map<String, dynamic>?;
         if (arguments == null || arguments['id'] == null) return _errorRoute();
         return MaterialPageRoute(
-          builder: (_) => SimpleRecipeDetailScreen(arguments: arguments),
-          settings: settings,
-        );
-        
-      case recipeDetailUnified:
-        final id = _extractIdFromPath(settings.name!);
-        if (id == null) return _errorRoute();
-        return MaterialPageRoute(
-          builder: (_) => RecipeDetailScreenUnified(id: id),
+          builder: (_) => RecipeDetailScreenUnified(id: arguments['id']),
           settings: settings,
         );
         
@@ -211,15 +233,7 @@ class NavigationService {
         final arguments = settings.arguments as Map<String, dynamic>?;
         if (arguments == null || arguments['id'] == null) return _errorRoute();
         return MaterialPageRoute(
-          builder: (_) => SimpleTipDetailScreen(id: arguments['id']),
-          settings: settings,
-        );
-        
-      case tipDetailUnified:
-        final id = _extractIdFromPath(settings.name!);
-        if (id == null) return _errorRoute();
-        return MaterialPageRoute(
-          builder: (_) => TipDetailScreenUnified(id: id),
+          builder: (_) => TipDetailScreenUnified(id: arguments['id']),
           settings: settings,
         );
         
@@ -233,15 +247,7 @@ class NavigationService {
         final arguments = settings.arguments as Map<String, dynamic>?;
         if (arguments == null || arguments['id'] == null) return _errorRoute();
         return MaterialPageRoute(
-          builder: (_) => SimpleEventDetailScreen(arguments: arguments),
-          settings: settings,
-        );
-        
-      case eventDetailUnified:
-        final id = _extractIdFromPath(settings.name!);
-        if (id == null) return _errorRoute();
-        return MaterialPageRoute(
-          builder: (_) => EventDetailScreenUnified(id: id),
+          builder: (_) => EventDetailScreenUnified(id: arguments['id']),
           settings: settings,
         );
         
@@ -357,7 +363,7 @@ class NavigationService {
   // Fonction helper pour extraire l'ID d'un chemin de route
   static String? _extractIdFromPath(String path) {
     final segments = path.split('/');
-    if (segments.length >= 3) {
+    if (segments.length >= 3 && segments.last.isNotEmpty) {
       return segments.last;
     }
     return null;

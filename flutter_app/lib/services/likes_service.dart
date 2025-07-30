@@ -1,15 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'api_service.dart';
 import '../composables/use_auth_handler.dart';
 
 class LikesService {
-  static final LikesService _instance = LikesService._internal();
-  factory LikesService() => _instance;
-  LikesService._internal();
+  LikesService(this._apiService);
 
-  final ApiService _apiService = ApiService();
+  final ApiService _apiService;
+  final Dio _dio = Dio();
   Map<String, bool> _userLikes = {};
   Map<String, int> _likeCounts = {};
 
@@ -162,7 +162,8 @@ class LikesService {
 
 // Provider for the likes service
 final likesServiceProvider = Provider<LikesService>((ref) {
-  return LikesService();
+  final apiService = ref.read(apiServiceProvider);
+  return LikesService(apiService);
 });
 
 // State notifier for reactive likes management

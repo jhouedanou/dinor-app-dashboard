@@ -37,9 +37,10 @@ class _SimpleEventsScreenState extends State<SimpleEventsScreen> {
       body: UnifiedContentList(
         contentType: 'event',
         apiEndpoint: 'https://new.dinorapp.com/api/v1/events',
-        itemsPerPage: 2,
+        itemsPerPage: 4,
         enableSearch: true,
         enableFilters: true,
+        useGridView: true,
         itemBuilder: (item) => ContentItemCard(
           contentType: 'event',
           item: item,
@@ -55,7 +56,7 @@ class _SimpleEventsScreenState extends State<SimpleEventsScreen> {
 
   void _navigateToEventDetail(String eventId) {
     if (eventId.isNotEmpty) {
-      NavigationService.navigateTo('/event-detail-unified/$eventId');
+      NavigationService.pushNamed('/event-detail-unified/$eventId');
     }
   }
 }

@@ -40,9 +40,11 @@ class _EnhancedDinorTVScreenState extends ConsumerState<EnhancedDinorTVScreen>
   void initState() {
     super.initState();
     
-    // Charger les vidéos au démarrage
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(videoServiceProvider.notifier).loadVideos();
+    // Charger les vidéos au démarrage de manière sûre
+    Future.delayed(Duration.zero, () {
+      if (mounted) {
+        ref.read(videoServiceProvider.notifier).loadVideos();
+      }
     });
   }
 
