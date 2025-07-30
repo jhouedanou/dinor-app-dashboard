@@ -493,23 +493,19 @@ class _TipsListScreenState extends ConsumerState<TipsListScreen> with AutomaticK
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Image
-            Expanded(
-              flex: 3,
-              child: ClipRRect(
+            Container(
+              height: 160, // Hauteur fixe pour un meilleur centrage comme sur la page d'accueil
+              decoration: BoxDecoration(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                child: ImageService.buildCachedNetworkImage(
-                  imageUrl: tip['featured_image_url'] ?? '',
-                  contentType: 'tip',
+                image: DecorationImage(
+                  image: CachedNetworkImageProvider(
+                    ImageService.getTipImageUrl(tip)
+                  ),
                   fit: BoxFit.cover,
-                  width: double.infinity,
                 ),
-              ),
-            ),
 
             // Content
-            Expanded(
-              flex: 2,
-              child: Padding(
+            Padding(
                 padding: const EdgeInsets.all(12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

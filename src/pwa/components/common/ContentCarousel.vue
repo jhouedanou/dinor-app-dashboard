@@ -39,7 +39,7 @@
               <div class="default-card">
                 <div v-if="item.featured_image_url || item.image_url" class="card-image">
                   <img 
-                    :src="item.featured_image_url || item.image_url || getDefaultImage()" 
+                    :src="getImageUrl(item.featured_image_url || item.image_url, contentType)" 
                     :alt="item.title"
                     loading="lazy"
                     @error="handleImageError"
@@ -120,6 +120,7 @@
 import { ref, onMounted, onUnmounted, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import DinorIcon from '@/components/DinorIcon.vue'
+import { getImageUrl } from '@/utils/imageUtils'
 
 export default {
   name: 'ContentCarousel',
@@ -318,13 +319,7 @@ export default {
     }
     
     const getDefaultImage = () => {
-      const images = {
-        'recipes': '/images/default-recipe.jpg',
-        'tips': '/images/default-tip.jpg',
-        'events': '/images/default-event.jpg',
-        'videos': '/images/default-video.jpg'
-      }
-      return images[props.contentType] || '/images/default-recipe.jpg'
+      return getImageUrl(null, props.contentType)
     }
     
     const getVideoThumbnail = (videoUrl) => {
@@ -378,7 +373,8 @@ export default {
       getTotalTime,
       getDefaultImage,
       getVideoThumbnail,
-      handleImageError
+      handleImageError,
+      getImageUrl
     }
   }
 }

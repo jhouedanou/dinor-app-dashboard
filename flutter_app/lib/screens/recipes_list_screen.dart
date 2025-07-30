@@ -546,19 +546,19 @@ class _RecipesListScreenState extends ConsumerState<RecipesListScreen> with Auto
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Recipe Image
-            Expanded(
-              flex: 3,
+            Container(
+              height: 200, // Hauteur fixe pour un meilleur centrage comme sur la page d'accueil
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                image: DecorationImage(
+                  image: CachedNetworkImageProvider(
+                    ImageService.getRecipeImageUrl(recipe)
+                  ),
+                  fit: BoxFit.cover,
+                ),
+              ),
               child: Stack(
                 children: [
-                  ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                    child: ImageService.buildCachedNetworkImage(
-                      imageUrl: recipe['featured_image_url'] ?? '',
-                      contentType: 'recipe',
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                    ),
-                  ),
                   // Recipe Overlay
                   Positioned.fill(
                     child: Container(
@@ -633,9 +633,7 @@ class _RecipesListScreenState extends ConsumerState<RecipesListScreen> with Auto
               ),
             ),
             // Recipe Content
-            Expanded(
-              flex: 2,
-              child: Padding(
+            Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

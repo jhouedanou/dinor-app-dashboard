@@ -373,40 +373,27 @@ class _EventsListScreenState extends ConsumerState<EventsListScreen> with Automa
           // Image
           GestureDetector(
             onTap: () => _handleEventTap(event),
-            child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-              child: AspectRatio(
-                aspectRatio: 16 / 9,
-                child: image.isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: image,
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => Container(
-                          color: const Color(0xFFE2E8F0),
-                          child: const Center(
-                            child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFF4D03F)),
-                            ),
-                          ),
-                        ),
-                        errorWidget: (context, url, error) => Container(
-                          color: const Color(0xFFE2E8F0),
-                          child: const Icon(
-                            Icons.event_outlined,
-                            size: 48,
-                            color: Color(0xFFCBD5E0),
-                          ),
-                        ),
-                      )
-                    : Container(
-                        color: const Color(0xFFE2E8F0),
-                        child: const Icon(
-                          Icons.event_outlined,
-                          size: 48,
-                          color: Color(0xFFCBD5E0),
-                        ),
-                      ),
+            child: Container(
+              height: 180, // Hauteur fixe pour un meilleur centrage comme sur la page d'accueil
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                image: image.isNotEmpty 
+                  ? DecorationImage(
+                      image: CachedNetworkImageProvider(image),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
+                color: image.isEmpty ? const Color(0xFFE2E8F0) : null,
               ),
+              child: image.isEmpty 
+                ? const Center(
+                    child: Icon(
+                      Icons.event_outlined,
+                      size: 48,
+                      color: Color(0xFFCBD5E0),
+                    ),
+                  )
+                : null,
             ),
           ),
           // Content
