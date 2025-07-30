@@ -7,6 +7,9 @@
 
 import 'package:flutter/material.dart';
 import '../screens/working_home_screen.dart';
+import '../screens/simple_recipes_screen.dart';
+import '../screens/simple_tips_screen.dart';
+import '../screens/simple_events_screen.dart';
 import '../screens/enhanced_dinor_tv_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/pages_list_screen.dart';
