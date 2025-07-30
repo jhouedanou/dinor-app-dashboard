@@ -33,6 +33,7 @@ import '../components/common/unified_content_header.dart';
 import '../components/common/unified_video_player.dart';
 import '../components/common/unified_comments_section.dart';
 import '../components/common/unified_content_actions.dart';
+import '../components/common/unified_like_button.dart';
 
 // Services et composables
 import '../services/api_service.dart';
@@ -1157,13 +1158,14 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
       children: [
         // Like Button
         Expanded(
-          child: LikeButton(
+          child: UnifiedLikeButton(
             type: 'recipe',
             itemId: widget.id,
             initialLiked: _userLiked,
             initialCount: _recipe!['likes_count'] ?? 0,
             showCount: true,
             size: 'medium',
+            autoFetch: true,
             onAuthRequired: () => setState(() => _showAuthModal = true),
           ),
         ),

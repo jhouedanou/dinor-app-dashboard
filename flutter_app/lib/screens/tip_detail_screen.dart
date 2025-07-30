@@ -28,6 +28,7 @@ import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 // Components
 import '../components/common/badge.dart' as dinor_badge;
 import '../components/common/like_button.dart';
+import '../components/common/unified_like_button.dart';
 import '../components/common/share_modal.dart';
 import '../components/common/auth_modal.dart';
 import '../components/common/accordion.dart';
@@ -971,13 +972,14 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
       children: [
         // Like Button
         Expanded(
-          child: LikeButton(
+          child: UnifiedLikeButton(
             type: 'tip',
             itemId: widget.id,
             initialLiked: _userLiked,
             initialCount: _tip!['likes_count'] ?? 0,
             showCount: true,
             size: 'medium',
+            autoFetch: true,
             onAuthRequired: () => setState(() => _showAuthModal = true),
           ),
         ),

@@ -27,6 +27,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../components/common/banner_section.dart';
 import '../components/common/search_and_filters.dart';
 import '../components/common/like_button.dart';
+import '../components/common/unified_like_button.dart';
 import '../components/common/auth_modal.dart';
 import '../components/dinor_icon.dart';
 
@@ -659,7 +660,7 @@ class _RecipesListScreenState extends ConsumerState<RecipesListScreen> with Auto
                     Row(
                       children: [
                         Expanded(
-                          child: LikeButton(
+                          child: UnifiedLikeButton(
                             type: 'recipe',
                             itemId: recipe['id'].toString(),
                             initialLiked: recipe['is_liked'] ?? false,
