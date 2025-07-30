@@ -1,11 +1,12 @@
 /**
- * ENHANCED_DINOR_TV_SCREEN.DART - ÉCRAN DINOR TV
+ * ENHANCED_DINOR_TV_SCREEN.DART - ÉCRAN DINOR TV AVEC LECTEUR IMMERSIF
  * 
  * FONCTIONNALITÉS :
  * - Liste des vidéos avec aperçu
+ * - Bouton pour lancer l'expérience immersive plein écran
  * - Intégration avec le VideoService
  * - Cache et performance optimisés
- * - Navigation fluide
+ * - Navigation fluide vers le lecteur immersif
  */
 
 import 'package:flutter/material.dart';
@@ -16,12 +17,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import '../services/navigation_service.dart';
 import '../services/video_service.dart';
+import '../screens/tiktok_style_video_screen.dart' as tiktok;
 
 // Models
 import '../models/video_data.dart';
 
 import '../components/common/unified_like_button.dart';
-import '../composables/use_auth_handler.dart';
+import '../components/common/youtube_video_modal.dart';
 import '../components/common/auth_modal.dart';
 
 class EnhancedDinorTVScreen extends ConsumerStatefulWidget {
@@ -34,7 +36,6 @@ class EnhancedDinorTVScreen extends ConsumerStatefulWidget {
 class _EnhancedDinorTVScreenState extends ConsumerState<EnhancedDinorTVScreen>
 with AutomaticKeepAliveClientMixin {
   bool _showAuthModal = false;
-
 
   @override
   bool get wantKeepAlive => true;
@@ -57,6 +58,92 @@ with AutomaticKeepAliveClientMixin {
     await ref.read(videoServiceProvider.notifier).loadVideos(forceRefresh: true);
   }
 
+  void _openImmersivePlayer({int startIndex = 0}) {
+    final videoState = ref.read(videoServiceProvider);
+    
+    if (videoState.videos.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Aucune vidéo disponible'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Convertir les VideoData vers le format TikTok
+    final immersiveVideos = videoState.videos.map((video) => _convertToImmersiveVideoData(video)).toList();
+
+    // Naviguer vers le lecteur immersif
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => tiktok.TikTokStyleVideoScreen(
+          videos: immersiveVideos,
+          initialIndex: startIndex,
+        ),
+        fullscreenDialog: true,
+      ),
+    );
+  }
+
+  // Convertir VideoData vers le format attendu par TikTokStyleVideoScreen
+  tiktok.VideoData _convertToImmersiveVideoData(VideoData video) {
+    return tiktok.VideoData(
+      id: video.id,
+      title: video.title,
+      description: video.description ?? '',
+      author: video.author ?? 'Dinor',
+      authorAvatar: video.authorAvatar,
+      videoUrl: video.videoUrl,
+      thumbnailUrl: video.thumbnailUrl,
+      likesCount: video.likesCount,
+      commentsCount: video.commentsCount,
+      sharesCount: 0, // Pas disponible dans notre VideoData
+      views: 0, // Pas disponible dans notre VideoData
+      isLiked: video.isLiked,
+      duration: video.duration,
+    );
+  }
+
+  void _openVideo(VideoData video) {
+    print('🎥 [EnhancedDinorTV] _openVideo appelé pour vidéo: ${video.title}');
+    print('🎥 [EnhancedDinorTV] URL trouvée: ${video.videoUrl}');
+    
+    if (video.videoUrl.isEmpty) {
+      print('❌ [EnhancedDinorTV] Aucune URL de vidéo trouvée');
+      _showSnackBar('Aucune URL de vidéo disponible', Colors.red);
+      return;
+    }
+    
+    print('🎬 [EnhancedDinorTV] Ouverture vidéo intégrée avec autoplay');
+    
+    // Afficher la modal vidéo YouTube intégrée avec autoplay
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      useRootNavigator: true,
+      builder: (context) => YouTubeVideoModal(
+        isOpen: true,
+        videoUrl: video.videoUrl,
+        title: video.title,
+        onClose: () {
+          if (Navigator.of(context, rootNavigator: true).canPop()) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
+        },
+      ),
+    );
+  }
+
+  void _showSnackBar(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
 
 
   @override
@@ -68,53 +155,99 @@ with AutomaticKeepAliveClientMixin {
     final isLoading = videoState.isLoading;
     final error = videoState.error;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      appBar: AppBar(
-        title: Row(
-          children: [
-            SvgPicture.asset(
-              'assets/images/LOGO_DINOR_monochrome.svg',
-              width: 28,
-              height: 28,
-              colorFilter: const ColorFilter.mode(
-                Color(0xFF2D3748),
-                BlendMode.srcIn,
-              ),
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: const Color(0xFFF8F9FA),
+          appBar: AppBar(
+            title: Row(
+              children: [
+                SvgPicture.asset(
+                  'assets/images/LOGO_DINOR_monochrome.svg',
+                  width: 28,
+                  height: 28,
+                  colorFilter: const ColorFilter.mode(
+                    Color(0xFF2D3748),
+                    BlendMode.srcIn,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'Dinor TV',
+                  style: TextStyle(
+                    fontFamily: 'OpenSans',
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF2D3748),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            const Text(
-              'Dinor TV',
+            backgroundColor: Colors.white,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3748)),
+              onPressed: () => NavigationService.pop(),
+            ),
+            actions: [
+              // Bouton Mode Immersif
+              if (videos.isNotEmpty)
+                IconButton(
+                  onPressed: () => _openImmersivePlayer(),
+                  icon: const Icon(LucideIcons.maximize, color: Color(0xFF2D3748)),
+                  tooltip: 'Mode Immersif',
+                ),
+              
+              IconButton(
+                onPressed: _handleRefresh,
+                icon: const Icon(LucideIcons.refreshCw, color: Color(0xFF2D3748)),
+                tooltip: 'Actualiser',
+              ),
+            ],
+          ),
+          body: RefreshIndicator(
+            onRefresh: _handleRefresh,
+            child: _buildBody(videos, isLoading, error),
+          ),
+          
+          // Bouton flottant pour lancer l'expérience immersive
+          floatingActionButton: videos.isNotEmpty ? FloatingActionButton.extended(
+            onPressed: () => _openImmersivePlayer(),
+            backgroundColor: const Color(0xFFE53E3E),
+            foregroundColor: Colors.white,
+            icon: const Icon(LucideIcons.play),
+            label: const Text(
+              'Mode Immersif',
               style: TextStyle(
                 fontFamily: 'OpenSans',
-                fontSize: 20,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF2D3748),
               ),
             ),
-          ],
+          ) : null,
         ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3748)),
-          onPressed: () => NavigationService.pop(),
-        ),
-        actions: [
-
-          IconButton(
-            onPressed: _handleRefresh,
-            icon: const Icon(LucideIcons.refreshCw, color: Color(0xFF2D3748)),
-            tooltip: 'Actualiser',
+        
+        // Modal d'authentification
+        if (_showAuthModal) ...[
+          Positioned.fill(
+            child: Container(
+              color: Colors.black54,
+              child: GestureDetector(
+                onTap: () => setState(() => _showAuthModal = false),
+                child: Container(color: Colors.transparent),
+              ),
+            ),
+          ),
+          Positioned.fill(
+            child: AuthModal(
+              isOpen: _showAuthModal,
+              onClose: () => setState(() => _showAuthModal = false),
+              onAuthenticated: () {
+                setState(() => _showAuthModal = false);
+              },
+            ),
           ),
         ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: _handleRefresh,
-        child: _buildBody(videos, isLoading, error),
-      ),
-      
-
+      ],
     );
   }
 
@@ -141,7 +274,10 @@ with AutomaticKeepAliveClientMixin {
           
           const SizedBox(height: 24),
 
-
+          // Bouton d'accès rapide au mode immersif
+          _buildImmersiveModeCard(videos),
+          
+          const SizedBox(height: 24),
 
           // Liste des vidéos
           const Text(
@@ -253,7 +389,83 @@ with AutomaticKeepAliveClientMixin {
     );
   }
 
-  
+  Widget _buildImmersiveModeCard(List<VideoData> videos) {
+    return GestureDetector(
+      onTap: () => _openImmersivePlayer(),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE53E3E), width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE53E3E),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                LucideIcons.play,
+                color: Colors.white,
+                size: 32,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Mode Immersif',
+                    style: TextStyle(
+                      fontFamily: 'OpenSans',
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF2D3748),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Regarder en plein écran avec défilement vertical',
+                    style: TextStyle(
+                      fontFamily: 'Roboto',
+                      fontSize: 14,
+                      color: Color(0xFF4A5568),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${videos.length} vidéos disponibles',
+                    style: const TextStyle(
+                      fontFamily: 'Roboto',
+                      fontSize: 12,
+                      color: Color(0xFFE53E3E),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              LucideIcons.chevronRight,
+              color: Color(0xFFE53E3E),
+              size: 24,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget _buildVideoCard(VideoData video, int index) {
     return Container(
@@ -275,8 +487,8 @@ with AutomaticKeepAliveClientMixin {
           // Thumbnail avec bouton play
           GestureDetector(
             onTap: () {
-              // Lecture de la vidéo en mode normal
-              print('Lecture de la vidéo: ${video.title}');
+              // Lecture de la vidéo avec modal YouTube
+              _openVideo(video);
             },
             child: Stack(
               children: [

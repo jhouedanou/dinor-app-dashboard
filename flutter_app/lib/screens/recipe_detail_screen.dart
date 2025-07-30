@@ -22,7 +22,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:url_launcher/url_launcher.dart';
+import '../components/common/youtube_video_modal.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 
@@ -301,7 +301,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
     return DateTime.parse(date).toLocal().toString().split(' ')[0];
   }
 
-  void _openVideo(String videoUrl) async {
+  void _openVideo(String videoUrl) {
     print('🎥 [RecipeDetail] _openVideo appelé avec URL: $videoUrl');
     
     if (videoUrl.isEmpty) {
@@ -310,40 +310,26 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
       return;
     }
     
-    // Convertir URL embed en URL normale pour YouTube externe
-    final normalUrl = _convertEmbedToNormalUrl(videoUrl);
-    print('🔄 [RecipeDetail] URL convertie: $normalUrl');
+    print('🎬 [RecipeDetail] Ouverture vidéo intégrée avec autoplay');
     
-    try {
-      final uri = Uri.parse(normalUrl);
-      if (await canLaunchUrl(uri)) {
-        print('📺 [RecipeDetail] Ouverture avec YouTube externe...');
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-        print('✅ [RecipeDetail] Vidéo ouverte avec succès');
-      } else {
-        print('❌ [RecipeDetail] Impossible d\'ouvrir l\'URL');
-        _showSnackBar('Impossible d\'ouvrir la vidéo', Colors.red);
-      }
-    } catch (e) {
-      print('❌ [RecipeDetail] Erreur lors de l\'ouverture: $e');
-      _showSnackBar('Erreur lors de l\'ouverture de la vidéo', Colors.red);
-    }
+    // Afficher la modal vidéo YouTube intégrée avec autoplay
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      useRootNavigator: true,
+      builder: (context) => YouTubeVideoModal(
+        isOpen: true,
+        videoUrl: videoUrl,
+        title: _recipe?['title'] ?? 'Vidéo de la recette',
+        onClose: () {
+          if (Navigator.of(context, rootNavigator: true).canPop()) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
+        },
+      ),
+    );
   }
   
-  String _convertEmbedToNormalUrl(String url) {
-    // Si c'est une URL embed, la convertir en URL normale
-    if (url.contains('/embed/')) {
-      final regex = RegExp(r'/embed/([a-zA-Z0-9_-]+)');
-      final match = regex.firstMatch(url);
-      if (match != null) {
-        final videoId = match.group(1);
-        return 'https://www.youtube.com/watch?v=$videoId';
-      }
-    }
-    
-    // Si c'est déjà une URL normale, la retourner telle quelle
-    return url;
-  }
 
   void _showSnackBar(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(

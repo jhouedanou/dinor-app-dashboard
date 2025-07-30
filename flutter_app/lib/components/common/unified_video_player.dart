@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'youtube_video_modal.dart';
 
 class UnifiedVideoPlayer extends StatelessWidget {
   final String videoUrl;
@@ -90,7 +90,7 @@ class UnifiedVideoPlayer extends StatelessWidget {
     );
   }
 
-  Future<void> _openVideo(BuildContext context) async {
+  void _openVideo(BuildContext context) {
     if (videoUrl.isEmpty) {
       if (context.mounted) {
         _showSnackBar(context, 'URL de la vidéo non disponible', Colors.red);
@@ -98,39 +98,24 @@ class UnifiedVideoPlayer extends StatelessWidget {
       return;
     }
     
-    // Convertir URL embed en URL normale pour YouTube externe
-    final normalUrl = _convertEmbedToNormalUrl(videoUrl);
-    
-    try {
-      final uri = Uri.parse(normalUrl);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        if (context.mounted) {
-          _showSnackBar(context, 'Impossible d\'ouvrir la vidéo', Colors.red);
-        }
-      }
-    } catch (e) {
-      if (context.mounted) {
-        _showSnackBar(context, 'Erreur lors de l\'ouverture de la vidéo', Colors.red);
-      }
-    }
+    // Afficher la modal vidéo YouTube intégrée
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      useRootNavigator: true,
+      builder: (context) => YouTubeVideoModal(
+        isOpen: true,
+        videoUrl: videoUrl,
+        title: title,
+        onClose: () {
+          if (Navigator.of(context, rootNavigator: true).canPop()) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
+        },
+      ),
+    );
   }
   
-  String _convertEmbedToNormalUrl(String url) {
-    // Si c'est une URL embed, la convertir en URL normale
-    if (url.contains('/embed/')) {
-      final regex = RegExp(r'/embed/([a-zA-Z0-9_-]+)');
-      final match = regex.firstMatch(url);
-      if (match != null) {
-        final videoId = match.group(1);
-        return 'https://www.youtube.com/watch?v=$videoId';
-      }
-    }
-    
-    // Si c'est déjà une URL normale, la retourner telle quelle
-    return url;
-  }
 
   void _showSnackBar(BuildContext context, String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(

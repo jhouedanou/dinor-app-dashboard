@@ -407,145 +407,164 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
       child: InkWell(
         onTap: () => _goToContent(favorite),
         borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Row(
-            children: [
-              // Image
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  width: 80,
-                  height: 80,
-                  child: Stack(
-                    children: [
-                      Image.network(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image en arrière-plan
+            Container(
+              height: 140,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                color: const Color(0xFFF4D03F).withOpacity(0.1),
+              ),
+              child: Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                    child: Container(
+                      width: double.infinity,
+                      height: double.infinity,
+                      child: Image.network(
                         favorite.content['image'] ?? _getDefaultImage(favorite.type),
-                        width: 80,
-                        height: 80,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
-                            color: const Color(0xFFF4D03F),
-                            child: Icon(
-                              _getTypeIcon(favorite.type),
-                              color: const Color(0xFF2D3748),
-                              size: 32,
+                            color: const Color(0xFFF4D03F).withOpacity(0.2),
+                            child: Center(
+                              child: Icon(
+                                _getTypeIcon(favorite.type),
+                                color: const Color(0xFF2D3748),
+                                size: 48,
+                              ),
                             ),
                           );
                         },
                       ),
-                      Positioned(
-                        top: 6,
-                        left: 6,
-                        child: Container(
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFE53E3E),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
+                    ),
+                  ),
+                  // Badge de type
+                  Positioned(
+                    top: 12,
+                    left: 12,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE53E3E),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
                             _getTypeIcon(favorite.type),
-                            size: 14,
+                            size: 12,
                             color: Colors.white,
                           ),
+                          const SizedBox(width: 4),
+                          Text(
+                            _getTypeLabel(favorite.type),
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Contenu
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    favorite.content['title'] ?? 'Sans titre',
+                    style: const TextStyle(
+                      fontFamily: 'OpenSans',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF2D3748),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _getShortDescription(favorite.content['description']),
+                    style: const TextStyle(
+                      fontFamily: 'Roboto',
+                      fontSize: 14,
+                      color: Color(0xFF4A5568),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(
+                        LucideIcons.clock,
+                        size: 16,
+                        color: Color(0xFF718096),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Ajouté ${_formatDate(favorite.favoritedAt)}',
+                        style: const TextStyle(
+                          fontFamily: 'Roboto',
+                          fontSize: 12,
+                          color: Color(0xFF718096),
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              ),
-              
-              const SizedBox(width: 16),
-              
-              // Content
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      favorite.content['title'] ?? 'Sans titre',
-                      style: const TextStyle(
-                        fontFamily: 'OpenSans',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF2D3748),
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _getShortDescription(favorite.content['description']),
-                      style: const TextStyle(
-                        fontFamily: 'Roboto',
-                        fontSize: 14,
-                        color: Color(0xFF4A5568),
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
+                      const Spacer(),
+                      if (favorite.content['likes_count'] != null &&
+                          favorite.content['likes_count'] > 0) ...[
                         const Icon(
-                          LucideIcons.clock,
-                          size: 16,
+                          LucideIcons.thumbsUp,
+                          size: 14,
                           color: Color(0xFF718096),
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          'Ajouté ${_formatDate(favorite.favoritedAt)}',
+                          '${favorite.content['likes_count']}',
                           style: const TextStyle(
-                            fontFamily: 'Roboto',
                             fontSize: 12,
                             color: Color(0xFF718096),
                           ),
                         ),
-                        const Spacer(),
-                        if (favorite.content['likes_count'] != null &&
-                            favorite.content['likes_count'] > 0) ...[
-                          const Icon(
-                            LucideIcons.thumbsUp,
-                            size: 14,
-                            color: Color(0xFF718096),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${favorite.content['likes_count']}',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Color(0xFF718096),
-                            ),
-                          ),
-                        ],
                       ],
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
+                ],
               ),
-              
-              const SizedBox(width: 8),
-              
-              // Favorite Button
-              FavoriteButton(
-                type: favorite.type,
-                itemId: favorite.content['id'].toString(),
-                initialFavorited: true,
-                initialCount: favorite.content['favorites_count'] ?? 0,
-                showCount: false,
-                size: 20,
-                onFavoriteChanged: (isFavorited) {
-                  if (!isFavorited) {
-                    // Recharger les favoris pour mettre à jour la liste
-                    ref.read(favoritesServiceProvider.notifier).loadFavorites(refresh: true);
-                  }
-                },
-                onAuthRequired: () => setState(() => _showAuthModal = true),
-              ),
-            ],
-          ),
+            ),
+            
+            const SizedBox(width: 8),
+            
+            // Favorite Button
+            FavoriteButton(
+              type: favorite.type,
+              itemId: favorite.content['id'].toString(),
+              initialFavorited: true,
+              initialCount: favorite.content['favorites_count'] ?? 0,
+              showCount: false,
+              size: 20,
+              onFavoriteChanged: (isFavorited) {
+                if (!isFavorited) {
+                  // Recharger les favoris pour mettre à jour la liste
+                  ref.read(favoritesServiceProvider.notifier).loadFavorites(refresh: true);
+                }
+              },
+              onAuthRequired: () => setState(() => _showAuthModal = true),
+            ),
+          ],
         ),
       ),
     );
@@ -681,6 +700,21 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
         return LucideIcons.play;
       default:
         return LucideIcons.file;
+    }
+  }
+
+  String _getTypeLabel(String type) {
+    switch (type) {
+      case 'recipe':
+        return 'Recette';
+      case 'tip':
+        return 'Astuce';
+      case 'event':
+        return 'Événement';
+      case 'dinor_tv':
+        return 'Vidéo';
+      default:
+        return 'Contenu';
     }
   }
 
