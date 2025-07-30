@@ -20,6 +20,10 @@ import '../screens/terms_of_service_screen.dart';
 import '../screens/privacy_policy_screen.dart';
 import '../screens/cookie_policy_screen.dart';
 import '../screens/predictions_screen_simple.dart';
+import '../screens/leaderboard_screen.dart';
+import '../screens/recipe_detail_screen_unified.dart';
+import '../screens/tip_detail_screen_unified.dart';
+import '../screens/event_detail_screen_unified.dart';
 
 class NavigationService {
   static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -31,10 +35,13 @@ class NavigationService {
   static const String home = '/';
   static const String recipes = '/recipes';
   static const String recipeDetail = '/recipe-detail';
+  static const String recipeDetailUnified = '/recipe-detail-unified';
   static const String tips = '/tips';
   static const String tipDetail = '/tip-detail';
+  static const String tipDetailUnified = '/tip-detail-unified';
   static const String events = '/events';
   static const String eventDetail = '/event-detail';
+  static const String eventDetailUnified = '/event-detail-unified';
   static const String dinorTv = '/dinor-tv';
   static const String profile = '/profile';
   static const String pages = '/pages';
@@ -42,6 +49,7 @@ class NavigationService {
   static const String privacy = '/privacy';
   static const String cookies = '/cookies';
   static const String predictions = '/predictions';
+  static const String leaderboard = '/leaderboard';
   
   // Route actuelle
   static String _currentRoute = home;
@@ -184,6 +192,14 @@ class NavigationService {
           settings: settings,
         );
         
+      case recipeDetailUnified:
+        final id = _extractIdFromPath(settings.name!);
+        if (id == null) return _errorRoute();
+        return MaterialPageRoute(
+          builder: (_) => RecipeDetailScreenUnified(id: id),
+          settings: settings,
+        );
+        
       case tips:
         return MaterialPageRoute(
           builder: (_) => const SimpleTipsScreen(),
@@ -198,6 +214,14 @@ class NavigationService {
           settings: settings,
         );
         
+      case tipDetailUnified:
+        final id = _extractIdFromPath(settings.name!);
+        if (id == null) return _errorRoute();
+        return MaterialPageRoute(
+          builder: (_) => TipDetailScreenUnified(id: id),
+          settings: settings,
+        );
+        
       case events:
         return MaterialPageRoute(
           builder: (_) => const SimpleEventsScreen(),
@@ -209,6 +233,14 @@ class NavigationService {
         if (arguments == null || arguments['id'] == null) return _errorRoute();
         return MaterialPageRoute(
           builder: (_) => SimpleEventDetailScreen(arguments: arguments),
+          settings: settings,
+        );
+        
+      case eventDetailUnified:
+        final id = _extractIdFromPath(settings.name!);
+        if (id == null) return _errorRoute();
+        return MaterialPageRoute(
+          builder: (_) => EventDetailScreenUnified(id: id),
           settings: settings,
         );
         
@@ -251,6 +283,12 @@ class NavigationService {
       case predictions:
         return MaterialPageRoute(
           builder: (_) => const PredictionsScreen(),
+          settings: settings,
+        );
+        
+      case leaderboard:
+        return MaterialPageRoute(
+          builder: (_) => const LeaderboardScreen(),
           settings: settings,
         );
         
@@ -313,5 +351,14 @@ class NavigationService {
         ),
       ),
     );
+  }
+  
+  // Fonction helper pour extraire l'ID d'un chemin de route
+  static String? _extractIdFromPath(String path) {
+    final segments = path.split('/');
+    if (segments.length >= 3) {
+      return segments.last;
+    }
+    return null;
   }
 }

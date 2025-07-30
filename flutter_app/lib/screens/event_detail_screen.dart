@@ -28,6 +28,7 @@ import '../composables/use_social_share.dart';
 
 // Components
 import '../components/common/like_button.dart';
+import '../components/common/unified_like_button.dart';
 import '../components/common/auth_modal.dart';
 import '../components/common/share_modal.dart';
 
@@ -90,24 +91,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
     }
   }
 
-  void _handleLikeTap() async {
-    final authHandler = ref.read(useAuthHandlerProvider.notifier);
-    
-    // Vérifier si l'utilisateur est connecté
-    final authState = ref.read(useAuthHandlerProvider);
-    if (!authState.isAuthenticated) {
-      _authModalMessage = 'Connectez-vous pour liker cet événement';
-      _displayAuthModal();
-      return;
-    }
-
-    try {
-      // TODO: Implémenter toggle like
-      print('👍 [EventDetailScreen] Like événement: ${widget.id}');
-    } catch (error) {
-      print('❌ [EventDetailScreen] Erreur like: $error');
-    }
-  }
+  // Note: _handleLikeTap removed - now handled by UnifiedLikeButton
 
   void _handleFavoriteTap() async {
     final authHandler = ref.read(useAuthHandlerProvider.notifier);
@@ -439,26 +423,17 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
         // Actions
         Row(
           children: [
-            // Like button with count
-            Row(
-              children: [
-                IconButton(
-                  onPressed: _handleLikeTap,
-                  icon: Icon(
-                    isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
-                    color: isLiked ? const Color(0xFFE53E3E) : Colors.grey[600],
-                    size: 24,
-                  ),
-                ),
-                Text(
-                  '$likes',
-                  style: TextStyle(
-                    fontFamily: 'OpenSans',
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ],
+            // Like button with count - Using unified component
+            UnifiedLikeButton(
+              type: 'event',
+              itemId: widget.id,
+              initialLiked: isLiked,
+              initialCount: likes,
+              showCount: true,
+              size: 'medium',
+              variant: 'standard',
+              autoFetch: true,
+              onAuthRequired: () => setState(() => _showAuthModal = true),
             ),
             // Favorite button
             IconButton(

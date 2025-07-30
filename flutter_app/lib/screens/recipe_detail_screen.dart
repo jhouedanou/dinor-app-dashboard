@@ -26,14 +26,13 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 
-// Components (équivalent des imports Vue)
-import '../components/common/badge.dart' as dinor_badge;
-import '../components/common/like_button.dart';
-import '../components/common/auth_modal.dart';
+// Components unifiés
 import '../components/common/accordion.dart';
 import '../components/common/image_lightbox.dart';
-import '../components/common/share_modal.dart';
-import '../components/dinor_icon.dart';
+import '../components/common/unified_content_header.dart';
+import '../components/common/unified_video_player.dart';
+import '../components/common/unified_comments_section.dart';
+import '../components/common/unified_content_actions.dart';
 
 // Services et composables
 import '../services/api_service.dart';
@@ -532,9 +531,55 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
   Widget _buildRecipeContent() {
     return CustomScrollView(
       slivers: [
-        // Hero Image
+        // Hero Image avec composant unifié
         SliverToBoxAdapter(
-          child: _buildHeroImage(),
+          child: UnifiedContentHeader(
+            imageUrl: _recipe!['featured_image_url'] ?? '',
+            contentType: 'recipe',
+            customOverlay: Positioned(
+              bottom: 16,
+              left: 16,
+              right: 16,
+              child: Row(
+                children: [
+                  if (_recipe!['difficulty'] != null) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF4D03F).withValues(alpha: 0.9),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        _getDifficultyLabel(_recipe!['difficulty']),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF2D3748),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  if (_recipe!['category'] != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        _recipe!['category']['name'],
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF2D3748),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
         ),
 
         // Recipe Info
@@ -544,8 +589,27 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Recipe Stats
-                _buildRecipeStats(),
+                // Recipe Stats avec composant unifié
+                UnifiedContentStats(
+                  stats: [
+                    {
+                      'icon': LucideIcons.clock,
+                      'text': '${_recipe!['cooking_time'] ?? 0}min',
+                    },
+                    {
+                      'icon': LucideIcons.users,
+                      'text': '${_recipe!['servings'] ?? 0} pers.',
+                    },
+                    {
+                      'icon': LucideIcons.heart,
+                      'text': '${_recipe!['likes_count'] ?? 0}',
+                    },
+                    {
+                      'icon': LucideIcons.messageCircle,
+                      'text': '${_recipe!['comments_count'] ?? 0}',
+                    },
+                  ],
+                ),
                 const SizedBox(height: 16),
                 
                 // Indicateur hors ligne
@@ -563,20 +627,28 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
                   const SizedBox(height: 24),
                 ],
 
-                // Summary Video
+                // Summary Video avec composant unifié
                 if (_recipe!['summary_video_url'] != null) ...[
                   _buildSection(
                     'Résumé en vidéo',
-                    _buildVideoContainer(_recipe!['summary_video_url']),
+                    UnifiedVideoPlayer(
+                      videoUrl: _recipe!['summary_video_url'],
+                      title: 'Voir le résumé en vidéo',
+                      subtitle: 'Appuyez pour ouvrir',
+                    ),
                   ),
                   const SizedBox(height: 24),
                 ],
 
-                // Main Video
+                // Main Video avec composant unifié
                 if (_recipe!['video_url'] != null) ...[
                   _buildSection(
                     'Vidéo de la recette',
-                    _buildVideoContainer(_recipe!['video_url']),
+                    UnifiedVideoPlayer(
+                      videoUrl: _recipe!['video_url'],
+                      title: 'Voir la recette en vidéo',
+                      subtitle: 'Appuyez pour ouvrir',
+                    ),
                   ),
                   const SizedBox(height: 24),
                 ],
@@ -584,9 +656,21 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
                 // Recipe Sections
                 _buildRecipeSections(),
 
-                // Recipe Header Actions
+                // Recipe Actions avec composant unifié
                 const SizedBox(height: 24),
-                _buildRecipeActions(),
+                UnifiedContentActions(
+                  contentType: 'recipe',
+                  contentId: widget.id,
+                  title: _recipe!['title'] ?? 'Recette',
+                  description: _recipe!['description'] ?? 'Découvrez cette délicieuse recette : ${_recipe!['title']}',
+                  shareUrl: 'https://new.dinorapp.com/recipe/${widget.id}',
+                  imageUrl: _recipe!['featured_image_url'],
+                  initialLiked: _userLiked,
+                  initialLikeCount: _recipe!['likes_count'] ?? 0,
+                  onAuthRequired: () => setState(() => _showAuthModal = true),
+                  onRefresh: _forceRefresh,
+                  isLoading: _loading,
+                ),
               ],
             ),
           ),
@@ -904,11 +988,12 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
             ),
           ),
 
-        // Comments Accordion
-        Accordion(
-          title: 'Commentaires (${_comments.length})',
-          initiallyOpen: false,
-          child: _buildCommentsSection(),
+        // Comments avec composant unifié
+        UnifiedCommentsSection(
+          contentType: 'recipe',
+          contentId: widget.id,
+          contentTitle: _recipe!['title'] ?? 'Recette',
+          onAuthRequired: () => setState(() => _showAuthModal = true),
         ),
       ],
     );

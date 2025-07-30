@@ -328,7 +328,7 @@ class PredictionsService extends StateNotifier<PredictionsState> {
 
       // Puis charger depuis l'API
       final response = await http.get(
-        Uri.parse('$baseUrl/user/predictions'),
+        Uri.parse('$baseUrl/predictions'),
         headers: await _getHeaders(),
       ).timeout(const Duration(seconds: 10));
 
@@ -359,7 +359,7 @@ class PredictionsService extends StateNotifier<PredictionsState> {
       print('📈 [PredictionsService] Chargement statistiques...');
 
       final response = await http.get(
-        Uri.parse('$baseUrl/user/predictions/stats'),
+        Uri.parse('$baseUrl/leaderboard/my-stats'),
         headers: await _getHeaders(),
       ).timeout(const Duration(seconds: 10));
 
@@ -379,6 +379,37 @@ class PredictionsService extends StateNotifier<PredictionsState> {
       }
     } catch (e) {
       print('❌ [PredictionsService] Erreur chargement stats: $e');
+    }
+  }
+
+  // Récupérer le classement utilisateur
+  Future<void> loadUserRank() async {
+    try {
+      print('🏆 [PredictionsService] Chargement rang utilisateur...');
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/leaderboard/my-rank'),
+        headers: await _getHeaders(),
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        
+        if (data['success'] == true && state.stats != null) {
+          final rank = data['data']['rank'] ?? state.stats!.currentRank;
+          final updatedStats = PredictionsStats(
+            totalPredictions: state.stats!.totalPredictions,
+            totalPoints: state.stats!.totalPoints,
+            accuracyPercentage: state.stats!.accuracyPercentage,
+            currentRank: rank,
+          );
+          
+          state = state.copyWith(stats: updatedStats);
+          print('✅ [PredictionsService] Rang mis à jour: #$rank');
+        }
+      }
+    } catch (e) {
+      print('❌ [PredictionsService] Erreur chargement rang: $e');
     }
   }
 

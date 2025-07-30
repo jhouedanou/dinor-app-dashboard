@@ -8,6 +8,7 @@ import '../services/cache_service.dart';
 import '../services/image_service.dart';
 import '../components/common/favorite_button.dart';
 import '../components/common/like_button.dart';
+import '../components/common/unified_like_button.dart';
 import '../components/common/auth_modal.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -210,7 +211,7 @@ class _SimpleEventDetailScreenState extends ConsumerState<SimpleEventDetailScree
             onPressed: () => NavigationService.pop(),
           ),
           actions: [
-            LikeButton(
+            UnifiedLikeButton(
               type: 'event',
               itemId: event!['id'].toString(),
               initialLiked: isLiked,
@@ -218,6 +219,7 @@ class _SimpleEventDetailScreenState extends ConsumerState<SimpleEventDetailScree
               showCount: false,
               size: 'medium',
               variant: 'minimal',
+              autoFetch: true,
               onAuthRequired: () => setState(() => _showAuthModal = true),
             ),
             const SizedBox(width: 4),
