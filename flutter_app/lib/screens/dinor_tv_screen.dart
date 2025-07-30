@@ -55,30 +55,7 @@ class _DinorTVScreenState extends ConsumerState<DinorTVScreen> with AutomaticKee
     _loadVideos();
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    
-    // Écouter les changements d'état du provider DinorTV
-    ref.listen(dinorTVProvider, (previous, next) {
-      // Lancer automatiquement le mode TikTok quand les vidéos sont chargées
-      if (!_hasLaunchedTikTok && 
-          !next.loading && 
-          next.videos.isNotEmpty && 
-          next.error == null) {
-        
-        _hasLaunchedTikTok = true;
-        print('🚀 [DinorTVScreen] Lancement automatique du mode TikTok avec ${next.videos.length} vidéos');
-        
-        // Lancer le mode TikTok après un petit délai pour éviter les conflits
-        Future.delayed(const Duration(milliseconds: 500), () {
-          if (mounted) {
-            _openTikTokPlayer();
-          }
-        });
-      }
-    });
-  }
+
 
   Future<void> _loadVideos() async {
     await ref.read(dinorTVProvider.notifier).loadVideos(
@@ -218,6 +195,25 @@ class _DinorTVScreenState extends ConsumerState<DinorTVScreen> with AutomaticKee
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    
+    // Écouter les changements d'état du provider DinorTV pour lancer TikTok
+    ref.listen(dinorTVProvider, (previous, next) {
+      if (!_hasLaunchedTikTok && 
+          !next.loading && 
+          next.videos.isNotEmpty && 
+          next.error == null) {
+        
+        _hasLaunchedTikTok = true;
+        print('🚀 [DinorTVScreen] Lancement automatique du mode TikTok avec ${next.videos.length} vidéos');
+        
+        // Lancer le mode TikTok après un petit délai pour éviter les conflits
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) {
+            _openTikTokPlayer();
+          }
+        });
+      }
+    });
     
     final dinorTVState = ref.watch(dinorTVProvider);
     final videos = dinorTVState.videos;

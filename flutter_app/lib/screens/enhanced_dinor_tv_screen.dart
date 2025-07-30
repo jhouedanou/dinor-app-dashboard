@@ -49,30 +49,7 @@ with AutomaticKeepAliveClientMixin {
     });
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    
-    // Écouter les changements d'état du service vidéo
-    ref.listen<VideoState>(videoServiceProvider, (previous, next) {
-      // Lancer automatiquement le mode TikTok quand les vidéos sont chargées
-      if (!_hasLaunchedTikTok && 
-          !next.isLoading && 
-          next.videos.isNotEmpty && 
-          next.error == null) {
-        
-        _hasLaunchedTikTok = true;
-        print('🚀 [EnhancedDinorTV] Lancement automatique du mode TikTok avec ${next.videos.length} vidéos');
-        
-        // Lancer le mode TikTok après un petit délai pour éviter les conflits
-        Future.delayed(const Duration(milliseconds: 500), () {
-          if (mounted) {
-            _openTikTokPlayer();
-          }
-        });
-      }
-    });
-  }
+
 
   Future<void> _handleRefresh() async {
     await ref.read(videoServiceProvider.notifier).loadVideos(forceRefresh: true);

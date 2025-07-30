@@ -42,7 +42,7 @@ class DinorApp extends ConsumerStatefulWidget {
 class _DinorAppState extends ConsumerState<DinorApp> {
   // État identique au setup() Vue
   bool _showLoading = true;
-
+  bool _showAuthModal = false;
   // _showShareModal supprimé car géré par ModalService
   
   // Header state - REPRODUCTION EXACTE des ref() Vue

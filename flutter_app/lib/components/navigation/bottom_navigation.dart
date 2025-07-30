@@ -39,6 +39,7 @@ class BottomNavigation extends ConsumerStatefulWidget {
 
 class _BottomNavigationState extends ConsumerState<BottomNavigation> {
   bool _showAuthModal = false;
+  String _authModalMessage = '';
 
   // Menu statique identique à BottomNavigation.vue
   final List<Map<String, dynamic>> _menuItems = [
