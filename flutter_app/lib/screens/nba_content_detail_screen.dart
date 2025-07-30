@@ -15,6 +15,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import '../models/nba_content.dart';
 import '../components/common/nba_recommendations_carousel.dart';
+import '../components/common/image_gallery_carousel.dart';
 import '../components/common/unified_like_button.dart';
 import '../components/common/unified_video_player.dart';
 import '../services/nba_recommendation_service.dart';
@@ -399,6 +400,16 @@ class _NBAContentDetailScreenState extends ConsumerState<NBAContentDetailScreen>
               height: 1.6,
             ),
           ),
+          
+          // Gallery Carousel
+          if (_content!.galleryUrls != null && _content!.galleryUrls!.isNotEmpty) ...[
+            const SizedBox(height: 24),
+            ImageGalleryCarousel(
+              images: _content!.galleryUrls!,
+              title: 'Galerie photos',
+              height: 240,
+            ),
+          ],
         ],
       ),
     );

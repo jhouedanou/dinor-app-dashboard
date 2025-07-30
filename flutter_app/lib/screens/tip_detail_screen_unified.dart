@@ -13,6 +13,7 @@ import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 
 // Components unifiés
 import '../components/common/accordion.dart';
+import '../components/common/image_gallery_carousel.dart';
 import '../components/common/unified_content_header.dart';
 import '../components/common/unified_video_player.dart';
 import '../components/common/unified_comments_section.dart';
@@ -80,8 +81,7 @@ class _TipDetailScreenUnifiedState extends ConsumerState<TipDetailScreenUnified>
 
   Future<void> _checkUserLike() async {
     if (_tip != null) {
-      final likesState = ref.read(likesProvider);
-      final isLiked = likesState.getLikes('tip', widget.id)?.isLiked ?? false;
+      final isLiked = ref.read(likesProvider.notifier).isLiked('tip', widget.id);
       setState(() => _userLiked = isLiked);
     }
   }
@@ -501,6 +501,17 @@ class _TipDetailScreenUnifiedState extends ConsumerState<TipDetailScreenUnified>
                 color: Color(0xFF4A5568),
                 height: 1.6,
               ),
+            ),
+          ),
+
+        // Gallery Carousel
+        if (_tip!['gallery_urls'] != null && (_tip!['gallery_urls'] as List).isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: ImageGalleryCarousel(
+              images: List<String>.from(_tip!['gallery_urls']),
+              title: 'Galerie photos',
+              height: 240,
             ),
           ),
       ],

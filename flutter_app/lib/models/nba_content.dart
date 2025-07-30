@@ -111,6 +111,7 @@ class NBAContent {
   final NBAContentType type;
   final String? imageUrl;
   final String? videoUrl;
+  final List<String>? galleryUrls;
   final List<NBATag> tags;
   final DateTime publishedAt;
   final int views;
@@ -130,6 +131,7 @@ class NBAContent {
     required this.type,
     this.imageUrl,
     this.videoUrl,
+    this.galleryUrls,
     required this.tags,
     required this.publishedAt,
     this.views = 0,
@@ -151,6 +153,7 @@ class NBAContent {
       type: NBAContentType.fromString(json['type'] ?? json['content_type'] ?? 'article'),
       imageUrl: json['image_url'] ?? json['featured_image_url'] ?? json['thumbnail'],
       videoUrl: json['video_url'] ?? json['url'],
+      galleryUrls: _parseGalleryUrls(json['gallery_urls']),
       tags: _parseTags(json['tags']),
       publishedAt: DateTime.tryParse(json['published_at'] ?? json['created_at'] ?? '') ?? DateTime.now(),
       views: json['views'] ?? 0,
@@ -195,6 +198,16 @@ class NBAContent {
     }
     
     return tags;
+  }
+
+  static List<String>? _parseGalleryUrls(dynamic galleryUrls) {
+    if (galleryUrls == null) return null;
+    
+    if (galleryUrls is List) {
+      return galleryUrls.map((url) => url.toString()).toList();
+    }
+    
+    return null;
   }
 
   static String _inferTagCategory(String tagName) {
@@ -271,6 +284,7 @@ class NBAContent {
       'type': type.value,
       'image_url': imageUrl,
       'video_url': videoUrl,
+      'gallery_urls': galleryUrls,
       'tags': tags.map((tag) => tag.toJson()).toList(),
       'published_at': publishedAt.toIso8601String(),
       'views': views,
@@ -355,6 +369,7 @@ class NBAContent {
     NBAContentType? type,
     String? imageUrl,
     String? videoUrl,
+    List<String>? galleryUrls,
     List<NBATag>? tags,
     DateTime? publishedAt,
     int? views,
@@ -374,6 +389,7 @@ class NBAContent {
       type: type ?? this.type,
       imageUrl: imageUrl ?? this.imageUrl,
       videoUrl: videoUrl ?? this.videoUrl,
+      galleryUrls: galleryUrls ?? this.galleryUrls,
       tags: tags ?? this.tags,
       publishedAt: publishedAt ?? this.publishedAt,
       views: views ?? this.views,

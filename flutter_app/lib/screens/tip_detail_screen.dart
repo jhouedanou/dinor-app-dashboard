@@ -33,6 +33,7 @@ import '../components/common/share_modal.dart';
 import '../components/common/auth_modal.dart';
 import '../components/common/accordion.dart';
 import '../components/common/image_lightbox.dart';
+import '../components/common/image_gallery_carousel.dart';
 import '../components/dinor_icon.dart';
 
 // Services et composables
@@ -738,40 +739,14 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
             ),
           ),
 
-        // Gallery Accordion
+        // Gallery Carousel
         if (_tip!['gallery_urls'] != null && (_tip!['gallery_urls'] as List).isNotEmpty)
-          Accordion(
-            title: 'Galerie photos',
-            initiallyOpen: false,
-            child: GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
-              ),
-              itemCount: (_tip!['gallery_urls'] as List).length,
-              itemBuilder: (context, index) {
-                return GestureDetector(
-                  onTap: () => _openGalleryModal(index),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: CachedNetworkImage(
-                      imageUrl: _tip!['gallery_urls'][index],
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
-                        color: Colors.grey[300],
-                        child: const Center(child: CircularProgressIndicator()),
-                      ),
-                      errorWidget: (context, url, error) => Container(
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.error),
-                      ),
-                    ),
-                  ),
-                );
-              },
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: ImageGalleryCarousel(
+              images: List<String>.from(_tip!['gallery_urls']),
+              title: 'Galerie photos',
+              height: 240,
             ),
           ),
 

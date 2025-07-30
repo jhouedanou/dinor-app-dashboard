@@ -31,6 +31,7 @@ import '../components/common/like_button.dart';
 import '../components/common/unified_like_button.dart';
 import '../components/common/auth_modal.dart';
 import '../components/common/share_modal.dart';
+import '../components/common/image_gallery_carousel.dart';
 
 // Services
 import '../services/api_service.dart';
@@ -298,6 +299,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
                       const SizedBox(height: 24),
                       _buildEventDescription(),
                       const SizedBox(height: 24),
+                      _buildEventGallery(),
                       _buildEventDetails(),
                       const SizedBox(height: 24),
                       _buildCommentsSection(),
@@ -551,6 +553,21 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
       // Si ce n'est pas parsable, retourner tel quel
       return timeString;
     }
+  }
+
+  Widget _buildEventGallery() {
+    // Vérifier si l'événement a des images de galerie
+    if (_event!['gallery_urls'] != null && (_event!['gallery_urls'] as List).isNotEmpty) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 24),
+        child: ImageGalleryCarousel(
+          images: List<String>.from(_event!['gallery_urls']),
+          title: 'Galerie photos',
+          height: 240,
+        ),
+      );
+    }
+    return const SizedBox.shrink();
   }
 
   Widget _buildEventDetails() {

@@ -29,6 +29,7 @@ import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 // Components unifiés
 import '../components/common/accordion.dart';
 import '../components/common/image_lightbox.dart';
+import '../components/common/image_gallery_carousel.dart';
 import '../components/common/unified_content_header.dart';
 import '../components/common/unified_video_player.dart';
 import '../components/common/unified_comments_section.dart';
@@ -970,40 +971,14 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
             ),
           ),
 
-        // Gallery Accordion
+        // Gallery Carousel
         if (_recipe!['gallery_urls'] != null && (_recipe!['gallery_urls'] as List).isNotEmpty)
-          Accordion(
-            title: 'Galerie photos',
-            initiallyOpen: false,
-            child: GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
-              ),
-              itemCount: (_recipe!['gallery_urls'] as List).length,
-              itemBuilder: (context, index) {
-                return GestureDetector(
-                  onTap: () => _openGalleryModal(index),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: CachedNetworkImage(
-                      imageUrl: _recipe!['gallery_urls'][index],
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
-                        color: Colors.grey[300],
-                        child: const Center(child: CircularProgressIndicator()),
-                      ),
-                      errorWidget: (context, url, error) => Container(
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.error),
-                      ),
-                    ),
-                  ),
-                );
-              },
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: ImageGalleryCarousel(
+              images: List<String>.from(_recipe!['gallery_urls']),
+              title: 'Galerie photos',
+              height: 240,
             ),
           ),
 

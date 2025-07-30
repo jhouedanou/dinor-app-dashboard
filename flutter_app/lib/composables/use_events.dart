@@ -58,8 +58,7 @@ class EventsNotifier extends StateNotifier<EventsState> {
       print('📅 [Events] Chargement des événements...');
       
       final data = await _apiService.get('/events',
-        params: params,
-        forceRefresh: forceRefresh,
+        params: params?.cast<String, String>(),
       );
 
       if (data['success'] == true) {

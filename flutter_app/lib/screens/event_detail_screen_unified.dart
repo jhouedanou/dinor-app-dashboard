@@ -11,6 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 // Components unifiés
+import '../components/common/image_gallery_carousel.dart';
 import '../components/common/unified_content_header.dart';
 import '../components/common/unified_video_player.dart';
 import '../components/common/unified_comments_section.dart';
@@ -76,8 +77,7 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
 
   Future<void> _checkUserLike() async {
     if (_event != null) {
-      final likesState = ref.read(likesProvider);
-      final isLiked = likesState.getLikes('event', widget.id)?.isLiked ?? false;
+      final isLiked = ref.read(likesProvider.notifier).isLiked('event', widget.id);
       setState(() => _userLiked = isLiked);
     }
   }
@@ -288,6 +288,16 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
                           height: 1.5,
                         ),
                       ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+
+                  // Galerie photos
+                  if (_event!['gallery_urls'] != null && (_event!['gallery_urls'] as List).isNotEmpty) ...[
+                    ImageGalleryCarousel(
+                      images: List<String>.from(_event!['gallery_urls']),
+                      title: 'Galerie photos',
+                      height: 240,
                     ),
                     const SizedBox(height: 24),
                   ],

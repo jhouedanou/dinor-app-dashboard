@@ -13,6 +13,7 @@ import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 
 // Components unifiés
 import '../components/common/accordion.dart';
+import '../components/common/image_gallery_carousel.dart';
 import '../components/common/unified_content_header.dart';
 import '../components/common/unified_video_player.dart';
 import '../components/common/unified_comments_section.dart';
@@ -99,8 +100,7 @@ class _RecipeDetailScreenUnifiedState extends ConsumerState<RecipeDetailScreenUn
 
   Future<void> _checkUserLike() async {
     if (_recipe != null) {
-      final likesState = ref.read(likesProvider);
-      final isLiked = likesState.getLikes('recipe', widget.id)?.isLiked ?? false;
+      final isLiked = ref.read(likesProvider.notifier).isLiked('recipe', widget.id);
       setState(() => _userLiked = isLiked);
     }
   }
@@ -637,6 +637,17 @@ class _RecipeDetailScreenUnifiedState extends ConsumerState<RecipeDetailScreenUn
             initiallyOpen: true,
             child: HtmlWidget(
               _formatInstructions(_recipe!['instructions']),
+            ),
+          ),
+
+        // Gallery Carousel
+        if (_recipe!['gallery_urls'] != null && (_recipe!['gallery_urls'] as List).isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: ImageGalleryCarousel(
+              images: List<String>.from(_recipe!['gallery_urls']),
+              title: 'Galerie photos',
+              height: 240,
             ),
           ),
       ],
