@@ -239,18 +239,36 @@ class CommentsService extends StateNotifier<Map<String, CommentsState>> {
   }
 
   // Ajouter un nouveau commentaire
-  Future<bool> addComment(String contentType, String contentId, String content) async {
+  Future<bool> addComment(String contentType, String contentId, String content, {String? authorName, String? authorEmail}) async {
     try {
       print('📝 [CommentsService] Ajout commentaire pour $contentType:$contentId');
+      
+      // Vérifier si l'utilisateur est authentifié
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      
+      final body = {
+        'type': contentType,
+        'id': contentId,
+        'content': content,
+      };
+      
+      // Si pas de token et que nom/email sont fournis, les ajouter pour commentaire anonyme
+      if (token == null) {
+        if (authorName != null && authorEmail != null) {
+          body['author_name'] = authorName;
+          body['author_email'] = authorEmail;
+        } else {
+          // Utiliser des valeurs par défaut pour les tests
+          body['author_name'] = 'Utilisateur Anonyme';
+          body['author_email'] = 'anonymous@dinorapp.com';
+        }
+      }
       
       final response = await http.post(
         Uri.parse('$baseUrl/comments'),
         headers: await _getHeaders(),
-        body: json.encode({
-          'type': contentType,
-          'id': contentId,
-          'content': content,
-        }),
+        body: json.encode(body),
       ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200 || response.statusCode == 201) {

@@ -3,7 +3,7 @@
  * 
  * FONCTIONNALITÉS :
  * - Récupération des vidéos depuis l'API Dinor TV
- * - Conversion en modèle VideoData pour TikTok player
+ * - Conversion en modèle VideoData
  * - Cache intelligent des vidéos
  * - Gestion des interactions (likes, vues, partages)
  * - Optimisation pour performance et préchargement
@@ -14,7 +14,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../screens/tiktok_style_video_screen.dart';
+
 import 'local_database_service.dart';
 
 class VideoState {

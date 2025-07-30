@@ -29,6 +29,11 @@ class ImageService {
         return '$_baseUrl$imageUrl';
       }
       
+      // Si c'est un chemin storage, utiliser /storage/
+      if (imageUrl.startsWith('storage/') || imageUrl.startsWith('tips/') || imageUrl.startsWith('recipes/') || imageUrl.startsWith('events/')) {
+        return '$_baseUrl/storage/$imageUrl';
+      }
+      
       // Sinon, ajouter le chemin vers les images
       return '$_baseUrl/images/$imageUrl';
     }

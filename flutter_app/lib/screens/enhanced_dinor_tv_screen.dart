@@ -1,12 +1,11 @@
 /**
- * ENHANCED_DINOR_TV_SCREEN.DART - ÉCRAN DINOR TV AVEC LECTEUR TIKTOK
+ * ENHANCED_DINOR_TV_SCREEN.DART - ÉCRAN DINOR TV
  * 
  * FONCTIONNALITÉS :
  * - Liste des vidéos avec aperçu
- * - Bouton pour lancer l'expérience TikTok plein écran
  * - Intégration avec le VideoService
  * - Cache et performance optimisés
- * - Navigation fluide vers le lecteur immersif
+ * - Navigation fluide
  */
 
 import 'package:flutter/material.dart';
@@ -17,7 +16,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import '../services/navigation_service.dart';
 import '../services/video_service.dart';
-import '../screens/tiktok_style_video_screen.dart';
+
 import '../components/common/unified_like_button.dart';
 import '../composables/use_auth_handler.dart';
 import '../components/common/auth_modal.dart';
@@ -32,7 +31,7 @@ class EnhancedDinorTVScreen extends ConsumerStatefulWidget {
 class _EnhancedDinorTVScreenState extends ConsumerState<EnhancedDinorTVScreen>
 with AutomaticKeepAliveClientMixin {
   bool _showAuthModal = false;
-  bool _hasLaunchedTikTok = false; // Pour éviter les lancements multiples
+
 
   @override
   bool get wantKeepAlive => true;
@@ -55,30 +54,7 @@ with AutomaticKeepAliveClientMixin {
     await ref.read(videoServiceProvider.notifier).loadVideos(forceRefresh: true);
   }
 
-  void _openTikTokPlayer({int startIndex = 0}) {
-    final videoState = ref.read(videoServiceProvider);
-    
-    if (videoState.videos.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Aucune vidéo disponible'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
 
-    // Naviguer vers le lecteur TikTok
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => TikTokStyleVideoScreen(
-          videos: videoState.videos,
-          initialIndex: startIndex,
-        ),
-        fullscreenDialog: true,
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -122,12 +98,7 @@ with AutomaticKeepAliveClientMixin {
           onPressed: () => NavigationService.pop(),
         ),
         actions: [
-          if (videos.isNotEmpty)
-            IconButton(
-              onPressed: () => _openTikTokPlayer(),
-              icon: const Icon(LucideIcons.maximize, color: Color(0xFF2D3748)),
-              tooltip: 'Mode plein écran',
-            ),
+
           IconButton(
             onPressed: _handleRefresh,
             icon: const Icon(LucideIcons.refreshCw, color: Color(0xFF2D3748)),
@@ -140,20 +111,7 @@ with AutomaticKeepAliveClientMixin {
         child: _buildBody(videos, isLoading, error),
       ),
       
-      // Bouton flottant pour lancer l'expérience TikTok
-      floatingActionButton: videos.isNotEmpty ? FloatingActionButton.extended(
-        onPressed: () => _openTikTokPlayer(),
-        backgroundColor: const Color(0xFFE53E3E),
-        foregroundColor: Colors.white,
-        icon: const Icon(LucideIcons.play),
-        label: const Text(
-          'Mode TikTok',
-          style: TextStyle(
-            fontFamily: 'OpenSans',
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ) : null,
+
     );
   }
 
@@ -180,10 +138,7 @@ with AutomaticKeepAliveClientMixin {
           
           const SizedBox(height: 24),
 
-          // Bouton d'accès rapide au mode TikTok
-          _buildTikTokModeCard(videos),
-          
-          const SizedBox(height: 24),
+
 
           // Liste des vidéos
           const Text(
@@ -295,83 +250,7 @@ with AutomaticKeepAliveClientMixin {
     );
   }
 
-  Widget _buildTikTokModeCard(List<VideoData> videos) {
-    return GestureDetector(
-      onTap: () => _openTikTokPlayer(),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE53E3E), width: 2),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE53E3E),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                LucideIcons.play,
-                color: Colors.white,
-                size: 32,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Mode TikTok',
-                    style: TextStyle(
-                      fontFamily: 'OpenSans',
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF2D3748),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Regarder en plein écran avec défilement vertical',
-                    style: TextStyle(
-                      fontFamily: 'Roboto',
-                      fontSize: 14,
-                      color: Color(0xFF4A5568),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${videos.length} vidéos disponibles',
-                    style: const TextStyle(
-                      fontFamily: 'Roboto',
-                      fontSize: 12,
-                      color: Color(0xFFE53E3E),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(
-              LucideIcons.chevronRight,
-              color: Color(0xFFE53E3E),
-              size: 24,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  
 
   Widget _buildVideoCard(VideoData video, int index) {
     return Container(
@@ -392,7 +271,10 @@ with AutomaticKeepAliveClientMixin {
         children: [
           // Thumbnail avec bouton play
           GestureDetector(
-            onTap: () => _openTikTokPlayer(startIndex: index),
+            onTap: () {
+              // Lecture de la vidéo en mode normal
+              print('Lecture de la vidéo: ${video.title}');
+            },
             child: Stack(
               children: [
                 ClipRRect(

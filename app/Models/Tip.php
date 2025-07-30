@@ -45,6 +45,7 @@ class Tip extends Model
 
     protected $appends = [
         'image_url',
+        'featured_image_url',
         'gallery_urls',
         'current_likes_count',
         'approved_comments_count'
@@ -56,6 +57,11 @@ class Tip extends Model
     }
 
     public function getImageUrlAttribute()
+    {
+        return $this->image ? asset('storage/' . $this->image) : null;
+    }
+
+    public function getFeaturedImageUrlAttribute()
     {
         return $this->image ? asset('storage/' . $this->image) : null;
     }
