@@ -39,6 +39,10 @@ dependencies:
   cached_network_image: ^3.3.0
   flutter_svg: ^2.0.9
 
+  # Vidéo (pour le lecteur TikTok)
+  video_player: ^2.8.2
+  chewie: ^1.7.4
+
   # PWA features simulation
   package_info_plus: ^4.2.0
   connectivity_plus: ^5.0.2

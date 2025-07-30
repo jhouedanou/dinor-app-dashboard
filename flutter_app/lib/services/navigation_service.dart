@@ -14,6 +14,7 @@ import '../screens/simple_tip_detail_screen.dart';
 import '../screens/simple_events_screen.dart';
 import '../screens/simple_event_detail_screen.dart';
 import '../screens/simple_dinor_tv_screen.dart';
+import '../screens/enhanced_dinor_tv_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/pages_list_screen.dart';
 import '../screens/terms_of_service_screen.dart';
@@ -246,7 +247,7 @@ class NavigationService {
         
       case dinorTv:
         return MaterialPageRoute(
-          builder: (_) => const SimpleDinorTVScreen(),
+          builder: (_) => const EnhancedDinorTVScreen(),
           settings: settings,
         );
         
