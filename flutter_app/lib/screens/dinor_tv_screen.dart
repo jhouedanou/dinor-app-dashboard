@@ -19,7 +19,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import 'package:lucide_icons/lucide_icons.dart';
+
 import 'package:cached_network_image/cached_network_image.dart';
 
 // Composables
@@ -27,7 +27,7 @@ import '../composables/use_dinor_tv.dart';
 import '../composables/use_auth_handler.dart';
 
 // Components
-import '../components/common/like_button.dart';
+
 import '../components/common/auth_modal.dart';
 
 // TikTok Mode

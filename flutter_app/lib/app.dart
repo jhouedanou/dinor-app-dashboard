@@ -23,7 +23,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'services/navigation_service.dart';
 import 'services/modal_service.dart';
 import 'services/offline_service.dart';
-import 'services/likes_service.dart';
+
 import 'services/app_initialization_service.dart';
 
 // Components (équivalent des imports Vue)
@@ -42,7 +42,7 @@ class DinorApp extends ConsumerStatefulWidget {
 class _DinorAppState extends ConsumerState<DinorApp> {
   // État identique au setup() Vue
   bool _showLoading = true;
-  bool _showAuthModal = false;
+
   // _showShareModal supprimé car géré par ModalService
   
   // Header state - REPRODUCTION EXACTE des ref() Vue
@@ -164,18 +164,6 @@ class _DinorAppState extends ConsumerState<DinorApp> {
     });
   }
 
-  // IDENTIQUE à updateHeader() Vue
-  void _updateHeader(Map<String, dynamic> headerData) {
-    setState(() {
-      if (headerData['title'] != null) _currentPageTitle = headerData['title'];
-      if (headerData['showFavorite'] != null) _showFavoriteButton = headerData['showFavorite'];
-      if (headerData['favoriteType'] != null) _favoriteType = headerData['favoriteType'];
-      if (headerData['favoriteItemId'] != null) _favoriteItemId = headerData['favoriteItemId'];
-      if (headerData['isContentFavorited'] != null) _isContentFavorited = headerData['isContentFavorited'];
-      if (headerData['showShare'] != null) _showShareButton = headerData['showShare'];
-      if (headerData['backPath'] != null) _backPath = headerData['backPath'];
-    });
-  }
 
   // REPRODUCTION EXACTE de handleShare() Vue
   void _handleShare() {

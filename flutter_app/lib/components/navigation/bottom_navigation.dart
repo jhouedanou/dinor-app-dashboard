@@ -39,7 +39,6 @@ class BottomNavigation extends ConsumerStatefulWidget {
 
 class _BottomNavigationState extends ConsumerState<BottomNavigation> {
   bool _showAuthModal = false;
-  String _authModalMessage = '';
 
   // Menu statique identique à BottomNavigation.vue
   final List<Map<String, dynamic>> _menuItems = [
@@ -298,32 +297,3 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
   }
 }
 
-// Responsive adaptations - MEDIA QUERIES IDENTIQUES
-class _ResponsiveBottomNavigation extends StatelessWidget {
-  final Widget child;
-
-  const _ResponsiveBottomNavigation({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    // Desktop adaptation (min-width: 768px)
-    if (screenWidth >= 768) {
-      return Container(
-        constraints: const BoxConstraints(maxWidth: 600), // max-width: 600px
-        child: child,
-      );
-    }
-
-    // Très grands écrans (min-width: 1200px)
-    if (screenWidth >= 1200) {
-      return Container(
-        constraints: const BoxConstraints(maxWidth: 800), // max-width: 800px
-        child: child,
-      );
-    }
-
-    return child;
-  }
-}

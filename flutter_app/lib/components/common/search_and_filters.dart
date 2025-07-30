@@ -216,7 +216,6 @@ class _SearchAndFiltersState extends State<SearchAndFilters> {
   Widget _buildFilterSection(Map<String, dynamic> filter) {
     final key = filter['key'] as String;
     final label = filter['label'] as String;
-    final icon = filter['icon'] as String;
     final allLabel = filter['allLabel'] as String;
     final options = filter['options'] as List<Map<String, dynamic>>;
     final selectedValue = widget.selectedFilters[key];

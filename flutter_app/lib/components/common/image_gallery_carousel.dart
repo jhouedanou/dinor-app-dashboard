@@ -57,17 +57,7 @@ class _ImageGalleryCarouselState extends State<ImageGalleryCarousel> {
     });
   }
 
-  void _nextLightboxImage() {
-    setState(() {
-      _lightboxIndex = (_lightboxIndex + 1) % widget.images.length;
-    });
-  }
 
-  void _previousLightboxImage() {
-    setState(() {
-      _lightboxIndex = (_lightboxIndex - 1 + widget.images.length) % widget.images.length;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {

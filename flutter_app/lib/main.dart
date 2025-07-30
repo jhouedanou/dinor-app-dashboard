@@ -19,10 +19,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
+
 
 // Services (remplace les services Vue)
-import 'services/api_service.dart';
+
 
 // Router supprimé - remplacé par NavigationService
 
@@ -69,7 +69,7 @@ Future<void> _initializeServices() async {
   print('🚀 [Main] Initialisation des services Dinor...');
   
   // SharedPreferences (équivalent localStorage)
-  final prefs = await SharedPreferences.getInstance();
+  await SharedPreferences.getInstance();
   
   // API Service (équivalent service api.js)
   // await ApiService.initialize();

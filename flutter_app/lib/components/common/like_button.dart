@@ -108,7 +108,6 @@ class _LikeButtonState extends ConsumerState<LikeButton> {
 
   @override
   Widget build(BuildContext context) {
-    final likesState = ref.watch(likesProvider);
     final isLiked = ref.read(likesProvider.notifier).isLiked(widget.type, widget.itemId);
     final count = ref.read(likesProvider.notifier).getLikeCount(widget.type, widget.itemId);
     

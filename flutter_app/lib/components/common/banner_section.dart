@@ -9,8 +9,7 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+
 import '../../services/image_service.dart';
 
 class BannerSection extends StatelessWidget {

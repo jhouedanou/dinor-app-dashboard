@@ -99,14 +99,7 @@ class UnifiedContentActions extends StatelessWidget {
     );
   }
 
-  void _handleShare() {
-    final shareText = '$title\n\n$description\n\n$shareUrl';
-    
-    Share.share(
-      shareText,
-      subject: title,
-    );
-  }
+
 }
 
 class UnifiedContentActionBar extends StatelessWidget {
