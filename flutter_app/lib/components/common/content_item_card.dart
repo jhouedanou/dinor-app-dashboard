@@ -114,86 +114,92 @@ class ContentItemCard extends StatelessWidget {
   }
 
   Widget _buildCompactCard() {
-    return Padding(
-      padding: const EdgeInsets.all(12),
-      child: Row(
-        children: [
-          // Image compacte
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              color: const Color(0xFFF7FAFC),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: ImageService.buildCachedNetworkImage(
-                imageUrl: _getImageUrl(),
-                contentType: contentType,
-                fit: BoxFit.cover,
-              ),
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Image en arrière-plan - même principe que le mode complet mais plus petite
+        Container(
+          height: 120, // Hauteur réduite pour le mode compact
+          width: double.infinity,
+          decoration: const BoxDecoration(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+            color: Color(0xFFF7FAFC),
           ),
-          const SizedBox(width: 12),
-          
-          // Contenu
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+          child: Stack(
+            children: [
+                             ClipRRect(
+                 borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                 child: _getImageUrl().isNotEmpty
+                   ? ImageService.buildCachedNetworkImage(
+                       imageUrl: _getImageUrl(),
+                       contentType: contentType,
+                       fit: BoxFit.cover,
+                     )
+                   : Container(
+                       width: double.infinity,
+                       height: double.infinity,
+                       child: Center(
+                         child: Icon(
+                           _getTypeIcon(),
+                           size: 32,
+                           color: const Color(0xFFCBD5E0),
+                         ),
+                       ),
+                     ),
+               ),
+              
+              // Overlay avec badge de type (optionnel)
+              Positioned(
+                top: 8,
+                left: 8,
+                child: _buildTypeBadge(),
+              ),
+            ],
+          ),
+        ),
+        
+        // Contenu sous l'image
+        Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _getTitle(),
+                style: const TextStyle(
+                  fontFamily: 'OpenSans',
+                  fontSize: 14, // Taille réduite pour le mode compact
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF2D3748),
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              
+              const SizedBox(height: 4),
+              
+              // Description courte
+              if (_getDescription().isNotEmpty) ...[
                 Text(
-                  _getTitle(),
+                  _getDescription(),
                   style: const TextStyle(
-                    fontFamily: 'OpenSans',
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF2D3748),
+                    fontFamily: 'Roboto',
+                    fontSize: 12, // Taille réduite pour le mode compact
+                    color: Color(0xFF4A5568),
+                    height: 1.3,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-                if (_getDescription().isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  if (contentType == 'tip')
-                    Html(
-                      data: _getDescription(),
-                      style: {
-                        "body": Style(
-                          fontFamily: 'Roboto',
-                          fontSize: FontSize(12),
-                          color: const Color(0xFF718096),
-                          maxLines: 2,
-                          textOverflow: TextOverflow.ellipsis,
-                        ),
-                      },
-                    )
-                  else
-                    Text(
-                      _getDescription(),
-                      style: const TextStyle(
-                        fontFamily: 'Roboto',
-                        fontSize: 12,
-                        color: Color(0xFF718096),
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                ],
                 const SizedBox(height: 8),
-                _buildCompactStats(),
               ],
-            ),
+              
+              // Statistiques compactes
+              _buildCompactStats(),
+            ],
           ),
-          
-          // Flèche
-          const Icon(
-            LucideIcons.chevronRight,
-            size: 20,
-            color: Color(0xFF718096),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -308,22 +314,66 @@ class ContentItemCard extends StatelessWidget {
   }
 
   Widget _buildCompactStats() {
+    final stats = <Widget>[];
+    
+    // Likes
+    if (item['likes_count'] != null) {
+      stats.add(
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              LucideIcons.heart,
+              size: 12,
+              color: Color(0xFFE53E3E),
+            ),
+            const SizedBox(width: 2),
+            Text(
+              '${item['likes_count']}',
+              style: const TextStyle(
+                fontSize: 10,
+                color: Color(0xFF4A5568),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    
+    // Temps de préparation/lecture
+    String? timeText;
+    if (contentType == 'recipe' && item['total_time'] != null) {
+      timeText = '${item['total_time']}min';
+    } else if (contentType == 'tip' && item['estimated_time'] != null) {
+      timeText = '${item['estimated_time']}min';
+    }
+    
+    if (timeText != null) {
+      if (stats.isNotEmpty) stats.add(const SizedBox(width: 8));
+      stats.add(
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              LucideIcons.clock,
+              size: 12,
+              color: Color(0xFF4A5568),
+            ),
+            const SizedBox(width: 2),
+            Text(
+              timeText,
+              style: const TextStyle(
+                fontSize: 10,
+                color: Color(0xFF4A5568),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    
     return Row(
-      children: [
-        _buildStatItem(
-          LucideIcons.heart,
-          '${item['likes_count'] ?? 0}',
-          const Color(0xFFE53E3E),
-          compact: true,
-        ),
-        const SizedBox(width: 12),
-        _buildStatItem(
-          LucideIcons.messageCircle,
-          '${item['comments_count'] ?? 0}',
-          const Color(0xFF3182CE),
-          compact: true,
-        ),
-      ],
+      children: stats,
     );
   }
 
@@ -468,6 +518,20 @@ class ContentItemCard extends StatelessWidget {
       return '${date.day}/${date.month}';
     } catch (e) {
       return dateString;
+    }
+  }
+
+  // Méthode pour obtenir l'icône selon le type de contenu
+  IconData _getTypeIcon() {
+    switch (contentType) {
+      case 'recipe':
+        return LucideIcons.chefHat;
+      case 'tip':
+        return LucideIcons.lightbulb;
+      case 'event':
+        return LucideIcons.calendar;
+      default:
+        return LucideIcons.fileText;
     }
   }
 } 

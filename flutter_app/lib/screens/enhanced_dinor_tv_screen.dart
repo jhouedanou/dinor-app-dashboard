@@ -17,6 +17,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../services/navigation_service.dart';
 import '../services/video_service.dart';
 
+// Models
+import '../models/video_data.dart';
+
 import '../components/common/unified_like_button.dart';
 import '../composables/use_auth_handler.dart';
 import '../components/common/auth_modal.dart';

@@ -14,6 +14,8 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// Models
+import '../models/video_data.dart';
 
 import 'local_database_service.dart';
 
@@ -140,7 +142,13 @@ class VideoService extends StateNotifier<VideoState> {
           sharesCount: item['shares_count'] ?? 0,
           views: item['views'] ?? 0,
           isLiked: item['is_liked'] ?? false,
+          isFavorited: item['is_favorited'] ?? false,
           duration: _parseDuration(item['duration']),
+          tags: List<String>.from(item['tags'] ?? []),
+          createdAt: item['created_at'] != null 
+            ? DateTime.parse(item['created_at']) 
+            : DateTime.now(),
+          metadata: item['metadata'],
         );
 
         videos.add(video);
@@ -303,7 +311,11 @@ class VideoService extends StateNotifier<VideoState> {
       'sharesCount': video.sharesCount,
       'views': video.views,
       'isLiked': video.isLiked,
+      'isFavorited': video.isFavorited,
       'duration': video.duration?.inSeconds,
+      'tags': video.tags,
+      'createdAt': video.createdAt.toIso8601String(),
+      'metadata': video.metadata,
     };
   }
 
@@ -322,7 +334,13 @@ class VideoService extends StateNotifier<VideoState> {
       sharesCount: json['sharesCount'] ?? 0,
       views: json['views'] ?? 0,
       isLiked: json['isLiked'] ?? false,
+      isFavorited: json['isFavorited'] ?? false,
       duration: json['duration'] != null ? Duration(seconds: json['duration']) : null,
+      tags: List<String>.from(json['tags'] ?? []),
+      createdAt: json['createdAt'] != null 
+        ? DateTime.parse(json['createdAt']) 
+        : DateTime.now(),
+      metadata: json['metadata'],
     );
   }
 
@@ -402,6 +420,7 @@ class VideoTestHelper {
         commentsCount: 12,
         sharesCount: 5,
         views: 1234,
+        createdAt: DateTime.now(),
       ),
       VideoData(
         id: 'test2',
@@ -414,6 +433,7 @@ class VideoTestHelper {
         commentsCount: 23,
         sharesCount: 8,
         views: 2567,
+        createdAt: DateTime.now(),
       ),
     ];
   }
