@@ -20,7 +20,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:share_plus/share_plus.dart';
 
 // Composables
 import '../composables/use_auth_handler.dart';
@@ -30,6 +29,7 @@ import '../composables/use_social_share.dart';
 // Components
 import '../components/common/like_button.dart';
 import '../components/common/auth_modal.dart';
+import '../components/common/share_modal.dart';
 
 // Services
 import '../services/api_service.dart';
@@ -46,6 +46,7 @@ class EventDetailScreen extends ConsumerStatefulWidget {
 class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with AutomaticKeepAliveClientMixin {
   bool _showAuthModal = false;
   String _authModalMessage = '';
+  bool _showShareModal = false;
   Map<String, dynamic>? _event;
   bool _loading = true;
   String? _error;
@@ -129,15 +130,16 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
 
   void _handleShareTap() async {
     if (_event == null) return;
+    
+    setState(() {
+      _showShareModal = true;
+    });
+  }
 
-    final title = _event!['title'] ?? 'Événement Dinor';
-    final description = _event!['description'] ?? 'Découvrez cet événement sur Dinor';
-    final url = 'https://new.dinorapp.com/events/${widget.id}';
-    
-    final shareText = '$title\\n\\n$description\\n\\nDécouvrez plus d\'événements sur Dinor:\\n$url';
-    
-    Share.share(shareText, subject: title);
-    print('📤 [EventDetail] Contenu partagé: $title');
+  void _closeShareModal() {
+    setState(() {
+      _showShareModal = false;
+    });
   }
 
   void _closeAuthModal() {
@@ -277,45 +279,61 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
-      body: CustomScrollView(
-        slivers: [
-          // App bar avec image
-          SliverAppBar(
-            expandedHeight: 300,
-            pinned: true,
-            backgroundColor: Colors.white,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.white),
-              onPressed: () => NavigationService.pop(),
-            ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.share, color: Colors.white),
-                onPressed: _handleShareTap,
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: [
+              // App bar avec image
+              SliverAppBar(
+                expandedHeight: 300,
+                pinned: true,
+                backgroundColor: Colors.white,
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: () => NavigationService.pop(),
+                ),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.share, color: Colors.white),
+                    onPressed: _handleShareTap,
+                  ),
+                ],
+                flexibleSpace: FlexibleSpaceBar(
+                  background: _buildHeroImage(),
+                ),
+              ),
+              // Contenu
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildEventInfo(),
+                      const SizedBox(height: 24),
+                      _buildEventDescription(),
+                      const SizedBox(height: 24),
+                      _buildEventDetails(),
+                      const SizedBox(height: 24),
+                      _buildCommentsSection(),
+                    ],
+                  ),
+                ),
               ),
             ],
-            flexibleSpace: FlexibleSpaceBar(
-              background: _buildHeroImage(),
-            ),
           ),
-          // Contenu
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildEventInfo(),
-                  const SizedBox(height: 24),
-                  _buildEventDescription(),
-                  const SizedBox(height: 24),
-                  _buildEventDetails(),
-                  const SizedBox(height: 24),
-                  _buildCommentsSection(),
-                ],
-              ),
+          // Share Modal
+          if (_showShareModal && _event != null)
+            ShareModal(
+              isOpen: _showShareModal,
+              shareData: {
+                'title': _event!['title'],
+                'text': _event!['description'],
+                'url': 'https://new.dinorapp.com/events/${widget.id}',
+                'image': _event!['image'] ?? _event!['thumbnail'],
+              },
+              onClose: _closeShareModal,
             ),
-          ),
         ],
       ),
     );
@@ -367,7 +385,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
                 end: Alignment.bottomCenter,
                 colors: [
                   Colors.transparent,
-                  Colors.black.withOpacity(0.7),
+                  Colors.black.withValues(alpha: 0.7),
                 ],
               ),
             ),
@@ -392,7 +410,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: const Color(0xFFF4D03F).withOpacity(0.2),
+              color: const Color(0xFFF4D03F).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
@@ -421,15 +439,17 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
         // Actions
         Row(
           children: [
-            // Likes
+            // Like button with count
             Row(
               children: [
-                Icon(
-                  Icons.thumb_up_outlined,
-                  size: 20,
-                  color: Colors.grey[600],
+                IconButton(
+                  onPressed: _handleLikeTap,
+                  icon: Icon(
+                    isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
+                    color: isLiked ? const Color(0xFFE53E3E) : Colors.grey[600],
+                    size: 24,
+                  ),
                 ),
-                const SizedBox(width: 4),
                 Text(
                   '$likes',
                   style: TextStyle(
@@ -439,16 +459,6 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
                   ),
                 ),
               ],
-            ),
-            const SizedBox(width: 24),
-            // Like button
-            IconButton(
-              onPressed: _handleLikeTap,
-              icon: Icon(
-                isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
-                color: isLiked ? const Color(0xFFE53E3E) : Colors.grey[600],
-                size: 24,
-              ),
             ),
             // Favorite button
             IconButton(
@@ -519,7 +529,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -619,7 +629,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),

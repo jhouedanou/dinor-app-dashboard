@@ -42,6 +42,7 @@ class _AuthModalState extends ConsumerState<AuthModal> {
   
   bool _isLogin = true;
   bool _isLoading = false;
+  bool _rememberMe = true;
   String? _error;
 
   @override
@@ -84,6 +85,7 @@ class _AuthModalState extends ConsumerState<AuthModal> {
         success = await authHandler.login(
           _emailController.text.trim(),
           _passwordController.text,
+          rememberMe: _rememberMe,
         );
         print('🔐 [AuthModal] Résultat connexion: $success');
       } else {
@@ -290,6 +292,30 @@ class _AuthModalState extends ConsumerState<AuthModal> {
                     }
                     return null;
                   },
+                ),
+              ],
+
+              // Remember Me checkbox (only for login)
+              if (_isLogin) ...[
+                const SizedBox(height: 16),
+                CheckboxListTile(
+                  title: const Text(
+                    'Se souvenir de moi',
+                    style: TextStyle(
+                      fontFamily: 'OpenSans',
+                      fontSize: 14,
+                      color: Color(0xFF4A5568),
+                    ),
+                  ),
+                  value: _rememberMe,
+                  onChanged: (bool? value) {
+                    setState(() {
+                      _rememberMe = value ?? true;
+                    });
+                  },
+                  controlAffinity: ListTileControlAffinity.leading,
+                  contentPadding: EdgeInsets.zero,
+                  activeColor: const Color(0xFFE53E3E),
                 ),
               ],
 

@@ -69,15 +69,26 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<void> _storeAuth(String token, String userName, String userEmail) async {
+  Future<void> _storeAuth(String token, String userName, String userEmail, {bool rememberMe = true}) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      print('🟦 [AuthNotifier] Sauvegarde SharedPreferences (auth_token, user_name, user_email)');
-      await prefs.setString('auth_token', token);
-      await prefs.setString('user_name', userName);
-      await prefs.setString('user_email', userEmail);
-      print('🟦 [AuthNotifier] Valeurs écrites: token=${token.substring(0, 10)}..., userName=$userName, userEmail=$userEmail');
-      print('💾 [AuthNotifier] Authentification sauvegardée');
+      
+      if (rememberMe) {
+        print('🟦 [AuthNotifier] Sauvegarde SharedPreferences (auth_token, user_name, user_email)');
+        await prefs.setString('auth_token', token);
+        await prefs.setString('user_name', userName);
+        await prefs.setString('user_email', userEmail);
+        await prefs.setBool('remember_me', true);
+        print('🟦 [AuthNotifier] Valeurs écrites: token=${token.substring(0, 10)}..., userName=$userName, userEmail=$userEmail');
+        print('💾 [AuthNotifier] Authentification sauvegardée avec remember_me=true');
+      } else {
+        print('🟦 [AuthNotifier] Connexion temporaire - pas de sauvegarde persistante');
+        await prefs.remove('auth_token');
+        await prefs.remove('user_name');
+        await prefs.remove('user_email');
+        await prefs.setBool('remember_me', false);
+        print('💾 [AuthNotifier] Session temporaire configurée');
+      }
     } catch (error) {
       print('❌ [AuthNotifier] Erreur sauvegarde auth: $error');
     }
@@ -95,7 +106,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<bool> login(String email, String password) async {
+  Future<bool> login(String email, String password, {bool rememberMe = true}) async {
     try {
       print('🔐 [AuthNotifier] Tentative de connexion pour: $email');
       print('🔐 [AuthNotifier] Endpoint: https://new.dinorapp.com/api/v1/auth/login');
@@ -128,6 +139,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
           token,
           user['name'] ?? '',
           user['email'] ?? '',
+          rememberMe: rememberMe,
         );
         
         // Mettre à jour l'état

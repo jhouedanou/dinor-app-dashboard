@@ -10,6 +10,7 @@
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/api_service.dart';
+import 'use_auth_handler.dart';
 
 class DinorTVState {
   final List<dynamic> videos;
@@ -49,7 +50,7 @@ class DinorTVNotifier extends StateNotifier<DinorTVState> {
   ));
 
   Future<void> loadVideos({
-    Map<String, dynamic>? params,
+    Map<String, String>? params,
     bool forceRefresh = false,
   }) async {
     state = state.copyWith(loading: true, error: null);
@@ -57,7 +58,7 @@ class DinorTVNotifier extends StateNotifier<DinorTVState> {
     try {
       print('📺 [DinorTV] Chargement des vidéos...');
       
-      final data = await _apiService.get('/dinor-tv',
+      final data = await _apiService.request('/dinor-tv',
         params: params,
         forceRefresh: forceRefresh,
       );

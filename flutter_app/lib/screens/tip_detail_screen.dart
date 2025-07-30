@@ -23,16 +23,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 
 // Components
 import '../components/common/badge.dart' as dinor_badge;
 import '../components/common/like_button.dart';
+import '../components/common/share_modal.dart';
 import '../components/common/auth_modal.dart';
 import '../components/common/accordion.dart';
 import '../components/common/image_lightbox.dart';
-import '../components/common/share_modal.dart';
 import '../components/dinor_icon.dart';
 
 // Services et composables
@@ -238,17 +237,15 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
   void _callShare() {
     if (_tip == null) return;
     
-    final shareData = {
-      'title': _tip!['title'],
-      'text': _tip!['short_description'] ?? 'Découvrez cette astuce : ${_tip!['title']}',
-      'url': 'https://new.dinorapp.com/tips/${widget.id}',
-      'image': _tip!['featured_image_url'],
-    };
-    
-    Share.share(
-      '${shareData['title']}\n\n${shareData['text']}\n\n${shareData['url']}',
-      subject: shareData['title'],
-    );
+    setState(() {
+      _showShareModal = true;
+    });
+  }
+
+  void _closeShareModal() {
+    setState(() {
+      _showShareModal = false;
+    });
   }
 
   String _getDifficultyLabel(String difficulty) {
@@ -366,6 +363,19 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
                 ? _buildNotFoundState()
                 : _buildTipContent(),
         ),
+        
+        // Share Modal
+        if (_showShareModal && _tip != null)
+          ShareModal(
+            isOpen: _showShareModal,
+            shareData: {
+              'title': _tip!['title'],
+              'text': _tip!['short_description'] ?? 'Découvrez cette astuce : ${_tip!['title']}',
+              'url': 'https://new.dinorapp.com/tips/${widget.id}',
+              'image': _tip!['featured_image_url'],
+            },
+            onClose: _closeShareModal,
+          ),
         
       ],
     );
@@ -521,7 +531,7 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
                 end: Alignment.bottomCenter,
                 colors: [
                   Colors.transparent,
-                  Colors.black.withOpacity(0.7),
+                  Colors.black.withValues(alpha: 0.7),
                 ],
               ),
             ),
@@ -565,7 +575,7 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -656,8 +666,8 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    const Color(0xFF1A202C).withOpacity(0.8),
-                    const Color(0xFF2D3748).withOpacity(0.6),
+                    const Color(0xFF1A202C).withValues(alpha: 0.8),
+                    const Color(0xFF2D3748).withValues(alpha: 0.6),
                   ],
                 ),
               ),
@@ -671,7 +681,7 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
                     width: 80,
                     height: 80,
                     decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.9),
+                      color: Colors.red.withValues(alpha: 0.9),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(

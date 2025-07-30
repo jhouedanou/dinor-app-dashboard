@@ -1,4 +1,4 @@
-package com.example.dinor_app
+package com.dinorapp.mobile
 
 import io.flutter.embedding.android.FlutterActivity
 
