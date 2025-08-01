@@ -112,13 +112,14 @@ export function useComments() {
   /**
    * Ajouter un nouveau commentaire
    */
-  const addComment = async (type, id, content) => {
+  const addComment = async (type, id, content, authorName = null, authorEmail = null) => {
     if (!content?.trim()) {
       throw new Error('Le contenu du commentaire ne peut pas être vide')
     }
 
-    if (!authStore.isAuthenticated) {
-      throw new Error('Vous devez être connecté pour commenter')
+    // Permettre les commentaires anonymes avec nom et email
+    if (!authStore.isAuthenticated && (!authorName || !authorEmail)) {
+      throw new Error('Veuillez fournir votre nom et email pour commenter en mode anonyme')
     }
 
     try {
@@ -128,6 +129,12 @@ export function useComments() {
         commentable_type: `App\\Models\\${type}`,
         commentable_id: parseInt(id),
         content: content.trim()
+      }
+
+      // Ajouter les données anonymes si nécessaire
+      if (!authStore.isAuthenticated) {
+        commentData.author_name = authorName
+        commentData.author_email = authorEmail
       }
 
       const data = await apiStore.post('/comments', commentData)

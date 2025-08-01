@@ -84,8 +84,7 @@ class CommentController extends Controller
         // Validation différente selon si l'utilisateur est connecté ou non
         $validationRules = [
             'content' => 'required|string|min:3|max:1000',
-            'parent_id' => 'sometimes|integer|exists:comments,id',
-            'captcha_answer' => 'sometimes|integer'
+            'parent_id' => 'sometimes|integer|exists:comments,id'
         ];
 
         // Pour les utilisateurs anonymes, exiger nom et email

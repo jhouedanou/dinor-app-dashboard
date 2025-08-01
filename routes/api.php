@@ -186,7 +186,8 @@ Route::post('/event-categories/check-exists', [App\Http\Controllers\Api\EventCat
     Route::get('/comments/{comment}/replies', [CommentController::class, 'replies']);
     Route::get('/comments/captcha/generate', [CommentController::class, 'generateCaptcha']);
     
-    // Favorites - Routes publiques (lecture seulement)
+    // Favorites - Routes publiques (lecture seulement)  
+    Route::get('/favorites', [App\Http\Controllers\Api\FavoriteController::class, 'indexPublic']);
     Route::get('/favorites/check', [App\Http\Controllers\Api\FavoriteController::class, 'check']);
     
     // Pronostics - Routes publiques

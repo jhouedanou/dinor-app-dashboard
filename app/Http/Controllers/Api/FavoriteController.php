@@ -16,6 +16,29 @@ use Illuminate\Validation\Rule;
 class FavoriteController extends Controller
 {
     /**
+     * Get public favorites (for non-authenticated users)
+     */
+    public function indexPublic(Request $request): JsonResponse
+    {
+        // Pour les utilisateurs non connectés, retourner une liste vide
+        if (!Auth::check()) {
+            return response()->json([
+                'success' => true,
+                'data' => [],
+                'pagination' => [
+                    'current_page' => 1,
+                    'last_page' => 1,
+                    'per_page' => 20,
+                    'total' => 0
+                ]
+            ]);
+        }
+
+        // Si connecté, utiliser la méthode normale
+        return $this->index($request);
+    }
+
+    /**
      * Get user's favorites
      */
     public function index(Request $request): JsonResponse
