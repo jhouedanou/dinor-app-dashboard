@@ -147,14 +147,17 @@ class OneSignalService
 
         // URL de destination (deep link ou URL personnalisée)
         $deepLinkUrl = $notification->getDeepLinkUrl();
-        $isInternalContent = $deepLinkUrl && str_starts_with($deepLinkUrl, 'dinor://');
+        
+        // Déterminer si c'est du contenu interne de l'app
+        $internalContentTypes = ['recipe', 'tip', 'event', 'dinor_tv', 'page'];
+        $isInternalContent = in_array($notification->content_type, $internalContentTypes) && $notification->content_id;
         
         if ($isInternalContent) {
             // Pour le contenu interne, utiliser seulement les données personnalisées
             // Ne pas définir d'URLs pour éviter les conflits OneSignal
             $payload['data']['content_type'] = $notification->content_type;
             $payload['data']['content_id'] = $notification->content_id;
-            $payload['data']['deep_link'] = $deepLinkUrl;
+            $payload['data']['deep_link'] = $deepLinkUrl ?: "dinor://{$notification->content_type}/{$notification->content_id}";
             $payload['data']['action'] = 'navigate_to_content';
             
             // Configuration pour ouvrir l'app automatiquement
@@ -162,14 +165,15 @@ class OneSignalService
             $payload['content_available'] = true; // Pour iOS
             
         } else {
-            // Pour les URLs externes, utiliser la logique normale
-            if ($notification->url) {
-                $payload['url'] = $notification->url;
-                $payload['data']['url'] = $notification->url;
+            // Pour les URLs externes ou custom, utiliser la logique normale
+            $urlToUse = $deepLinkUrl ?: $notification->url;
+            if ($urlToUse) {
+                $payload['url'] = $urlToUse;
+                $payload['data']['url'] = $urlToUse;
                 $payload['data']['action'] = 'open_url';
                 
                 // Configuration pour ouvrir l'URL externe
-                $payload['web_url'] = $notification->url;
+                $payload['web_url'] = $urlToUse;
             }
         }
 
