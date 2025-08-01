@@ -39,46 +39,11 @@ class PushNotificationResource extends Resource
                             ->rows(3)
                             ->maxLength(1000),
 
-                        Forms\Components\Select::make('content_type')
-                            ->label('Type de contenu')
-                            ->options([
-                                '' => 'Aucun lien',
-                                'recipe' => '🍽️ Recette',
-                                'tip' => '💡 Astuce',
-                                'event' => '📅 Événement',
-                                'dinor_tv' => '📺 Dinor TV',
-                                'page' => '📄 Page',
-                                'custom' => '🔗 Lien personnalisé',
-                            ])
-                            ->live()
-                            ->helperText('Choisissez le type de contenu vers lequel rediriger'),
-
-                        Forms\Components\Select::make('content_id')
-                            ->label('Contenu spécifique')
-                            ->options(function (Forms\Get $get) {
-                                $contentType = $get('content_type');
-                                
-                                return match($contentType) {
-                                    'recipe' => \App\Models\Recipe::pluck('title', 'id')->toArray(),
-                                    'tip' => \App\Models\Tip::pluck('title', 'id')->toArray(),
-                                    'event' => \App\Models\Event::pluck('title', 'id')->toArray(),
-                                    'dinor_tv' => \App\Models\DinorTv::pluck('title', 'id')->toArray(),
-                                    'page' => \App\Models\Page::pluck('title', 'id')->toArray(),
-                                    default => [],
-                                };
-                            })
-                            ->visible(fn (Forms\Get $get) => in_array($get('content_type'), ['recipe', 'tip', 'event', 'dinor_tv', 'page']))
-                            ->searchable()
-                            ->required(fn (Forms\Get $get) => in_array($get('content_type'), ['recipe', 'tip', 'event', 'dinor_tv', 'page']))
-                            ->helperText('Sélectionnez le contenu spécifique à afficher'),
-
                         Forms\Components\TextInput::make('url')
-                            ->label('URL personnalisée')
+                            ->label('URL de destination')
                             ->url()
-                            ->visible(fn (Forms\Get $get) => $get('content_type') === 'custom')
-                            ->required(fn (Forms\Get $get) => $get('content_type') === 'custom')
                             ->placeholder('https://example.com/page')
-                            ->helperText('URL web personnalisée'),
+                            ->helperText('URL vers laquelle rediriger quand l\'utilisateur clique sur la notification'),
 
                         Forms\Components\FileUpload::make('icon')
                             ->label('Icône personnalisée')
@@ -111,27 +76,15 @@ class PushNotificationResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('status')
                             ->label('Statut')
-                            ->options(function ($livewire) {
-                                $isCreating = $livewire instanceof \App\Filament\Resources\PushNotificationResource\Pages\CreatePushNotification;
-                                
-                                $options = [
-                                    'draft' => 'Brouillon',
-                                    'scheduled' => 'Planifiée',
-                                ];
-                                
-                                if ($isCreating) {
-                                    $options['send_now'] = '🚀 Envoyer maintenant';
-                                }
-                                
-                                $options['sent'] = 'Envoyée';
-                                $options['failed'] = 'Échec';
-                                
-                                return $options;
-                            })
+                            ->options([
+                                'draft' => 'Brouillon',
+                                'scheduled' => 'Planifiée',
+                                'sent' => 'Envoyée',
+                                'failed' => 'Échec',
+                            ])
                             ->default('draft')
                             ->required()
-                            ->live()
-                            ->helperText('Choisissez "Envoyer maintenant" pour envoyer la notification dès la création'),
+                            ->live(),
 
                         Forms\Components\DateTimePicker::make('scheduled_at')
                             ->label('Date d\'envoi planifiée')
@@ -156,35 +109,6 @@ class PushNotificationResource extends Resource
                     ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
                         $state = $column->getState();
                         return strlen($state) > 50 ? $state : null;
-                    }),
-
-                Tables\Columns\TextColumn::make('content_link')
-                    ->label('Lien de contenu')
-                    ->getStateUsing(function ($record) {
-                        if ($record->content_type && $record->content_id) {
-                            $contentName = $record->getContentName();
-                            $typeEmoji = match($record->content_type) {
-                                'recipe' => '🍽️',
-                                'tip' => '💡',
-                                'event' => '📅',
-                                'dinor_tv' => '📺',
-                                'page' => '📄',
-                                default => '🔗',
-                            };
-                            return $typeEmoji . ' ' . ($contentName ?? "ID: {$record->content_id}");
-                        }
-                        
-                        if ($record->url) {
-                            return '🌐 ' . \Illuminate\Support\Str::limit($record->url, 30);
-                        }
-                        
-                        return 'Aucun lien';
-                    })
-                    ->tooltip(function ($record) {
-                        if ($record->content_type && $record->content_id) {
-                            return "Type: {$record->content_type}, ID: {$record->content_id}";
-                        }
-                        return $record->url;
                     }),
 
                 Tables\Columns\BadgeColumn::make('status')
@@ -262,26 +186,11 @@ class PushNotificationResource extends Resource
                         $result = $oneSignalService->sendNotification($record);
                         
                         if ($result['success']) {
-                            // Mettre à jour le statut de la notification
-                            $record->update([
-                                'status' => 'sent',
-                                'sent_at' => now(),
-                                'onesignal_id' => $result['onesignal_id'] ?? null,
-                                'recipients_count' => $result['recipients'] ?? 0,
-                            ]);
-                            
                             Notification::make()
                                 ->title('Notification envoyée avec succès !')
-                                ->body('OneSignal ID: ' . ($result['onesignal_id'] ?? 'N/A'))
                                 ->success()
                                 ->send();
                         } else {
-                            // Mettre à jour le statut d'erreur
-                            $record->update([
-                                'status' => 'failed',
-                                'error_message' => $result['error'],
-                            ]);
-                            
                             Notification::make()
                                 ->title('Erreur lors de l\'envoi')
                                 ->body($result['error'])
@@ -310,51 +219,7 @@ class PushNotificationResource extends Resource
                                 ->danger()
                                 ->send();
                         }
-                    })->visible(fn () => Auth::guard('admin')->check() && Auth::guard('admin')->user()->email === 'admin@dinor.app'),
-
-                Tables\Actions\Action::make('send_test_now')
-                    ->label('Envoi Test Rapide')
-                    ->icon('heroicon-o-paper-airplane')
-                    ->color('warning')
-                    ->action(function () {
-                        // Créer une notification de test
-                        $notification = PushNotification::create([
-                            'title' => 'Test Rapide Admin',
-                            'message' => 'Notification de test depuis l\'admin - ' . now()->format('H:i:s'),
-                            'status' => 'draft',
-                            'created_by' => Auth::guard('admin')->id(),
-                        ]);
-                        
-                        // L'envoyer immédiatement
-                        $oneSignalService = new OneSignalService();
-                        $result = $oneSignalService->sendNotification($notification);
-                        
-                        if ($result['success']) {
-                            $notification->update([
-                                'status' => 'sent',
-                                'sent_at' => now(),
-                                'onesignal_id' => $result['onesignal_id'] ?? null,
-                                'recipients_count' => $result['recipients'] ?? 0,
-                            ]);
-                            
-                            Notification::make()
-                                ->title('Test envoyé avec succès !')
-                                ->body('OneSignal ID: ' . ($result['onesignal_id'] ?? 'N/A'))
-                                ->success()
-                                ->send();
-                        } else {
-                            $notification->update([
-                                'status' => 'failed',
-                                'error_message' => $result['error'],
-                            ]);
-                            
-                            Notification::make()
-                                ->title('Erreur lors du test')
-                                ->body($result['error'])
-                                ->danger()
-                                ->send();
-                        }
-                    })->visible(fn () => Auth::guard('admin')->check() && Auth::guard('admin')->user()->email === 'admin@dinor.app'),
+                    })->visible(fn () => Auth::user()->email === 'admin@dinor.app'),
 
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),

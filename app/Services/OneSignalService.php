@@ -133,17 +133,9 @@ class OneSignalService
                 break;
         }
 
-        // URL de destination (deep link ou URL personnalisée)
-        $deepLinkUrl = $notification->getDeepLinkUrl();
-        if ($deepLinkUrl) {
-            $payload['url'] = $deepLinkUrl;
-            
-            // Ajouter les données personnalisées pour la navigation dans l'app
-            $payload['data'] = [
-                'content_type' => $notification->content_type,
-                'content_id' => $notification->content_id,
-                'deep_link' => $deepLinkUrl,
-            ];
+        // URL de destination
+        if ($notification->url) {
+            $payload['url'] = $notification->url;
         }
 
         // Icône personnalisée

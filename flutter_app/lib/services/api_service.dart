@@ -90,24 +90,6 @@ class ApiService {
     }
   }
 
-  // Requête PATCH
-  Future<Map<String, dynamic>> patch(String endpoint, Map<String, dynamic> data) async {
-    try {
-      final uri = Uri.parse('$_baseUrl$endpoint');
-      final headers = await _getHeaders();
-      
-      final response = await http.patch(
-        uri,
-        headers: headers,
-        body: json.encode(data),
-      );
-      return _handleResponse(response);
-    } catch (e) {
-      print('❌ [ApiService] Erreur PATCH $endpoint: $e');
-      return {'success': false, 'error': e.toString()};
-    }
-  }
-
   // Requête DELETE
   Future<Map<String, dynamic>> delete(String endpoint) async {
     try {

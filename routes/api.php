@@ -15,7 +15,6 @@ use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\CacheController;
 use App\Http\Controllers\Api\ShareController;
 use App\Http\Controllers\Api\SearchController;
-use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\PWA\CacheController as PWACacheController;
 
 /*
@@ -375,10 +374,6 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     // Paris de Tournois - Routes protégées
     Route::get('/tournaments/betting-available', [App\Http\Controllers\Api\BettingController::class, 'getAvailableTournaments']);
     Route::get('/tournaments/{tournament}/matches/betting', [App\Http\Controllers\Api\BettingController::class, 'getTournamentBettingMatches']);
-    
-    // Notifications - Routes protégées
-    Route::get('/notifications', [NotificationController::class, 'index']);
-    Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
     Route::get('/tournaments/{tournament}/my-bets', [App\Http\Controllers\Api\BettingController::class, 'getUserTournamentBets']);
     Route::post('/matches/{match}/bet', [App\Http\Controllers\Api\BettingController::class, 'placeBet']);
     Route::get('/betting/my-stats', [App\Http\Controllers\Api\BettingController::class, 'getUserBettingStats']);

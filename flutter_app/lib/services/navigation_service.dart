@@ -18,7 +18,6 @@ import '../screens/privacy_policy_screen.dart';
 import '../screens/cookie_policy_screen.dart';
 import '../screens/predictions_screen_simple.dart';
 import '../screens/leaderboard_screen.dart';
-import '../screens/notifications_screen.dart';
 import '../screens/recipe_detail_screen_unified.dart';
 import '../screens/tip_detail_screen_unified.dart';
 import '../screens/event_detail_screen_unified.dart';
@@ -48,7 +47,6 @@ class NavigationService {
   static const String cookies = '/cookies';
   static const String predictions = '/predictions';
   static const String leaderboard = '/leaderboard';
-  static const String notifications = '/notifications';
   
   // Route actuelle
   static String _currentRoute = home;
@@ -265,12 +263,6 @@ class NavigationService {
       case profile:
         return MaterialPageRoute(
           builder: (_) => const ProfileScreen(),
-          settings: settings,
-        );
-        
-      case notifications:
-        return MaterialPageRoute(
-          builder: (_) => const NotificationsScreen(),
           settings: settings,
         );
         

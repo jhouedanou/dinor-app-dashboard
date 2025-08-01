@@ -10,13 +10,10 @@ class EditPushNotification extends EditRecord
 {
     protected static string $resource = PushNotificationResource::class;
 
-    protected function mutateFormDataBeforeSave(array $data): array
+    protected function getHeaderActions(): array
     {
-        // Empêcher la sauvegarde de send_now, le convertir en draft
-        if ($data['status'] === 'send_now') {
-            $data['status'] = 'draft';
-        }
-        
-        return $data;
+        return [
+            Actions\DeleteAction::make(),
+        ];
     }
 }
