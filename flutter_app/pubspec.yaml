@@ -40,12 +40,12 @@ dependencies:
   flutter_svg: ^2.0.9
 
   # Vidéo (pour le lecteur TikTok)
-  video_player: ^2.8.2
-  chewie: ^1.7.4
+  video_player: ^2.10.0
+  chewie: ^1.12.1
 
   # PWA features simulation
-  package_info_plus: ^4.2.0
-  connectivity_plus: ^5.0.2
+  package_info_plus: ^8.3.0
+  connectivity_plus: ^6.1.4
 
   # Push notifications (OneSignal)
   onesignal_flutter: ^5.2.5
