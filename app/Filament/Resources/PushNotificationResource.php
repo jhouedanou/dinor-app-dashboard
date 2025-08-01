@@ -219,7 +219,7 @@ class PushNotificationResource extends Resource
                                 ->danger()
                                 ->send();
                         }
-                    })->visible(fn () => Auth::guard('admin')->check() && Auth::guard('admin')->user()->email === 'admin@dinor.app'),
+                    })->visible(fn () => Auth::user()->email === 'admin@dinor.app'),
 
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
