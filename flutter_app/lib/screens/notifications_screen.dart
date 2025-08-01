@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../services/notifications_service.dart';
 import '../services/navigation_service.dart';
 import '../services/permissions_service.dart';
@@ -166,8 +167,9 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     } else if (notification.contentType != null && notification.contentId != null) {
       _handleContentNavigation(notification.contentType!, notification.contentId!);
     } else if (notification.url != null) {
-      // Gestion URL classique si nécessaire
+      // Gestion URL classique - ouvrir dans le navigateur
       print('📱 URL notification: ${notification.url}');
+      _launchUrl(notification.url!);
     }
   }
 
@@ -206,6 +208,25 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         break;
       default:
         print('⚠️ Type de contenu non géré: $contentType');
+    }
+  }
+
+  Future<void> _launchUrl(String url) async {
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
+        print('🌐 URL ouverte avec succès: $url');
+      } else {
+        print('❌ Impossible d\'ouvrir l\'URL: $url');
+        _showErrorSnackBar('Impossible d\'ouvrir le lien');
+      }
+    } catch (e) {
+      print('❌ Erreur lors de l\'ouverture de l\'URL: $e');
+      _showErrorSnackBar('Erreur lors de l\'ouverture du lien');
     }
   }
 

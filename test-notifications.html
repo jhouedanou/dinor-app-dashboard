@@ -3,288 +3,344 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Notifications Push - Dinor</title>
+    <title>Test Notifications Push - Dinor Dashboard</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
-            background: #f8f9fa;
+            background: #f5f5f5;
         }
         .container {
             background: white;
-            padding: 20px;
+            padding: 30px;
             border-radius: 10px;
-            margin-bottom: 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         h1 {
-            color: #E1251B;
+            color: #2563eb;
             text-align: center;
+            margin-bottom: 30px;
         }
-        h2 {
-            color: #333;
-            border-bottom: 2px solid #E1251B;
-            padding-bottom: 10px;
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #f9fafb;
+        }
+        .test-section h3 {
+            color: #374151;
+            margin-top: 0;
         }
         button {
-            background: #E1251B;
+            background: #2563eb;
             color: white;
-            padding: 10px 20px;
             border: none;
-            border-radius: 5px;
+            padding: 10px 20px;
+            border-radius: 6px;
             cursor: pointer;
             margin: 5px;
-            font-size: 14px;
+            font-weight: 500;
         }
         button:hover {
-            background: #c01f17;
-        }
-        .status {
-            margin-top: 10px;
-            padding: 10px;
-            border-radius: 5px;
-            font-weight: bold;
+            background: #1d4ed8;
         }
         .success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+            background: #10b981;
         }
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+        .success:hover {
+            background: #059669;
         }
-        .info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
+        .danger {
+            background: #ef4444;
         }
-        .warning {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeeba;
+        .danger:hover {
+            background: #dc2626;
         }
-        pre {
-            background: #f8f9fa;
+        #result {
+            margin-top: 20px;
             padding: 15px;
-            border-radius: 5px;
-            overflow-x: auto;
-            border-left: 4px solid #E1251B;
+            border-radius: 6px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            background: #1f2937;
+            color: #f3f4f6;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #374151;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        textarea {
+            height: 80px;
+            resize: vertical;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-weight: 500;
+        }
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+        .highlight {
+            background: #fef3c7;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #f59e0b;
+            margin: 15px 0;
         }
     </style>
 </head>
 <body>
-    <h1>🔔 Test des Notifications Push - Dinor</h1>
-    
     <div class="container">
-        <h2>ℹ️ Instructions</h2>
-        <p>Ce fichier vous permet de tester les notifications push OneSignal pour votre application Dinor.</p>
-        <p><strong>⚠️ Important :</strong> Remplacez <code>YOUR_ONESIGNAL_APP_ID</code> par votre vrai App ID OneSignal dans le code JavaScript ci-dessous.</p>
-    </div>
-
-    <div class="container">
-        <h2>1. Configuration OneSignal</h2>
-        <p>Vérifiez que OneSignal est correctement configuré.</p>
-        <button onclick="checkOneSignal()">Vérifier OneSignal</button>
-        <div id="onesignal-status" class="status" style="display:none;"></div>
-    </div>
-
-    <div class="container">
-        <h2>2. Permissions de notification</h2>
-        <p>Gérez les permissions pour les notifications push.</p>
-        <button onclick="checkPermission()">Vérifier les permissions</button>
-        <button onclick="requestPermission()">Demander les permissions</button>
-        <div id="permission-status" class="status" style="display:none;"></div>
-    </div>
-
-    <div class="container">
-        <h2>3. Inscription aux notifications</h2>
-        <p>Inscrivez-vous pour recevoir des notifications push.</p>
-        <button onclick="subscribeToNotifications()">S'inscrire aux notifications</button>
-        <div id="subscription-status" class="status" style="display:none;"></div>
-    </div>
-
-    <div class="container">
-        <h2>4. Test d'envoi de notification</h2>
-        <p>Testez l'envoi d'une notification depuis votre backend Laravel.</p>
-        <button onclick="sendTestNotification()">Envoyer une notification test</button>
-        <div id="send-status" class="status" style="display:none;"></div>
-    </div>
-
-    <div class="container">
-        <h2>5. Informations utilisateur</h2>
-        <p>Obtenez l'ID utilisateur OneSignal.</p>
-        <button onclick="getUserInfo()">Obtenir les infos utilisateur</button>
-        <div id="user-info" class="status" style="display:none;"></div>
-    </div>
-
-    <div class="container">
-        <h2>6. Configuration nécessaire</h2>
-        <p>Voici ce que vous devez configurer dans votre fichier <code>.env</code> :</p>
-        <pre>
-ONESIGNAL_APP_ID=your_app_id_here
-ONESIGNAL_REST_API_KEY=your_rest_api_key_here
-        </pre>
-        <p>Et dans votre dashboard Laravel, assurez-vous d'avoir la route :</p>
-        <pre>
-Route::post('/push-notifications', [PushNotificationController::class, 'send']);
-        </pre>
-    </div>
-
-    <script src="https://cdn.onesignal.com/sdks/OneSignalSDK.js" async=""></script>
-    <script>
-        // ⚠️ IMPORTANT: Remplacez YOUR_ONESIGNAL_APP_ID par votre vrai App ID
-        const ONESIGNAL_APP_ID = "YOUR_ONESIGNAL_APP_ID";
+        <h1>🔔 Test Notifications Push - Dinor Dashboard</h1>
         
-        // Initialisation OneSignal
-        window.OneSignal = window.OneSignal || [];
-        OneSignal.push(function() {
-            OneSignal.init({
-                appId: ONESIGNAL_APP_ID,
-                safari_web_id: "web.onesignal.auto.xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-                notifyButton: {
-                    enable: false
-                },
-                allowLocalhostAsSecureOrigin: true
-            });
-        });
+        <div class="highlight">
+            <strong>🚀 NOUVELLES CORRECTIONS APPLIQUÉES :</strong><br>
+            ✅ Correction du bug d'écrasement des données de navigation<br>
+            ✅ Configuration pour ouverture automatique de l'app<br>
+            ✅ Amélioration du deep linking et de la redirection<br>
+            ✅ Handler robuste pour notifications en arrière-plan
+        </div>
 
-        function showStatus(elementId, message, type = 'info') {
-            const element = document.getElementById(elementId);
-            element.innerHTML = message;
-            element.className = `status ${type}`;
-            element.style.display = 'block';
+        <div class="test-section">
+            <h3>🧪 Tests de Base</h3>
+            <button onclick="testConnection()">Test Connexion OneSignal</button>
+            <button onclick="testBasicNotification()" class="success">Notification Simple</button>
+            <button onclick="testSegmentsNotification()">Test Segments</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🎯 Tests Deep Linking (CORRIGÉ)</h3>
+            <button onclick="testRecipeNotification()" class="success">Notification Recette</button>
+            <button onclick="testTipNotification()" class="success">Notification Astuce</button>
+            <button onclick="testEventNotification()" class="success">Notification Événement</button>
+            <button onclick="testDinorTvNotification()" class="success">Notification Dinor TV</button>
+        </div>
+
+        <div class="test-section">
+            <h3>📱 Tests Ouverture App (NOUVEAU)</h3>
+            <button onclick="testAppOpeningRecipe()" class="success">Test Ouverture App + Recette</button>
+            <button onclick="testAppOpeningEvent()" class="success">Test Ouverture App + Événement</button>
+            <button onclick="testBackgroundNotification()" class="success">Notification Arrière-Plan</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🔧 Tests Personnalisés</h3>
+            <div class="form-group">
+                <label for="customTitle">Titre :</label>
+                <input type="text" id="customTitle" value="🎉 Test Notification Personnalisée">
+            </div>
+            <div class="form-group">
+                <label for="customMessage">Message :</label>
+                <textarea id="customMessage">Ceci est un test de notification avec navigation automatique vers le contenu.</textarea>
+            </div>
+            <div class="form-group">
+                <label for="contentType">Type de contenu :</label>
+                <select id="contentType">
+                    <option value="recipe">Recette</option>
+                    <option value="tip">Astuce</option>
+                    <option value="event">Événement</option>
+                    <option value="dinor_tv">Dinor TV</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="contentId">ID du contenu :</label>
+                <input type="number" id="contentId" value="1">
+            </div>
+            <button onclick="sendCustomNotification()" class="success">Envoyer Notification Personnalisée</button>
+        </div>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        
+        function log(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            const timestamp = new Date().toLocaleTimeString();
+            const logLine = `[${timestamp}] ${type.toUpperCase()}: ${message}\n`;
+            resultDiv.textContent += logLine;
+            resultDiv.scrollTop = resultDiv.scrollHeight;
+            console.log(logLine);
         }
 
-        function checkOneSignal() {
-            if (ONESIGNAL_APP_ID === "YOUR_ONESIGNAL_APP_ID") {
-                showStatus('onesignal-status', '❌ Vous devez remplacer YOUR_ONESIGNAL_APP_ID par votre vrai App ID OneSignal', 'error');
-                return;
-            }
-            
-            if (window.OneSignal) {
-                showStatus('onesignal-status', '✅ OneSignal est chargé et disponible', 'success');
-            } else {
-                showStatus('onesignal-status', '❌ OneSignal n\'est pas disponible', 'error');
-            }
-        }
-
-        function checkPermission() {
-            if ('Notification' in window) {
-                const permission = Notification.permission;
-                let message = '';
-                let type = '';
-
-                switch (permission) {
-                    case 'granted':
-                        message = '✅ Permissions accordées pour les notifications';
-                        type = 'success';
-                        break;
-                    case 'denied':
-                        message = '❌ Permissions refusées pour les notifications';
-                        type = 'error';
-                        break;
-                    case 'default':
-                        message = '⚠️ Permissions non demandées pour les notifications';
-                        type = 'warning';
-                        break;
-                }
-
-                showStatus('permission-status', message, type);
-            } else {
-                showStatus('permission-status', '❌ Les notifications ne sont pas supportées par ce navigateur', 'error');
-            }
-        }
-
-        function requestPermission() {
-            if ('Notification' in window) {
-                Notification.requestPermission().then(function(permission) {
-                    if (permission === 'granted') {
-                        showStatus('permission-status', '✅ Permissions accordées pour les notifications', 'success');
-                    } else {
-                        showStatus('permission-status', '❌ Permissions refusées pour les notifications', 'error');
-                    }
+        async function apiCall(endpoint, data = {}) {
+            log(`Appel API: ${endpoint}`);
+            try {
+                const response = await fetch(`${API_BASE}/api/${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify(data)
                 });
-            } else {
-                showStatus('permission-status', '❌ Les notifications ne sont pas supportées par ce navigateur', 'error');
-            }
-        }
 
-        function subscribeToNotifications() {
-            if (ONESIGNAL_APP_ID === "YOUR_ONESIGNAL_APP_ID") {
-                showStatus('subscription-status', '❌ Configurez d\'abord votre App ID OneSignal', 'error');
-                return;
-            }
-            
-            OneSignal.push(function() {
-                OneSignal.showNativePrompt()
-                    .then(function(result) {
-                        if (result) {
-                            showStatus('subscription-status', '✅ Inscription aux notifications réussie', 'success');
-                        } else {
-                            showStatus('subscription-status', '❌ Inscription aux notifications refusée', 'error');
-                        }
-                    })
-                    .catch(function(error) {
-                        showStatus('subscription-status', '❌ Erreur lors de l\'inscription: ' + error, 'error');
-                    });
-            });
-        }
-
-        function sendTestNotification() {
-            // Ceci doit être fait depuis votre backend Laravel
-            fetch('/api/v1/push-notifications', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
-                },
-                body: JSON.stringify({
-                    title: 'Test Notification',
-                    message: 'Ceci est une notification de test depuis Dinor! 🍽️',
-                    type: 'test'
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showStatus('send-status', '✅ Notification envoyée avec succès', 'success');
+                const result = await response.json();
+                log(`Réponse: ${JSON.stringify(result, null, 2)}`);
+                
+                if (response.ok) {
+                    log('✅ Succès', 'success');
                 } else {
-                    showStatus('send-status', '❌ Erreur lors de l\'envoi: ' + data.message, 'error');
+                    log(`❌ Erreur HTTP ${response.status}`, 'error');
                 }
-            })
-            .catch(error => {
-                showStatus('send-status', '❌ Erreur réseau: ' + error + '<br/>Assurez-vous que votre backend Laravel est en cours d\'exécution', 'error');
-            });
-        }
-
-        function getUserInfo() {
-            if (ONESIGNAL_APP_ID === "YOUR_ONESIGNAL_APP_ID") {
-                showStatus('user-info', '❌ Configurez d\'abord votre App ID OneSignal', 'error');
-                return;
+                
+                return result;
+            } catch (error) {
+                log(`❌ Erreur réseau: ${error.message}`, 'error');
+                return { error: error.message };
             }
-            
-            OneSignal.push(function() {
-                OneSignal.getUserId().then(function(userId) {
-                    if (userId) {
-                        showStatus('user-info', `✅ User ID: ${userId}`, 'success');
-                    } else {
-                        showStatus('user-info', '❌ Pas d\'utilisateur inscrit', 'error');
-                    }
-                });
+        }
+
+        async function testConnection() {
+            log('🔗 Test de connexion OneSignal...');
+            await apiCall('test-onesignal-connection');
+        }
+
+        async function testBasicNotification() {
+            log('📱 Test notification de base...');
+            await apiCall('send-test-notification', {
+                title: '🧪 Test Notification Basique',
+                message: 'Ceci est un test de notification push basique.',
+                target_audience: 'all'
             });
         }
 
-        // Test automatique au chargement de la page
-        window.onload = function() {
-            setTimeout(() => {
-                checkOneSignal();
-                checkPermission();
-            }, 1000);
-        };
+        async function testRecipeNotification() {
+            log('🍽️ Test notification recette avec deep linking corrigé...');
+            await apiCall('send-test-notification', {
+                title: '🍽️ Nouvelle Recette Délicieuse !',
+                message: 'Découvrez cette recette incroyable qui va révolutionner votre cuisine !',
+                content_type: 'recipe',
+                content_id: 1,
+                target_audience: 'all'
+            });
+        }
+
+        async function testTipNotification() {
+            log('💡 Test notification astuce avec deep linking corrigé...');
+            await apiCall('send-test-notification', {
+                title: '💡 Astuce du Chef',
+                message: 'Une astuce secrète pour améliorer vos plats !',
+                content_type: 'tip',
+                content_id: 1,
+                target_audience: 'all'
+            });
+        }
+
+        async function testEventNotification() {
+            log('📅 Test notification événement avec deep linking corrigé...');
+            await apiCall('send-test-notification', {
+                title: '📅 Événement Culinaire',
+                message: 'Ne manquez pas notre prochain événement !',
+                content_type: 'event',
+                content_id: 1,
+                target_audience: 'all'
+            });
+        }
+
+        async function testDinorTvNotification() {
+            log('📺 Test notification Dinor TV avec deep linking corrigé...');
+            await apiCall('send-test-notification', {
+                title: '📺 Nouveau sur Dinor TV',
+                message: 'Une nouvelle vidéo passionnante vous attend !',
+                content_type: 'dinor_tv',
+                content_id: 1,
+                target_audience: 'all'
+            });
+        }
+
+        async function testAppOpeningRecipe() {
+            log('🚀 Test ouverture app + navigation recette...');
+            await apiCall('send-test-notification', {
+                title: '🚀 Test Ouverture App - Recette',
+                message: 'Cette notification devrait ouvrir l\'app et naviguer vers la recette !',
+                content_type: 'recipe',
+                content_id: 1,
+                target_audience: 'all'
+            });
+        }
+
+        async function testAppOpeningEvent() {
+            log('🚀 Test ouverture app + navigation événement...');
+            await apiCall('send-test-notification', {
+                title: '🚀 Test Ouverture App - Événement',
+                message: 'Cette notification devrait ouvrir l\'app et naviguer vers l\'événement !',
+                content_type: 'event',
+                content_id: 1,
+                target_audience: 'all'
+            });
+        }
+
+        async function testBackgroundNotification() {
+            log('🌙 Test notification en arrière-plan...');
+            await apiCall('send-test-notification', {
+                title: '🌙 Notification Arrière-Plan',
+                message: 'Cette notification teste le handler d\'arrière-plan amélioré.',
+                content_type: 'tip',
+                content_id: 1,
+                target_audience: 'all'
+            });
+        }
+
+        async function testSegmentsNotification() {
+            log('👥 Test notification par segments...');
+            await apiCall('send-test-notification', {
+                title: '👥 Test Segments',
+                message: 'Notification envoyée à tous les utilisateurs actifs.',
+                target_audience: 'segments',
+                target_data: ['All']
+            });
+        }
+
+        async function sendCustomNotification() {
+            const title = document.getElementById('customTitle').value;
+            const message = document.getElementById('customMessage').value;
+            const contentType = document.getElementById('contentType').value;
+            const contentId = document.getElementById('contentId').value;
+
+            log('🎯 Envoi notification personnalisée...');
+            await apiCall('send-test-notification', {
+                title: title,
+                message: message,
+                content_type: contentType,
+                content_id: parseInt(contentId),
+                target_audience: 'all'
+            });
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', () => {
+            log('🔄 Page de test chargée et prête');
+            log('📱 Utilisez les boutons pour tester les notifications');
+            log('🐛 Vérifiez la console et les logs de l\'app Flutter pour le debug');
+        });
     </script>
 </body>
 </html> 

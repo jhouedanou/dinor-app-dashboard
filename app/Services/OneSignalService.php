@@ -133,17 +133,40 @@ class OneSignalService
                 break;
         }
 
+        // Initialiser les données personnalisées
+        $payload['data'] = [
+            'notification_id' => $notification->id,
+            'created_at' => $notification->created_at->toISOString(),
+        ];
+
         // URL de destination (deep link ou URL personnalisée)
         $deepLinkUrl = $notification->getDeepLinkUrl();
         if ($deepLinkUrl) {
             $payload['url'] = $deepLinkUrl;
             
             // Ajouter les données personnalisées pour la navigation dans l'app
-            $payload['data'] = [
-                'content_type' => $notification->content_type,
-                'content_id' => $notification->content_id,
-                'deep_link' => $deepLinkUrl,
-            ];
+            $payload['data']['content_type'] = $notification->content_type;
+            $payload['data']['content_id'] = $notification->content_id;
+            $payload['data']['deep_link'] = $deepLinkUrl;
+        }
+
+        // URL personnalisée en fallback
+        if ($notification->url) {
+            $payload['data']['url'] = $notification->url;
+            // Si pas de deep link, utiliser l'URL personnalisée comme URL principale
+            if (!$deepLinkUrl) {
+                $payload['url'] = $notification->url;
+            }
+        }
+
+        // Configuration pour ouvrir l'app automatiquement
+        $payload['app_url'] = $deepLinkUrl ?: $notification->url;
+        $payload['android_background_data'] = true;
+        $payload['content_available'] = true; // Pour iOS
+        
+        // Forcer l'ouverture de l'app sur clic
+        if ($deepLinkUrl || $notification->url) {
+            $payload['web_url'] = $deepLinkUrl ?: $notification->url;
         }
 
         // Icône personnalisée
@@ -151,16 +174,8 @@ class OneSignalService
             $iconUrl = config('app.url') . '/storage/' . $notification->icon;
             $payload['chrome_web_icon'] = $iconUrl;
             $payload['firefox_icon'] = $iconUrl;
-        }
-
-        // Données additionnelles
-        $payload['data'] = [
-            'notification_id' => $notification->id,
-            'created_at' => $notification->created_at->toISOString(),
-        ];
-
-        if ($notification->url) {
-            $payload['data']['url'] = $notification->url;
+            $payload['ios_attachments'] = ['id' => $iconUrl];
+            $payload['big_picture'] = $iconUrl;
         }
 
         return $payload;

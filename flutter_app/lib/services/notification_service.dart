@@ -1,5 +1,6 @@
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:flutter/foundation.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'navigation_service.dart';
 
 class NotificationService {
@@ -47,12 +48,8 @@ class NotificationService {
         debugPrint('📱 [NotificationService] Nouveau Subscription ID: $newSubscriptionId');
       }
       
-      // TEST DE NAVIGATION (à supprimer après debug)
-      debugPrint('🧪 [NotificationService] Test de navigation dans 10 secondes...');
-      Future.delayed(Duration(seconds: 10), () {
-        debugPrint('🧪 [NotificationService] Lancement du test de navigation...');
-        testNavigation();
-      });
+      // Vérifier s'il y a eu une notification qui a ouvert l'app
+      await _checkLaunchNotification();
       
       debugPrint('✅ [NotificationService] OneSignal initialisé avec succès');
     } catch (e) {
@@ -60,13 +57,16 @@ class NotificationService {
     }
   }
   
-  // Méthode de test pour vérifier la navigation
-  static void testNavigation() {
+  /// Vérifie si l'app a été ouverte par une notification
+  static Future<void> _checkLaunchNotification() async {
     try {
-      debugPrint('🧪 [NotificationService] Test de navigation vers recette ID: 1');
-      _handleContentNavigation('recipe', '1');
+      debugPrint('🚀 [NotificationService] Vérification notification de lancement...');
+      
+      // Note: OneSignal SDK 5.x gère automatiquement les notifications de lancement
+      // via le click listener, pas besoin de vérification manuelle
+      debugPrint('✅ [NotificationService] Vérification terminée');
     } catch (e) {
-      debugPrint('❌ [NotificationService] Erreur test navigation: $e');
+      debugPrint('❌ [NotificationService] Erreur vérification lancement: $e');
     }
   }
   
@@ -85,68 +85,31 @@ class NotificationService {
     try {
       // Notification reçue en foreground
       OneSignal.Notifications.addForegroundWillDisplayListener((event) {
-        debugPrint('🔔 [NotificationService] Notification reçue en foreground: ${event.notification.title}');
+        debugPrint('🔔 [NotificationService] ========== NOTIFICATION FOREGROUND ==========');
+        debugPrint('🔔 [NotificationService] Titre: ${event.notification.title}');
+        debugPrint('🔔 [NotificationService] Message: ${event.notification.body}');
+        debugPrint('🔔 [NotificationService] Données: ${event.notification.additionalData}');
         
         // TOUJOURS afficher la notification en bannière, même en foreground
         // Ne pas appeler event.preventDefault() pour permettre l'affichage système
         debugPrint('📱 [NotificationService] Affichage de la notification en bannière système');
+        debugPrint('🔔 [NotificationService] ===============================================');
         
         // La notification sera automatiquement affichée en bannière
         // car on ne prévient pas son affichage par défaut
       });
       
-      // Notification cliquée
+      // Notification cliquée (app ouverte ou en foreground)
       OneSignal.Notifications.addClickListener((event) {
-        debugPrint('👆 [NotificationService] =================================');
-        debugPrint('👆 [NotificationService] Notification cliquée: ${event.notification.title}');
-        debugPrint('👆 [NotificationService] =================================');
+        debugPrint('👆 [NotificationService] ========== NOTIFICATION CLIQUÉE ==========');
+        debugPrint('👆 [NotificationService] Titre: ${event.notification.title}');
+        debugPrint('👆 [NotificationService] Message: ${event.notification.body}');
+        debugPrint('👆 [NotificationService] =======================================');
         
-        // Gérer les données de navigation
-        final data = event.notification.additionalData;
-        debugPrint('📱 [NotificationService] Données notification: $data');
-        debugPrint('📱 [NotificationService] Launch URL: ${event.notification.launchUrl}');
-        
-        // Variable pour tracker si on a navigué
-        bool hasNavigated = false;
-        
-        if (data != null) {
-          debugPrint('🔍 [NotificationService] Données détaillées:');
-          data.forEach((key, value) {
-            debugPrint('🔍 [NotificationService]   $key: $value (${value.runtimeType})');
-          });
-          
-          // Priorité aux données personnalisées (deep link)
-          if (data.containsKey('deep_link')) {
-            debugPrint('🚀 [NotificationService] Navigation via deep_link: ${data['deep_link']}');
-            _handleNotificationUrl(data['deep_link']);
-            hasNavigated = true;
-          } else if (data.containsKey('content_type') && data.containsKey('content_id')) {
-            debugPrint('🚀 [NotificationService] Navigation via content_type/content_id: ${data['content_type']}/${data['content_id']}');
-            // Navigation directe via les données
-            _handleContentNavigation(data['content_type'], data['content_id'].toString());
-            hasNavigated = true;
-          } else if (data.containsKey('url')) {
-            debugPrint('🚀 [NotificationService] Navigation via URL: ${data['url']}');
-            // URL classique en fallback
-            _handleNotificationUrl(data['url']);
-            hasNavigated = true;
-          }
-        } else {
-          debugPrint('⚠️ [NotificationService] Aucune donnée dans la notification');
-        }
-        
-        // Fallback : URL de la notification elle-même
-        if (!hasNavigated && event.notification.launchUrl != null && event.notification.launchUrl!.isNotEmpty) {
-          debugPrint('🚀 [NotificationService] Navigation fallback via launchUrl: ${event.notification.launchUrl}');
-          _handleNotificationUrl(event.notification.launchUrl!);
-          hasNavigated = true;
-        }
-        
-        if (!hasNavigated) {
-          debugPrint('❌ [NotificationService] AUCUNE NAVIGATION EFFECTUÉE - Pas de données de navigation trouvées');
-        }
-        
-        debugPrint('👆 [NotificationService] =================================');
+        // Attendre un petit délai pour s'assurer que l'app est prête
+        Future.delayed(Duration(milliseconds: 500), () {
+          _handleNotificationClick(event);
+        });
       });
       
       // Changement de l'ID utilisateur
@@ -163,6 +126,62 @@ class NotificationService {
     }
   }
   
+  /// Gère le clic sur une notification
+  static void _handleNotificationClick(OSNotificationClickEvent event) {
+    debugPrint('🎯 [NotificationService] ========== TRAITEMENT CLIC ==========');
+    
+    // Gérer les données de navigation
+    final data = event.notification.additionalData;
+    debugPrint('📱 [NotificationService] Données notification: $data');
+    debugPrint('📱 [NotificationService] Launch URL: ${event.notification.launchUrl}');
+    
+    // Variable pour tracker si on a navigué
+    bool hasNavigated = false;
+    
+    if (data != null) {
+      debugPrint('🔍 [NotificationService] Données détaillées:');
+      data.forEach((key, value) {
+        debugPrint('🔍 [NotificationService]   $key: $value (${value.runtimeType})');
+      });
+      
+      // Priorité aux données personnalisées (deep link)
+      if (data.containsKey('deep_link')) {
+        debugPrint('🚀 [NotificationService] Navigation via deep_link: ${data['deep_link']}');
+        _handleNotificationUrl(data['deep_link']);
+        hasNavigated = true;
+      } else if (data.containsKey('content_type') && data.containsKey('content_id')) {
+        debugPrint('🚀 [NotificationService] Navigation via content_type/content_id: ${data['content_type']}/${data['content_id']}');
+        // Navigation directe via les données
+        _handleContentNavigation(data['content_type'], data['content_id'].toString());
+        hasNavigated = true;
+      } else if (data.containsKey('url')) {
+        debugPrint('🚀 [NotificationService] Navigation via URL: ${data['url']}');
+        // URL classique en fallback
+        _handleNotificationUrl(data['url']);
+        hasNavigated = true;
+      }
+    } else {
+      debugPrint('⚠️ [NotificationService] Aucune donnée dans la notification');
+    }
+    
+    // Fallback : URL de la notification elle-même
+    if (!hasNavigated && event.notification.launchUrl != null && event.notification.launchUrl!.isNotEmpty) {
+      debugPrint('🚀 [NotificationService] Navigation fallback via launchUrl: ${event.notification.launchUrl}');
+      _handleNotificationUrl(event.notification.launchUrl!);
+      hasNavigated = true;
+    }
+    
+    if (!hasNavigated) {
+      debugPrint('❌ [NotificationService] AUCUNE NAVIGATION EFFECTUÉE - Pas de données de navigation trouvées');
+      debugPrint('❌ [NotificationService] Données reçues: $data');
+      debugPrint('❌ [NotificationService] Launch URL: ${event.notification.launchUrl}');
+    } else {
+      debugPrint('✅ [NotificationService] Navigation effectuée avec succès');
+    }
+    
+    debugPrint('🎯 [NotificationService] ======================================');
+  }
+  
   static void _handleNotificationUrl(String url) {
     debugPrint('🔗 [NotificationService] Redirection vers: $url');
     
@@ -173,7 +192,7 @@ class NotificationService {
       } else {
         // URL web classique - ouvrir dans le navigateur
         debugPrint('🌐 [NotificationService] Ouverture URL web: $url');
-        // Ici on pourrait utiliser url_launcher pour ouvrir dans le navigateur
+        _launchWebUrl(url);
       }
     } catch (e) {
       debugPrint('❌ [NotificationService] Erreur navigation: $e');
@@ -211,12 +230,29 @@ class NotificationService {
     // Vérifier si NavigationService est disponible
     if (NavigationService.navigatorKey.currentState == null) {
       debugPrint('❌ [NotificationService] NavigatorKey.currentState est null !');
+      debugPrint('⏳ [NotificationService] Tentative de retry dans 1 seconde...');
+      
+      // Retry après un délai
+      Future.delayed(Duration(seconds: 1), () {
+        if (NavigationService.navigatorKey.currentState != null) {
+          debugPrint('✅ [NotificationService] NavigatorKey disponible après retry');
+          _performNavigation(contentType, contentId);
+        } else {
+          debugPrint('❌ [NotificationService] NavigatorKey toujours indisponible après retry');
+        }
+      });
       return;
     }
     
+    _performNavigation(contentType, contentId);
+    debugPrint('📱 [NotificationService] ====================================');
+  }
+
+  /// Effectue la navigation vers le contenu spécifié
+  static void _performNavigation(String contentType, String contentId) {
     try {
       // Naviguer selon le type de contenu
-      switch (contentType) {
+      switch (contentType.toLowerCase()) {
         case 'recipe':
           debugPrint('🍽️ [NotificationService] Navigation vers recette ID: $contentId');
           NavigationService.goToRecipeDetail(contentId);
@@ -244,12 +280,29 @@ class NotificationService {
           break;
         default:
           debugPrint('⚠️ [NotificationService] Type de contenu non géré: $contentType');
+          debugPrint('🔍 [NotificationService] Types supportés: recipe, tip, event, dinor-tv, page');
       }
     } catch (e) {
       debugPrint('❌ [NotificationService] Erreur lors de la navigation: $e');
+      debugPrint('🔧 [NotificationService] Type: $contentType, ID: $contentId');
     }
-    
-    debugPrint('📱 [NotificationService] ====================================');
+  }
+
+  static Future<void> _launchWebUrl(String url) async {
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
+        debugPrint('✅ [NotificationService] URL ouverte avec succès: $url');
+      } else {
+        debugPrint('❌ [NotificationService] Impossible d\'ouvrir l\'URL: $url');
+      }
+    } catch (e) {
+      debugPrint('❌ [NotificationService] Erreur lors de l\'ouverture de l\'URL: $e');
+    }
   }
   
   static Future<String?> getUserId() async {
