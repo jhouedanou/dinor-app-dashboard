@@ -14,7 +14,7 @@ class TestNotification extends Command
      *
      * @var string
      */
-    protected $signature = 'test:notification {--title=Test} {--message=Message de test} {--url=}';
+    protected $signature = 'test:notification {--title=Test} {--message=Message de test} {--url=} {--simulate} {--minimal}';
 
     /**
      * The console command description.
@@ -39,6 +39,66 @@ class TestNotification extends Command
         $this->info('🧪 Test de notification OneSignal');
         $this->newLine();
 
+        // Mode simulation si demandé ou si pas de clés configurées
+        $simulate = $this->option('simulate') || $this->option('minimal') || !config('services.onesignal.rest_api_key');
+        
+        if ($simulate) {
+            $mode = $this->option('minimal') ? 'minimal' : 'simulation';
+            $this->warn('⚠️  Mode ' . $mode . ' activé (pas de clés OneSignal configurées)');
+            $this->newLine();
+            
+            // 1. Test de la configuration
+            $this->line('1️⃣ Vérification de la configuration...');
+            $this->checkConfiguration();
+            
+            // 2. Créer une notification de test (simulation)
+            $this->line('2️⃣ Création d\'une notification de test (simulation)...');
+            
+            $notification = PushNotification::create([
+                'title' => $this->option('title') . ' - ' . now()->format('H:i:s'),
+                'message' => $this->option('message') . ' (envoyé à ' . now()->format('d/m/Y H:i:s') . ')',
+                'url' => $this->option('url'),
+                'target_audience' => 'all',
+                'status' => 'draft',
+                'created_by' => 1,
+            ]);
+
+            $this->info('✅ Notification créée avec l\'ID: ' . $notification->id);
+            $this->newLine();
+            
+            // 3. Simuler l'envoi
+            $this->line('3️⃣ Simulation de l\'envoi...');
+            $this->info('✅ Notification simulée avec succès !');
+            $this->line('   🆔 OneSignal ID: SIMULATED-' . $notification->id);
+            $this->line('   👥 Destinataires: Tous les utilisateurs (simulation)');
+            
+            $notification->update([
+                'onesignal_id' => 'SIMULATED-' . $notification->id,
+                'status' => 'sent',
+                'sent_at' => now(),
+                'statistics' => ['simulated' => true]
+            ]);
+            
+            $this->newLine();
+            if ($this->option('minimal')) {
+                $this->warn('📝 Configuration OneSignal minimale :');
+                $this->line('   1. Allez sur https://onesignal.com');
+                $this->line('   2. Créez une nouvelle application');
+                $this->line('   3. Choisissez "Flutter" comme plateforme');
+                $this->line('   4. Suivez les étapes de configuration');
+                $this->line('   5. Récupérez le nouvel App ID et REST API Key');
+                $this->line('   6. Mettez à jour votre configuration');
+            } else {
+                $this->warn('📝 Pour envoyer de vraies notifications :');
+                $this->line('   1. Obtenez vos clés OneSignal depuis le dashboard');
+                $this->line('   2. Configurez ONESIGNAL_REST_API_KEY dans .env');
+                $this->line('   3. Relancez cette commande sans --simulate');
+            }
+            
+            return Command::SUCCESS;
+        }
+
+        // Mode normal avec OneSignal
         // 1. Tester la connexion OneSignal
         $this->line('1️⃣ Test de la connexion OneSignal...');
         $connectionResult = $this->oneSignalService->testConnection();
@@ -64,7 +124,7 @@ class TestNotification extends Command
             'url' => $this->option('url'),
             'target_audience' => 'all',
             'status' => 'draft',
-            'created_by' => 1, // Admin par défaut
+            'created_by' => 1,
         ]);
 
         $this->info('✅ Notification créée avec l\'ID: ' . $notification->id);
@@ -93,5 +153,26 @@ class TestNotification extends Command
         $this->line('📱 Vérifiez votre application Flutter pour voir la notification');
         
         return Command::SUCCESS;
+    }
+
+    private function checkConfiguration()
+    {
+        $appId = config('services.onesignal.app_id');
+        $restApiKey = config('services.onesignal.rest_api_key');
+        
+        $this->line('📋 Configuration actuelle:');
+        $this->line('   - ONESIGNAL_APP_ID: ' . ($appId ? '✅ ' . $appId : '❌ Manquant'));
+        $this->line('   - ONESIGNAL_REST_API_KEY: ' . ($restApiKey ? '✅ Configuré' : '❌ Manquant'));
+        
+        if (!$restApiKey) {
+            $this->newLine();
+            $this->line('🔑 Pour obtenir vos clés OneSignal:');
+            $this->line('   1. Allez sur https://onesignal.com');
+            $this->line('   2. Connectez-vous à votre compte');
+            $this->line('   3. Sélectionnez votre application');
+            $this->line('   4. Settings → Keys & IDs');
+            $this->line('   5. Copiez REST API Key et User Auth Key');
+            $this->line('   6. Ajoutez-les dans votre fichier .env');
+        }
     }
 } 

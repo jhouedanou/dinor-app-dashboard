@@ -32,9 +32,14 @@ return [
     ],
 
     'onesignal' => [
-        'app_id' => env('ONESIGNAL_APP_ID', '7703701f-3c33-408d-99e0-db5c4da8918a'),
+        'app_id' => env('ONESIGNAL_APP_ID', 'd98be3fd-e812-47ea-a075-bca9a16b4f6b'),
         'rest_api_key' => env('ONESIGNAL_REST_API_KEY'),
         'user_auth_key' => env('ONESIGNAL_USER_AUTH_KEY'),
+    ],
+
+    'firebase' => [
+        'project_id' => env('FIREBASE_PROJECT_ID'),
+        'service_account_json' => env('FIREBASE_SERVICE_ACCOUNT_JSON'),
     ],
 
 ];
