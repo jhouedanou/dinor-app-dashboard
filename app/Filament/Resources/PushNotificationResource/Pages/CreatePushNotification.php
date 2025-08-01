@@ -66,9 +66,15 @@ class CreatePushNotification extends CreateRecord
                     'error_message' => $result['error'],
                 ]);
                 
+                // Ensure error message is a string
+                $errorMessage = $result['error'];
+                if (is_array($errorMessage)) {
+                    $errorMessage = implode('. ', $errorMessage);
+                }
+                
                 Notification::make()
                     ->title('❌ Notification créée mais l\'envoi a échoué')
-                    ->body($result['error'])
+                    ->body($errorMessage)
                     ->danger()
                     ->send();
             }

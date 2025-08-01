@@ -78,9 +78,15 @@ class OneSignalService
                     'status_code' => $response->status()
                 ]);
 
+                // Convert errors array to string if needed
+                $errorMessage = $error['errors'] ?? 'Erreur inconnue';
+                if (is_array($errorMessage)) {
+                    $errorMessage = implode('. ', $errorMessage);
+                }
+                
                 return [
                     'success' => false,
-                    'error' => $error['errors'] ?? 'Erreur inconnue'
+                    'error' => $errorMessage
                 ];
             }
 
@@ -141,32 +147,30 @@ class OneSignalService
 
         // URL de destination (deep link ou URL personnalisée)
         $deepLinkUrl = $notification->getDeepLinkUrl();
-        if ($deepLinkUrl) {
-            $payload['url'] = $deepLinkUrl;
-            
-            // Ajouter les données personnalisées pour la navigation dans l'app
+        $isInternalContent = $deepLinkUrl && str_starts_with($deepLinkUrl, 'dinor://');
+        
+        if ($isInternalContent) {
+            // Pour le contenu interne, utiliser seulement les données personnalisées
+            // Ne pas définir d'URLs pour éviter les conflits OneSignal
             $payload['data']['content_type'] = $notification->content_type;
             $payload['data']['content_id'] = $notification->content_id;
             $payload['data']['deep_link'] = $deepLinkUrl;
-        }
-
-        // URL personnalisée en fallback
-        if ($notification->url) {
-            $payload['data']['url'] = $notification->url;
-            // Si pas de deep link, utiliser l'URL personnalisée comme URL principale
-            if (!$deepLinkUrl) {
+            $payload['data']['action'] = 'navigate_to_content';
+            
+            // Configuration pour ouvrir l'app automatiquement
+            $payload['android_background_data'] = true;
+            $payload['content_available'] = true; // Pour iOS
+            
+        } else {
+            // Pour les URLs externes, utiliser la logique normale
+            if ($notification->url) {
                 $payload['url'] = $notification->url;
+                $payload['data']['url'] = $notification->url;
+                $payload['data']['action'] = 'open_url';
+                
+                // Configuration pour ouvrir l'URL externe
+                $payload['web_url'] = $notification->url;
             }
-        }
-
-        // Configuration pour ouvrir l'app automatiquement
-        $payload['app_url'] = $deepLinkUrl ?: $notification->url;
-        $payload['android_background_data'] = true;
-        $payload['content_available'] = true; // Pour iOS
-        
-        // Forcer l'ouverture de l'app sur clic
-        if ($deepLinkUrl || $notification->url) {
-            $payload['web_url'] = $deepLinkUrl ?: $notification->url;
         }
 
         // Icône personnalisée
