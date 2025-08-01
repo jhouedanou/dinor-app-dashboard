@@ -47,6 +47,9 @@ dependencies:
   package_info_plus: ^4.2.0
   connectivity_plus: ^5.0.2
 
+  # Push notifications (OneSignal)
+  onesignal_flutter: ^5.1.1
+
   # Utils
   intl: ^0.18.1
   json_annotation: ^4.8.1

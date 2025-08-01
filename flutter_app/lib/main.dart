@@ -22,7 +22,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 
 // Services (remplace les services Vue)
-
+import 'services/notification_service.dart';
 
 // Router supprimé - remplacé par NavigationService
 
@@ -75,7 +75,7 @@ Future<void> _initializeServices() async {
   // await ApiService.initialize();
   
   // Notification Service (équivalent OneSignal)
-  // await NotificationService.initialize();
+  await NotificationService.initialize();
   
   print('✅ [Main] Services initialisés avec succès');
 }
