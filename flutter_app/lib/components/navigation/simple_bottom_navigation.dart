@@ -45,12 +45,6 @@ class _SimpleBottomNavigationState extends State<SimpleBottomNavigation> {
       'icon': Icons.play_circle,
       'label': 'DinorTV',
     },
-    {
-      'name': 'profile',
-      'path': '/profile',
-      'icon': Icons.person,
-      'label': 'Profil',
-    },
   ];
 
   @override

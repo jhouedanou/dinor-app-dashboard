@@ -49,6 +49,9 @@ dependencies:
 
   # Push notifications (OneSignal)
   onesignal_flutter: ^5.2.5
+  
+  # Permissions
+  permission_handler: ^11.0.1
 
   # Utils
   intl: ^0.18.1
