@@ -1,24 +1,24 @@
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:flutter/foundation.dart';
 
-class NotificationService {
+class NotificationServiceSimple {
   static const String _appId = "d98be3fd-e812-47ea-a075-bca9a16b4f6b";
   
   static Future<void> initialize() async {
-    debugPrint('🔔 [NotificationService] Initialisation OneSignal...');
+    debugPrint('🔔 [NotificationService] Initialisation OneSignal (version simple)...');
     
     try {
-      // Configuration OneSignal
+      // Configuration OneSignal basique
       OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
       OneSignal.initialize(_appId);
       
       // Demande de permission
       await requestPermission();
       
-      // Configuration des événements
-      _setupEventListeners();
+      // Configuration des événements de base
+      _setupBasicEventListeners();
       
-      debugPrint('✅ [NotificationService] OneSignal initialisé avec succès');
+      debugPrint('✅ [NotificationService] OneSignal initialisé avec succès (version simple)');
     } catch (e) {
       debugPrint('❌ [NotificationService] Erreur d\'initialisation: $e');
     }
@@ -35,13 +35,13 @@ class NotificationService {
     }
   }
   
-  static void _setupEventListeners() {
+  static void _setupBasicEventListeners() {
     try {
-      // Notification reçue en foreground
+      // Notification reçue
       OneSignal.Notifications.addForegroundWillDisplayListener((event) {
-        debugPrint('🔔 [NotificationService] Notification reçue en foreground: ${event.notification.title}');
+        debugPrint('🔔 [NotificationService] Notification reçue: ${event.notification.title}');
         
-        // Afficher la notification même en foreground
+        // Afficher la notification
         event.preventDefault();
         event.notification.display();
       });
@@ -50,31 +50,17 @@ class NotificationService {
       OneSignal.Notifications.addClickListener((event) {
         debugPrint('👆 [NotificationService] Notification cliquée: ${event.notification.title}');
         
-        // Gérer l'URL de redirection si présente
+        // Gérer l'URL si présente
         final data = event.notification.additionalData;
         if (data != null && data.containsKey('url')) {
-          _handleNotificationUrl(data['url']);
+          debugPrint('🔗 [NotificationService] URL trouvée: ${data['url']}');
         }
       });
       
-      // Changement de l'ID utilisateur
-      OneSignal.User.pushSubscription.addObserver((state) {
-        debugPrint('👤 [NotificationService] Subscription changée');
-        if (state.current.id != null) {
-          debugPrint('👤 [NotificationService] Subscription ID: ${state.current.id}');
-        }
-      });
-      
-      debugPrint('✅ [NotificationService] Event listeners configurés');
+      debugPrint('✅ [NotificationService] Event listeners configurés (version simple)');
     } catch (e) {
       debugPrint('❌ [NotificationService] Erreur configuration listeners: $e');
     }
-  }
-  
-  static void _handleNotificationUrl(String url) {
-    debugPrint('🔗 [NotificationService] Redirection vers: $url');
-    // Ici vous pouvez implémenter la navigation vers l'URL
-    // Exemple : NavigationService.pushNamed(url);
   }
   
   static Future<String?> getUserId() async {
@@ -94,24 +80,6 @@ class NotificationService {
       debugPrint('👤 [NotificationService] External User ID défini: $userId');
     } catch (e) {
       debugPrint('❌ [NotificationService] Erreur setExternalUserId: $e');
-    }
-  }
-  
-  static void addTag(String key, String value) {
-    try {
-      OneSignal.User.addTags({key: value});
-      debugPrint('🏷️ [NotificationService] Tag ajouté: $key = $value');
-    } catch (e) {
-      debugPrint('❌ [NotificationService] Erreur addTag: $e');
-    }
-  }
-  
-  static void removeTag(String key) {
-    try {
-      OneSignal.User.removeTags([key]);
-      debugPrint('🏷️ [NotificationService] Tag supprimé: $key');
-    } catch (e) {
-      debugPrint('❌ [NotificationService] Erreur removeTag: $e');
     }
   }
 } 

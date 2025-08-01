@@ -23,6 +23,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 // Services (remplace les services Vue)
 import 'services/notification_service.dart';
+// import 'services/notification_service_simple.dart' as SimpleNotificationService;
 
 // Router supprimé - remplacé par NavigationService
 

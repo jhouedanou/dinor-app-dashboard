@@ -48,7 +48,7 @@ dependencies:
   connectivity_plus: ^5.0.2
 
   # Push notifications (OneSignal)
-  onesignal_flutter: ^5.1.1
+  onesignal_flutter: ^5.2.5
 
   # Utils
   intl: ^0.18.1
