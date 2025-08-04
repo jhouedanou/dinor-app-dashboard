@@ -10,10 +10,10 @@
  */
 
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'api_service.dart';
+import '../composables/use_auth_handler.dart';
 
 class Comment {
   final String id;
@@ -102,9 +102,10 @@ class CommentsState {
 class CommentsService extends StateNotifier<Map<String, CommentsState>> {
   static const String baseUrl = 'https://new.dinorapp.com/api/v1';
   static const int perPage = 10;
-  static const _storage = FlutterSecureStorage();
+  final ApiService _apiService;
+  final Ref _ref;
 
-  CommentsService() : super({});
+  CommentsService(this._apiService, this._ref) : super({});
 
   // Récupérer les commentaires pour un contenu spécifique
   Future<void> loadComments(String contentType, String contentId, {bool refresh = false}) async {
@@ -146,14 +147,14 @@ class CommentsService extends StateNotifier<Map<String, CommentsState>> {
       }
 
       // Charger depuis l'API
-      final response = await http.get(
-        Uri.parse('$baseUrl/comments?type=$contentType&id=$contentId&per_page=$perPage'),
-        headers: await _getHeaders(),
-      ).timeout(const Duration(seconds: 10));
+      final result = await _apiService.get('/comments', params: {
+        'type': contentType,
+        'id': contentId,
+        'per_page': perPage.toString(),
+      });
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final commentsData = data['data'] ?? data['comments'] ?? [];
+      if (result['success'] == true) {
+        final commentsData = result['data'] ?? result['comments'] ?? [];
         
         final comments = (commentsData as List)
             .map((json) => Comment.fromJson(json))
@@ -173,7 +174,7 @@ class CommentsService extends StateNotifier<Map<String, CommentsState>> {
 
         print('✅ [CommentsService] Commentaires chargés: ${comments.length}');
       } else {
-        throw Exception('HTTP ${response.statusCode}');
+        throw Exception(result['error'] ?? 'Erreur de chargement');
       }
     } catch (e) {
       print('❌ [CommentsService] Erreur chargement commentaires: $e');
@@ -204,14 +205,15 @@ class CommentsService extends StateNotifier<Map<String, CommentsState>> {
     try {
       final nextPage = currentState.currentPage + 1;
       
-      final response = await http.get(
-        Uri.parse('$baseUrl/comments?type=$contentType&id=$contentId&page=$nextPage&per_page=$perPage'),
-        headers: await _getHeaders(),
-      ).timeout(const Duration(seconds: 10));
+      final result = await _apiService.get('/comments', params: {
+        'type': contentType,
+        'id': contentId,
+        'page': nextPage.toString(),
+        'per_page': perPage.toString(),
+      });
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final commentsData = data['data'] ?? data['comments'] ?? [];
+      if (result['success'] == true) {
+        final commentsData = result['data'] ?? result['comments'] ?? [];
         
         final newComments = (commentsData as List)
             .map((json) => Comment.fromJson(json))
@@ -245,49 +247,41 @@ class CommentsService extends StateNotifier<Map<String, CommentsState>> {
     try {
       print('📝 [CommentsService] Ajout commentaire pour $contentType:$contentId');
       
+      // Obtenir les informations de l'utilisateur connecté
+      final authState = _ref.read(useAuthHandlerProvider);
+      
       final body = {
         'type': contentType,
         'id': contentId,
         'content': content,
       };
       
-      // Ne pas ajouter de données anonymes - laisser l'API utiliser les données du token
-      // Seulement ajouter authorName/authorEmail si explicitement fournis ET pas de token
-      final headers = await _getHeaders();
-      final hasAuthToken = headers.containsKey('Authorization');
-      
-      if (!hasAuthToken && authorName != null && authorEmail != null) {
-        // Commentaire anonyme uniquement si pas de token ET données fournies
-        body['author_name'] = authorName;
-        body['author_email'] = authorEmail;
-        print('📝 [CommentsService] Commentaire anonyme avec nom: $authorName');
-      } else if (hasAuthToken) {
-        print('📝 [CommentsService] Commentaire authentifié avec token');
+      // Toujours ajouter author_name et author_email (requis par l'API)
+      if (authState.isAuthenticated) {
+        // Utilisateur connecté : utiliser ses vraies données
+        body['author_name'] = authState.userName ?? 'Utilisateur';
+        body['author_email'] = authState.userEmail ?? 'user@dinorapp.com';
+        print('📝 [CommentsService] Commentaire d\'utilisateur connecté: ${authState.userName}');
       } else {
-        print('❌ [CommentsService] Aucune authentification disponible');
-        throw Exception('Authentification requise');
+        // Utilisateur non connecté : utiliser les données fournies ou par défaut
+        body['author_name'] = authorName ?? 'Utilisateur Anonyme';
+        body['author_email'] = authorEmail ?? 'anonymous@dinorapp.com';
+        print('📝 [CommentsService] Commentaire anonyme: ${body['author_name']}');
       }
       
-      final response = await http.post(
-        Uri.parse('$baseUrl/comments'),
-        headers: await _getHeaders(),
-        body: json.encode(body),
-      ).timeout(const Duration(seconds: 10));
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = json.decode(response.body);
-        
-        if (data['success'] == true || data['comment'] != null) {
-          // Recharger les commentaires pour avoir la liste à jour
-          await loadComments(contentType, contentId, refresh: true);
-          print('✅ [CommentsService] Commentaire ajouté avec succès');
-          return true;
-        }
-      } else if (response.statusCode == 401) {
-        throw Exception('Authentification requise');
-      }
+      // Utiliser ApiService qui gère déjà l'authentification correctement
+      final result = await _apiService.post('/comments', body);
       
-      throw Exception('Erreur lors de l\'ajout du commentaire');
+      if (result['success'] == true) {
+        // Recharger les commentaires pour avoir la liste à jour
+        await loadComments(contentType, contentId, refresh: true);
+        print('✅ [CommentsService] Commentaire ajouté avec succès');
+        return true;
+      } else {
+        final errorMsg = result['message'] ?? result['error'] ?? 'Erreur inconnue';
+        print('❌ [CommentsService] Erreur API: $errorMsg');
+        throw Exception(errorMsg);
+      }
     } catch (e) {
       print('❌ [CommentsService] Erreur ajout commentaire: $e');
       return false;
@@ -297,12 +291,9 @@ class CommentsService extends StateNotifier<Map<String, CommentsState>> {
   // Supprimer un commentaire
   Future<bool> deleteComment(String contentType, String contentId, String commentId) async {
     try {
-      final response = await http.delete(
-        Uri.parse('$baseUrl/comments/$commentId'),
-        headers: await _getHeaders(),
-      ).timeout(const Duration(seconds: 10));
+      final result = await _apiService.delete('/comments/$commentId');
 
-      if (response.statusCode == 200) {
+      if (result['success'] == true) {
         // Retirer le commentaire de la liste locale
         final key = '${contentType}_$contentId';
         final currentState = state[key];
@@ -335,26 +326,7 @@ class CommentsService extends StateNotifier<Map<String, CommentsState>> {
     return state[key] ?? CommentsState();
   }
 
-  // Méthodes privées pour le cache et les headers
-  Future<Map<String, String>> _getHeaders() async {
-    // Utiliser FlutterSecureStorage comme use_auth_handler
-    final token = await _storage.read(key: 'auth_token');
-    
-    final headers = {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-    };
-    
-    if (token != null && token.isNotEmpty) {
-      headers['Authorization'] = 'Bearer $token';
-      print('🔐 [CommentsService] Token ajouté aux headers: ${token.substring(0, 10)}...');
-    } else {
-      print('⚠️ [CommentsService] Aucun token trouvé dans FlutterSecureStorage');
-    }
-    
-    return headers;
-  }
-
+  // Méthodes privées pour le cache
   Future<List<Comment>> _getCachedComments(String contentType, String contentId) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -386,7 +358,8 @@ class CommentsService extends StateNotifier<Map<String, CommentsState>> {
 
 // Provider pour le service de commentaires
 final commentsServiceProvider = StateNotifierProvider<CommentsService, Map<String, CommentsState>>((ref) {
-  return CommentsService();
+  final apiService = ref.watch(apiServiceProvider);
+  return CommentsService(apiService, ref);
 });
 
 // Provider helper pour obtenir l'état des commentaires d'un contenu spécifique
