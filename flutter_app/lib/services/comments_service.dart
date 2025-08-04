@@ -12,6 +12,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class Comment {
@@ -101,6 +102,7 @@ class CommentsState {
 class CommentsService extends StateNotifier<Map<String, CommentsState>> {
   static const String baseUrl = 'https://new.dinorapp.com/api/v1';
   static const int perPage = 10;
+  static const _storage = FlutterSecureStorage();
 
   CommentsService() : super({});
 
@@ -243,26 +245,27 @@ class CommentsService extends StateNotifier<Map<String, CommentsState>> {
     try {
       print('📝 [CommentsService] Ajout commentaire pour $contentType:$contentId');
       
-      // Vérifier si l'utilisateur est authentifié
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
-      
       final body = {
         'type': contentType,
         'id': contentId,
         'content': content,
       };
       
-      // Si pas de token et que nom/email sont fournis, les ajouter pour commentaire anonyme
-      if (token == null) {
-        if (authorName != null && authorEmail != null) {
-          body['author_name'] = authorName;
-          body['author_email'] = authorEmail;
-        } else {
-          // Utiliser des valeurs par défaut pour les tests
-          body['author_name'] = 'Utilisateur Anonyme';
-          body['author_email'] = 'anonymous@dinorapp.com';
-        }
+      // Ne pas ajouter de données anonymes - laisser l'API utiliser les données du token
+      // Seulement ajouter authorName/authorEmail si explicitement fournis ET pas de token
+      final headers = await _getHeaders();
+      final hasAuthToken = headers.containsKey('Authorization');
+      
+      if (!hasAuthToken && authorName != null && authorEmail != null) {
+        // Commentaire anonyme uniquement si pas de token ET données fournies
+        body['author_name'] = authorName;
+        body['author_email'] = authorEmail;
+        print('📝 [CommentsService] Commentaire anonyme avec nom: $authorName');
+      } else if (hasAuthToken) {
+        print('📝 [CommentsService] Commentaire authentifié avec token');
+      } else {
+        print('❌ [CommentsService] Aucune authentification disponible');
+        throw Exception('Authentification requise');
       }
       
       final response = await http.post(
@@ -334,16 +337,19 @@ class CommentsService extends StateNotifier<Map<String, CommentsState>> {
 
   // Méthodes privées pour le cache et les headers
   Future<Map<String, String>> _getHeaders() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token');
+    // Utiliser FlutterSecureStorage comme use_auth_handler
+    final token = await _storage.read(key: 'auth_token');
     
     final headers = {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
     };
     
-    if (token != null) {
+    if (token != null && token.isNotEmpty) {
       headers['Authorization'] = 'Bearer $token';
+      print('🔐 [CommentsService] Token ajouté aux headers: ${token.substring(0, 10)}...');
+    } else {
+      print('⚠️ [CommentsService] Aucun token trouvé dans FlutterSecureStorage');
     }
     
     return headers;

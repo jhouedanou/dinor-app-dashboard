@@ -367,48 +367,111 @@ class _RecipeDetailScreenUnifiedState extends ConsumerState<RecipeDetailScreenUn
           child: UnifiedContentHeader(
             imageUrl: _recipe!['featured_image_url'] ?? '',
             contentType: 'recipe',
-            customOverlay: Positioned(
-              bottom: 50, // Descendre les badges
-              left: 16,
-              right: 16,
-              child: Row(
-                children: [
-                  if (_recipe!['difficulty'] != null) ...[
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF4D03F).withValues(alpha: 0.9),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        _getDifficultyLabel(_recipe!['difficulty']),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF2D3748),
-                        ),
+            customOverlay: Stack(
+              children: [
+                // Gradient overlay pour améliorer la lisibilité
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: 120,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.3),
+                          Colors.black.withValues(alpha: 0.6),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 8),
-                  ],
-                  if (_recipe!['category'] != null)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        _recipe!['category']['name'],
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF2D3748),
+                  ),
+                ),
+                // Badges repositionnés
+                Positioned(
+                  bottom: 20,
+                  left: 16,
+                  right: 16,
+                  child: Row(
+                    children: [
+                      if (_recipe!['difficulty'] != null) ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF4D03F),
+                            borderRadius: BorderRadius.circular(25),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.2),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.signal_cellular_alt,
+                                size: 14,
+                                color: Color(0xFF2D3748),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                _getDifficultyLabel(_recipe!['difficulty']),
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF2D3748),
+                                  fontFamily: 'Roboto',
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ),
-                ],
-              ),
+                        const SizedBox(width: 12),
+                      ],
+                      if (_recipe!['category'] != null)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(25),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.2),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.category,
+                                size: 14,
+                                color: Color(0xFF4A5568),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                _recipe!['category']['name'],
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF2D3748),
+                                  fontFamily: 'Roboto',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ),
