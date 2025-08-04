@@ -5,6 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../services/comments_service.dart';
 import '../../composables/use_auth_handler.dart';
 import 'comment_item.dart';
+import 'auth_modal.dart';
 
 class UnifiedCommentsSection extends ConsumerStatefulWidget {
   final String contentType;
@@ -48,6 +49,24 @@ class _UnifiedCommentsSectionState extends ConsumerState<UnifiedCommentsSection>
     _commentController.dispose();
     _commentFocusNode.dispose();
     super.dispose();
+  }
+
+  void _showAuthModal() {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => AuthModal(
+        isOpen: true,
+        onClose: () => Navigator.of(context).pop(),
+        onAuthenticated: () {
+          Navigator.of(context).pop();
+          // Actualiser les commentaires après connexion
+          Future.delayed(const Duration(milliseconds: 500), () {
+            _loadComments();
+          });
+        },
+      ),
+    );
   }
 
   Future<void> _loadComments() async {
@@ -276,7 +295,7 @@ class _UnifiedCommentsSectionState extends ConsumerState<UnifiedCommentsSection>
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -313,29 +332,7 @@ class _UnifiedCommentsSectionState extends ConsumerState<UnifiedCommentsSection>
           ),
           const SizedBox(height: 16),
           ElevatedButton.icon(
-            onPressed: widget.onAuthRequired ?? () {
-              // Fallback: Affiche une modal de dialogue par défaut
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Authentification requise'),
-                  content: const Text('Vous devez être connecté pour continuer.'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Annuler'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        // TODO: Implémenter la navigation vers la page de connexion
-                      },
-                      child: const Text('Se connecter'),
-                    ),
-                  ],
-                ),
-              );
-            },
+            onPressed: widget.onAuthRequired ?? _showAuthModal,
             icon: const Icon(LucideIcons.logIn, size: 16),
             label: const Text('Se connecter ou s\'inscrire'),
             style: ElevatedButton.styleFrom(
@@ -662,7 +659,7 @@ class _UnifiedCommentsSectionState extends ConsumerState<UnifiedCommentsSection>
       }
     } catch (e) {
       if (e.toString().contains('Authentification requise')) {
-        widget.onAuthRequired?.call();
+        _showAuthModal();
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

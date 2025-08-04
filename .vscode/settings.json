@@ -3,5 +3,6 @@
         "lang"
     ],
     "i18n-ally.sourceLanguage": "fr",
-    "java.compile.nullAnalysis.mode": "automatic"
+    "java.compile.nullAnalysis.mode": "automatic",
+    "claudeCodeChat.permissions.yoloMode": false
 }

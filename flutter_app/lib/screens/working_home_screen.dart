@@ -560,22 +560,31 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Icône d'astuce
-            Container(
-              height: 120,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFFF4D03F), Color(0xFFFF6B35)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-              ),
-              child: const Center(
-                child: Icon(
-                  Icons.lightbulb,
-                  size: 48,
-                  color: Colors.white,
+            // Image
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              child: AspectRatio(
+                aspectRatio: 16 / 9,
+                child: ImageService.buildNetworkImage(
+                  imageUrl: tip['featured_image_url'] ?? '',
+                  contentType: 'tip',
+                  fit: BoxFit.cover,
+                  errorWidget: Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Color(0xFFF4D03F), Color(0xFFFF6B35)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                    child: const Center(
+                      child: Icon(
+                        Icons.lightbulb,
+                        size: 48,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),

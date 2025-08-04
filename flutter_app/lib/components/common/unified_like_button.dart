@@ -18,6 +18,7 @@ import 'dart:convert';
 
 import '../../services/local_database_service.dart';
 import '../../composables/use_auth_handler.dart';
+import 'auth_modal.dart';
 
 // Modèle pour les données de like
 class LikeData {
@@ -432,13 +433,31 @@ class _UnifiedLikeButtonState extends ConsumerState<UnifiedLikeButton>
     super.dispose();
   }
 
+  void _showAuthModal() {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => AuthModal(
+        isOpen: true,
+        onClose: () => Navigator.of(context).pop(),
+        onAuthenticated: () {
+          Navigator.of(context).pop();
+          // Réessayer l'action après authentification
+          Future.delayed(const Duration(milliseconds: 500), () {
+            _toggleLike();
+          });
+        },
+      ),
+    );
+  }
+
   Future<void> _toggleLike() async {
     if (_isProcessing) return;
     
     final authState = ref.read(useAuthHandlerProvider);
     if (!authState.isAuthenticated) {
       print('🔐 [UnifiedLikeButton] Authentification requise');
-      widget.onAuthRequired?.call();
+      _showAuthModal();
       return;
     }
 
@@ -497,7 +516,7 @@ class _UnifiedLikeButtonState extends ConsumerState<UnifiedLikeButton>
       print('❌ [UnifiedLikeButton] Erreur toggle: $e');
       
       if (e.toString().contains('Authentification requise')) {
-        widget.onAuthRequired?.call();
+        _showAuthModal();
       } else {
         // Afficher erreur avec bouton retry
         if (mounted) {
