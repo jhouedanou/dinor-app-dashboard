@@ -74,8 +74,25 @@ class NavigationService {
   
   // Méthodes de navigation
   static Future<T?> pushNamed<T extends Object?>(String routeName, {Object? arguments}) {
-    _notifyRouteChange(routeName);
-    return navigatorKey.currentState!.pushNamed<T>(routeName, arguments: arguments);
+    print('🧭 [NavigationService] pushNamed appelé:');
+    print('   - Route: $routeName');
+    print('   - Arguments: $arguments');
+    
+    if (navigatorKey.currentState == null) {
+      print('❌ [NavigationService] navigatorKey.currentState est null!');
+      print('💡 [NavigationService] Vérifiez que MaterialApp utilise bien navigatorKey');
+      throw Exception('NavigatorState non disponible. App non initialisée?');
+    }
+    
+    try {
+      _notifyRouteChange(routeName);
+      final result = navigatorKey.currentState!.pushNamed<T>(routeName, arguments: arguments);
+      print('✅ [NavigationService] Navigation lancée vers: $routeName');
+      return result;
+    } catch (e) {
+      print('❌ [NavigationService] Erreur lors de pushNamed: $e');
+      rethrow;
+    }
   }
   
   static Future<T?> pushReplacementNamed<T extends Object?, TO extends Object?>(
@@ -119,7 +136,18 @@ class NavigationService {
   }
   
   static void goToRecipeDetail(String id) {
-    pushNamed(recipeDetail, arguments: {'id': id});
+    print('🧭 [NavigationService] goToRecipeDetail appelé avec ID: $id');
+    if (id.isEmpty) {
+      print('❌ [NavigationService] ID vide fourni pour la recette');
+      return;
+    }
+    
+    try {
+      pushNamed(recipeDetail, arguments: {'id': id});
+      print('✅ [NavigationService] Navigation vers recette initiée');
+    } catch (e) {
+      print('❌ [NavigationService] Erreur navigation recette: $e');
+    }
   }
   
   static void goToTips() {
@@ -127,7 +155,18 @@ class NavigationService {
   }
   
   static void goToTipDetail(String id) {
-    pushNamed(tipDetail, arguments: {'id': id});
+    print('🧭 [NavigationService] goToTipDetail appelé avec ID: $id');
+    if (id.isEmpty) {
+      print('❌ [NavigationService] ID vide fourni pour l\'astuce');
+      return;
+    }
+    
+    try {
+      pushNamed(tipDetail, arguments: {'id': id});
+      print('✅ [NavigationService] Navigation vers astuce initiée');
+    } catch (e) {
+      print('❌ [NavigationService] Erreur navigation astuce: $e');
+    }
   }
   
   static void goToEvents() {
@@ -135,11 +174,28 @@ class NavigationService {
   }
   
   static void goToEventDetail(String id) {
-    pushNamed(eventDetail, arguments: {'id': id});
+    print('🧭 [NavigationService] goToEventDetail appelé avec ID: $id');
+    if (id.isEmpty) {
+      print('❌ [NavigationService] ID vide fourni pour l\'événement');
+      return;
+    }
+    
+    try {
+      pushNamed(eventDetail, arguments: {'id': id});
+      print('✅ [NavigationService] Navigation vers événement initiée');
+    } catch (e) {
+      print('❌ [NavigationService] Erreur navigation événement: $e');
+    }
   }
   
   static void goToDinorTv() {
-    pushNamed(dinorTv);
+    print('🧭 [NavigationService] goToDinorTv appelé');
+    try {
+      pushNamed(dinorTv);
+      print('✅ [NavigationService] Navigation vers Dinor TV initiée');
+    } catch (e) {
+      print('❌ [NavigationService] Erreur navigation Dinor TV: $e');
+    }
   }
   
   static void goToProfile() {

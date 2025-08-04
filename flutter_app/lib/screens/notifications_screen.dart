@@ -158,6 +158,14 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   }
 
   void _onNotificationTap(NotificationModel notification) {
+    print('🔔 [NotificationsScreen] Notification cliquée:');
+    print('   - ID: ${notification.id}');
+    print('   - Titre: ${notification.title}');
+    print('   - Deep Link: ${notification.deepLink}');
+    print('   - Content Type: ${notification.contentType}');
+    print('   - Content ID: ${notification.contentId}');
+    print('   - URL: ${notification.url}');
+    
     // Marquer comme lue localement pour une UX immédiate
     if (!notification.isRead) {
       setState(() {
@@ -175,52 +183,122 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     }
 
     // Navigation vers le contenu
-    if (notification.deepLink != null) {
-      _handleDeepLink(notification.deepLink!);
-    } else if (notification.contentType != null && notification.contentId != null) {
-      _handleContentNavigation(notification.contentType!, notification.contentId!);
-    } else if (notification.url != null) {
-      // Gestion URL classique - ouvrir dans le navigateur
-      print('📱 URL notification: ${notification.url}');
-      _launchUrl(notification.url!);
+    try {
+      if (notification.deepLink != null && notification.deepLink!.isNotEmpty) {
+        print('🔗 [NotificationsScreen] Utilisation du deep link...');
+        _handleDeepLink(notification.deepLink!);
+      } else if (notification.contentType != null && 
+                 notification.contentId != null &&
+                 notification.contentType!.isNotEmpty &&
+                 notification.contentId!.isNotEmpty) {
+        print('📱 [NotificationsScreen] Utilisation du type/ID de contenu...');
+        _handleContentNavigation(notification.contentType!, notification.contentId!);
+      } else if (notification.url != null && notification.url!.isNotEmpty) {
+        print('🌐 [NotificationsScreen] Utilisation de l\'URL...');
+        _launchUrl(notification.url!);
+      } else {
+        print('⚠️ [NotificationsScreen] Aucune information de navigation disponible');
+        _showErrorSnackBar('Cette notification ne contient pas de lien de navigation');
+      }
+    } catch (e) {
+      print('❌ [NotificationsScreen] Erreur lors du traitement de la notification: $e');
+      _showErrorSnackBar('Erreur lors de l\'ouverture de la notification');
     }
   }
 
   void _handleDeepLink(String deepLink) {
+    print('🔗 [NotificationsScreen] === DEBUT DEEP LINK ===');
+    print('🔗 [NotificationsScreen] Deep link reçu: $deepLink');
+    
     try {
       final uri = Uri.parse(deepLink);
-      final pathSegments = uri.pathSegments;
+      print('🔗 [NotificationsScreen] URI parsé: $uri');
+      print('🔗 [NotificationsScreen] Scheme: ${uri.scheme}');
+      print('🔗 [NotificationsScreen] Host: ${uri.host}');
+      print('🔗 [NotificationsScreen] Path: ${uri.path}');
       
-      if (pathSegments.isNotEmpty) {
-        final contentType = pathSegments[0];
-        final contentId = pathSegments.length > 1 ? pathSegments[1] : null;
+      final pathSegments = uri.pathSegments;
+      print('🔗 [NotificationsScreen] Path segments: $pathSegments');
+      print('🔗 [NotificationsScreen] Nombre de segments: ${pathSegments.length}');
+      
+      // Pour les deep links de format: dinor://event/2
+      // uri.host = "event" (contentType)
+      // pathSegments[0] = "2" (contentId)
+      
+      String? contentType;
+      String? contentId;
+      
+      if (uri.host.isNotEmpty) {
+        contentType = uri.host;
+        print('🔗 [NotificationsScreen] Content Type depuis host: $contentType');
         
-        if (contentId != null) {
-          _handleContentNavigation(contentType, contentId);
+        if (pathSegments.isNotEmpty) {
+          contentId = pathSegments[0];
+          print('🔗 [NotificationsScreen] Content ID depuis path[0]: $contentId');
         }
+      } else if (pathSegments.length >= 2) {
+        // Fallback pour format: dinor:///event/2
+        contentType = pathSegments[0];
+        contentId = pathSegments[1];
+        print('🔗 [NotificationsScreen] Fallback - Type: $contentType, ID: $contentId');
+      }
+      
+      print('🔗 [NotificationsScreen] === PARSING FINAL ===');
+      print('🔗 [NotificationsScreen] Content Type final: $contentType');
+      print('🔗 [NotificationsScreen] Content ID final: $contentId');
+      
+      if (contentType != null && contentId != null && 
+          contentType.isNotEmpty && contentId.isNotEmpty) {
+        print('🔗 [NotificationsScreen] Appel de _handleContentNavigation...');
+        _handleContentNavigation(contentType, contentId);
+      } else {
+        print('❌ [NotificationsScreen] Content Type ou ID manquant');
+        print('❌ [NotificationsScreen] Type: "$contentType", ID: "$contentId"');
+        _showErrorSnackBar('Lien de navigation invalide - données manquantes');
       }
     } catch (e) {
-      print('❌ Erreur parsing deep link: $e');
+      print('❌ [NotificationsScreen] Erreur parsing deep link: $e');
+      _showErrorSnackBar('Erreur lors de l\'analyse du lien: $e');
     }
+    
+    print('🔗 [NotificationsScreen] === FIN DEEP LINK ===');
   }
 
   void _handleContentNavigation(String contentType, String contentId) {
-    switch (contentType) {
-      case 'recipe':
-        NavigationService.goToRecipeDetail(contentId);
-        break;
-      case 'tip':
-        NavigationService.goToTipDetail(contentId);
-        break;
-      case 'event':
-        NavigationService.goToEventDetail(contentId);
-        break;
-      case 'dinor-tv':
-      case 'dinor_tv':
-        NavigationService.goToDinorTv();
-        break;
-      default:
-        print('⚠️ Type de contenu non géré: $contentType');
+    print('🔍 [NotificationsScreen] Navigation demandée:');
+    print('   - Type: $contentType');
+    print('   - ID: $contentId');
+    
+    try {
+      switch (contentType.toLowerCase()) {
+        case 'recipe':
+          print('🍽️ [NotificationsScreen] Navigation vers recette...');
+          NavigationService.goToRecipeDetail(contentId);
+          print('✅ [NotificationsScreen] Navigation recette initiée');
+          break;
+        case 'tip':
+          print('💡 [NotificationsScreen] Navigation vers astuce...');
+          NavigationService.goToTipDetail(contentId);
+          print('✅ [NotificationsScreen] Navigation astuce initiée');
+          break;
+        case 'event':
+          print('📅 [NotificationsScreen] Navigation vers événement...');
+          NavigationService.goToEventDetail(contentId);
+          print('✅ [NotificationsScreen] Navigation événement initiée');
+          break;
+        case 'dinor-tv':
+        case 'dinor_tv':
+          print('📺 [NotificationsScreen] Navigation vers Dinor TV...');
+          NavigationService.goToDinorTv();
+          print('✅ [NotificationsScreen] Navigation Dinor TV initiée');
+          break;
+        default:
+          print('⚠️ [NotificationsScreen] Type de contenu non géré: $contentType');
+          _showErrorSnackBar('Type de contenu non supporté: $contentType');
+      }
+    } catch (e) {
+      print('❌ [NotificationsScreen] Erreur lors de la navigation: $e');
+      _showErrorSnackBar('Erreur lors de la navigation: $e');
     }
   }
 
