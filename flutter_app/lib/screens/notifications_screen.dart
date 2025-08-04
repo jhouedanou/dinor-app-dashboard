@@ -158,8 +158,21 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   }
 
   void _onNotificationTap(NotificationModel notification) {
-    // Marquer comme lue (optionnel)
-    ref.read(notificationsServiceProvider).markAsRead(notification.id);
+    // Marquer comme lue localement pour une UX immédiate
+    if (!notification.isRead) {
+      setState(() {
+        final index = notifications.indexWhere((n) => n.id == notification.id);
+        if (index != -1) {
+          notifications[index] = notification.copyWith(
+            isRead: true,
+            readAt: DateTime.now(),
+          );
+        }
+      });
+
+      // Marquer comme lue sur le serveur (en arrière-plan)
+      ref.read(notificationsServiceProvider).markAsRead(notification.id);
+    }
 
     // Navigation vers le contenu
     if (notification.deepLink != null) {
@@ -348,12 +361,18 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   }
 
   Widget _buildNotificationCard(NotificationModel notification) {
+    final isUnread = !notification.isRead;
+    
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
+      elevation: isUnread ? 3 : 1,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
+        side: isUnread 
+          ? BorderSide(color: Colors.blue.shade300, width: 1.5)
+          : BorderSide.none,
       ),
+      color: isUnread ? const Color.fromRGBO(227, 242, 253, 1) : Colors.white,
       child: InkWell(
         onTap: () => _onNotificationTap(notification),
         borderRadius: BorderRadius.circular(12),
@@ -365,11 +384,22 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Indicateur de notification non lue
+                  if (isUnread) 
+                    Container(
+                      width: 8,
+                      height: 8,
+                      margin: const EdgeInsets.only(top: 4, right: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade600,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
                   // Emoji/Icône du type
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
+                      color: isUnread ? Colors.blue.shade100 : Colors.blue.shade50,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -385,10 +415,10 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                       children: [
                         Text(
                           notification.title,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+                            fontWeight: isUnread ? FontWeight.bold : FontWeight.w600,
+                            color: isUnread ? Colors.black87 : Colors.grey[700],
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -396,8 +426,9 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                           notification.message,
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.grey[600],
+                            color: isUnread ? Colors.grey[700] : Colors.grey[600],
                             height: 1.3,
+                            fontWeight: isUnread ? FontWeight.w500 : FontWeight.normal,
                           ),
                         ),
                         if (notification.contentName != null) ...[
@@ -408,10 +439,10 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.green.shade50,
+                              color: isUnread ? Colors.green.shade100 : Colors.green.shade50,
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
-                                color: Colors.green.shade200,
+                                color: isUnread ? Colors.green.shade300 : Colors.green.shade200,
                                 width: 1,
                               ),
                             ),
@@ -428,13 +459,37 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                       ],
                     ),
                   ),
-                  // Date
-                  Text(
-                    notification.displayDate,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[500],
-                    ),
+                  // Date et statut
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        notification.displayDate,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isUnread ? Colors.grey[600] : Colors.grey[500],
+                          fontWeight: isUnread ? FontWeight.w500 : FontWeight.normal,
+                        ),
+                      ),
+                      if (isUnread) ...[
+                        const SizedBox(height: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.shade600,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Text(
+                            'NOUVEAU',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ],
               ),

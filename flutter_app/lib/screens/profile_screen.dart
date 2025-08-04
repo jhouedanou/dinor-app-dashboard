@@ -5,6 +5,7 @@ import '../services/api_service.dart';
 import '../services/favorites_service.dart';
 import '../composables/use_auth_handler.dart';
 import '../components/common/auth_modal.dart';
+import '../components/common/tournament_modals.dart';
 import 'favorites_screen.dart';
 import 'terms_of_service_screen.dart';
 import 'privacy_policy_screen.dart';
@@ -26,6 +27,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Map<String, dynamic>? _userProfile;
   List<dynamic>? _userFavorites;
   Map<String, dynamic>? _predictionsStats;
+  List<dynamic> _tournaments = [];
+  bool _tournamentsLoading = false;
 
   bool _showAuthModal = false;
   String _activeSection = 'favorites'; // 'favorites', 'predictions', 'settings', 'legal'
@@ -83,13 +86,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       final profileResponse = await apiService.getUserProfile();
       final favoritesResponse = await apiService.getUserFavorites();
       final predictionsResponse = await apiService.getPredictionsStats();
+      final tournamentsResponse = await apiService.getTournaments();
 
       setState(() {
         _userProfile = profileResponse['success'] ? profileResponse['data'] : null;
         _userFavorites = favoritesResponse['success'] ? favoritesResponse['data'] : [];
         _predictionsStats = predictionsResponse['success'] ? predictionsResponse['data'] : null;
+        _tournaments = tournamentsResponse['success'] ? (tournamentsResponse['data'] ?? []) : [];
         _isLoading = false;
         _predictionsLoading = false;
+        _tournamentsLoading = false;
       });
     } catch (e) {
       setState(() {
@@ -761,7 +767,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             Expanded(
               child: ElevatedButton.icon(
                 onPressed: () {
-                  // Naviguer vers les pronostics
+                  Navigator.of(context).pushNamed('/predictions');
                 },
                 icon: const Icon(LucideIcons.plus),
                 label: const Text('Faire un pronostic'),
@@ -775,10 +781,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             Expanded(
               child: OutlinedButton.icon(
                 onPressed: () {
-                  // Naviguer vers le classement
+                  _showLeaderboardModal();
                 },
                 icon: const Icon(LucideIcons.activity),
-                label: const Text('Voir le classement'),
+                label: const Text('Classements'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFFE53E3E),
                   side: const BorderSide(color: Color(0xFFE53E3E)),
@@ -787,6 +793,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
           ],
         ),
+        const SizedBox(height: 32),
+
+        // Section Tournois
+        _buildTournamentsSection(),
       ],
     );
   }
@@ -1454,6 +1464,155 @@ class _ChangePasswordDialogState extends ConsumerState<_ChangePasswordDialog> {
     } finally {
       setState(() => _isLoading = false);
     }
+  }
+
+  Widget _buildTournamentsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Tournois Disponibles',
+              style: TextStyle(
+                fontFamily: 'OpenSans',
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF2D3748),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pushNamed('/predictions');
+              },
+              child: const Text('Voir tous'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        
+        if (_tournamentsLoading)
+          const Center(child: CircularProgressIndicator())
+        else if (_tournaments.isEmpty)
+          _buildEmptyTournaments()
+        else
+          _buildTournamentsList(),
+      ],
+    );
+  }
+
+  Widget _buildTournamentsList() {
+    // Prendre les 3 derniers tournois
+    final recentTournaments = _tournaments.take(3).toList();
+    
+    return Column(
+      children: recentTournaments.map((tournament) {
+        return Card(
+          margin: const EdgeInsets.only(bottom: 12),
+          child: ListTile(
+            leading: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE53E3E).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                LucideIcons.trophy,
+                color: Color(0xFFE53E3E),
+                size: 20,
+              ),
+            ),
+            title: Text(
+              tournament['name'] ?? 'Tournoi',
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(tournament['status_label'] ?? ''),
+                Text('${tournament['participants_count'] ?? 0} participants'),
+              ],
+            ),
+            trailing: ElevatedButton(
+              onPressed: () {
+                _showTournamentMatches(tournament);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFE53E3E),
+                foregroundColor: Colors.white,
+                minimumSize: const Size(80, 32),
+              ),
+              child: const Text('Jouer', style: TextStyle(fontSize: 12)),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildEmptyTournaments() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F9FA),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            LucideIcons.trophy,
+            size: 48,
+            color: Colors.grey[400],
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Aucun tournoi disponible',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF2D3748),
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Les tournois apparaîtront ici une fois disponibles',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Color(0xFF718096),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showTournamentMatches(Map<String, dynamic> tournament) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => TournamentMatchesModal(
+        tournament: tournament,
+        onPredictionSubmitted: () {
+          // Recharger les stats après avoir fait un pronostic
+          _loadData();
+        },
+      ),
+    );
+  }
+
+  void _showLeaderboardModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => LeaderboardModal(tournaments: _tournaments),
+    );
   }
 
   @override

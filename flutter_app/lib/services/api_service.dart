@@ -276,6 +276,30 @@ class ApiService {
     return await get('/user/predictions/stats');
   }
 
+  Future<Map<String, dynamic>> getTournaments() async {
+    return await get('/tournaments');
+  }
+
+  Future<Map<String, dynamic>> getTournamentMatches(String tournamentId) async {
+    return await get('/tournaments/$tournamentId/matches');
+  }
+
+  Future<Map<String, dynamic>> getTournamentLeaderboard(String tournamentId) async {
+    return await get('/tournaments/$tournamentId/leaderboard');
+  }
+
+  Future<Map<String, dynamic>> submitPrediction({
+    required String matchId,
+    required String homeScore,
+    required String awayScore,
+  }) async {
+    return await post('/predictions', {
+      'match_id': matchId,
+      'home_score': homeScore,
+      'away_score': awayScore,
+    });
+  }
+
   Future<Map<String, dynamic>> changePassword({
     required String currentPassword,
     required String newPassword,

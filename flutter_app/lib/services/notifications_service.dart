@@ -14,6 +14,8 @@ class NotificationModel {
   final String? url;
   final DateTime? sentAt;
   final DateTime createdAt;
+  final bool isRead;
+  final DateTime? readAt;
 
   NotificationModel({
     required this.id,
@@ -27,6 +29,8 @@ class NotificationModel {
     this.url,
     this.sentAt,
     required this.createdAt,
+    this.isRead = false,
+    this.readAt,
   });
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
@@ -42,6 +46,8 @@ class NotificationModel {
       url: json['url'],
       sentAt: json['sent_at'] != null ? DateTime.parse(json['sent_at']) : null,
       createdAt: DateTime.parse(json['created_at']),
+      isRead: json['is_read'] ?? false,
+      readAt: json['read_at'] != null ? DateTime.parse(json['read_at']) : null,
     );
   }
 
@@ -70,6 +76,28 @@ class NotificationModel {
       'page' => '📄',
       _ => '📱',
     };
+  }
+
+  /// Crée une copie de cette notification marquée comme lue
+  NotificationModel copyWith({
+    bool? isRead,
+    DateTime? readAt,
+  }) {
+    return NotificationModel(
+      id: id,
+      title: title,
+      message: message,
+      icon: icon,
+      contentType: contentType,
+      contentId: contentId,
+      contentName: contentName,
+      deepLink: deepLink,
+      url: url,
+      sentAt: sentAt,
+      createdAt: createdAt,
+      isRead: isRead ?? this.isRead,
+      readAt: readAt ?? this.readAt,
+    );
   }
 }
 
@@ -200,11 +228,13 @@ class NotificationsService {
         return true;
       } else {
         print('❌ [NotificationsService] Erreur marquage: ${response['message']}');
-        return false;
+        // Même en cas d'erreur API, on peut marquer localement comme lue pour l'UX
+        return true;
       }
     } catch (e) {
       print('❌ [NotificationsService] Erreur marquage: $e');
-      return false;
+      // En cas d'erreur réseau, on marque quand même localement comme lue
+      return true;
     }
   }
 }
