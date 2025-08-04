@@ -151,6 +151,7 @@ class CommentsService extends StateNotifier<Map<String, CommentsState>> {
         'type': contentType,
         'id': contentId,
         'per_page': perPage.toString(),
+        'sort': 'asc', // Du plus ancien au plus récent
       });
 
       if (result['success'] == true) {
@@ -159,6 +160,9 @@ class CommentsService extends StateNotifier<Map<String, CommentsState>> {
         final comments = (commentsData as List)
             .map((json) => Comment.fromJson(json))
             .toList();
+
+        // Trier les commentaires du plus ancien au plus récent (au cas où l'API ne le ferait pas)
+        comments.sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
         // Mettre en cache
         await _cacheComments(contentType, contentId, comments);
@@ -210,6 +214,7 @@ class CommentsService extends StateNotifier<Map<String, CommentsState>> {
         'id': contentId,
         'page': nextPage.toString(),
         'per_page': perPage.toString(),
+        'sort': 'asc', // Du plus ancien au plus récent
       });
 
       if (result['success'] == true) {
@@ -218,6 +223,9 @@ class CommentsService extends StateNotifier<Map<String, CommentsState>> {
         final newComments = (commentsData as List)
             .map((json) => Comment.fromJson(json))
             .toList();
+
+        // Trier les nouveaux commentaires
+        newComments.sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
         final allComments = [...currentState.comments, ...newComments];
 

@@ -918,18 +918,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 onTap: () {},
               ),
               _buildSettingsItem(
-                icon: LucideIcons.shield,
-                title: 'Confidentialité',
-                subtitle: 'Paramètres de confidentialité',
-                onTap: () {},
-              ),
-              _buildSettingsItem(
-                icon: LucideIcons.helpCircle,
-                title: 'Aide',
-                subtitle: 'Centre d\'aide et support',
-                onTap: () {},
-              ),
-              _buildSettingsItem(
                 icon: LucideIcons.logOut,
                 title: 'Se déconnecter',
                 subtitle: 'Déconnecter votre compte',

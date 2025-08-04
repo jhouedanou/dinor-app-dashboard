@@ -371,13 +371,15 @@ class _TipDetailScreenUnifiedState extends ConsumerState<TipDetailScreenUnified>
                 // Tip Stats avec composant unifié
                 UnifiedContentStats(
                   stats: [
-                    {
+                    // Seulement afficher la difficulté si elle existe
+                    if (_tip!['difficulty'] != null) {
                       'icon': LucideIcons.star,
-                      'text': _getDifficultyLabel(_tip!['difficulty'] ?? 'N/A'),
+                      'text': _getDifficultyLabel(_tip!['difficulty']),
                     },
-                    {
+                    // Seulement afficher le type si il existe
+                    if (_tip!['type'] != null) {
                       'icon': LucideIcons.tag,
-                      'text': _getTypeLabel(_tip!['type'] ?? 'N/A'),
+                      'text': _getTypeLabel(_tip!['type']),
                     },
                     {
                       'icon': LucideIcons.heart,

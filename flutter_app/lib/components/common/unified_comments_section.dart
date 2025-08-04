@@ -26,10 +26,12 @@ class UnifiedCommentsSection extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<UnifiedCommentsSection> createState() => _UnifiedCommentsSectionState();
+  ConsumerState<UnifiedCommentsSection> createState() =>
+      _UnifiedCommentsSectionState();
 }
 
-class _UnifiedCommentsSectionState extends ConsumerState<UnifiedCommentsSection> {
+class _UnifiedCommentsSectionState
+    extends ConsumerState<UnifiedCommentsSection> {
   final TextEditingController _commentController = TextEditingController();
   final FocusNode _commentFocusNode = FocusNode();
   bool _isSubmitting = false;
@@ -70,7 +72,8 @@ class _UnifiedCommentsSectionState extends ConsumerState<UnifiedCommentsSection>
   }
 
   Future<void> _loadComments() async {
-    await ref.read(commentsServiceProvider.notifier)
+    await ref
+        .read(commentsServiceProvider.notifier)
         .loadComments(widget.contentType, widget.contentId);
   }
 
@@ -102,7 +105,6 @@ class _UnifiedCommentsSectionState extends ConsumerState<UnifiedCommentsSection>
         children: [
           _buildSectionHeader(commentsState),
           const SizedBox(height: 16),
-
           if (_showFullSection) ...[
             // Formulaire d'ajout de commentaire
             if (authHandler.isAuthenticated) ...[
@@ -126,7 +128,7 @@ class _UnifiedCommentsSectionState extends ConsumerState<UnifiedCommentsSection>
 
   Widget _buildSectionHeader(CommentsState commentsState) {
     final commentsCount = commentsState.comments.length;
-    
+
     return Row(
       children: [
         const Icon(
@@ -162,7 +164,6 @@ class _UnifiedCommentsSectionState extends ConsumerState<UnifiedCommentsSection>
           ),
         ),
         const Spacer(),
-        
         if (commentsCount > 0)
           TextButton(
             onPressed: () {
@@ -196,8 +197,8 @@ class _UnifiedCommentsSectionState extends ConsumerState<UnifiedCommentsSection>
             color: const Color(0xFFF8F9FA),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: _commentFocusNode.hasFocus 
-                  ? const Color(0xFFE53E3E) 
+              color: _commentFocusNode.hasFocus
+                  ? const Color(0xFFE53E3E)
                   : const Color(0xFFE2E8F0),
             ),
           ),
@@ -232,15 +233,20 @@ class _UnifiedCommentsSectionState extends ConsumerState<UnifiedCommentsSection>
           ),
         ),
         const SizedBox(height: 12),
-        
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
             TextButton(
-              onPressed: _commentController.text.trim().isEmpty ? null : () {
-                _commentController.clear();
-                _commentFocusNode.unfocus();
-              },
+              onPressed: _commentController.text.trim().isEmpty
+                  ? null
+                  : () {
+                      _commentController.clear();
+                      _commentFocusNode.unfocus();
+                    },
               child: const Text(
                 'Annuler',
                 style: TextStyle(
@@ -252,8 +258,8 @@ class _UnifiedCommentsSectionState extends ConsumerState<UnifiedCommentsSection>
             ),
             const SizedBox(width: 8),
             ElevatedButton(
-              onPressed: _commentController.text.trim().isEmpty || _isSubmitting 
-                  ? null 
+              onPressed: _commentController.text.trim().isEmpty || _isSubmitting
+                  ? null
                   : _submitComment,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFE53E3E),
@@ -261,7 +267,8 @@ class _UnifiedCommentsSectionState extends ConsumerState<UnifiedCommentsSection>
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               ),
               child: _isSubmitting
                   ? const SizedBox(
@@ -281,7 +288,8 @@ class _UnifiedCommentsSectionState extends ConsumerState<UnifiedCommentsSection>
                       ),
                     ),
             ),
-          ],
+            ],
+          ),
         ),
       ],
     );
@@ -365,19 +373,20 @@ class _UnifiedCommentsSectionState extends ConsumerState<UnifiedCommentsSection>
     // Pagination des commentaires
     final totalComments = commentsState.comments.length;
     final commentsToShow = _currentPage * widget.commentsPerPage;
-    final visibleComments = commentsState.comments.take(commentsToShow).toList();
+    final visibleComments =
+        commentsState.comments.take(commentsToShow).toList();
     final hasMoreComments = totalComments > commentsToShow;
 
     return Column(
       children: [
         // Liste des commentaires visibles
         ...visibleComments.map((comment) => Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: CommentItem(
-            comment: comment,
-            onDelete: () => _deleteComment(comment.id),
-          ),
-        )),
+              padding: const EdgeInsets.only(bottom: 12),
+              child: CommentItem(
+                comment: comment,
+                onDelete: () => _deleteComment(comment.id),
+              ),
+            )),
 
         // Pagination
         if (hasMoreComments) ...[
@@ -443,15 +452,15 @@ class _UnifiedCommentsSectionState extends ConsumerState<UnifiedCommentsSection>
     }
 
     // Afficher les premiers commentaires en aperçu
-    final previewComments = commentsState.comments.take(widget.initialCommentsToShow).toList();
-    
+    final previewComments =
+        commentsState.comments.take(widget.initialCommentsToShow).toList();
+
     return Column(
       children: [
         ...previewComments.map((comment) => Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: _buildCommentPreview(comment),
-        )),
-        
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _buildCommentPreview(comment),
+            )),
         if (commentsState.comments.length > widget.initialCommentsToShow) ...[
           const SizedBox(height: 8),
           Text(
@@ -489,7 +498,7 @@ class _UnifiedCommentsSectionState extends ConsumerState<UnifiedCommentsSection>
               radius: 16,
               backgroundColor: const Color(0xFFF4D03F),
               child: Text(
-                (comment.authorName.isNotEmpty) 
+                (comment.authorName.isNotEmpty)
                     ? comment.authorName[0].toUpperCase()
                     : 'A',
                 style: const TextStyle(
@@ -505,7 +514,9 @@ class _UnifiedCommentsSectionState extends ConsumerState<UnifiedCommentsSection>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    comment.authorName.isNotEmpty ? comment.authorName : 'Anonyme',
+                    comment.authorName.isNotEmpty
+                        ? comment.authorName
+                        : 'Anonyme',
                     style: const TextStyle(
                       fontFamily: 'Roboto',
                       fontSize: 12,
@@ -515,7 +526,7 @@ class _UnifiedCommentsSectionState extends ConsumerState<UnifiedCommentsSection>
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    comment.content.length > 80 
+                    comment.content.length > 80
                         ? '${comment.content.substring(0, 80)}...'
                         : comment.content,
                     style: const TextStyle(
@@ -626,17 +637,17 @@ class _UnifiedCommentsSectionState extends ConsumerState<UnifiedCommentsSection>
     });
 
     try {
-      final success = await ref.read(commentsServiceProvider.notifier)
-          .addComment(
-            widget.contentType,
-            widget.contentId,
-            _commentController.text.trim(),
-          );
+      final success =
+          await ref.read(commentsServiceProvider.notifier).addComment(
+                widget.contentType,
+                widget.contentId,
+                _commentController.text.trim(),
+              );
 
       if (success) {
         _commentController.clear();
         _commentFocusNode.unfocus();
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -680,7 +691,8 @@ class _UnifiedCommentsSectionState extends ConsumerState<UnifiedCommentsSection>
 
   Future<void> _deleteComment(String commentId) async {
     try {
-      final success = await ref.read(commentsServiceProvider.notifier)
+      final success = await ref
+          .read(commentsServiceProvider.notifier)
           .deleteComment(widget.contentType, widget.contentId, commentId);
 
       if (success && mounted) {

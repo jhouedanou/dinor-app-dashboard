@@ -572,14 +572,18 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildStatItem(
-            LucideIcons.star,
-            _getDifficultyLabel(_tip!['difficulty'] ?? 'N/A'),
-          ),
-          _buildStatItem(
-            LucideIcons.tag,
-            _getTypeLabel(_tip!['type'] ?? 'N/A'),
-          ),
+          // Seulement afficher la difficulté si elle existe
+          if (_tip!['difficulty'] != null)
+            _buildStatItem(
+              LucideIcons.star,
+              _getDifficultyLabel(_tip!['difficulty']),
+            ),
+          // Seulement afficher le type si il existe
+          if (_tip!['type'] != null)
+            _buildStatItem(
+              LucideIcons.tag,
+              _getTypeLabel(_tip!['type']),
+            ),
           _buildStatItem(
             LucideIcons.heart,
             '${_tip!['likes_count'] ?? 0}',

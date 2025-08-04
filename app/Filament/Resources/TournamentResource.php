@@ -12,6 +12,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Str;
 
 class TournamentResource extends Resource
 {
@@ -32,7 +33,17 @@ class TournamentResource extends Resource
                         Forms\Components\TextInput::make('name')
                             ->label('Nom du tournoi')
                             ->required()
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(fn (string $context, $state, callable $set) => 
+                                $context === 'create' ? $set('slug', \Str::slug($state)) : null
+                            ),
+                        
+                        Forms\Components\TextInput::make('slug')
+                            ->label('Slug URL')
+                            ->required()
+                            ->maxLength(255)
+                            ->unique(Tournament::class, 'slug', ignoreRecord: true),
                         Forms\Components\Textarea::make('description')
                             ->label('Description')
                             ->rows(3),
