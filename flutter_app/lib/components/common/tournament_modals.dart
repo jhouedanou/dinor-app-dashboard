@@ -426,11 +426,8 @@ class LeaderboardModal extends ConsumerWidget {
       itemBuilder: (context, index) {
         final tournament = tournaments[index];
         return Accordion(
-          title: tournament['name'] ?? 'Tournoi',
-          subtitle: '${tournament['participants_count'] ?? 0} participants',
-          children: [
-            _buildTournamentLeaderboard(tournament, ref),
-          ],
+          title: '${tournament['name'] ?? 'Tournoi'} - ${tournament['participants_count'] ?? 0} participants',
+          child: _buildTournamentLeaderboard(tournament, ref),
         );
       },
     );

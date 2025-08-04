@@ -1364,108 +1364,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  void _showChangePasswordDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => _ChangePasswordDialog(
-        onPasswordChanged: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Mot de passe mis à jour avec succès'),
-              backgroundColor: Color(0xFF38A169),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  void _handleLogout() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Déconnexion'),
-        content: const Text('Êtes-vous sûr de vouloir vous déconnecter ?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Annuler'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Déconnexion'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      await _logout();
-    }
-  }
-}
-
-// Dialog pour changer le mot de passe
-class _ChangePasswordDialog extends ConsumerStatefulWidget {
-  final VoidCallback onPasswordChanged;
-
-  const _ChangePasswordDialog({required this.onPasswordChanged});
-
-  @override
-  ConsumerState<_ChangePasswordDialog> createState() => _ChangePasswordDialogState();
-}
-
-class _ChangePasswordDialogState extends ConsumerState<_ChangePasswordDialog> {
-  final _formKey = GlobalKey<FormState>();
-  final _currentPasswordController = TextEditingController();
-  final _newPasswordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
-  bool _isLoading = false;
-
-  @override
-  void dispose() {
-    _currentPasswordController.dispose();
-    _newPasswordController.dispose();
-    _confirmPasswordController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _changePassword() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() => _isLoading = true);
-
-    try {
-      final apiService = ref.read(apiServiceProvider);
-      final response = await apiService.changePassword(
-        currentPassword: _currentPasswordController.text,
-        newPassword: _newPasswordController.text,
-        newPasswordConfirmation: _confirmPasswordController.text,
-      );
-
-      if (response['success']) {
-        Navigator.of(context).pop();
-        widget.onPasswordChanged();
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(response['message'] ?? 'Erreur lors du changement de mot de passe'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erreur: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
-
   Widget _buildTournamentsSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1600,7 +1498,7 @@ class _ChangePasswordDialogState extends ConsumerState<_ChangePasswordDialog> {
         tournament: tournament,
         onPredictionSubmitted: () {
           // Recharger les stats après avoir fait un pronostic
-          _loadData();
+          _loadProfileData();
         },
       ),
     );
@@ -1613,6 +1511,108 @@ class _ChangePasswordDialogState extends ConsumerState<_ChangePasswordDialog> {
       backgroundColor: Colors.transparent,
       builder: (context) => LeaderboardModal(tournaments: _tournaments),
     );
+  }
+
+  void _showChangePasswordDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => _ChangePasswordDialog(
+        onPasswordChanged: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Mot de passe mis à jour avec succès'),
+              backgroundColor: Color(0xFF38A169),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _handleLogout() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Déconnexion'),
+        content: const Text('Êtes-vous sûr de vouloir vous déconnecter ?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Annuler'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Déconnexion'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await _logout();
+    }
+  }
+}
+
+// Dialog pour changer le mot de passe
+class _ChangePasswordDialog extends ConsumerStatefulWidget {
+  final VoidCallback onPasswordChanged;
+
+  const _ChangePasswordDialog({required this.onPasswordChanged});
+
+  @override
+  ConsumerState<_ChangePasswordDialog> createState() => _ChangePasswordDialogState();
+}
+
+class _ChangePasswordDialogState extends ConsumerState<_ChangePasswordDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _currentPasswordController = TextEditingController();
+  final _newPasswordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _currentPasswordController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _changePassword() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final apiService = ref.read(apiServiceProvider);
+      final response = await apiService.changePassword(
+        currentPassword: _currentPasswordController.text,
+        newPassword: _newPasswordController.text,
+        newPasswordConfirmation: _confirmPasswordController.text,
+      );
+
+      if (response['success']) {
+        Navigator.of(context).pop();
+        widget.onPasswordChanged();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response['message'] ?? 'Erreur lors du changement de mot de passe'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erreur: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
