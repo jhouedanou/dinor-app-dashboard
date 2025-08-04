@@ -368,6 +368,7 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     Route::patch('/predictions/upsert', [App\Http\Controllers\Api\PredictionController::class, 'upsert']);
     Route::post('/predictions/batch', [App\Http\Controllers\Api\PredictionController::class, 'batchGetPredictions']);
     Route::get('/predictions/my-recent', [App\Http\Controllers\Api\PredictionController::class, 'userRecentPredictions']);
+    Route::get('/user/predictions/stats', [App\Http\Controllers\Api\PredictionController::class, 'userStats']);
     Route::get('/predictions/match/{matchId}', [App\Http\Controllers\Api\PredictionController::class, 'getUserPredictionForMatch']);
     Route::get('/predictions/{prediction}', [App\Http\Controllers\Api\PredictionController::class, 'show'])->where('prediction', '[0-9]+');
     Route::put('/predictions/{prediction}', [App\Http\Controllers\Api\PredictionController::class, 'update'])->where('prediction', '[0-9]+');

@@ -339,4 +339,98 @@ class PredictionController extends Controller
             'data' => $predictions
         ]);
     }
+
+    /**
+     * Get user prediction statistics
+     */
+    public function userStats()
+    {
+        $userId = Auth::id();
+        
+        if (!$userId) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Non authentifié'
+            ], 401);
+        }
+
+        try {
+            // Récupérer les prédictions de l'utilisateur avec les matches terminés
+            $predictions = Prediction::with(['footballMatch'])
+                ->where('user_id', $userId)
+                ->whereHas('footballMatch', function($query) {
+                    $query->where('status', 'finished');
+                })
+                ->get();
+
+            $totalPredictions = $predictions->count();
+            $correctPredictions = 0;
+            $totalPoints = 0;
+
+            foreach ($predictions as $prediction) {
+                $match = $prediction->footballMatch;
+                
+                if ($match && $match->home_score !== null && $match->away_score !== null) {
+                    // Calculer si la prédiction est correcte
+                    $actualResult = $this->getMatchResult($match->home_score, $match->away_score);
+                    $predictedResult = $this->getMatchResult($prediction->predicted_home_score, $prediction->predicted_away_score);
+                    
+                    if ($actualResult === $predictedResult) {
+                        $correctPredictions++;
+                        
+                        // Score exact = 3 points, bon résultat = 1 point
+                        if ($match->home_score == $prediction->predicted_home_score && 
+                            $match->away_score == $prediction->predicted_away_score) {
+                            $totalPoints += 3;
+                        } else {
+                            $totalPoints += 1;
+                        }
+                    }
+                }
+            }
+
+            // Calculer le pourcentage de précision
+            $accuracyPercentage = $totalPredictions > 0 ? round(($correctPredictions / $totalPredictions) * 100, 1) : 0;
+
+            // Récupérer le classement de l'utilisateur (optionnel)
+            $currentRank = null;
+            try {
+                $leaderboard = Leaderboard::where('user_id', $userId)->first();
+                $currentRank = $leaderboard ? $leaderboard->rank : null;
+            } catch (\Exception $e) {
+                // Classement non disponible
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'total_predictions' => $totalPredictions,
+                    'correct_predictions' => $correctPredictions,
+                    'total_points' => $totalPoints,
+                    'accuracy_percentage' => $accuracyPercentage,
+                    'current_rank' => $currentRank,
+                ]
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Erreur lors du calcul des statistiques: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Helper method to determine match result (win/draw/loss)
+     */
+    private function getMatchResult($homeScore, $awayScore)
+    {
+        if ($homeScore > $awayScore) {
+            return 'home_win';
+        } elseif ($homeScore < $awayScore) {
+            return 'away_win';
+        } else {
+            return 'draw';
+        }
+    }
 }

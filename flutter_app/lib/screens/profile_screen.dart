@@ -75,18 +75,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Future<void> _loadProfileData() async {
+    print('📊 [ProfileScreen] _loadProfileData démarré');
     if (!ref.read(useAuthHandlerProvider).isAuthenticated) {
+      print('❌ [ProfileScreen] Utilisateur non authentifié');
       setState(() {
         _isLoading = false;
+        _predictionsLoading = false;
+        _tournamentsLoading = false;
       });
       return;
     }
     try {
+      print('🔄 [ProfileScreen] Chargement des données API...');
       final apiService = ref.read(apiServiceProvider);
       final profileResponse = await apiService.getUserProfile();
       final favoritesResponse = await apiService.getUserFavorites();
       final predictionsResponse = await apiService.getPredictionsStats();
       final tournamentsResponse = await apiService.getTournaments();
+
+      print('📈 [ProfileScreen] Réponse predictions: $predictionsResponse');
 
       setState(() {
         _userProfile = profileResponse['success'] ? profileResponse['data'] : null;
@@ -97,10 +104,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         _predictionsLoading = false;
         _tournamentsLoading = false;
       });
+      print('✅ [ProfileScreen] Données chargées avec succès');
     } catch (e) {
+      print('❌ [ProfileScreen] Erreur lors du chargement: $e');
       setState(() {
         _error = e.toString();
         _isLoading = false;
+        _predictionsLoading = false; // CORRECTION: s'assurer que loading est mis à false
+        _tournamentsLoading = false;
       });
     }
   }
@@ -332,7 +343,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           final isActive = _activeSection == section['key'];
           return Expanded(
             child: GestureDetector(
-              onTap: () => setState(() => _activeSection = section['key']),
+              onTap: () {
+                print('🔄 [ProfileScreen] Changement de section vers: ${section['key']}');
+                setState(() => _activeSection = section['key']);
+              },
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
@@ -367,16 +381,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Widget _buildProfileSections() {
+    print('🎯 [ProfileScreen] _buildProfileSections appelé avec _activeSection: $_activeSection');
     switch (_activeSection) {
       case 'favorites':
+        print('💖 [ProfileScreen] Affichage section favoris');
         return _buildFavoritesSection();
       case 'predictions':
+        print('🎲 [ProfileScreen] Affichage section pronostics');
         return _buildPredictionsSection();
       case 'settings':
+        print('⚙️ [ProfileScreen] Affichage section paramètres');
         return _buildSettingsSection();
       case 'legal':
+        print('⚖️ [ProfileScreen] Affichage section légal');
         return _buildLegalSection();
       default:
+        print('❓ [ProfileScreen] Section inconnue: $_activeSection');
         return const SizedBox.shrink();
     }
   }
@@ -688,6 +708,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Widget _buildPredictionsSection() {
+    print('🎲 [ProfileScreen] _buildPredictionsSection appelé');
+    print('   - _predictionsLoading: $_predictionsLoading');
+    print('   - _predictionsStats: $_predictionsStats');
+    print('   - _predictionsStats != null: ${_predictionsStats != null}');
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
