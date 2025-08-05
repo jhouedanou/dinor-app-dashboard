@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../composables/use_auth_handler.dart';
 import '../services/api_service.dart';
+import '../services/auth_service.dart';
 import '../components/common/auth_modal.dart';
 
 class ProfessionalContentCreationScreen extends ConsumerStatefulWidget {
@@ -58,11 +59,10 @@ class _ProfessionalContentCreationScreenState extends ConsumerState<Professional
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(useAuthHandlerProvider);
-    final authNotifier = ref.read(useAuthHandlerProvider.notifier);
+    final authService = AuthService();
     
     // Vérifier si l'utilisateur est authentifié et professionnel
-    if (!authState.isAuthenticated) {
+    if (!authService.isLoggedIn) {
       return Scaffold(
         appBar: AppBar(
           title: const Text('Création de contenu'),
@@ -96,7 +96,7 @@ class _ProfessionalContentCreationScreenState extends ConsumerState<Professional
       );
     }
 
-    if (!authNotifier.canCreateContent) {
+    if (!authService.canCreateProfessionalContent) {
       return Scaffold(
         appBar: AppBar(
           title: const Text('Création de contenu'),
@@ -110,14 +110,35 @@ class _ProfessionalContentCreationScreenState extends ConsumerState<Professional
               const Icon(Icons.work_off, size: 64, color: Colors.orange),
               const SizedBox(height: 16),
               const Text(
-                'Accès modérateur requis',
+                'Accès professionnel requis',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
-                'Vous devez avoir le rôle de modérateur pour créer du contenu.\nVotre rôle actuel: ${authState.user?['role'] ?? 'Utilisateur'}',
+                'Vous devez avoir le rôle professionnel, modérateur ou administrateur pour créer du contenu.\nVotre rôle actuel: ${authService.userRole}',
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: Colors.grey),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.symmetric(horizontal: 20),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue.shade200),
+                ),
+                child: Column(
+                  children: [
+                    Icon(Icons.info, color: Colors.blue.shade600),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Pour obtenir le statut professionnel, contactez un administrateur.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.blue.shade800),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 24),
               ElevatedButton(

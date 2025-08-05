@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../services/api_service.dart';
 import '../services/favorites_service.dart';
+import '../services/auth_service.dart';
 import '../composables/use_auth_handler.dart';
 import '../components/common/auth_modal.dart';
 import '../components/common/tournament_modals.dart';
@@ -948,12 +949,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
           child: Column(
             children: [
-              // Afficher l'option de création de contenu seulement pour les modérateurs
-              if (ref.read(useAuthHandlerProvider.notifier).canCreateContent)
+              // Afficher l'option de création de contenu seulement pour les professionnels
+              if (AuthService().canCreateProfessionalContent)
                 _buildSettingsItem(
                   icon: LucideIcons.plus,
-                  title: 'Créer du contenu',
-                  subtitle: 'Soumettre du contenu professionnel',
+                  title: 'Créer du contenu professionnel',
+                  subtitle: 'Soumettre des recettes et astuces',
+                  trailing: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      'PRO',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue.shade700,
+                      ),
+                    ),
+                  ),
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
@@ -962,6 +978,47 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     );
                   },
                 ),
+              
+              // Afficher une information pour les utilisateurs non-professionnels
+              if (!AuthService().canCreateProfessionalContent)
+                Container(
+                  margin: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.blue.shade200),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, color: Colors.blue.shade600),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Devenir professionnel',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue.shade800,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Contactez un administrateur pour obtenir le statut professionnel et pouvoir créer du contenu.\nRôle actuel: ${AuthService().userRole}',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.blue.shade700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              
               _buildSettingsItem(
                 icon: LucideIcons.bell,
                 title: 'Notifications',
@@ -994,6 +1051,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     required String subtitle,
     required VoidCallback onTap,
     bool isDestructive = false,
+    Widget? trailing,
   }) {
     return ListTile(
       leading: Icon(
@@ -1017,7 +1075,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           color: Color(0xFF4A5568),
         ),
       ),
-      trailing: const Icon(
+      trailing: trailing ?? const Icon(
         LucideIcons.chevronRight,
         size: 20,
         color: Color(0xFFCBD5E0),

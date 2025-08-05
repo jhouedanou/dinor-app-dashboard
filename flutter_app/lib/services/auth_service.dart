@@ -142,6 +142,22 @@ class AuthService {
   // Vérifier si l'utilisateur est connecté
   bool get isLoggedIn => _token != null;
 
+  // Vérifier si l'utilisateur est professionnel
+  bool get isProfessional {
+    if (_user == null) return false;
+    final role = _user!['role'] as String?;
+    return role == 'professional' || role == 'admin' || role == 'moderator';
+  }
+
+  // Obtenir le rôle de l'utilisateur
+  String get userRole {
+    if (_user == null) return 'user';
+    return _user!['role'] as String? ?? 'user';
+  }
+
+  // Vérifier si l'utilisateur peut créer du contenu professionnel
+  bool get canCreateProfessionalContent => isProfessional;
+
   // Rafraîchir le token
   Future<bool> refreshToken() async {
     try {
