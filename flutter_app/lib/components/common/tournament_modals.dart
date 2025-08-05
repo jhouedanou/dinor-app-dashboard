@@ -166,6 +166,25 @@ class _TournamentMatchesModalState extends ConsumerState<TournamentMatchesModal>
   }
 
   Widget _buildMatchCard(Map<String, dynamic> match) {
+    // Extract team names from complex objects if needed
+    String getTeamName(dynamic team) {
+      if (team is String) {
+        return team;
+      } else if (team is Map<String, dynamic>) {
+        return team['name'] ?? team['title'] ?? 'Équipe';
+      }
+      return 'Équipe';
+    }
+
+    String getMatchDate(dynamic date) {
+      if (date is String) {
+        return date;
+      } else if (date is Map<String, dynamic>) {
+        return date['formatted'] ?? date['date'] ?? 'Date à définir';
+      }
+      return 'Date à définir';
+    }
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
@@ -177,7 +196,7 @@ class _TournamentMatchesModalState extends ConsumerState<TournamentMatchesModal>
               children: [
                 Expanded(
                   child: Text(
-                    match['home_team'] ?? 'Équipe 1',
+                    getTeamName(match['home_team']) ?? 'Équipe 1',
                     textAlign: TextAlign.center,
                     style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
@@ -185,7 +204,7 @@ class _TournamentMatchesModalState extends ConsumerState<TournamentMatchesModal>
                 const Text(' VS '),
                 Expanded(
                   child: Text(
-                    match['away_team'] ?? 'Équipe 2',
+                    getTeamName(match['away_team']) ?? 'Équipe 2',
                     textAlign: TextAlign.center,
                     style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
@@ -196,7 +215,7 @@ class _TournamentMatchesModalState extends ConsumerState<TournamentMatchesModal>
             
             // Date
             Text(
-              match['match_date'] ?? 'Date à définir',
+              getMatchDate(match['match_date']),
               style: const TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 12),
@@ -231,6 +250,19 @@ class _TournamentMatchesModalState extends ConsumerState<TournamentMatchesModal>
     final homeController = TextEditingController();
     final awayController = TextEditingController();
 
+    // Helper to extract team name
+    String getTeamName(dynamic team) {
+      if (team is String) {
+        return team;
+      } else if (team is Map<String, dynamic>) {
+        return team['name'] ?? team['title'] ?? 'Équipe';
+      }
+      return 'Équipe';
+    }
+
+    final homeTeamName = getTeamName(match['home_team']);
+    final awayTeamName = getTeamName(match['away_team']);
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -238,7 +270,7 @@ class _TournamentMatchesModalState extends ConsumerState<TournamentMatchesModal>
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('${match['home_team']} vs ${match['away_team']}'),
+            Text('$homeTeamName vs $awayTeamName'),
             const SizedBox(height: 16),
             Row(
               children: [
@@ -247,7 +279,7 @@ class _TournamentMatchesModalState extends ConsumerState<TournamentMatchesModal>
                     controller: homeController,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
-                      labelText: match['home_team'],
+                      labelText: homeTeamName,
                       border: const OutlineInputBorder(),
                     ),
                   ),
@@ -258,7 +290,7 @@ class _TournamentMatchesModalState extends ConsumerState<TournamentMatchesModal>
                     controller: awayController,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
-                      labelText: match['away_team'],
+                      labelText: awayTeamName,
                       border: const OutlineInputBorder(),
                     ),
                   ),
