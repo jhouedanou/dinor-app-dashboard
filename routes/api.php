@@ -541,13 +541,23 @@ Route::get('/test/tournaments-debug', function() {
         // Récupérer tous les tournois
         $allTournaments = \App\Models\Tournament::with('participants')->get();
         
+        // Test des scopes individuellement
+        $publicTournaments = \App\Models\Tournament::public()->count();
+        $notExpiredTournaments = \App\Models\Tournament::notExpired()->count();
+        $publicAndNotExpired = \App\Models\Tournament::public()->notExpired()->count();
+        
         return response()->json([
             'tournaments_count' => $tournamentsCount,
             'participants_count' => $participantsCount,
             'predictions_count' => $predictionsCount,
             'user_4_participations' => $userParticipations,
             'all_tournaments' => $allTournaments,
-            'message' => 'Debug des tournois'
+            'scope_tests' => [
+                'public_tournaments' => $publicTournaments,
+                'not_expired_tournaments' => $notExpiredTournaments,
+                'public_and_not_expired' => $publicAndNotExpired
+            ],
+            'message' => 'Debug des tournois avec scopes'
         ]);
     } catch (\Exception $e) {
         return response()->json([
