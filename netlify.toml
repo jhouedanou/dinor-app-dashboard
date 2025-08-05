@@ -4,6 +4,7 @@
 
 [build.environment]
   NODE_VERSION = "18"
+  FLUTTER_VERSION = "stable"
 
 [[redirects]]
   from = "/*"

@@ -7,10 +7,24 @@ set -e
 
 echo "🚀 Construction de la version web Flutter..."
 
-# Vérifier que Flutter est installé
+# Vérifier que Flutter est installé et l'installer si nécessaire
 if ! command -v flutter &> /dev/null; then
-    echo "❌ Flutter n'est pas installé. Veuillez installer Flutter d'abord."
-    exit 1
+    echo "📦 Flutter n'est pas installé. Installation automatique..."
+    
+    # Exécuter le script d'installation Flutter
+    if [ -f "./install-flutter.sh" ]; then
+        chmod +x ./install-flutter.sh
+        source ./install-flutter.sh
+    else
+        # Installation de base si le script n'existe pas
+        git clone https://github.com/flutter/flutter.git -b stable --depth 1
+        export PATH="$PATH:`pwd`/flutter/bin"
+        flutter config --enable-web
+    fi
+    
+    echo "✅ Flutter installé avec succès !"
+else
+    echo "✅ Flutter est déjà installé"
 fi
 
 # Vérifier que nous sommes dans le bon répertoire
