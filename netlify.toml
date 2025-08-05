@@ -1,6 +1,6 @@
 [build]
-  command = "cd flutter_app && ./build-web.sh"
-  publish = "flutter_app/build/web"
+  command = "./build-web.sh"
+  publish = "build/web"
 
 [build.environment]
   NODE_VERSION = "18"
