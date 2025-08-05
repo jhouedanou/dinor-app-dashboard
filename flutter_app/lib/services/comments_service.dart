@@ -129,7 +129,7 @@ class CommentsService extends StateNotifier<Map<String, CommentsState>> {
     try {
       print('📝 [CommentsService] Chargement des commentaires pour $contentType:$contentId');
       
-      // Vérifier le cache d'abord
+      // Vérifier le cache d'abord (seulement si ce n'est pas un refresh)
       if (!refresh) {
         final cachedComments = await _getCachedComments(contentType, contentId);
         if (cachedComments.isNotEmpty) {
@@ -151,7 +151,7 @@ class CommentsService extends StateNotifier<Map<String, CommentsState>> {
         'type': contentType,
         'id': contentId,
         'per_page': perPage.toString(),
-        'sort': 'asc', // Du plus ancien au plus récent
+        'sort': 'desc', // Du plus récent au plus ancien
       });
 
       if (result['success'] == true) {
@@ -162,22 +162,42 @@ class CommentsService extends StateNotifier<Map<String, CommentsState>> {
             .map((json) => Comment.fromJson(json as Map<String, dynamic>))
             .toList();
 
-        // Trier les commentaires du plus ancien au plus récent (au cas où l'API ne le ferait pas)
-        comments.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+        // Trier les commentaires du plus récent au plus ancien (au cas où l'API ne le ferait pas)
+        comments.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-        // Mettre en cache
+        // Si c'est un refresh et que l'API retourne moins de commentaires que ce qu'on a localement,
+        // préserver les commentaires locaux récents (protection contre les problèmes de synchronisation)
+        List<Comment> finalComments = comments;
+        if (refresh) {
+          final currentState = state[key] ?? CommentsState();
+          if (currentState.comments.isNotEmpty && comments.length < currentState.comments.length) {
+            // Garder les commentaires locaux récents qui ne sont pas encore sur le serveur
+            final localRecentComments = currentState.comments
+                .where((local) => !comments.any((server) => server.id == local.id))
+                .where((local) => local.createdAt.isAfter(DateTime.now().subtract(const Duration(minutes: 5))))
+                .toList();
+            
+            if (localRecentComments.isNotEmpty) {
+              finalComments = [...localRecentComments, ...comments];
+              finalComments.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+              print('🔄 [CommentsService] Préservation de ${localRecentComments.length} commentaires locaux récents');
+            }
+          }
+        }
+
+        // Mettre en cache seulement les commentaires validés par le serveur
         await _cacheComments(contentType, contentId, comments);
 
         state = {
           ...state,
           key: CommentsState(
-            comments: comments,
+            comments: finalComments,
             isLoading: false,
             hasMore: comments.length >= perPage,
           ),
         };
 
-        print('✅ [CommentsService] Commentaires chargés: ${comments.length}');
+        print('✅ [CommentsService] Commentaires chargés: ${finalComments.length} (${comments.length} du serveur)');
       } else {
         throw Exception(result['error'] ?? 'Erreur de chargement');
       }
@@ -215,7 +235,7 @@ class CommentsService extends StateNotifier<Map<String, CommentsState>> {
         'id': contentId,
         'page': nextPage.toString(),
         'per_page': perPage.toString(),
-        'sort': 'asc', // Du plus ancien au plus récent
+        'sort': 'desc', // Du plus récent au plus ancien
       });
 
       if (result['success'] == true) {
@@ -227,7 +247,7 @@ class CommentsService extends StateNotifier<Map<String, CommentsState>> {
             .toList();
 
         // Trier les nouveaux commentaires
-        newComments.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+        newComments.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
         final allComments = [...currentState.comments, ...newComments];
 
@@ -283,9 +303,49 @@ class CommentsService extends StateNotifier<Map<String, CommentsState>> {
       final result = await _apiService.post('/comments', body);
       
       if (result['success'] == true) {
-        // Recharger les commentaires pour avoir la liste à jour
-        await loadComments(contentType, contentId, refresh: true);
-        print('✅ [CommentsService] Commentaire ajouté avec succès');
+        // Créer un commentaire temporaire pour affichage immédiat
+        final newComment = Comment(
+          id: result['data']?['id']?.toString() ?? DateTime.now().millisecondsSinceEpoch.toString(),
+          content: content,
+          authorName: authState.isAuthenticated ? (authState.userName ?? 'Utilisateur') : (authorName ?? 'Utilisateur Anonyme'),
+          authorAvatar: null,
+          createdAt: DateTime.now(),
+          isOwner: true,
+          likesCount: 0,
+          isLiked: false,
+        );
+
+        // Ajouter le commentaire immédiatement à la liste locale
+        final key = '${contentType}_$contentId';
+        final currentState = state[key] ?? CommentsState();
+        final updatedComments = [newComment, ...currentState.comments];
+        
+        state = {
+          ...state,
+          key: currentState.copyWith(comments: updatedComments),
+        };
+
+        // Recharger immédiatement depuis le serveur pour synchroniser
+        Future.delayed(const Duration(milliseconds: 500), () async {
+          try {
+            await loadComments(contentType, contentId, refresh: true);
+            print('✅ [CommentsService] Commentaires synchronisés depuis le serveur');
+          } catch (e) {
+            print('⚠️ [CommentsService] Erreur lors de la synchronisation: $e');
+            // En cas d'échec de synchronisation, maintenir le commentaire local visible
+            // et tenter une nouvelle synchronisation après 3 secondes
+            Future.delayed(const Duration(seconds: 3), () async {
+              try {
+                await loadComments(contentType, contentId, refresh: true);
+                print('✅ [CommentsService] Synchronisation de rattrapage réussie');
+              } catch (e2) {
+                print('⚠️ [CommentsService] Échec synchronisation de rattrapage: $e2');
+              }
+            });
+          }
+        });
+
+        print('✅ [CommentsService] Commentaire ajouté avec succès (affichage immédiat)');
         return true;
       } else {
         final errorMsg = result['message'] ?? result['error'] ?? 'Erreur inconnue';
