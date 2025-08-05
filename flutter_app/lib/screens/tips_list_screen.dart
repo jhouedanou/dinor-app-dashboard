@@ -503,6 +503,8 @@ class _TipsListScreenState extends ConsumerState<TipsListScreen> with AutomaticK
                   ),
                   fit: BoxFit.cover,
                 ),
+              ),
+            ),
 
             // Content
             Padding(

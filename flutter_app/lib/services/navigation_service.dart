@@ -222,6 +222,11 @@ class NavigationService {
     pushNamed(predictions);
   }
   
+  // Méthode générique navigateTo pour compatibilité
+  static Future<T?> navigateTo<T extends Object?>(String routeName, {Object? arguments}) {
+    return pushNamed<T>(routeName, arguments: arguments);
+  }
+  
   // Générateur de routes
   static Route<dynamic>? generateRoute(RouteSettings settings) {
     print('🧭 [NavigationService] Navigation vers: ${settings.name}');

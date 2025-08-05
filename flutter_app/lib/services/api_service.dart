@@ -367,6 +367,18 @@ class ApiService {
   Future<Map<String, dynamic>> getProfessionalContentTypes() async {
     return await get('/professional-content/types');
   }
+
+  // Méthodes pour les catégories de recettes
+  Future<Map<String, dynamic>> getRecipeCategories() async {
+    return await get('/recipes/categories');
+  }
+
+  // Méthode pour vider le cache
+  void clearCache() {
+    // En Flutter, nous n'avons pas besoin d'implémenter un cache complexe
+    // Cette méthode est conservée pour la compatibilité avec l'interface existante
+    print('🧹 [ApiService] Cache cleared (no-op in Flutter implementation)');
+  }
 }
 
 // Provider pour le service API

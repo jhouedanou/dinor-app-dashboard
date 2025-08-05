@@ -35,6 +35,7 @@ import '../components/common/unified_video_player.dart';
 import '../components/common/unified_comments_section.dart';
 import '../components/common/unified_content_actions.dart';
 import '../components/common/unified_like_button.dart';
+import '../components/common/badge.dart' as DinorBadge;
 
 // Services et composables
 import '../services/api_service.dart';
@@ -702,7 +703,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
           child: Row(
             children: [
               if (_recipe!['difficulty'] != null)
-                dinor_badge.Badge(
+                DinorBadge.Badge(
                   text: _getDifficultyLabel(_recipe!['difficulty']),
                   icon: 'restaurant',
                   variant: 'secondary',
@@ -710,7 +711,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
                 ),
               const SizedBox(width: 8),
               if (_recipe!['category'] != null)
-                dinor_badge.Badge(
+                DinorBadge.Badge(
                   text: _recipe!['category']['name'],
                   icon: 'tag',
                   variant: 'neutral',

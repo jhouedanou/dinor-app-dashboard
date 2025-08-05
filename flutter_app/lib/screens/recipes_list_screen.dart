@@ -716,8 +716,9 @@ class _RecipesListScreenState extends ConsumerState<RecipesListScreen> with Auto
                             ],
                           ),
                         ],
-                        if (recipe['required_equipment'] != null && (recipe['required_equipment'] as List).isNotEmpty) ...[
+                        if (recipe['required_equipment'] != null && (recipe['required_equipment'] as List).isNotEmpty)
                           const SizedBox(width: 16),
+                        if (recipe['required_equipment'] != null && (recipe['required_equipment'] as List).isNotEmpty)
                           Row(
                             children: [
                               const Icon(
@@ -735,7 +736,6 @@ class _RecipesListScreenState extends ConsumerState<RecipesListScreen> with Auto
                               ),
                             ],
                           ),
-                        ],
                       ],
                     ),
                   ],

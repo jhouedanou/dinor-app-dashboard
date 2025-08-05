@@ -20,8 +20,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// Test app simple
-import 'test_app.dart';
+// Test app simple (désactivé)
+// import 'test_app.dart';
 
 // Services (remplace les services Vue)
 import 'services/notification_service.dart';
@@ -55,14 +55,15 @@ void main() async {
   // Surveillance réseau (équivalent online/offline listeners)
   // _initializeNetworkListeners();
   
-  // Test avec une app simple d'abord
-  runApp(TestApp());
+  // Lancement de l'application principale
+  runApp(
+    ProviderScope(
+      child: DinorApp(),
+    ),
+  );
   
-  // runApp(
-  //   ProviderScope(
-  //     child: DinorApp(),
-  //   ),
-  // );
+  // Test avec une app simple (désactivé)
+  // runApp(TestApp());
   
   // Post-initialisation (équivalent service worker + OneSignal)
   // WidgetsBinding.instance.addPostFrameCallback((_) {
