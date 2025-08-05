@@ -28,6 +28,32 @@ Le problème venait du fait que Netlify exécute déjà les commandes depuis le 
   publish = "build/web"
 ```
 
+### Installation automatique de Flutter
+
+Le script `build-web.sh` a été modifié pour installer automatiquement Flutter si il n'est pas présent :
+
+```bash
+# Vérifier que Flutter est installé et l'installer si nécessaire
+if ! command -v flutter &> /dev/null; then
+    echo "📦 Flutter n'est pas installé. Installation automatique..."
+    
+    # Exécuter le script d'installation Flutter
+    if [ -f "./install-flutter.sh" ]; then
+        chmod +x ./install-flutter.sh
+        source ./install-flutter.sh
+    else
+        # Installation de base si le script n'existe pas
+        git clone https://github.com/flutter/flutter.git -b stable --depth 1
+        export PATH="$PATH:`pwd`/flutter/bin"
+        flutter config --enable-web
+    fi
+    
+    echo "✅ Flutter installé avec succès !"
+else
+    echo "✅ Flutter est déjà installé"
+fi
+```
+
 ## 🧪 Test de validation
 
 Le build a été testé localement avec succès :
@@ -42,6 +68,8 @@ Résultat : ✅ Build réussi, dossier `build/web/` créé avec tous les fichier
 
 1. **`netlify.toml`** - Configuration principale corrigée
 2. **`flutter_app/NETLIFY_DEPLOYMENT_GUIDE.md`** - Guide mis à jour
+3. **`flutter_app/build-web.sh`** - Ajout de l'installation automatique de Flutter
+4. **`flutter_app/install-flutter.sh`** - Script d'installation Flutter pour Netlify
 
 ## 🚀 Prochaines étapes
 
@@ -52,8 +80,10 @@ Résultat : ✅ Build réussi, dossier `build/web/` créé avec tous les fichier
 ## 📝 Notes importantes
 
 - Le script `build-web.sh` doit avoir les permissions d'exécution (`chmod +x`)
+- Le script `install-flutter.sh` doit avoir les permissions d'exécution (`chmod +x`)
 - La configuration `base = /opt/build/repo/flutter_app` dans Netlify fait que toutes les commandes s'exécutent depuis ce répertoire
 - Le dossier `build/web/` sera créé relativement au répertoire de travail actuel
+- Flutter sera installé automatiquement si il n'est pas présent sur l'environnement Netlify
 
 ## 🔗 Ressources
 
