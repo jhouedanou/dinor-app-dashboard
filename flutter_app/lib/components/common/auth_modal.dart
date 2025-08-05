@@ -111,8 +111,15 @@ class _AuthModalState extends ConsumerState<AuthModal> {
           ),
         );
         
+        // Appeler les callbacks dans le bon ordre
         widget.onAuthenticated?.call();
-        widget.onClose?.call();
+        
+        // Fermer la modal avec un délai pour permettre l'animation
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (mounted) {
+            widget.onClose?.call();
+          }
+        });
       } else {
         print('❌ [AuthModal] Authentification échouée');
         setState(() {
@@ -147,7 +154,13 @@ class _AuthModalState extends ConsumerState<AuthModal> {
       
       print('✅ [AuthModal] Connexion invité réussie, fermeture de la modal');
       widget.onAuthenticated?.call();
-      widget.onClose?.call();
+      
+      // Fermer la modal avec un délai pour permettre l'animation
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (mounted) {
+          widget.onClose?.call();
+        }
+      });
     } catch (error) {
       print('❌ [AuthModal] Erreur connexion invité: $error');
       setState(() {

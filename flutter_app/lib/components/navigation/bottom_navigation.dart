@@ -216,10 +216,12 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
             return AuthModal(
               isOpen: true,
               onClose: () {
+                print('🔐 [BottomNav] Fermeture de la modal d\'authentification');
                 Navigator.of(context, rootNavigator: true).pop();
                 setState(() => _showAuthModal = false);
               },
               onAuthenticated: () {
+                print('✅ [BottomNav] Utilisateur authentifié, fermeture de la modal');
                 Navigator.of(context, rootNavigator: true).pop();
                 setState(() => _showAuthModal = false);
                 _onAuthSuccess();

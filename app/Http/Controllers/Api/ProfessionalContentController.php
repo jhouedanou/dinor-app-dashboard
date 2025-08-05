@@ -39,6 +39,17 @@ class ProfessionalContentController extends Controller
                 ], 403);
             }
 
+            // Log des données reçues pour debug
+            \Log::info('Données reçues pour création de contenu professionnel:', [
+                'user_id' => $user->id,
+                'content_type' => $request->input('content_type'),
+                'title' => $request->input('title'),
+                'has_ingredients' => $request->has('ingredients'),
+                'has_steps' => $request->has('steps'),
+                'ingredients_count' => $request->input('ingredients') ? count($request->input('ingredients')) : 0,
+                'steps_count' => $request->input('steps') ? count($request->input('steps')) : 0,
+            ]);
+
             $validated = $request->validate([
                 'content_type' => ['required', Rule::in(['recipe', 'tip', 'event', 'video'])],
                 'title' => 'required|string|max:255',
@@ -62,34 +73,40 @@ class ProfessionalContentController extends Controller
                 'tags.*' => 'string',
             ]);
 
-        // Handle image uploads
-        $imagePaths = [];
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $image) {
-                $path = $image->store('professional-content', 'public');
-                $imagePaths[] = $path;
+            // Handle image uploads
+            $imagePaths = [];
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $image) {
+                    $path = $image->store('professional-content', 'public');
+                    $imagePaths[] = $path;
+                }
             }
-        }
 
-        $content = ProfessionalContent::create([
-            'user_id' => $user->id,
-            'content_type' => $validated['content_type'],
-            'title' => $validated['title'],
-            'description' => $validated['description'],
-            'content' => $validated['content'],
-            'images' => $imagePaths,
-            'video_url' => $validated['video_url'] ?? null,
-            'difficulty' => $validated['difficulty'] ?? null,
-            'category' => $validated['category'] ?? null,
-            'preparation_time' => $validated['preparation_time'] ?? null,
-            'cooking_time' => $validated['cooking_time'] ?? null,
-            'servings' => $validated['servings'] ?? null,
-            'ingredients' => $validated['ingredients'] ?? null,
-            'steps' => $validated['steps'] ?? null,
-            'tags' => $validated['tags'] ?? null,
-            'status' => 'pending',
-            'submitted_at' => now(),
-        ]);
+            // Préparer les données pour la création
+            $contentData = [
+                'user_id' => $user->id,
+                'content_type' => $validated['content_type'],
+                'title' => $validated['title'],
+                'description' => $validated['description'],
+                'content' => $validated['content'],
+                'images' => $imagePaths,
+                'video_url' => $validated['video_url'] ?? null,
+                'difficulty' => $validated['difficulty'] ?? null,
+                'category' => $validated['category'] ?? null,
+                'preparation_time' => $validated['preparation_time'] ?? null,
+                'cooking_time' => $validated['cooking_time'] ?? null,
+                'servings' => $validated['servings'] ?? null,
+                'ingredients' => $validated['ingredients'] ?? null,
+                'steps' => $validated['steps'] ?? null,
+                'tags' => $validated['tags'] ?? null,
+                'status' => 'pending',
+                'submitted_at' => now(),
+            ];
+
+            // Log des données avant création
+            \Log::info('Données préparées pour création:', $contentData);
+
+            $content = ProfessionalContent::create($contentData);
 
             return response()->json([
                 'success' => true,
@@ -97,13 +114,18 @@ class ProfessionalContentController extends Controller
                 'data' => $content->load(['user'])
             ], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Erreur de validation création contenu:', $e->errors());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur de validation',
                 'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
-            \Log::error('Erreur création contenu professionnel: ' . $e->getMessage());
+            \Log::error('Erreur création contenu professionnel: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur interne du serveur',

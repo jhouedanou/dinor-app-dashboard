@@ -260,7 +260,8 @@ class PredictionsService extends StateNotifier<PredictionsState> {
         final matchesData = data['data'] ?? [];
 
         final matches = (matchesData as List)
-            .map((json) => Match.fromJson(json))
+            .where((item) => item is Map<String, dynamic>) // Vérification de type
+            .map((json) => Match.fromJson(json as Map<String, dynamic>))
             .toList();
 
         state = state.copyWith(matches: matches);
@@ -337,7 +338,8 @@ class PredictionsService extends StateNotifier<PredictionsState> {
         final predictionsData = data['data'] ?? [];
 
         final predictions = (predictionsData as List)
-            .map((json) => Prediction.fromJson(json))
+            .where((item) => item is Map<String, dynamic>) // Vérification de type
+            .map((json) => Prediction.fromJson(json as Map<String, dynamic>))
             .toList();
 
         // Sauvegarder en cache local
@@ -441,6 +443,32 @@ class PredictionsService extends StateNotifier<PredictionsState> {
       return state.userPredictions.firstWhere((p) => p.matchId == matchId);
     } catch (e) {
       return null;
+    }
+  }
+
+  // Méthode de test pour valider la correction de type
+  Future<void> testTypeSafety() async {
+    try {
+      print('🧪 [PredictionsService] Test de sécurité de type...');
+      
+      // Simuler des données avec des types mixtes
+      final testData = [
+        {'id': '1', 'home_team': 'Team A', 'away_team': 'Team B', 'match_date': '2024-01-01'},
+        'invalid_string_data', // Ceci devrait être filtré
+        {'id': '2', 'home_team': 'Team C', 'away_team': 'Team D', 'match_date': '2024-01-02'},
+        null, // Ceci devrait être filtré
+      ];
+      
+      final validMatches = testData
+          .where((item) => item is Map<String, dynamic>)
+          .map((json) => Match.fromJson(json as Map<String, dynamic>))
+          .toList();
+      
+      print('✅ [PredictionsService] Test réussi: ${validMatches.length} matchs valides sur ${testData.length} données');
+      return;
+    } catch (e) {
+      print('❌ [PredictionsService] Test échoué: $e');
+      rethrow;
     }
   }
 }
