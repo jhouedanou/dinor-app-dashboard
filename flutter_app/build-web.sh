@@ -52,6 +52,20 @@ flutter pub get
 echo "🔨 Construction de la version web..."
 flutter build web --release
 
+# Vérifier que le build a créé les fichiers nécessaires
+echo "📋 Vérification des fichiers générés..."
+if [ ! -f "build/web/index.html" ]; then
+    echo "❌ Erreur: index.html n'a pas été généré"
+    exit 1
+fi
+
+if [ ! -f "build/web/main.dart.js" ]; then
+    echo "❌ Erreur: main.dart.js n'a pas été généré"
+    exit 1
+fi
+
+echo "✅ Fichiers de build vérifiés"
+
 echo "✅ Version web construite avec succès !"
 echo "📁 Fichiers générés dans: build/web/"
 
