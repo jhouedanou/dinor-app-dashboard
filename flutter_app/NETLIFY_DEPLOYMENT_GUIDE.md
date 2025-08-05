@@ -39,8 +39,8 @@ ls -la build/web/
 # Créez un fichier netlify.toml à la racine du projet
 cat > netlify.toml << 'EOF'
 [build]
-  publish = "flutter_app/build/web"
-  command = "cd flutter_app && ./build-web.sh"
+  publish = "build/web"
+  command = "./build-web.sh"
 
 [[redirects]]
   from = "/*"
@@ -65,8 +65,8 @@ git push origin main
 3. Choisissez GitHub
 4. Sélectionnez votre repository
 5. Configurez :
-   - **Build command** : `cd flutter_app && ./build-web.sh`
-   - **Publish directory** : `flutter_app/build/web`
+   - **Build command** : `./build-web.sh`
+   - **Publish directory** : `build/web`
 6. Cliquez sur "Deploy site"
 
 ## 🔧 Configuration avancée

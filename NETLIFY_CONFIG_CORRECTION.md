@@ -1,118 +1,61 @@
-# 🔧 Correction Configuration Netlify
+# 🔧 Correction de la Configuration Netlify
 
-## ❌ Problèmes dans votre configuration actuelle
+## ❌ Problème identifié
 
-### Configuration incorrecte :
-```
-Runtime: Not set
-Base directory: /flutter_app
-Package directory: Not set
-Build command: ./build-web.sh
-Publish directory: /flutter_app/flutter_app/build/web
-Functions directory: /flutter_app/netlify/functions
-```
-
-### Problèmes identifiés :
-1. **Base directory** : `/flutter_app` est incorrect
-2. **Publish directory** : `/flutter_app/flutter_app/build/web` est dupliqué
-3. **Build command** : Ne spécifie pas le chemin correct
-
-## ✅ Configuration correcte
-
-### Option 1: Configuration manuelle dans Netlify
+L'erreur de build Netlify était causée par une configuration incorrecte dans le fichier `netlify.toml` :
 
 ```
-Runtime: Not set (ou Node.js 18)
-Base directory: (laisser vide)
-Package directory: (laisser vide)
-Build command: cd flutter_app && ./build-web.sh
-Publish directory: flutter_app/build/web
-Functions directory: (laisser vide)
+bash: line 1: cd: flutter_app: No such file or directory
 ```
 
-### Option 2: Utiliser le fichier netlify.toml (Recommandé)
+## 🔍 Analyse du problème
 
-Le fichier `netlify.toml` a été créé à la racine du projet. Il configure automatiquement :
+Le problème venait du fait que Netlify exécute déjà les commandes depuis le répertoire `/opt/build/repo/flutter_app` (comme configuré dans `base = /opt/build/repo/flutter_app`), donc quand la commande essayait de faire `cd flutter_app`, elle ne trouvait pas ce dossier car elle était déjà dedans.
 
+## ✅ Solution appliquée
+
+### Avant (incorrect)
 ```toml
 [build]
   command = "cd flutter_app && ./build-web.sh"
   publish = "flutter_app/build/web"
 ```
 
-## 🚀 Étapes de correction
-
-### Étape 1: Mettre à jour la configuration Netlify
-
-1. **Allez dans les paramètres de votre site Netlify**
-2. **Section "Build & deploy"**
-3. **Modifiez les paramètres :**
-
-```
-Build command: cd flutter_app && ./build-web.sh
-Publish directory: flutter_app/build/web
-Base directory: (laisser vide)
+### Après (correct)
+```toml
+[build]
+  command = "./build-web.sh"
+  publish = "build/web"
 ```
 
-### Étape 2: Redéployer
+## 🧪 Test de validation
 
-1. **Allez dans l'onglet "Deploys"**
-2. **Cliquez sur "Trigger deploy" → "Deploy site"**
-3. **Attendez que le build se termine**
+Le build a été testé localement avec succès :
 
-## 🔍 Vérification
-
-### Vérifiez que le build fonctionne :
-
-1. **Logs de build** : Pas d'erreurs
-2. **Fichiers générés** : Le dossier `flutter_app/build/web/` existe
-3. **Site en ligne** : L'application se charge correctement
-
-### Structure attendue après build :
-
-```
-flutter_app/build/web/
-├── index.html
-├── main.dart.js
-├── flutter.js
-├── manifest.json
-├── _redirects
-├── _headers
-└── assets/
+```bash
+cd flutter_app && ./build-web.sh
 ```
 
-## 🐛 Dépannage
+Résultat : ✅ Build réussi, dossier `build/web/` créé avec tous les fichiers nécessaires.
 
-### Erreur: "Build command not found"
-**Solution :** Vérifiez que le script `build-web.sh` existe dans `flutter_app/`
+## 📋 Fichiers modifiés
 
-### Erreur: "Publish directory not found"
-**Solution :** Vérifiez que le chemin `flutter_app/build/web` existe après le build
+1. **`netlify.toml`** - Configuration principale corrigée
+2. **`flutter_app/NETLIFY_DEPLOYMENT_GUIDE.md`** - Guide mis à jour
 
-### Erreur: "Flutter not found"
-**Solution :** Netlify utilise Node.js par défaut. Flutter doit être installé via le script.
+## 🚀 Prochaines étapes
 
-## 📋 Configuration finale recommandée
+1. Le commit a été poussé vers GitHub
+2. Netlify va automatiquement redéployer avec la nouvelle configuration
+3. Le build devrait maintenant réussir
 
-```
-Runtime: Not set
-Base directory: (vide)
-Build command: cd flutter_app && ./build-web.sh
-Publish directory: flutter_app/build/web
-Functions directory: (vide)
-```
+## 📝 Notes importantes
 
-## ✅ Vérification finale
+- Le script `build-web.sh` doit avoir les permissions d'exécution (`chmod +x`)
+- La configuration `base = /opt/build/repo/flutter_app` dans Netlify fait que toutes les commandes s'exécutent depuis ce répertoire
+- Le dossier `build/web/` sera créé relativement au répertoire de travail actuel
 
-Après correction, votre configuration devrait ressembler à :
+## 🔗 Ressources
 
-```
-✅ Build command: cd flutter_app && ./build-web.sh
-✅ Publish directory: flutter_app/build/web
-✅ Base directory: (vide)
-✅ Runtime: Not set
-```
-
----
-
-**🎉 Une fois ces corrections appliquées, votre déploiement devrait fonctionner !** 
+- [Documentation Netlify Build](https://docs.netlify.com/configure-builds/overview/)
+- [Guide de déploiement Flutter Web](https://flutter.dev/docs/deployment/web) 
