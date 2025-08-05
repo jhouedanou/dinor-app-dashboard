@@ -53,6 +53,10 @@ class Tournament extends Model
         'progress_percentage'
     ];
 
+    protected $attributes = [
+        'created_by' => 1,
+    ];
+
     // Statuts possibles
     const STATUS_UPCOMING = 'upcoming';
     const STATUS_REGISTRATION_OPEN = 'registration_open';

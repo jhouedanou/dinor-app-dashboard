@@ -733,7 +733,7 @@ class _ProfessionalContentCreationScreenState extends ConsumerState<Professional
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return const AuthModal();
+        return const AuthModal(isOpen: true);
       },
     );
   }
