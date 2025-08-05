@@ -125,7 +125,8 @@ class FavoritesService extends StateNotifier<FavoritesState> {
         final favoritesData = data['data'] ?? [];
         
         final favorites = (favoritesData as List)
-            .map((json) => Favorite.fromJson(json))
+            .where((item) => item is Map<String, dynamic>) // Vérification de type
+            .map((json) => Favorite.fromJson(json as Map<String, dynamic>))
             .toList();
 
         // Mettre en cache

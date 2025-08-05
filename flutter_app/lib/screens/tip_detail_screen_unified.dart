@@ -216,7 +216,7 @@ class _TipDetailScreenUnifiedState extends ConsumerState<TipDetailScreenUnified>
                 id: widget.id,
                 title: _tip!['title'] ?? 'Astuce',
                 description: _tip!['short_description'] ?? 'Découvrez cette astuce',
-                shareUrl: 'https://new.dinorapp.com/tips/${widget.id}',
+                shareUrl: 'https://new.dinorapp.com/pwa/tip/${widget.id}',
                 imageUrl: _tip!['featured_image_url'],
               );
             }
@@ -508,7 +508,7 @@ class _TipDetailScreenUnifiedState extends ConsumerState<TipDetailScreenUnified>
                   contentId: widget.id,
                   title: _tip!['title'] ?? 'Astuce',
                   description: _tip!['short_description'] ?? 'Découvrez cette astuce : ${_tip!['title']}',
-                  shareUrl: 'https://new.dinorapp.com/tips/${widget.id}',
+                  shareUrl: 'https://new.dinorapp.com/pwa/tip/${widget.id}',
                   imageUrl: _tip!['featured_image_url'],
                   initialLiked: _userLiked,
                   initialLikeCount: _tip!['likes_count'] ?? 0,

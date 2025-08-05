@@ -276,7 +276,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
     final shareData = {
       'title': _recipe!['title'],
       'text': _recipe!['description'] ?? 'Découvrez cette délicieuse recette : ${_recipe!['title']}',
-      'url': 'https://new.dinorapp.com/recipe/${widget.id}',
+      'url': 'https://new.dinorapp.com/pwa/recipe/${widget.id}',
       'image': _recipe!['featured_image_url'],
     };
     
@@ -651,7 +651,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
                   contentId: widget.id,
                   title: _recipe!['title'] ?? 'Recette',
                   description: _recipe!['description'] ?? 'Découvrez cette délicieuse recette : ${_recipe!['title']}',
-                  shareUrl: 'https://new.dinorapp.com/recipe/${widget.id}',
+                  shareUrl: 'https://new.dinorapp.com/pwa/recipe/${widget.id}',
                   imageUrl: _recipe!['featured_image_url'],
                   initialLiked: _userLiked,
                   initialLikeCount: _recipe!['likes_count'] ?? 0,

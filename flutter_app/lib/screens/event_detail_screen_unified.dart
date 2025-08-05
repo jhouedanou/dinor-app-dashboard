@@ -406,7 +406,7 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
                     contentId: widget.id,
                     title: _event!['title'] ?? 'Événement',
                     description: _event!['description'] ?? 'Découvrez cet événement : ${_event!['title']}',
-                    shareUrl: 'https://new.dinorapp.com/events/${widget.id}',
+                    shareUrl: 'https://new.dinorapp.com/pwa/event/${widget.id}',
                     imageUrl: _event!['image'] ?? _event!['thumbnail'],
                     initialLiked: _userLiked,
                     initialLikeCount: _event!['likes_count'] ?? 0,
@@ -461,7 +461,7 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
                 id: widget.id,
                 title: _event!['title'] ?? 'Événement',
                 description: _event!['description'] ?? 'Découvrez cet événement',
-                shareUrl: 'https://new.dinorapp.com/events/${widget.id}',
+                shareUrl: 'https://new.dinorapp.com/pwa/event/${widget.id}',
                 imageUrl: _event!['image'] ?? _event!['thumbnail'],
               );
             }

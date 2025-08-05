@@ -224,7 +224,8 @@ class PredictionsService extends StateNotifier<PredictionsState> {
         final tournamentsData = data['data'] ?? [];
 
         final tournaments = (tournamentsData as List)
-            .map((json) => Tournament.fromJson(json))
+            .where((item) => item is Map<String, dynamic>) // Vérification de type
+            .map((json) => Tournament.fromJson(json as Map<String, dynamic>))
             .toList();
 
         state = state.copyWith(
@@ -320,7 +321,8 @@ class PredictionsService extends StateNotifier<PredictionsState> {
       final cachedPredictions = await _localDB.getUserPredictions();
       if (cachedPredictions.isNotEmpty) {
         final predictions = cachedPredictions
-            .map((json) => Prediction.fromJson(json))
+            .where((item) => item is Map<String, dynamic>) // Vérification de type
+            .map((json) => Prediction.fromJson(json as Map<String, dynamic>))
             .toList();
         
         state = state.copyWith(userPredictions: predictions);

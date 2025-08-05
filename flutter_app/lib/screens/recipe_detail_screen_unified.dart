@@ -268,7 +268,7 @@ class _RecipeDetailScreenUnifiedState extends ConsumerState<RecipeDetailScreenUn
                 id: widget.id,
                 title: _recipe!['title'] ?? 'Recette',
                 description: _recipe!['description'] ?? 'Découvrez cette délicieuse recette',
-                shareUrl: 'https://new.dinorapp.com/recipe/${widget.id}',
+                shareUrl: 'https://new.dinorapp.com/pwa/recipe/${widget.id}',
                 imageUrl: _recipe!['featured_image_url'],
               );
             }
@@ -557,7 +557,7 @@ class _RecipeDetailScreenUnifiedState extends ConsumerState<RecipeDetailScreenUn
                   contentId: widget.id,
                   title: _recipe!['title'] ?? 'Recette',
                   description: _recipe!['description'] ?? 'Découvrez cette délicieuse recette : ${_recipe!['title']}',
-                  shareUrl: 'https://new.dinorapp.com/recipe/${widget.id}',
+                  shareUrl: 'https://new.dinorapp.com/pwa/recipe/${widget.id}',
                   imageUrl: _recipe!['featured_image_url'],
                   initialLiked: _userLiked,
                   initialLikeCount: _recipe!['likes_count'] ?? 0,

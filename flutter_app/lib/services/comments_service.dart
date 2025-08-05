@@ -158,7 +158,8 @@ class CommentsService extends StateNotifier<Map<String, CommentsState>> {
         final commentsData = result['data'] ?? result['comments'] ?? [];
         
         final comments = (commentsData as List)
-            .map((json) => Comment.fromJson(json))
+            .where((item) => item is Map<String, dynamic>) // Vérification de type
+            .map((json) => Comment.fromJson(json as Map<String, dynamic>))
             .toList();
 
         // Trier les commentaires du plus ancien au plus récent (au cas où l'API ne le ferait pas)
@@ -221,7 +222,8 @@ class CommentsService extends StateNotifier<Map<String, CommentsState>> {
         final commentsData = result['data'] ?? result['comments'] ?? [];
         
         final newComments = (commentsData as List)
-            .map((json) => Comment.fromJson(json))
+            .where((item) => item is Map<String, dynamic>) // Vérification de type
+            .map((json) => Comment.fromJson(json as Map<String, dynamic>))
             .toList();
 
         // Trier les nouveaux commentaires

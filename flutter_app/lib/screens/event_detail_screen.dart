@@ -316,7 +316,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
               shareData: {
                 'title': _event!['title'],
                 'text': _event!['description'],
-                'url': 'https://new.dinorapp.com/events/${widget.id}',
+                'url': 'https://new.dinorapp.com/pwa/event/${widget.id}',
                 'image': _event!['image'] ?? _event!['thumbnail'],
               },
               onClose: _closeShareModal,

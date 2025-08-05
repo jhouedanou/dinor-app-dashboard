@@ -101,7 +101,8 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           final leaderboardData = data['data'] as List;
           setState(() {
             _leaderboard = leaderboardData
-                .map((json) => LeaderboardEntry.fromJson(json))
+                .where((item) => item is Map<String, dynamic>) // Vérification de type
+                .map((json) => LeaderboardEntry.fromJson(json as Map<String, dynamic>))
                 .toList();
             _isLoading = false;
           });
