@@ -41,6 +41,11 @@
       align-items: center;
       height: 100vh;
       background-color: #F5F5F5;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 9999;
     }
 
     .loading-content {
@@ -74,9 +79,9 @@
       color: #666;
     }
 
-    #flutter-app {
-      width: 100%;
-      height: 100vh;
+    /* Hide loading when Flutter is ready */
+    .loading.hidden {
+      display: none;
     }
   </style>
 </head>
@@ -90,9 +95,6 @@
     </div>
   </div>
 
-  <!-- Flutter app container -->
-  <div id="flutter-app"></div>
-
   <script src="flutter_bootstrap.js" async></script>
   
   <script>
@@ -100,7 +102,7 @@
     window.addEventListener('flutter-first-frame', function() {
       const loading = document.getElementById('loading');
       if (loading) {
-        loading.style.display = 'none';
+        loading.classList.add('hidden');
       }
     });
 
@@ -117,6 +119,14 @@
         `;
       }
     });
+
+    // Fallback: hide loading after 10 seconds
+    setTimeout(function() {
+      const loading = document.getElementById('loading');
+      if (loading && !loading.classList.contains('hidden')) {
+        loading.classList.add('hidden');
+      }
+    }, 10000);
   </script>
 </body>
 </html>
