@@ -5,6 +5,12 @@
 
 set -e
 
+# Vérifier que le script est exécutable
+if [ ! -x "$0" ]; then
+    echo "❌ Le script n'est pas exécutable. Ajout des permissions..."
+    chmod +x "$0"
+fi
+
 echo "🚀 Construction de la version web Flutter..."
 
 # Vérifier que Flutter est installé et l'installer si nécessaire
@@ -13,6 +19,7 @@ if ! command -v flutter &> /dev/null; then
     
     # Exécuter le script d'installation Flutter
     if [ -f "./install-flutter.sh" ]; then
+        echo "📦 Utilisation du script d'installation Flutter..."
         chmod +x ./install-flutter.sh
         source ./install-flutter.sh
     else
