@@ -29,34 +29,38 @@ class ProfessionalContentController extends Controller
 
     public function store(Request $request)
     {
-        $user = Auth::user();
-        
-        if (!$user || !$user->isProfessional()) {
-            return response()->json(['message' => 'Accès non autorisé'], 403);
-        }
+        try {
+            $user = Auth::user();
+            
+            if (!$user || !$user->isProfessional()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Accès non autorisé'
+                ], 403);
+            }
 
-        $validated = $request->validate([
-            'content_type' => ['required', Rule::in(['recipe', 'tip', 'event', 'video'])],
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'content' => 'required|string',
-            'images' => 'nullable|array',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
-            'video_url' => 'nullable|url|max:255',
-            'difficulty' => ['nullable', Rule::in(['beginner', 'easy', 'medium', 'hard', 'expert'])],
-            'category' => 'nullable|string|max:255',
-            'preparation_time' => 'nullable|integer|min:0',
-            'cooking_time' => 'nullable|integer|min:0',
-            'servings' => 'nullable|integer|min:1',
-            'ingredients' => 'nullable|array',
-            'ingredients.*.name' => 'required_with:ingredients|string',
-            'ingredients.*.quantity' => 'nullable|string',
-            'ingredients.*.unit' => 'nullable|string',
-            'steps' => 'nullable|array',
-            'steps.*.instruction' => 'required_with:steps|string',
-            'tags' => 'nullable|array',
-            'tags.*' => 'string',
-        ]);
+            $validated = $request->validate([
+                'content_type' => ['required', Rule::in(['recipe', 'tip', 'event', 'video'])],
+                'title' => 'required|string|max:255',
+                'description' => 'required|string',
+                'content' => 'required|string',
+                'images' => 'nullable|array',
+                'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+                'video_url' => 'nullable|url|max:255',
+                'difficulty' => ['nullable', Rule::in(['beginner', 'easy', 'medium', 'hard', 'expert'])],
+                'category' => 'nullable|string|max:255',
+                'preparation_time' => 'nullable|integer|min:0',
+                'cooking_time' => 'nullable|integer|min:0',
+                'servings' => 'nullable|integer|min:1',
+                'ingredients' => 'nullable|array',
+                'ingredients.*.name' => 'required_with:ingredients|string',
+                'ingredients.*.quantity' => 'nullable|string',
+                'ingredients.*.unit' => 'nullable|string',
+                'steps' => 'nullable|array',
+                'steps.*.instruction' => 'required_with:steps|string',
+                'tags' => 'nullable|array',
+                'tags.*' => 'string',
+            ]);
 
         // Handle image uploads
         $imagePaths = [];
@@ -87,10 +91,25 @@ class ProfessionalContentController extends Controller
             'submitted_at' => now(),
         ]);
 
-        return response()->json([
-            'message' => 'Contenu soumis avec succès',
-            'content' => $content->load(['user'])
-        ], 201);
+            return response()->json([
+                'success' => true,
+                'message' => 'Contenu soumis avec succès',
+                'data' => $content->load(['user'])
+            ], 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur de validation',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Erreur création contenu professionnel: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur interne du serveur',
+                'error' => config('app.debug') ? $e->getMessage() : 'INTERNAL_SERVER_ERROR'
+            ], 500);
+        }
     }
 
     public function show(ProfessionalContent $professionalContent)
@@ -189,8 +208,9 @@ class ProfessionalContentController extends Controller
         ]);
 
         return response()->json([
+            'success' => true,
             'message' => 'Contenu mis à jour avec succès',
-            'content' => $professionalContent->load(['user'])
+            'data' => $professionalContent->load(['user'])
         ]);
     }
 
@@ -220,14 +240,20 @@ class ProfessionalContentController extends Controller
 
         $professionalContent->delete();
 
-        return response()->json(['message' => 'Contenu supprimé avec succès']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Contenu supprimé avec succès'
+        ]);
     }
 
     public function getContentTypes()
     {
         return response()->json([
-            'content_types' => ProfessionalContent::CONTENT_TYPES,
-            'difficulties' => ProfessionalContent::DIFFICULTIES,
+            'success' => true,
+            'data' => [
+                'content_types' => ProfessionalContent::CONTENT_TYPES,
+                'difficulties' => ProfessionalContent::DIFFICULTIES,
+            ]
         ]);
     }
 }

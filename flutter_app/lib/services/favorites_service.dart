@@ -11,6 +11,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class Favorite {
@@ -79,6 +80,7 @@ class FavoritesState {
 
 class FavoritesService extends StateNotifier<FavoritesState> {
   static const String baseUrl = 'https://new.dinorapp.com/api/v1';
+  static const _secureStorage = FlutterSecureStorage();
 
   FavoritesService() : super(FavoritesState());
 
@@ -268,19 +270,30 @@ class FavoritesService extends StateNotifier<FavoritesState> {
 
   // Méthodes privées pour le cache et les headers
   Future<Map<String, String>> _getHeaders() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token');
-    
-    final headers = {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-    };
-    
-    if (token != null) {
-      headers['Authorization'] = 'Bearer $token';
+    try {
+      // Utiliser FlutterSecureStorage comme dans AuthNotifier
+      final token = await _secureStorage.read(key: 'auth_token');
+      
+      final headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      };
+      
+      if (token != null && token.isNotEmpty) {
+        headers['Authorization'] = 'Bearer $token';
+        print('🔑 [FavoritesService] Token d\'authentification ajouté');
+      } else {
+        print('⚠️ [FavoritesService] Aucun token d\'authentification trouvé');
+      }
+      
+      return headers;
+    } catch (e) {
+      print('❌ [FavoritesService] Erreur récupération token: $e');
+      return {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      };
     }
-    
-    return headers;
   }
 
   Future<List<Favorite>> _getCachedFavorites() async {

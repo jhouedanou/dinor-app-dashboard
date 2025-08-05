@@ -65,9 +65,14 @@ class TournamentController extends Controller
                 
                 // Ajouter des données spécifiques à l'utilisateur connecté
                 if ($user) {
-                    $data['user_is_participant'] = $tournament->participants()
-                        ->where('user_id', $user->id)->exists();
-                    $data['user_can_register'] = $tournament->canUserRegister($user);
+                    try {
+                        $data['user_is_participant'] = $tournament->participants()
+                            ->where('user_id', $user->id)->exists();
+                        $data['user_can_register'] = $tournament->canUserRegister($user);
+                    } catch (\Exception $e) {
+                        $data['user_is_participant'] = false;
+                        $data['user_can_register'] = false;
+                    }
                 } else {
                     $data['user_is_participant'] = false;
                     $data['user_can_register'] = false;
@@ -113,9 +118,14 @@ class TournamentController extends Controller
             // Ajouter des données supplémentaires pour l'utilisateur connecté
             if (Auth::check()) {
                 $user = Auth::user();
-                $data['user_is_participant'] = $tournament->participants()
-                    ->where('user_id', $user->id)->exists();
-                $data['user_can_register'] = $tournament->canUserRegister($user);
+                try {
+                    $data['user_is_participant'] = $tournament->participants()
+                        ->where('user_id', $user->id)->exists();
+                    $data['user_can_register'] = $tournament->canUserRegister($user);
+                } catch (\Exception $e) {
+                    $data['user_is_participant'] = false;
+                    $data['user_can_register'] = false;
+                }
             } else {
                 $data['user_is_participant'] = false;
                 $data['user_can_register'] = false;

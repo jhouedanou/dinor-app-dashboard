@@ -245,8 +245,12 @@ class Tournament extends Model
         return $this->status;
     }
 
-    public function canUserRegister(User $user)
+    public function canUserRegister(?User $user = null)
     {
+        if (!$user) {
+            return false;
+        }
+        
         if (!$this->can_register) {
             return false;
         }

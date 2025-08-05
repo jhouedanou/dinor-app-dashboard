@@ -12,6 +12,7 @@ import 'privacy_policy_screen.dart';
 import 'cookie_policy_screen.dart';
 import '../services/navigation_service.dart';
 import 'professional_content_creation_screen.dart';
+import 'notifications_screen.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -965,7 +966,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 icon: LucideIcons.bell,
                 title: 'Notifications',
                 subtitle: 'Gérer les notifications',
-                onTap: () {},
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const NotificationsScreen(),
+                    ),
+                  );
+                },
               ),
               _buildSettingsItem(
                 icon: LucideIcons.logOut,
@@ -1099,26 +1106,33 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Future<void> _removeFavorite(Map<String, dynamic> favorite) async {
     try {
-      final apiService = ref.read(apiServiceProvider);
-      // Correction: La méthode pour supprimer un favori est sur le service des favoris
       final favoritesService = ref.read(favoritesServiceProvider.notifier);
-      await favoritesService.removeFavorite(favorite['id']);
+      final success = await favoritesService.removeFavorite(favorite['id']?.toString() ?? '');
       
-      setState(() {
-        _userFavorites?.removeWhere((f) => f['id'] == favorite['id']);
-      });
-      
-      ScaffoldMessenger.of(context).showSnackBar(
+      if (success) {
+        setState(() {
+          _userFavorites?.removeWhere((f) => f['id'] == favorite['id']);
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Favori supprimé'),
             backgroundColor: Colors.green,
           ),
         );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Erreur lors de la suppression'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } catch (e) {
       print('❌ [ProfileScreen] Erreur suppression favori: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Erreur lors de la suppression'),
+        SnackBar(
+          content: Text('Erreur: ${e.toString().contains('401') ? 'Authentification requise' : 'Erreur lors de la suppression'}'),
           backgroundColor: Colors.red,
         ),
       );

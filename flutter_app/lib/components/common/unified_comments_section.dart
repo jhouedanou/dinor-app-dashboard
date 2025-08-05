@@ -83,10 +83,6 @@ class _UnifiedCommentsSectionState
     final commentsState = ref.watch(commentsProvider(commentsKey));
     final authHandler = ref.watch(useAuthHandlerProvider);
 
-    if (!authHandler.isAuthenticated) {
-      return _buildAuthPrompt();
-    }
-
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -105,16 +101,15 @@ class _UnifiedCommentsSectionState
         children: [
           _buildSectionHeader(commentsState),
           const SizedBox(height: 16),
+          // Formulaire d'ajout de commentaire ou incitation à se connecter
+          if (authHandler.isAuthenticated) ...[
+            _buildCommentForm(),
+            const SizedBox(height: 16),
+          ] else ...[
+            _buildQuickAuthPrompt(),
+            const SizedBox(height: 16),
+          ],
           if (_showFullSection) ...[
-            // Formulaire d'ajout de commentaire
-            if (authHandler.isAuthenticated) ...[
-              _buildCommentForm(),
-              const SizedBox(height: 16),
-            ] else ...[
-              _buildAuthPrompt(),
-              const SizedBox(height: 16),
-            ],
-
             // Liste des commentaires avec pagination
             _buildCommentsList(commentsState),
           ] else ...[
@@ -295,61 +290,50 @@ class _UnifiedCommentsSectionState
     );
   }
 
-  Widget _buildAuthPrompt() {
+  Widget _buildQuickAuthPrompt() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: const Color(0xFFF8F9FA),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      child: Row(
         children: [
           const Icon(
-            LucideIcons.lock,
-            size: 32,
+            LucideIcons.messageCircle,
+            size: 20,
             color: Color(0xFF718096),
           ),
-          const SizedBox(height: 12),
-          const Text(
-            'Connectez-vous pour voir les commentaires',
-            style: TextStyle(
-              fontFamily: 'OpenSans',
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF2D3748),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Text(
+              'Partagez votre avis sur ce contenu',
+              style: TextStyle(
+                fontFamily: 'Roboto',
+                fontSize: 14,
+                color: Color(0xFF718096),
+              ),
             ),
-            textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 8),
-          const Text(
-            'Créez un compte ou connectez-vous pour rejoindre la discussion.',
-            style: TextStyle(
-              fontFamily: 'Roboto',
-              fontSize: 14,
-              color: Color(0xFF718096),
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton.icon(
+          ElevatedButton(
             onPressed: widget.onAuthRequired ?? _showAuthModal,
-            icon: const Icon(LucideIcons.logIn, size: 16),
-            label: const Text('Se connecter ou s\'inscrire'),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFE53E3E),
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(6),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              minimumSize: Size.zero,
+            ),
+            child: const Text(
+              'Se connecter',
+              style: TextStyle(
+                fontFamily: 'Roboto',
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],
