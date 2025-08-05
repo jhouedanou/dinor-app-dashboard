@@ -311,6 +311,24 @@ class AuthNotifier extends StateNotifier<AuthState> {
   String? get userName => state.userName;
   String? get userEmail => state.userEmail;
   Map<String, dynamic>? get user => state.user;
+  
+  bool get isProfessional {
+    if (state.user == null) return false;
+    final role = state.user!['role'] as String?;
+    return role == 'professional' || role == 'moderator' || role == 'admin';
+  }
+  
+  bool get isAdmin {
+    if (state.user == null) return false;
+    final role = state.user!['role'] as String?;
+    return role == 'admin';
+  }
+  
+  bool get isModerator {
+    if (state.user == null) return false;
+    final role = state.user!['role'] as String?;
+    return role == 'moderator' || role == 'admin';
+  }
 }
 
 final useAuthHandlerProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {

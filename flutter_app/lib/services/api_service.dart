@@ -346,6 +346,27 @@ class ApiService {
       'platform': platform,
     });
   }
+
+  // Méthodes pour le contenu professionnel
+  Future<Map<String, dynamic>> getProfessionalContent() async {
+    return await get('/professional-content');
+  }
+
+  Future<Map<String, dynamic>> createProfessionalContent(Map<String, dynamic> contentData) async {
+    return await post('/professional-content', contentData);
+  }
+
+  Future<Map<String, dynamic>> updateProfessionalContent(String id, Map<String, dynamic> contentData) async {
+    return await put('/professional-content/$id', contentData);
+  }
+
+  Future<Map<String, dynamic>> deleteProfessionalContent(String id) async {
+    return await delete('/professional-content/$id');
+  }
+
+  Future<Map<String, dynamic>> getProfessionalContentTypes() async {
+    return await get('/professional-content/types');
+  }
 }
 
 // Provider pour le service API

@@ -78,6 +78,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the professional content submitted by this user
+     */
+    public function professionalContents()
+    {
+        return $this->hasMany(ProfessionalContent::class);
+    }
+
+    /**
      * Check if user is admin
      */
     public function isAdmin(): bool
@@ -91,6 +99,14 @@ class User extends Authenticatable
     public function isModerator(): bool
     {
         return in_array($this->role, ['moderator', 'admin']);
+    }
+
+    /**
+     * Check if user is professional
+     */
+    public function isProfessional(): bool
+    {
+        return in_array($this->role, ['professional', 'moderator', 'admin']);
     }
 
     /**

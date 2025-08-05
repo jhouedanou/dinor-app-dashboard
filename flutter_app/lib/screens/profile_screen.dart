@@ -11,6 +11,7 @@ import 'terms_of_service_screen.dart';
 import 'privacy_policy_screen.dart';
 import 'cookie_policy_screen.dart';
 import '../services/navigation_service.dart';
+import 'professional_content_creation_screen.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -946,6 +947,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
           child: Column(
             children: [
+              // Afficher l'option de création de contenu seulement pour les professionnels
+              if (ref.read(useAuthHandlerProvider.notifier).isProfessional)
+                _buildSettingsItem(
+                  icon: LucideIcons.plus,
+                  title: 'Créer du contenu',
+                  subtitle: 'Soumettre du contenu professionnel',
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const ProfessionalContentCreationScreen(),
+                      ),
+                    );
+                  },
+                ),
               _buildSettingsItem(
                 icon: LucideIcons.bell,
                 title: 'Notifications',

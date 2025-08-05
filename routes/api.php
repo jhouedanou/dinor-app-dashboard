@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\ShareController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\PWA\CacheController as PWACacheController;
+use App\Http\Controllers\Api\ProfessionalContentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -456,6 +457,10 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     Route::put('/profile/name', [App\Http\Controllers\Api\ProfileController::class, 'updateName']);
     Route::put('/profile/password', [App\Http\Controllers\Api\ProfileController::class, 'updatePassword']);
     Route::post('/profile/request-deletion', [App\Http\Controllers\Api\ProfileController::class, 'requestDataDeletion']);
+    
+    // Professional Content - Routes protégées
+    Route::apiResource('professional-content', ProfessionalContentController::class);
+    Route::get('/professional-content/types', [ProfessionalContentController::class, 'getContentTypes']);
     
     // Routes de suppression pour l'administration
     Route::delete('/recipes/{recipe}', [RecipeController::class, 'destroy']);
