@@ -253,3 +253,30 @@ Route::post('/test-create-token', function () {
         ]);
     }
 });
+
+// Routes pour télécharger les exemples CSV
+Route::get('/csv/example/{type}', function ($type) {
+    $files = [
+        'recipes' => 'exemple_recipes_detailed.csv',
+        'tips' => 'exemple_tips_detailed.csv',
+        'events' => 'exemple_events_detailed.csv',
+        'dinor_tv' => 'exemple_dinor_tv_detailed.csv',
+        'categories' => 'exemple_categories_detailed.csv',
+        'event_categories' => 'exemple_event_categories_detailed.csv',
+        'users' => 'exemple_users_detailed.csv',
+    ];
+
+    if (!isset($files[$type])) {
+        abort(404);
+    }
+
+    $filePath = storage_path('app/examples/' . $files[$type]);
+    
+    if (!file_exists($filePath)) {
+        abort(404);
+    }
+
+    return response()->download($filePath, $files[$type], [
+        'Content-Type' => 'text/csv',
+    ]);
+})->name('csv.example');

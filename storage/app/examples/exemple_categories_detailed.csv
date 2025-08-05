@@ -1,0 +1,13 @@
+name,description,type
+"Plats Principaux","Recettes de plats principaux traditionnels et modernes","recipe"
+"Entrées","Assortiment d'entrées pour commencer le repas","recipe"
+"Desserts","Desserts traditionnels et contemporains","recipe"
+"Boissons","Boissons chaudes et froides, cocktails sans alcool","recipe"
+"Petit Déjeuner","Recettes pour bien commencer la journée","recipe"
+"Poissons et Fruits de Mer","Spécialités à base de poissons et fruits de mer","recipe"
+"Viandes","Préparations de viandes diverses","recipe"
+"Légumes","Plats végétariens et préparations de légumes","recipe"
+"Préparation","Astuces pour la préparation des ingrédients","tip"
+"Cuisson","Techniques de cuisson et conseils","tip"
+"Conservation","Méthodes de conservation des aliments","tip"
+"Achat","Guide d'achat des ingrédients","tip"

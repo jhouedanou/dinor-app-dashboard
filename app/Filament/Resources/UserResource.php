@@ -58,6 +58,7 @@ class UserResource extends Resource
                             ->label('Rôle')
                             ->options([
                                 'user' => 'Utilisateur',
+                                'professional' => 'Professionnel',
                                 'moderator' => 'Modérateur',
                                 'admin' => 'Administrateur',
                             ])
@@ -110,12 +111,14 @@ class UserResource extends Resource
                     ->color(fn (string $state): string => match($state) {
                         'admin' => 'danger',
                         'moderator' => 'warning',
+                        'professional' => 'info',
                         'user' => 'success',
                         default => 'gray'
                     })
                     ->formatStateUsing(fn (string $state): string => match($state) {
                         'admin' => 'Administrateur',
                         'moderator' => 'Modérateur',
+                        'professional' => 'Professionnel',
                         'user' => 'Utilisateur',
                         default => $state
                     }),
@@ -151,6 +154,7 @@ class UserResource extends Resource
                     ->options([
                         'admin' => 'Administrateur',
                         'moderator' => 'Modérateur',
+                        'professional' => 'Professionnel',
                         'user' => 'Utilisateur',
                     ]),
 

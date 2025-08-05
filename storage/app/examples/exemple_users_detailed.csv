@@ -1,0 +1,8 @@
+name,email,password,role,is_active
+"Chef Marie Kouassi","marie.chef@dinor.app","password123","professional",true
+"Modérateur Jean","jean.modo@dinor.app","password123","moderator",true
+"Admin Système","admin.sys@dinor.app","admin2025","admin",true
+"Utilisateur Test","user.test@dinor.app","userpass","user",true
+"Chef Professionnel","chef.pro@dinor.app","chefpass","professional",true
+"Modérateur Contenu","modo.content@dinor.app","modopass","moderator",true
+"Utilisateur Inactif","inactive@dinor.app","inactive123","user",false

@@ -1,0 +1,5 @@
+title,description,content,difficulty,preparation_time,cooking_time,servings,category,is_published,is_featured
+"Riz au Gras Ivoirien","Un délicieux plat traditionnel de Côte d'Ivoire","Ingrédients:\n- 500g de riz jasmin\n- 300g de viande de bœuf\n- 200ml d'huile de palme\n- 1 oignon\n- 2 tomates\n- Sel et épices\n\nPréparation:\n1. Laver le riz\n2. Couper la viande en morceaux\n3. Faire revenir dans l'huile de palme\n4. Ajouter les légumes\n5. Cuire 45 minutes",medium,20,45,6,"Plats Principaux",true,true
+"Attieké aux Crevettes","Spécialité ivoirienne à base de manioc","L'attieké est une semoule de manioc fermenté, accompagnée de crevettes grillées et de légumes frais.",easy,15,20,4,"Poissons et Fruits de Mer",true,false
+"Placali à la Sauce Arachide","Plat traditionnel avec pâte de manioc","Le placali est une pâte de manioc accompagnée d'une riche sauce à l'arachide avec de la viande.",hard,30,60,8,"Plats Traditionnels",true,true
+"Bouillie de Mil","Petit-déjeuner nutritif traditionnel","Une bouillie crémeuse à base de mil, idéale pour commencer la journée en force.",easy,5,15,2,"Petit Déjeuner",true,false
