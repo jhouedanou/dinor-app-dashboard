@@ -1,5 +1,5 @@
 [build]
-  command = "./build-web.sh"
+  command = "bash ./build-web.sh"
   publish = "build/web"
 
 [build.environment]
