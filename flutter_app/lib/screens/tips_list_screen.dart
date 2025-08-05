@@ -46,22 +46,23 @@ class TipsListScreen extends ConsumerStatefulWidget {
   ConsumerState<TipsListScreen> createState() => _TipsListScreenState();
 }
 
-class _TipsListScreenState extends ConsumerState<TipsListScreen> with AutomaticKeepAliveClientMixin {
+class _TipsListScreenState extends ConsumerState<TipsListScreen>
+    with AutomaticKeepAliveClientMixin {
   // État identique au setup() Vue
   bool _showAuthModal = false;
   bool _showShareModal = false;
   Map<String, dynamic>? _shareData;
-  
+
   // Données
   List<dynamic> _tips = [];
   List<dynamic> _categories = [];
   List<dynamic> _banners = [];
-  
+
   // États de chargement
   bool _loading = true;
   bool _loadingBanners = true;
   bool _loadingCategories = true;
-  
+
   // Erreurs
   String? _error;
   String? _bannersError;
@@ -108,7 +109,7 @@ class _TipsListScreenState extends ConsumerState<TipsListScreen> with AutomaticK
   @override
   void initState() {
     super.initState();
-    
+
     print('💡 [TipsListScreen] Écran liste astuces initialisé');
     _loadData();
   }
@@ -116,31 +117,32 @@ class _TipsListScreenState extends ConsumerState<TipsListScreen> with AutomaticK
   // REPRODUCTION EXACTE du chargement de données Vue
   Future<void> _loadData() async {
     print('🔄 [TipsListScreen] Chargement des données');
-    
+
     // Charger en parallèle (identique Vue)
     await Future.wait([
       _loadTips(),
       _loadBanners(),
       _loadCategories(),
     ]);
-    
+
     print('✅ [TipsListScreen] Toutes les données chargées');
   }
 
   Future<void> _loadTips({bool forceRefresh = false}) async {
     try {
-      print('💡 [TipsListScreen] Chargement astuces ForceRefresh: $forceRefresh');
+      print(
+          '💡 [TipsListScreen] Chargement astuces ForceRefresh: $forceRefresh');
       setState(() => _loading = true);
-      
-      final tips = forceRefresh 
-        ? await ref.read(useTipsProvider.notifier).fetchTipsFresh()
-        : await ref.read(useTipsProvider.notifier).fetchTips();
-        
+
+      final tips = forceRefresh
+          ? await ref.read(useTipsProvider.notifier).fetchTipsFresh()
+          : await ref.read(useTipsProvider.notifier).fetchTips();
+
       setState(() {
         _tips = tips;
         _loading = false;
       });
-      
+
       print('✅ [TipsListScreen] ${tips.length} astuces chargées');
     } catch (error) {
       print('❌ [TipsListScreen] Erreur chargement astuces: $error');
@@ -155,14 +157,16 @@ class _TipsListScreenState extends ConsumerState<TipsListScreen> with AutomaticK
     try {
       print('🖼️ [TipsListScreen] Chargement bannières pour tips');
       setState(() => _loadingBanners = true);
-      
-      final banners = await ref.read(useBannersProvider.notifier).loadBannersForContentType('Tip');
-      
+
+      final banners = await ref
+          .read(useBannersProvider.notifier)
+          .loadBannersForContentType('Tip');
+
       setState(() {
         _banners = banners;
         _loadingBanners = false;
       });
-      
+
       print('✅ [TipsListScreen] ${banners.length} bannières chargées');
     } catch (error) {
       print('❌ [TipsListScreen] Erreur chargement bannières: $error');
@@ -177,17 +181,17 @@ class _TipsListScreenState extends ConsumerState<TipsListScreen> with AutomaticK
     try {
       print('📂 [TipsListScreen] Chargement catégories astuces');
       setState(() => _loadingCategories = true);
-      
+
       final apiService = ref.read(apiServiceProvider);
       final response = await apiService.get('/tip-categories');
-      
+
       if (response['success']) {
         final categories = response['data'] as List<dynamic>;
         setState(() {
           _categories = categories;
           _loadingCategories = false;
         });
-        
+
         print('✅ [TipsListScreen] ${categories.length} catégories chargées');
       }
     } catch (error) {
@@ -249,11 +253,12 @@ class _TipsListScreenState extends ConsumerState<TipsListScreen> with AutomaticK
   void _callShare(dynamic tip) {
     final shareData = {
       'title': tip['title'],
-      'text': tip['short_description'] ?? 'Découvrez cette astuce : ${tip['title']}',
+      'text': tip['short_description'] ??
+          'Découvrez cette astuce : ${tip['title']}',
       'url': 'https://new.dinorapp.com/pwa/tip/${tip['id']}',
       'image': tip['featured_image_url'],
     };
-    
+
     setState(() {
       _shareData = shareData;
       _showShareModal = true;
@@ -284,7 +289,9 @@ class _TipsListScreenState extends ConsumerState<TipsListScreen> with AutomaticK
 
     // Filtre par catégorie
     if (_selectedCategory != null) {
-      filtered = ref.read(useTipsProvider.notifier).filterTipsByCategory(_selectedCategory!);
+      filtered = ref
+          .read(useTipsProvider.notifier)
+          .filterTipsByCategory(_selectedCategory!);
     }
 
     // Filtres additionnels
@@ -292,7 +299,9 @@ class _TipsListScreenState extends ConsumerState<TipsListScreen> with AutomaticK
       if (value != null) {
         switch (key) {
           case 'difficulty':
-            filtered = ref.read(useTipsProvider.notifier).filterTipsByDifficulty(value);
+            filtered = ref
+                .read(useTipsProvider.notifier)
+                .filterTipsByDifficulty(value);
             break;
           case 'type':
             filtered = filtered.where((tip) => tip['type'] == value).toList();
@@ -305,9 +314,9 @@ class _TipsListScreenState extends ConsumerState<TipsListScreen> with AutomaticK
   }
 
   bool get _hasActiveFilters {
-    return _searchQuery.isNotEmpty || 
-           _selectedCategory != null || 
-           _selectedFilters.isNotEmpty;
+    return _searchQuery.isNotEmpty ||
+        _selectedCategory != null ||
+        _selectedFilters.isNotEmpty;
   }
 
   // Compter le nombre de filtres actifs
@@ -322,14 +331,14 @@ class _TipsListScreenState extends ConsumerState<TipsListScreen> with AutomaticK
   @override
   Widget build(BuildContext context) {
     super.build(context); // Required for AutomaticKeepAliveClientMixin
-    
+
     return Scaffold(
       backgroundColor: const Color(0xFFFFFFFF),
       body: _loading && _tips.isEmpty
-        ? _buildLoadingState()
-        : _error != null && _tips.isEmpty
-          ? _buildErrorState()
-          : _buildTipsContent(),
+          ? _buildLoadingState()
+          : _error != null && _tips.isEmpty
+              ? _buildErrorState()
+              : _buildTipsContent(),
     );
   }
 
@@ -430,18 +439,18 @@ class _TipsListScreenState extends ConsumerState<TipsListScreen> with AutomaticK
         SliverPadding(
           padding: const EdgeInsets.all(16),
           sliver: _filteredTips.isEmpty
-            ? SliverToBoxAdapter(
-                child: _buildEmptyState(),
-              )
-            : SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) => Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: _buildTipCard(_filteredTips[index]),
+              ? SliverToBoxAdapter(
+                  child: _buildEmptyState(),
+                )
+              : SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: _buildTipCard(_filteredTips[index]),
+                    ),
+                    childCount: _filteredTips.length,
                   ),
-                  childCount: _filteredTips.length,
                 ),
-              ),
         ),
       ],
     );
@@ -494,13 +503,14 @@ class _TipsListScreenState extends ConsumerState<TipsListScreen> with AutomaticK
           children: [
             // Image
             Container(
-              height: 160, // Hauteur fixe pour un meilleur centrage comme sur la page d'accueil
+              height:
+                  160, // Hauteur fixe pour un meilleur centrage comme sur la page d'accueil
               decoration: BoxDecoration(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(12)),
                 image: DecorationImage(
                   image: CachedNetworkImageProvider(
-                    ImageService.getTipImageUrl(tip)
-                  ),
+                      ImageService.getTipImageUrl(tip)),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -508,71 +518,71 @@ class _TipsListScreenState extends ConsumerState<TipsListScreen> with AutomaticK
 
             // Content
             Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Title
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title
+                  Text(
+                    tip['title'] ?? 'Astuce sans titre',
+                    style: const TextStyle(
+                      fontFamily: 'OpenSans',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF2D3748),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+
+                  // Description
+                  if (tip['short_description'] != null) ...[
                     Text(
-                      tip['title'] ?? 'Astuce sans titre',
+                      tip['short_description'],
                       style: const TextStyle(
-                        fontFamily: 'OpenSans',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF2D3748),
+                        fontFamily: 'Roboto',
+                        fontSize: 14,
+                        color: Color(0xFF4A5568),
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
-
-                    // Description
-                    if (tip['short_description'] != null) ...[
-                      Text(
-                        tip['short_description'],
-                        style: const TextStyle(
-                          fontFamily: 'Roboto',
-                          fontSize: 14,
-                          color: Color(0xFF4A5568),
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 8),
-                    ],
-
-                    // Actions
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Like Button
-                        Expanded(
-                          child: LikeButton(
-                            type: 'tip',
-                            itemId: tip['id'].toString(),
-                            initialLiked: tip['user_liked'] ?? false,
-                            initialCount: tip['likes_count'] ?? 0,
-                            showCount: true,
-                            size: 'small',
-                            onAuthRequired: () => setState(() => _showAuthModal = true),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-
-                        // Share Button
-                        IconButton(
-                          onPressed: () => _callShare(tip),
-                          icon: const Icon(
-                            LucideIcons.share,
-                            size: 16,
-                            color: Color(0xFF49454F),
-                          ),
-                          tooltip: 'Partager cette astuce',
-                        ),
-                      ],
-                    ),
+                    const SizedBox(height: 8),
                   ],
-                ),
+
+                  // Actions
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Like Button
+                      Expanded(
+                        child: LikeButton(
+                          type: 'tip',
+                          itemId: tip['id'].toString(),
+                          initialLiked: tip['user_liked'] ?? false,
+                          initialCount: tip['likes_count'] ?? 0,
+                          showCount: true,
+                          size: 'small',
+                          onAuthRequired: () =>
+                              setState(() => _showAuthModal = true),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+
+                      // Share Button
+                      IconButton(
+                        onPressed: () => _callShare(tip),
+                        icon: const Icon(
+                          LucideIcons.share,
+                          size: 16,
+                          color: Color(0xFF49454F),
+                        ),
+                        tooltip: 'Partager cette astuce',
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ],
@@ -580,6 +590,4 @@ class _TipsListScreenState extends ConsumerState<TipsListScreen> with AutomaticK
       ),
     );
   }
-
-
 }

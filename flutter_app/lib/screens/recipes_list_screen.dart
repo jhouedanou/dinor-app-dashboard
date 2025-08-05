@@ -741,7 +741,6 @@ class _RecipesListScreenState extends ConsumerState<RecipesListScreen> with Auto
                   ],
                 ),
               ),
-            ),
           ],
         ),
       ),
