@@ -948,8 +948,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
           child: Column(
             children: [
-              // Afficher l'option de création de contenu seulement pour les professionnels
-              if (ref.read(useAuthHandlerProvider.notifier).isProfessional)
+              // Afficher l'option de création de contenu seulement pour les modérateurs
+              if (ref.read(useAuthHandlerProvider.notifier).canCreateContent)
                 _buildSettingsItem(
                   icon: LucideIcons.plus,
                   title: 'Créer du contenu',

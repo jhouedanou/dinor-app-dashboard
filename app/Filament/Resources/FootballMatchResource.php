@@ -73,6 +73,20 @@ class FootballMatchResource extends Resource
                             ->minValue(0),
                     ]),
                 
+                Forms\Components\Select::make('tournament_id')
+                    ->label('Tournoi')
+                    ->options(function() {
+                        return \App\Models\Tournament::where('is_public', true)
+                            ->where(function($q) {
+                                $q->whereNull('end_date')->orWhere('end_date', '>', now());
+                            })
+                            ->pluck('name', 'id')
+                            ->toArray();
+                    })
+                    ->searchable()
+                    ->placeholder('Sélectionner un tournoi (optionnel)')
+                    ->helperText('Lier ce match à un tournoi spécifique'),
+                
                 Forms\Components\TextInput::make('competition')
                     ->label('Compétition')
                     ->placeholder('Ligue 1, Champions League, etc.'),
@@ -113,6 +127,11 @@ class FootballMatchResource extends Resource
                 Tables\Columns\TextColumn::make('awayTeam.name')
                     ->label('Équipe extérieure')
                     ->sortable(),
+                
+                Tables\Columns\TextColumn::make('tournament.name')
+                    ->label('Tournoi')
+                    ->sortable()
+                    ->searchable(),
                 
                 Tables\Columns\TextColumn::make('match_date')
                     ->label('Date')

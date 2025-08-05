@@ -45,7 +45,9 @@ class _ProfessionalContentCreationScreenState extends ConsumerState<Professional
       
       if (response['success'] == true) {
         setState(() {
-          _contentTypes = Map<String, String>.from(response['data']['content_types'] ?? {});
+          // Filtrer pour ne garder que les recettes
+          final allContentTypes = Map<String, String>.from(response['data']['content_types'] ?? {});
+          _contentTypes = {'recipe': allContentTypes['recipe'] ?? 'Recette'};
           _difficulties = Map<String, String>.from(response['data']['difficulties'] ?? {});
         });
       }
@@ -94,7 +96,7 @@ class _ProfessionalContentCreationScreenState extends ConsumerState<Professional
       );
     }
 
-    if (!authNotifier.isProfessional) {
+    if (!authNotifier.canCreateContent) {
       return Scaffold(
         appBar: AppBar(
           title: const Text('Création de contenu'),
@@ -108,12 +110,12 @@ class _ProfessionalContentCreationScreenState extends ConsumerState<Professional
               const Icon(Icons.work_off, size: 64, color: Colors.orange),
               const SizedBox(height: 16),
               const Text(
-                'Accès professionnel requis',
+                'Accès modérateur requis',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
-                'Vous devez avoir un compte professionnel pour créer du contenu.\nVotre rôle actuel: ${authState.user?['role'] ?? 'Utilisateur'}',
+                'Vous devez avoir le rôle de modérateur pour créer du contenu.\nVotre rôle actuel: ${authState.user?['role'] ?? 'Utilisateur'}',
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: Colors.grey),
               ),
@@ -198,7 +200,7 @@ class _ProfessionalContentCreationScreenState extends ConsumerState<Professional
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Type de contenu',
+              'Type de contenu (Recettes uniquement)',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
@@ -206,19 +208,16 @@ class _ProfessionalContentCreationScreenState extends ConsumerState<Professional
               value: _selectedContentType,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
-                labelText: 'Sélectionner le type',
+                labelText: 'Type: Recette (fixé)',
+                enabled: false,
               ),
-              items: _contentTypes.entries.map((entry) {
+              items: _contentTypes.entries.where((entry) => entry.key == 'recipe').map((entry) {
                 return DropdownMenuItem(
                   value: entry.key,
                   child: Text(entry.value),
                 );
               }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedContentType = value ?? 'recipe';
-                });
-              },
+              onChanged: null, // Désactivé car seul 'recipe' est autorisé
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Veuillez sélectionner un type de contenu';

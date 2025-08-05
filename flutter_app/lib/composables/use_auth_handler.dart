@@ -318,6 +318,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
     return role == 'professional' || role == 'moderator' || role == 'admin';
   }
   
+  bool get canCreateContent {
+    if (state.user == null) return false;
+    final role = state.user!['role'] as String?;
+    return role == 'moderator' || role == 'admin';
+  }
+  
   bool get isAdmin {
     if (state.user == null) return false;
     final role = state.user!['role'] as String?;
