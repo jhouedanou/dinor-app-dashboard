@@ -38,6 +38,8 @@ import '../components/dinor_icon.dart';
 import '../services/api_service.dart';
 import '../services/image_service.dart';
 import '../services/analytics_service.dart';
+import '../services/analytics_tracker.dart';
+import '../services/swipeable_navigation_service.dart';
 import '../composables/use_recipes.dart';
 import '../composables/use_tips.dart';
 import '../composables/use_events.dart';
@@ -53,7 +55,7 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAliveClientMixin {
+class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAliveClientMixin, AnalyticsScreenMixin {
   // État identique au setup() Vue
   bool _showAuthModal = false;
   String _authModalMessage = '';
@@ -83,14 +85,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
   bool get wantKeepAlive => true;
 
   @override
+  String get screenName => 'home';
+
+  @override
   void initState() {
     super.initState();
     
     // Équivalent onMounted() Vue
     print('🚀 [HomeScreen] Écran d\'accueil initialisé');
-    
-    // Analytics: écran visité
-    AnalyticsService.logScreenView(screenName: 'home');
     
     _loadAllData();
   }
@@ -279,7 +281,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
       contentName: recipe['title'] ?? 'Recette',
     );
     
-    NavigationService.pushNamed('/recipe/${recipe['id']}');
+    // Tracking du clic sur la recette
+    AnalyticsTracker.trackButtonClick(
+      buttonName: 'recipe_card',
+      screenName: 'home',
+      additionalData: {
+        'recipe_id': recipe['id'].toString(),
+        'recipe_title': recipe['title'] ?? 'Recette',
+      },
+    );
+    
+    // Navigation vers le swipeable detail avec la liste des recettes
+    SwipeableNavigationService.navigateFromCarousel(
+      context: context,
+      initialId: recipe['id'].toString(),
+      contentType: 'recipe',
+      carouselItems: _latestRecipes,
+      carouselIndex: _latestRecipes.indexOf(recipe),
+    );
   }
 
   void _handleTipClick(Map<String, dynamic> tip) {
@@ -290,7 +309,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
       contentName: tip['title'] ?? 'Astuce',
     );
     
-    NavigationService.pushNamed('/tip/${tip['id']}');
+    // Tracking du clic sur l'astuce
+    AnalyticsTracker.trackButtonClick(
+      buttonName: 'tip_card',
+      screenName: 'home',
+      additionalData: {
+        'tip_id': tip['id'].toString(),
+        'tip_title': tip['title'] ?? 'Astuce',
+      },
+    );
+    
+    // Navigation vers le swipeable detail avec la liste des astuces
+    SwipeableNavigationService.navigateFromCarousel(
+      context: context,
+      initialId: tip['id'].toString(),
+      contentType: 'tip',
+      carouselItems: _latestTips,
+      carouselIndex: _latestTips.indexOf(tip),
+    );
   }
 
   void _handleEventClick(Map<String, dynamic> event) {
@@ -301,7 +337,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
       contentName: event['title'] ?? 'Événement',
     );
     
-    NavigationService.pushNamed('/event/${event['id']}');
+    // Tracking du clic sur l'événement
+    AnalyticsTracker.trackButtonClick(
+      buttonName: 'event_card',
+      screenName: 'home',
+      additionalData: {
+        'event_id': event['id'].toString(),
+        'event_title': event['title'] ?? 'Événement',
+      },
+    );
+    
+    // Navigation vers le swipeable detail avec la liste des événements
+    SwipeableNavigationService.navigateFromCarousel(
+      context: context,
+      initialId: event['id'].toString(),
+      contentType: 'event',
+      carouselItems: _latestEvents,
+      carouselIndex: _latestEvents.indexOf(event),
+    );
   }
 
   void _handleVideoClick(Map<String, dynamic> video) {
@@ -309,36 +362,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
     final title = video['title'] as String? ?? 'Vidéo Dinor TV';
     final description = video['description'] as String?;
     
-    if (videoUrl != null && videoUrl.isNotEmpty) {
-      print('🎬 [HomeScreen] Ouverture vidéo intégrée: $title');
-      print('🎬 [HomeScreen] URL: $videoUrl');
-      
-      // Afficher la modal vidéo optimisée pour la page d'accueil
-      showDialog(
-        context: context,
-        barrierDismissible: true,
-        useRootNavigator: true,
-        builder: (context) => HomeVideoModal(
-          isOpen: true,
-          videoUrl: videoUrl,
-          title: title,
-          description: description,
-          onClose: () {
-            if (Navigator.of(context, rootNavigator: true).canPop()) {
-              Navigator.of(context, rootNavigator: true).pop();
-            }
-          },
-        ),
-      );
-    } else {
-      print('⚠️ [HomeScreen] URL vidéo manquante pour: $title');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('URL de vidéo non disponible'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
+    // Analytics: contenu consulté
+    AnalyticsService.logViewContent(
+      contentType: 'video',
+      contentId: video['id'].toString(),
+      contentName: title,
+    );
+    
+    // Tracking du clic sur la vidéo
+    AnalyticsTracker.trackButtonClick(
+      buttonName: 'video_card',
+      screenName: 'home',
+      additionalData: {
+        'video_id': video['id'].toString(),
+        'video_title': title,
+        'video_url': videoUrl,
+      },
+    );
+    
+    // Navigation vers le swipeable detail avec la liste des vidéos
+    SwipeableNavigationService.navigateFromCarousel(
+      context: context,
+      initialId: video['id'].toString(),
+      contentType: 'video',
+      carouselItems: _latestVideos,
+      carouselIndex: _latestVideos.indexOf(video),
+    );
   }
 
   // IDENTIQUE à handleAuthError Vue

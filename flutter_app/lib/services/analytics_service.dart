@@ -7,12 +7,14 @@
  * - Propriétés utilisateur (authentification, préférences)
  * - Crash reporting avec Crashlytics
  * - Métriques de performance et engagement
+ * - Tracking des installations et statistiques détaillées
  */
 
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
 
 class AnalyticsService {
@@ -41,9 +43,74 @@ class AnalyticsService {
         return true;
       };
 
+      // Vérifier si c'est la première installation
+      await _checkFirstInstallation();
+
       debugPrint('✅ [Analytics] Firebase Analytics initialisé avec succès');
     } catch (e) {
       debugPrint('❌ [Analytics] Erreur initialisation: $e');
+    }
+  }
+
+  // === TRACKING DES INSTALLATIONS ===
+  
+  // Vérifier et tracker la première installation
+  static Future<void> _checkFirstInstallation() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final isFirstInstall = prefs.getBool('is_first_install') ?? true;
+      
+      if (isFirstInstall) {
+        // Marquer comme installé
+        await prefs.setBool('is_first_install', false);
+        await prefs.setString('installation_date', DateTime.now().toIso8601String());
+        
+        // Tracker l'installation
+        await logAppInstall();
+        await logFirstOpen();
+        
+        debugPrint('🎉 [Analytics] Première installation détectée et trackée');
+      } else {
+        // Tracker la réouverture
+        await logAppOpen();
+        await _trackSessionStart();
+      }
+    } catch (e) {
+      debugPrint('❌ [Analytics] Erreur vérification installation: $e');
+    }
+  }
+
+  // Tracker l'installation de l'app
+  static Future<void> logAppInstall() async {
+    try {
+      await _analytics.logEvent(name: 'app_install', parameters: {
+        'platform': Platform.operatingSystem,
+        'app_version': '1.2.0',
+        'build_number': '2',
+        'installation_date': DateTime.now().toIso8601String(),
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+      });
+      debugPrint('📱 [Analytics] Installation de l\'app trackée');
+    } catch (e) {
+      debugPrint('❌ [Analytics] Erreur app_install: $e');
+    }
+  }
+
+  // Tracker le début de session
+  static Future<void> _trackSessionStart() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final sessionCount = (prefs.getInt('session_count') ?? 0) + 1;
+      await prefs.setInt('session_count', sessionCount);
+      
+      await _analytics.logEvent(name: 'session_start', parameters: {
+        'session_number': sessionCount,
+        'platform': Platform.operatingSystem,
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+      });
+      debugPrint('🔄 [Analytics] Session #$sessionCount démarrée');
+    } catch (e) {
+      debugPrint('❌ [Analytics] Erreur session_start: $e');
     }
   }
 
@@ -72,6 +139,68 @@ class AnalyticsService {
     }
   }
 
+  // === STATISTIQUES D'UTILISATION ===
+  
+  // Tracker le temps passé sur un écran
+  static Future<void> logScreenTime({
+    required String screenName,
+    required int durationSeconds,
+  }) async {
+    try {
+      await _analytics.logEvent(name: 'screen_time', parameters: {
+        'screen_name': screenName,
+        'duration_seconds': durationSeconds,
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+      });
+      debugPrint('⏱️ [Analytics] Temps écran: $screenName = ${durationSeconds}s');
+    } catch (e) {
+      debugPrint('❌ [Analytics] Erreur screen_time: $e');
+    }
+  }
+
+  // Tracker les fonctionnalités utilisées
+  static Future<void> logFeatureUsage({
+    required String featureName,
+    String? category,
+    Map<String, dynamic>? additionalData,
+  }) async {
+    try {
+      final parameters = {
+        'feature_name': featureName,
+        'category': category ?? 'general',
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+        ...?additionalData,
+      };
+      
+      await _analytics.logEvent(name: 'feature_usage', parameters: parameters.cast<String, Object>());
+      debugPrint('🔧 [Analytics] Fonctionnalité utilisée: $featureName');
+    } catch (e) {
+      debugPrint('❌ [Analytics] Erreur feature_usage: $e');
+    }
+  }
+
+  // Tracker les erreurs utilisateur
+  static Future<void> logUserError({
+    required String errorType,
+    required String errorMessage,
+    String? screenName,
+    Map<String, dynamic>? context,
+  }) async {
+    try {
+      final errorParams = {
+        'error_type': errorType,
+        'error_message': errorMessage,
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+        if (screenName != null) 'screen_name': screenName,
+        ...?context,
+      };
+      await _analytics.logEvent(name: 'user_error', parameters: errorParams.cast<String, Object>());
+      debugPrint('⚠️ [Analytics] Erreur utilisateur: $errorType - $errorMessage');
+    } catch (e) {
+      debugPrint('❌ [Analytics] Erreur user_error: $e');
+    }
+  }
+
   // === ÉVÉNEMENTS DE NAVIGATION ===
   
   // Changement d'écran
@@ -84,7 +213,7 @@ class AnalyticsService {
       await _analytics.logScreenView(
         screenName: screenName,
         screenClass: screenClass ?? screenName,
-        parameters: parameters,
+        parameters: parameters?.cast<String, Object>(),
       );
       debugPrint('🧭 [Analytics] Écran visité: $screenName');
     } catch (e) {
@@ -129,7 +258,7 @@ class AnalyticsService {
         ...?additionalParams,
       };
       
-      await _analytics.logViewItem(parameters: parameters);
+      await _analytics.logViewItem(parameters: parameters.cast<String, Object>());
       debugPrint('👀 [Analytics] Contenu consulté: $contentType/$contentName');
     } catch (e) {
       debugPrint('❌ [Analytics] Erreur view_content: $e');
@@ -143,13 +272,14 @@ class AnalyticsService {
     int? resultsCount,
   }) async {
     try {
+      final searchParams = {
+        'results_count': resultsCount ?? 0,
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+        if (category != null) 'category': category,
+      };
       await _analytics.logSearch(
         searchTerm: searchTerm,
-        parameters: {
-          'category': category,
-          'results_count': resultsCount ?? 0,
-          'timestamp': DateTime.now().millisecondsSinceEpoch,
-        },
+        parameters: searchParams.cast<String, Object>(),
       );
       debugPrint('🔍 [Analytics] Recherche: "$searchTerm" ($resultsCount résultats)');
     } catch (e) {
@@ -316,7 +446,7 @@ class AnalyticsService {
         ...?parameters,
       };
       
-      await _analytics.logEvent(name: eventName, parameters: params);
+      await _analytics.logEvent(name: eventName, parameters: params.cast<String, Object>());
       debugPrint('🎯 [Analytics] Événement personnalisé: $eventName');
     } catch (e) {
       debugPrint('❌ [Analytics] Erreur custom_event: $e');
@@ -339,6 +469,42 @@ class AnalyticsService {
       debugPrint('⏱️ [Analytics] Performance: $actionName = ${durationMs}ms');
     } catch (e) {
       debugPrint('❌ [Analytics] Erreur performance: $e');
+    }
+  }
+
+  // === MÉTRIQUES D'ENGAGEMENT ===
+  
+  // Tracker l'engagement quotidien
+  static Future<void> logDailyEngagement() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final today = DateTime.now().toIso8601String().split('T')[0];
+      final lastEngagement = prefs.getString('last_engagement_date');
+      
+      if (lastEngagement != today) {
+        await prefs.setString('last_engagement_date', today);
+        
+        await _analytics.logEvent(name: 'daily_engagement', parameters: {
+          'date': today,
+          'timestamp': DateTime.now().millisecondsSinceEpoch,
+        });
+        debugPrint('📅 [Analytics] Engagement quotidien tracké: $today');
+      }
+    } catch (e) {
+      debugPrint('❌ [Analytics] Erreur daily_engagement: $e');
+    }
+  }
+
+  // Tracker les sessions longues (>5 minutes)
+  static Future<void> logLongSession({required int durationMinutes}) async {
+    try {
+      await _analytics.logEvent(name: 'long_session', parameters: {
+        'duration_minutes': durationMinutes,
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+      });
+      debugPrint('⏰ [Analytics] Session longue: ${durationMinutes} minutes');
+    } catch (e) {
+      debugPrint('❌ [Analytics] Erreur long_session: $e');
     }
   }
 }

@@ -27,6 +27,7 @@ import 'package:firebase_core/firebase_core.dart';
 // Services (remplace les services Vue)
 import 'services/notification_service.dart';
 import 'services/analytics_service.dart';
+import 'services/analytics_tracker.dart';
 // import 'services/notification_service_simple.dart' as SimpleNotificationService;
 
 // Router supprimé - remplacé par NavigationService
@@ -80,6 +81,9 @@ void main() async {
   WidgetsBinding.instance.addPostFrameCallback((_) {
     // Enregistrer l'ouverture de l'app
     AnalyticsService.logAppOpen();
+    
+    // Démarrer le tracking de session
+    AnalyticsTracker.startSession();
   });
 }
 
