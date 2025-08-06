@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\PWA\CacheController as PWACacheController;
 use App\Http\Controllers\Api\ProfessionalContentController;
+use App\Http\Controllers\Api\AnalyticsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -565,4 +566,23 @@ Route::get('/test/tournaments-debug', function() {
             'trace' => $e->getTraceAsString()
         ]);
     }
+});
+
+// Routes pour Firebase Analytics
+Route::prefix('v1/analytics')->group(function () {
+    // Routes publiques pour l'application mobile
+    Route::get('/', [AnalyticsController::class, 'index']);
+    Route::get('/app-statistics', [AnalyticsController::class, 'appStatistics']);
+    Route::get('/content-statistics', [AnalyticsController::class, 'contentStatistics']);
+    Route::get('/engagement', [AnalyticsController::class, 'engagementMetrics']);
+    Route::get('/realtime', [AnalyticsController::class, 'realTimeMetrics']);
+    Route::get('/platforms', [AnalyticsController::class, 'platformStatistics']);
+    Route::get('/geographic', [AnalyticsController::class, 'geographicStatistics']);
+    Route::get('/info', [AnalyticsController::class, 'info']);
+    
+    // Routes avec authentification pour administration
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::post('/clear-cache', [AnalyticsController::class, 'clearCache']);
+        Route::get('/export', [AnalyticsController::class, 'export']);
+    });
 }); 
