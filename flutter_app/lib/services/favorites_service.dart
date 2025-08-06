@@ -14,6 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../composables/use_auth_handler.dart';
+import 'analytics_service.dart';
 
 class Favorite {
   final String id;
@@ -180,6 +181,13 @@ class FavoritesService extends StateNotifier<FavoritesState> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['success'] == true && data['is_favorited'] == true) {
+          // Analytics: ajout aux favoris
+          await AnalyticsService.logFavoriteAction(
+            contentType: type,
+            contentId: id,
+            isFavorited: true,
+          );
+          
           // Recharger les favoris
           await loadFavorites(refresh: true);
           print('✅ [FavoritesService] Favori ajouté avec succès');
@@ -215,6 +223,18 @@ class FavoritesService extends StateNotifier<FavoritesState> {
       ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
+        // Trouver le favori à supprimer pour l'analytics
+        final favoriteToRemove = state.favorites
+            .firstWhere((fav) => fav.id == favoriteId, orElse: () => 
+              Favorite(id: favoriteId, type: 'unknown', content: {}, favoritedAt: DateTime.now()));
+        
+        // Analytics: suppression des favoris
+        await AnalyticsService.logFavoriteAction(
+          contentType: favoriteToRemove.type,
+          contentId: favoriteToRemove.content['id']?.toString() ?? favoriteId,
+          isFavorited: false,
+        );
+        
         // Retirer le favori de la liste locale
         final updatedFavorites = state.favorites
             .where((favorite) => favorite.id != favoriteId)

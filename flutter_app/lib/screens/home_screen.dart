@@ -37,6 +37,7 @@ import '../components/dinor_icon.dart';
 // Services et composables
 import '../services/api_service.dart';
 import '../services/image_service.dart';
+import '../services/analytics_service.dart';
 import '../composables/use_recipes.dart';
 import '../composables/use_tips.dart';
 import '../composables/use_events.dart';
@@ -87,6 +88,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
     
     // Équivalent onMounted() Vue
     print('🚀 [HomeScreen] Écran d\'accueil initialisé');
+    
+    // Analytics: écran visité
+    AnalyticsService.logScreenView(screenName: 'home');
+    
     _loadAllData();
   }
 
@@ -267,14 +272,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
 
   // REPRODUCTION EXACTE des handlers Vue
   void _handleRecipeClick(Map<String, dynamic> recipe) {
+    // Analytics: contenu consulté
+    AnalyticsService.logViewContent(
+      contentType: 'recipe',
+      contentId: recipe['id'].toString(),
+      contentName: recipe['title'] ?? 'Recette',
+    );
+    
     NavigationService.pushNamed('/recipe/${recipe['id']}');
   }
 
   void _handleTipClick(Map<String, dynamic> tip) {
+    // Analytics: contenu consulté
+    AnalyticsService.logViewContent(
+      contentType: 'tip',
+      contentId: tip['id'].toString(),
+      contentName: tip['title'] ?? 'Astuce',
+    );
+    
     NavigationService.pushNamed('/tip/${tip['id']}');
   }
 
   void _handleEventClick(Map<String, dynamic> event) {
+    // Analytics: contenu consulté
+    AnalyticsService.logViewContent(
+      contentType: 'event',
+      contentId: event['id'].toString(),
+      contentName: event['title'] ?? 'Événement',
+    );
+    
     NavigationService.pushNamed('/event/${event['id']}');
   }
 
