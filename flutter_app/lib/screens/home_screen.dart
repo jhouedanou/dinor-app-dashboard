@@ -31,6 +31,7 @@ import '../components/common/like_button.dart';
 import '../components/common/auth_modal.dart';
 import '../components/common/youtube_video_modal.dart';
 import '../components/common/home_video_modal.dart';
+import '../components/common/offline_indicator.dart';
 import '../components/dinor_icon.dart';
 
 // Services et composables
@@ -403,6 +404,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
           physics: const AlwaysScrollableScrollPhysics(),
           child: Column(
             children: [
+              // Indicateur hors ligne pour macOS
+              const OfflineIndicator(),
+              
               // Zone de contenu principal - .content-area CSS identique
               Container(
                 width: double.infinity,

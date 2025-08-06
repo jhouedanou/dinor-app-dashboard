@@ -1,6 +1,8 @@
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'dart:io';
 import 'navigation_service.dart';
 
 class NotificationService {
@@ -8,6 +10,12 @@ class NotificationService {
   
   static Future<void> initialize() async {
     debugPrint('🔔 [NotificationService] Initialisation OneSignal...');
+    
+    // Vérifier si la plateforme supporte OneSignal
+    if (!Platform.isAndroid && !Platform.isIOS) {
+      debugPrint('⚠️ [NotificationService] OneSignal non supporté sur cette plateforme: ${Platform.operatingSystem}');
+      return;
+    }
     
     try {
       // Configuration OneSignal

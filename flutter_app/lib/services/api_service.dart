@@ -16,6 +16,7 @@
  */
 
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import '../composables/use_auth_handler.dart';
@@ -36,6 +37,13 @@ class ApiService {
       return _handleResponse(response);
     } catch (e) {
       print('❌ [ApiService] Erreur GET $endpoint: $e');
+      
+      // Gestion spéciale pour macOS - erreurs de connexion sandbox
+      if (Platform.isMacOS && e.toString().contains('Operation not permitted')) {
+        print('⚠️ [ApiService] Erreur de sandbox macOS - retour de données factices');
+        return _getMockDataForEndpoint(endpoint);
+      }
+      
       return {'success': false, 'error': e.toString()};
     }
   }
@@ -378,6 +386,85 @@ class ApiService {
     // En Flutter, nous n'avons pas besoin d'implémenter un cache complexe
     // Cette méthode est conservée pour la compatibilité avec l'interface existante
     print('🧹 [ApiService] Cache cleared (no-op in Flutter implementation)');
+  }
+
+  // Données factices pour le mode hors ligne (macOS sandbox)
+  Map<String, dynamic> _getMockDataForEndpoint(String endpoint) {
+    if (endpoint.contains('/recipes')) {
+      return {
+        'success': true,
+        'data': [
+          {
+            'id': 'mock-1',
+            'title': 'Recette de démonstration',
+            'description': 'Cette recette est affichée en mode hors ligne (macOS sandbox)',
+            'image': '',
+            'ingredients': ['Ingrédient 1', 'Ingrédient 2'],
+            'instructions': 'Instructions de démonstration',
+            'difficulty': 'facile',
+            'duration': 30,
+            'likes_count': 0,
+            'comments_count': 0,
+          }
+        ],
+        'meta': {'total': 1, 'page': 1, 'limit': 50}
+      };
+    } else if (endpoint.contains('/tips')) {
+      return {
+        'success': true,
+        'data': [
+          {
+            'id': 'mock-tip-1',
+            'title': 'Astuce de démonstration',
+            'content': 'Cette astuce est affichée en mode hors ligne (macOS sandbox)',
+            'image': '',
+            'likes_count': 0,
+            'comments_count': 0,
+          }
+        ],
+        'meta': {'total': 1, 'page': 1, 'limit': 50}
+      };
+    } else if (endpoint.contains('/events')) {
+      return {
+        'success': true,
+        'data': [
+          {
+            'id': 'mock-event-1',
+            'title': 'Événement de démonstration',
+            'description': 'Cet événement est affiché en mode hors ligne (macOS sandbox)',
+            'image': '',
+            'date': DateTime.now().toIso8601String(),
+            'likes_count': 0,
+            'comments_count': 0,
+          }
+        ],
+        'meta': {'total': 1, 'page': 1, 'limit': 50}
+      };
+    } else if (endpoint.contains('/dinor-tv')) {
+      return {
+        'success': true,
+        'data': [
+          {
+            'id': 'mock-video-1',
+            'title': 'Vidéo de démonstration',
+            'description': 'Cette vidéo est affichée en mode hors ligne (macOS sandbox)',
+            'thumbnail': '',
+            'video_url': '',
+            'likes_count': 0,
+            'comments_count': 0,
+          }
+        ],
+        'meta': {'total': 1, 'page': 1, 'limit': 50}
+      };
+    }
+    
+    // Fallback générique
+    return {
+      'success': true,
+      'data': [],
+      'meta': {'total': 0, 'page': 1, 'limit': 50},
+      'message': 'Mode hors ligne - données indisponibles'
+    };
   }
 }
 
