@@ -13,6 +13,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../composables/use_auth_handler.dart';
 
 class Favorite {
   final String id;
@@ -81,8 +82,9 @@ class FavoritesState {
 class FavoritesService extends StateNotifier<FavoritesState> {
   static const String baseUrl = 'https://new.dinorapp.com/api/v1';
   static const _secureStorage = FlutterSecureStorage();
+  final Ref _ref;
 
-  FavoritesService() : super(FavoritesState());
+  FavoritesService(this._ref) : super(FavoritesState());
 
   // Charger les favoris
   Future<void> loadFavorites({bool refresh = false}) async {
@@ -272,19 +274,26 @@ class FavoritesService extends StateNotifier<FavoritesState> {
   // Méthodes privées pour le cache et les headers
   Future<Map<String, String>> _getHeaders() async {
     try {
-      // Utiliser FlutterSecureStorage comme dans AuthNotifier
-      final token = await _secureStorage.read(key: 'auth_token');
-      
       final headers = {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       };
       
-      if (token != null && token.isNotEmpty) {
-        headers['Authorization'] = 'Bearer $token';
-        print('🔑 [FavoritesService] Token d\'authentification ajouté');
+      // Récupérer le token depuis l'AuthNotifier
+      final authState = _ref.read(authProvider);
+      
+      if (authState.isAuthenticated && authState.token.isNotEmpty) {
+        headers['Authorization'] = 'Bearer ${authState.token}';
+        print('🔑 [FavoritesService] Token d\'authentification ajouté depuis AuthNotifier');
       } else {
-        print('⚠️ [FavoritesService] Aucun token d\'authentification trouvé');
+        // Fallback: essayer de récupérer depuis FlutterSecureStorage
+        final token = await _secureStorage.read(key: 'auth_token');
+        if (token != null && token.isNotEmpty) {
+          headers['Authorization'] = 'Bearer $token';
+          print('🔑 [FavoritesService] Token d\'authentification ajouté depuis SecureStorage (fallback)');
+        } else {
+          print('⚠️ [FavoritesService] Aucun token d\'authentification trouvé');
+        }
       }
       
       return headers;
@@ -338,5 +347,5 @@ class FavoritesService extends StateNotifier<FavoritesState> {
 
 // Provider pour le service de favoris
 final favoritesServiceProvider = StateNotifierProvider<FavoritesService, FavoritesState>((ref) {
-  return FavoritesService();
+  return FavoritesService(ref);
 });
