@@ -279,12 +279,12 @@ class FavoritesService extends StateNotifier<FavoritesState> {
         'Content-Type': 'application/json',
       };
       
-      // Récupérer le token depuis l'AuthNotifier
-      final authState = _ref.read(authProvider);
+      // Récupérer le token depuis l'AuthNotifier (useAuthHandlerProvider)
+      final authState = _ref.read(useAuthHandlerProvider);
       
-      if (authState.isAuthenticated && authState.token.isNotEmpty) {
+      if (authState.isAuthenticated && authState.token != null && authState.token!.isNotEmpty) {
         headers['Authorization'] = 'Bearer ${authState.token}';
-        print('🔑 [FavoritesService] Token d\'authentification ajouté depuis AuthNotifier');
+        print('🔑 [FavoritesService] Token d\'authentification ajouté depuis useAuthHandlerProvider');
       } else {
         // Fallback: essayer de récupérer depuis FlutterSecureStorage
         final token = await _secureStorage.read(key: 'auth_token');

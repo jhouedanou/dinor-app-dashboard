@@ -33,6 +33,7 @@ import '../components/common/unified_like_button.dart';
 import '../components/common/auth_modal.dart';
 import '../components/common/share_modal.dart';
 import '../components/common/image_gallery_carousel.dart';
+import '../components/common/maps_modal.dart';
 
 // Services
 import '../services/api_service.dart';
@@ -687,7 +688,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
               ),
               const SizedBox(height: 2),
               GestureDetector(
-                onTap: () => _openGoogleMaps(location),
+                onTap: () => showMapsModal(context, location),
                 child: Row(
                   children: [
                     Expanded(
@@ -703,7 +704,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
                     ),
                     const SizedBox(width: 8),
                     Icon(
-                      Icons.open_in_new,
+                      Icons.map_outlined,
                       size: 16,
                       color: const Color(0xFF3182CE),
                     ),

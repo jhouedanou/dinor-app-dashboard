@@ -13,6 +13,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 // Components unifiés
 import '../components/common/image_gallery_carousel.dart';
+import '../components/common/maps_modal.dart';
 import '../components/common/unified_content_header.dart';
 import '../components/common/unified_video_player.dart';
 import '../components/common/unified_comments_section.dart';
@@ -712,7 +713,7 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
               ),
               const SizedBox(height: 2),
               GestureDetector(
-                onTap: () => _openGoogleMaps(location),
+                onTap: () => showMapsModal(context, location),
                 child: Row(
                   children: [
                     Expanded(
@@ -728,7 +729,7 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
                     ),
                     const SizedBox(width: 8),
                     Icon(
-                      LucideIcons.externalLink,
+                      LucideIcons.map,
                       size: 16,
                       color: const Color(0xFF3182CE),
                     ),
