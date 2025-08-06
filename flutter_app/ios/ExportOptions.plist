@@ -51,7 +51,7 @@
     <!-- 
     <key>provisioningProfiles</key>
     <dict>
-        <key>com.dinorapp.mobile</key>
+        <key>com.bfedition.dinorapp</key>
         <string>VOTRE_PROVISIONING_PROFILE_UUID</string>
     </dict>
     -->
