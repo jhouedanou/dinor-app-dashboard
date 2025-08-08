@@ -10,44 +10,59 @@ import 'dart:io';
 class PermissionsService {
   static Future<bool> requestNotificationPermission() async {
     try {
-      debugPrint('🔔 [PermissionsService] Demande de permission pour les notifications...');
-
-      // Vérifier si la plateforme supporte ces permissions
-      if (!Platform.isAndroid && !Platform.isIOS) {
-        debugPrint('⚠️ [PermissionsService] Permissions non supportées sur cette plateforme: ${Platform.operatingSystem}');
-        return true; // On considère que c'est "accordé" sur les plateformes non mobiles
-      }
+      final platformDesc = PlatformPermissionsService.platformDescription;
+      final strategy = PlatformPermissionsService.permissionStrategy;
+      debugPrint('🔔 [PermissionsService] Demande de permission ($platformDesc) - Stratégie: $strategy');
 
       // 1. Demander la permission via OneSignal (fonctionne sur toutes les plateformes)
-      final oneSignalPermission = await OneSignal.Notifications.requestPermission(true);
-      debugPrint('🔔 [PermissionsService] Permission OneSignal: $oneSignalPermission');
+      bool oneSignalPermission = false;
+      try {
+        oneSignalPermission = await OneSignal.Notifications.requestPermission(true);
+        debugPrint('🔔 [PermissionsService] Permission OneSignal: $oneSignalPermission');
+      } catch (e) {
+        debugPrint('⚠️ [PermissionsService] Erreur OneSignal: $e');
+        oneSignalPermission = false;
+      }
 
       // 2. Demander la permission système selon la plateforme
       bool systemPermissionGranted = true;
 
-      if (kIsWeb || Platform.isLinux) {
-        // Sur Web et Linux, pas besoin de permission système additionnelle
-        debugPrint('🔔 [PermissionsService] Plateforme Web/Linux - permission système automatique');
+      if (kIsWeb) {
+        // Sur Web, OneSignal gère les permissions du navigateur
+        debugPrint('🔔 [PermissionsService] Web - OneSignal gère les permissions navigateur');
+        systemPermissionGranted = oneSignalPermission;
+      } else if (Platform.isMacOS || Platform.isWindows || Platform.isLinux) {
+        // Sur desktop, OneSignal peut fonctionner sans permission système
+        debugPrint('🔔 [PermissionsService] Desktop (${Platform.operatingSystem}) - permission automatique');
         systemPermissionGranted = true;
       } else if (Platform.isAndroid || Platform.isIOS) {
         // Sur mobile, utiliser permission_handler si disponible
-        try {
-          final notificationPermission = await Permission.notification.request();
-          systemPermissionGranted = notificationPermission.isGranted;
-          debugPrint('🔔 [PermissionsService] Permission système: $notificationPermission');
-        } catch (e) {
-          debugPrint('⚠️ [PermissionsService] Permission handler non disponible: $e');
-          // Si permission_handler échoue, se baser uniquement sur OneSignal
+        if (PlatformPermissionsService.isPermissionHandlerSupported) {
+          try {
+            final notificationPermission = await Permission.notification.request();
+            systemPermissionGranted = notificationPermission.isGranted;
+            debugPrint('🔔 [PermissionsService] Permission système mobile: $notificationPermission');
+          } catch (e) {
+            debugPrint('⚠️ [PermissionsService] Permission handler échoué: $e');
+            // Si permission_handler échoue, se baser uniquement sur OneSignal
+            systemPermissionGranted = oneSignalPermission;
+          }
+        } else {
+          debugPrint('🔔 [PermissionsService] Permission handler non supporté, utilisation OneSignal uniquement');
           systemPermissionGranted = oneSignalPermission;
         }
+      } else {
+        // Plateforme inconnue
+        debugPrint('⚠️ [PermissionsService] Plateforme non reconnue: ${Platform.operatingSystem}');
+        systemPermissionGranted = oneSignalPermission;
       }
 
-      final isGranted = oneSignalPermission && systemPermissionGranted;
+      final isGranted = oneSignalPermission || systemPermissionGranted; // OR au lieu de AND pour être plus permissif
       
       if (isGranted) {
-        debugPrint('✅ [PermissionsService] Permission accordée pour les notifications');
+        debugPrint('✅ [PermissionsService] Permission accordée pour les notifications ($platformDesc)');
       } else {
-        debugPrint('❌ [PermissionsService] Permission refusée pour les notifications');
+        debugPrint('❌ [PermissionsService] Permission refusée pour les notifications ($platformDesc)');
       }
 
       return isGranted;
@@ -59,41 +74,55 @@ class PermissionsService {
 
   static Future<bool> checkNotificationPermission() async {
     try {
-      debugPrint('🔍 [PermissionsService] Vérification des permissions...');
-
-      // Vérifier si la plateforme supporte ces permissions
-      if (!Platform.isAndroid && !Platform.isIOS) {
-        debugPrint('⚠️ [PermissionsService] Permissions non supportées sur cette plateforme: ${Platform.operatingSystem}');
-        return true; // On considère que c'est "accordé" sur les plateformes non mobiles
-      }
+      final platformDesc = PlatformPermissionsService.platformDescription;
+      debugPrint('🔍 [PermissionsService] Vérification des permissions ($platformDesc)...');
 
       // 1. Vérifier la permission OneSignal (fonctionne sur toutes les plateformes)
-      final oneSignalPermission = OneSignal.Notifications.permission;
-      debugPrint('🔍 [PermissionsService] OneSignal permission: $oneSignalPermission');
+      bool oneSignalPermission = false;
+      try {
+        oneSignalPermission = OneSignal.Notifications.permission;
+        debugPrint('🔍 [PermissionsService] OneSignal permission: $oneSignalPermission');
+      } catch (e) {
+        debugPrint('⚠️ [PermissionsService] Erreur OneSignal check: $e');
+        oneSignalPermission = false;
+      }
 
       // 2. Vérifier la permission système selon la plateforme
       bool systemPermissionGranted = true;
       
-      if (kIsWeb || Platform.isLinux) {
-        // Sur Web et Linux, les notifications ne nécessitent pas de permission système
-        debugPrint('🔍 [PermissionsService] Plateforme Web/Linux - permission système automatique');
+      if (kIsWeb) {
+        // Sur Web, OneSignal gère les permissions du navigateur
+        debugPrint('🔍 [PermissionsService] Web - vérification via OneSignal');
+        systemPermissionGranted = oneSignalPermission;
+      } else if (Platform.isMacOS || Platform.isWindows || Platform.isLinux) {
+        // Sur desktop, considérer comme accordé si OneSignal fonctionne
+        debugPrint('🔍 [PermissionsService] Desktop (${Platform.operatingSystem}) - permission automatique');
         systemPermissionGranted = true;
       } else if (Platform.isAndroid || Platform.isIOS) {
-        // Sur mobile, utiliser permission_handler
-        try {
-          final notificationPermission = await Permission.notification.status;
-          systemPermissionGranted = notificationPermission.isGranted;
-          debugPrint('🔍 [PermissionsService] Permission système: $notificationPermission');
-        } catch (e) {
-          debugPrint('⚠️ [PermissionsService] Permission handler non disponible: $e');
-          // Si permission_handler échoue, se baser uniquement sur OneSignal
-          systemPermissionGranted = true;
+        // Sur mobile, utiliser permission_handler si disponible
+        if (PlatformPermissionsService.isPermissionHandlerSupported) {
+          try {
+            final notificationPermission = await Permission.notification.status;
+            systemPermissionGranted = notificationPermission.isGranted;
+            debugPrint('🔍 [PermissionsService] Permission système mobile: $notificationPermission');
+          } catch (e) {
+            debugPrint('⚠️ [PermissionsService] Permission handler check échoué: $e');
+            // Si permission_handler échoue, se baser uniquement sur OneSignal
+            systemPermissionGranted = oneSignalPermission;
+          }
+        } else {
+          debugPrint('🔍 [PermissionsService] Permission handler non supporté, utilisation OneSignal uniquement');
+          systemPermissionGranted = oneSignalPermission;
         }
+      } else {
+        // Plateforme inconnue
+        debugPrint('⚠️ [PermissionsService] Plateforme non reconnue pour check: ${Platform.operatingSystem}');
+        systemPermissionGranted = oneSignalPermission;
       }
 
-      final isGranted = oneSignalPermission && systemPermissionGranted;
+      final isGranted = oneSignalPermission || systemPermissionGranted; // OR au lieu de AND pour être plus permissif
       
-      debugPrint('🔍 [PermissionsService] Permissions accordées: $isGranted');
+      debugPrint('🔍 [PermissionsService] Permissions accordées ($platformDesc): $isGranted');
       return isGranted;
     } catch (e) {
       debugPrint('❌ [PermissionsService] Erreur lors de la vérification: $e');

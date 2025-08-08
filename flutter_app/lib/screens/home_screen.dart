@@ -405,11 +405,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
   }
 
   // UTILITAIRES identiques à Vue
-  String _getShortDescription(String? text) {
-    if (text == null || text.isEmpty) return '';
-    final cleanText = text.replaceAll(RegExp(r'<[^>]*>'), '');
-    return cleanText.length > 60 ? '${cleanText.substring(0, 60)}...' : cleanText;
-  }
 
   String _getDifficultyLabel(String? difficulty) {
     const labels = {
@@ -502,7 +497,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
 
                     // Événements - d'abord
                     ContentCarousel(
-                      title: 'Derniers Événements',
+                      title: 'Événements',
                       items: _latestEvents,
                       loading: _loadingEvents,
                       error: _errorEvents,
@@ -516,7 +511,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
 
                     // Recettes
                     ContentCarousel(
-                      title: 'Dernières Recettes',
+                      title: 'Recettes',
                       items: _latestRecipes,
                       loading: _loadingRecipes,
                       error: _errorRecipes,
@@ -530,7 +525,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
 
                     // Astuces
                     ContentCarousel(
-                      title: 'Dernières Astuces',
+                      title: 'Astuces',
                       items: _latestTips,
                       loading: _loadingTips,
                       error: _errorTips,
@@ -551,7 +546,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
                         borderRadius: BorderRadius.all(Radius.circular(12)),
                       ),
                       child: ContentCarousel(
-                        title: 'Dernières Vidéos Dinor TV',
+                        title: 'Dinor TV',
                         items: _latestVideos,
                         loading: _loadingVideos,
                         error: _errorVideos,
@@ -708,22 +703,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
                   overflow: TextOverflow.ellipsis,
                 ),
                 
-                const SizedBox(height: 8),
-                
-                // Description - p Roboto
-                Text(
-                  _getShortDescription(item['short_description']),
-                  style: const TextStyle(
-                    fontFamily: 'Roboto',
-                    fontSize: 14,
-                    color: Color(0xFF4A5568),
-                    height: 1.4,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 
                 // Meta - .card-meta CSS
                 Row(
@@ -817,21 +797,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
                   overflow: TextOverflow.ellipsis,
                 ),
                 
-                const SizedBox(height: 8),
-                
-                Text(
-                  _getShortDescription(item['content']),
-                  style: const TextStyle(
-                    fontFamily: 'Roboto',
-                    fontSize: 14,
-                    color: Color(0xFF4A5568),
-                    height: 1.4,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -947,21 +913,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
                   overflow: TextOverflow.ellipsis,
                 ),
                 
-                const SizedBox(height: 8),
-                
-                Text(
-                  _getShortDescription(item['short_description']),
-                  style: const TextStyle(
-                    fontFamily: 'Roboto',
-                    fontSize: 14,
-                    color: Color(0xFF4A5568),
-                    height: 1.4,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1138,21 +1090,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
                   overflow: TextOverflow.ellipsis,
                 ),
                 
-                const SizedBox(height: 8),
-                
-                Text(
-                  _getShortDescription(item['description']),
-                  style: const TextStyle(
-                    fontFamily: 'Roboto',
-                    fontSize: 14,
-                    color: Color(0xFF4A5568),
-                    height: 1.4,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -88,7 +88,7 @@ class ContentCarousel extends StatelessWidget {
           
           // Contenu du carousel
           SizedBox(
-            height: 320, // Hauteur fixe pour les cards
+            height: 350, // Hauteur augmentée pour éviter les overflows
             child: _buildCarouselContent(),
           ),
         ],

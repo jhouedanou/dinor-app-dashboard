@@ -20,7 +20,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 
-import 'package:cached_network_image/cached_network_image.dart';
+import '../services/image_service.dart';
 
 // Composables
 import '../composables/use_dinor_tv.dart';
@@ -74,9 +74,25 @@ class _DinorTVScreenState extends ConsumerState<DinorTVScreen> with AutomaticKee
 
 
   void _handleVideoTap(dynamic video) {
-    print('🎬 [DinorTVScreen] Clic sur vidéo: ${video['id']}');
-    // TODO: Navigation vers détail vidéo
-    // NavigationService.pushNamed('/dinor-tv/${video['id']}');
+    final videoUrl = video['video_url'] as String?;
+    final title = video['title'] as String? ?? 'Vidéo Dinor TV';
+    final description = video['description'] as String?;
+
+    if (videoUrl != null && videoUrl.isNotEmpty) {
+      print('🎬 [DinorTV] Ouverture vidéo: $title');
+      print('🎬 [DinorTV] URL: $videoUrl');
+
+      // TODO: Implémenter la modal vidéo pour Dinor TV
+      // Pour l'instant, juste des logs pour debug
+    } else {
+      print('⚠️ [DinorTV] URL vidéo manquante pour: $title');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('URL de vidéo non disponible'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _handleLikeTap(dynamic video) async {
@@ -290,8 +306,14 @@ class _DinorTVScreenState extends ConsumerState<DinorTVScreen> with AutomaticKee
       );
     }
 
-    return ListView.builder(
+    return GridView.builder(
       padding: const EdgeInsets.all(16),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 0.75,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+      ),
       itemCount: videos.length,
       itemBuilder: (context, index) {
         final video = videos[index];
@@ -301,203 +323,121 @@ class _DinorTVScreenState extends ConsumerState<DinorTVScreen> with AutomaticKee
   }
 
   Widget _buildVideoCard(dynamic video) {
-    final thumbnail = video['thumbnail'] ?? video['image'] ?? '';
+    final thumbnail = video['thumbnail_url'] ?? video['thumbnail'] ?? video['image'] ?? '';
     final title = video['title'] ?? 'Sans titre';
-    final description = video['description'] ?? '';
-    final duration = video['duration'] ?? '';
     final views = video['views'] ?? 0;
-    final likes = video['likes_count'] ?? 0;
-    final isLiked = video['is_liked'] ?? false;
-    final isFavorited = video['is_favorited'] ?? false;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Thumbnail avec play button
-          GestureDetector(
-            onTap: () => _handleVideoTap(video),
-            child: Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                  child: AspectRatio(
-                    aspectRatio: 16 / 9,
-                    child: thumbnail.isNotEmpty
-                        ? CachedNetworkImage(
-                            imageUrl: thumbnail,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => Container(
-                              color: const Color(0xFFE2E8F0),
-                              child: const Center(
-                                child: CircularProgressIndicator(
-                                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFF4D03F)),
-                                ),
-                              ),
-                            ),
-                            errorWidget: (context, url, error) => Container(
-                              color: const Color(0xFFE2E8F0),
-                              child: const Icon(
-                                Icons.video_library_outlined,
-                                size: 48,
-                                color: Color(0xFFCBD5E0),
-                              ),
-                            ),
-                          )
-                        : Container(
-                            color: const Color(0xFFE2E8F0),
-                            child: const Icon(
-                              Icons.video_library_outlined,
-                              size: 48,
-                              color: Color(0xFFCBD5E0),
-                            ),
+      child: InkWell(
+        onTap: () => _handleVideoTap(video),
+        borderRadius: BorderRadius.circular(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image avec overlay play button
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              child: AspectRatio(
+                aspectRatio: 16 / 9,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    ImageService.buildNetworkImage(
+                      imageUrl: thumbnail,
+                      contentType: 'video',
+                      fit: BoxFit.cover,
+                      errorWidget: Container(
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [Color(0xFF9B59B6), Color(0xFFE53E3E)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
                           ),
-                  ),
-                ),
-                // Play button overlay
-                Positioned.fill(
-                  child: Center(
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.6),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.play_arrow,
-                        color: Colors.white,
-                        size: 32,
-                      ),
-                    ),
-                  ),
-                ),
-                // Duration badge
-                if (duration.isNotEmpty)
-                  Positioned(
-                    bottom: 8,
-                    right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.8),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        duration,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.play_circle,
+                            size: 48,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-              ],
-            ),
-          ),
-          // Content
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Title
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontFamily: 'OpenSans',
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF2D3748),
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
-                // Description
-                if (description.isNotEmpty) ...[
-                  Text(
-                    description,
-                    style: const TextStyle(
-                      fontFamily: 'OpenSans',
-                      fontSize: 14,
-                      color: Color(0xFF718096),
-                    ),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 12),
-                ],
-                // Stats and actions
-                Row(
-                  children: [
-                    // Views
-                    Icon(
-                      Icons.visibility_outlined,
-                      size: 16,
-                      color: Colors.grey[600],
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '$views vues',
-                      style: TextStyle(
-                        fontFamily: 'OpenSans',
-                        fontSize: 12,
-                        color: Colors.grey[600],
+                    // Gradient overlay d'arrière-plan
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withValues(alpha: 0.7),
+                          ],
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    // Likes
-                    Icon(
-                      Icons.thumb_up_outlined,
-                      size: 16,
-                      color: Colors.grey[600],
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '$likes',
-                      style: TextStyle(
-                        fontFamily: 'OpenSans',
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                    const Spacer(),
-                    // Action buttons
-                    IconButton(
-                      onPressed: () => _handleLikeTap(video),
-                      icon: Icon(
-                        isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
-                        color: isLiked ? const Color(0xFFE53E3E) : Colors.grey[600],
-                        size: 20,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => _handleFavoriteTap(video),
-                      icon: Icon(
-                        isFavorited ? Icons.favorite : Icons.favorite_border,
-                        color: isFavorited ? const Color(0xFFE53E3E) : Colors.grey[600],
-                        size: 20,
+                    // Play button centré
+                    const Center(
+                      child: Icon(
+                        Icons.play_circle_outline,
+                        size: 48,
+                        color: Colors.white,
                       ),
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
-          ),
-        ],
+
+            // Contenu
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontFamily: 'OpenSans',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF2D3748),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      if (views > 0) ...[
+                        const Icon(Icons.visibility, size: 16, color: Color(0xFF718096)),
+                        const SizedBox(width: 4),
+                        Text(
+                          '$views',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF718096),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

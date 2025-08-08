@@ -18,11 +18,13 @@ import '../components/common/unified_content_header.dart';
 import '../components/common/unified_video_player.dart';
 import '../components/common/unified_comments_section.dart';
 import '../components/common/unified_content_actions.dart';
+import '../components/common/unified_content_navigation.dart';
 
 // Services
 import '../services/api_service.dart';
 import '../services/share_service.dart';
 import '../services/likes_service.dart';
+import '../services/content_navigation_service.dart';
 import '../composables/use_auth_handler.dart';
 import '../stores/header_state.dart';
 
@@ -40,6 +42,12 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
   bool _loading = true;
   String? _error;
   bool _userLiked = false;
+  
+  // Navigation entre contenus
+  String? _previousId;
+  String? _nextId;
+  String? _previousTitle;
+  String? _nextTitle;
 
   @override
   bool get wantKeepAlive => true;
@@ -87,13 +95,11 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
   }
 
   @override
-  void deactivate() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        ref.read(headerSubtitleProvider.notifier).state = null;
-      }
-    });
-    super.deactivate();
+  void dispose() {
+    // Nettoyer le titre immédiatement lors de la destruction du widget
+    ref.read(headerSubtitleProvider.notifier).state = null;
+    print('🧹 [EventDetail] Titre nettoyé dans dispose()');
+    super.dispose();
   }
 
   Future<void> _checkUserLike() async {
@@ -224,7 +230,7 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
           // Hero Image avec composant unifié
           SliverToBoxAdapter(
             child: UnifiedContentHeader(
-              imageUrl: _event!['image'] ?? _event!['thumbnail'] ?? '',
+              imageUrl: _event!['image'] ?? _event!['thumbnail'] ?? _event!['image_url'] ?? '',
               contentType: 'event',
               customOverlay: Stack(
                 children: [
@@ -460,7 +466,8 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
           onPressed: () => NavigationService.pop(),
           heroTag: 'back_fab',
           backgroundColor: Colors.white,
-          child: const Icon(LucideIcons.arrowLeft, color: Color(0xFF2D3748)),
+          mini: true,
+          child: const Icon(LucideIcons.arrowLeft, color: Color(0xFF2D3748), size: 20),
         ),
         const SizedBox(height: 16),
         // Bouton Like flottant
@@ -468,9 +475,11 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
           onPressed: () => _handleLikeAction(),
           heroTag: 'like_fab',
           backgroundColor: _userLiked ? const Color(0xFFE53E3E) : Colors.white,
+          mini: true,
           child: Icon(
             _userLiked ? LucideIcons.heart : LucideIcons.heart,
             color: _userLiked ? Colors.white : const Color(0xFFE53E3E),
+            size: 20,
           ),
         ),
         const SizedBox(height: 16),
@@ -489,7 +498,8 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
           },
           heroTag: 'share_fab',
           backgroundColor: const Color(0xFFE53E3E),
-          child: const Icon(LucideIcons.share2, color: Colors.white),
+          mini: true,
+          child: const Icon(LucideIcons.share2, color: Colors.white, size: 20),
         ),
       ],
     );

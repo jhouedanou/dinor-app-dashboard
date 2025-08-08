@@ -30,11 +30,12 @@ class EnhancedDinorTVScreen extends ConsumerStatefulWidget {
   const EnhancedDinorTVScreen({Key? key}) : super(key: key);
 
   @override
-  ConsumerState<EnhancedDinorTVScreen> createState() => _EnhancedDinorTVScreenState();
+  ConsumerState<EnhancedDinorTVScreen> createState() =>
+      _EnhancedDinorTVScreenState();
 }
 
 class _EnhancedDinorTVScreenState extends ConsumerState<EnhancedDinorTVScreen>
-with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin {
   bool _showAuthModal = false;
 
   @override
@@ -43,7 +44,7 @@ with AutomaticKeepAliveClientMixin {
   @override
   void initState() {
     super.initState();
-    
+
     // Charger les vidéos au démarrage de manière sûre
     Future.delayed(Duration.zero, () {
       if (mounted) {
@@ -52,15 +53,15 @@ with AutomaticKeepAliveClientMixin {
     });
   }
 
-
-
   Future<void> _handleRefresh() async {
-    await ref.read(videoServiceProvider.notifier).loadVideos(forceRefresh: true);
+    await ref
+        .read(videoServiceProvider.notifier)
+        .loadVideos(forceRefresh: true);
   }
 
   void _openImmersivePlayer({int startIndex = 0}) {
     final videoState = ref.read(videoServiceProvider);
-    
+
     if (videoState.videos.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -72,7 +73,9 @@ with AutomaticKeepAliveClientMixin {
     }
 
     // Convertir les VideoData vers le format TikTok
-    final immersiveVideos = videoState.videos.map((video) => _convertToImmersiveVideoData(video)).toList();
+    final immersiveVideos = videoState.videos
+        .map((video) => _convertToImmersiveVideoData(video))
+        .toList();
 
     // Naviguer vers le lecteur immersif
     Navigator.of(context).push(
@@ -108,15 +111,15 @@ with AutomaticKeepAliveClientMixin {
   void _openVideo(VideoData video) {
     print('🎥 [EnhancedDinorTV] _openVideo appelé pour vidéo: ${video.title}');
     print('🎥 [EnhancedDinorTV] URL trouvée: ${video.videoUrl}');
-    
+
     if (video.videoUrl.isEmpty) {
       print('❌ [EnhancedDinorTV] Aucune URL de vidéo trouvée');
       _showSnackBar('Aucune URL de vidéo disponible', Colors.red);
       return;
     }
-    
+
     print('🎬 [EnhancedDinorTV] Ouverture vidéo intégrée avec autoplay');
-    
+
     // Afficher la modal vidéo YouTube intégrée avec autoplay
     showDialog(
       context: context,
@@ -145,11 +148,10 @@ with AutomaticKeepAliveClientMixin {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    
+
     final videoState = ref.watch(videoServiceProvider);
     final videos = videoState.videos;
     final isLoading = videoState.isLoading;
@@ -162,15 +164,15 @@ with AutomaticKeepAliveClientMixin {
           appBar: AppBar(
             title: Row(
               children: [
-                SvgPicture.asset(
-                  'assets/images/LOGO_DINOR_monochrome.svg',
-                  width: 28,
-                  height: 28,
-                  colorFilter: const ColorFilter.mode(
-                    Color(0xFF2D3748),
-                    BlendMode.srcIn,
-                  ),
-                ),
+                // SvgPicture.asset(
+                //   'assets/images/LOGO_DINOR_monochrome.svg',
+                //   width: 28,
+                //   height: 28,
+                //   colorFilter: const ColorFilter.mode(
+                //     Color(0xFF2D3748),
+                //     BlendMode.srcIn,
+                //   ),
+                // ),
                 const SizedBox(width: 8),
                 const Text(
                   'Dinor TV',
@@ -194,13 +196,15 @@ with AutomaticKeepAliveClientMixin {
               if (videos.isNotEmpty)
                 IconButton(
                   onPressed: () => _openImmersivePlayer(),
-                  icon: const Icon(LucideIcons.maximize, color: Color(0xFF2D3748)),
+                  icon: const Icon(LucideIcons.maximize,
+                      color: Color(0xFF2D3748)),
                   tooltip: 'Mode Immersif',
                 ),
-              
+
               IconButton(
                 onPressed: _handleRefresh,
-                icon: const Icon(LucideIcons.refreshCw, color: Color(0xFF2D3748)),
+                icon:
+                    const Icon(LucideIcons.refreshCw, color: Color(0xFF2D3748)),
                 tooltip: 'Actualiser',
               ),
             ],
@@ -209,23 +213,25 @@ with AutomaticKeepAliveClientMixin {
             onRefresh: _handleRefresh,
             child: _buildBody(videos, isLoading, error),
           ),
-          
+
           // Bouton flottant pour lancer l'expérience immersive
-          floatingActionButton: videos.isNotEmpty ? FloatingActionButton.extended(
-            onPressed: () => _openImmersivePlayer(),
-            backgroundColor: const Color(0xFFE53E3E),
-            foregroundColor: Colors.white,
-            icon: const Icon(LucideIcons.play),
-            label: const Text(
-              'Mode Immersif',
-              style: TextStyle(
-                fontFamily: 'OpenSans',
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ) : null,
+          floatingActionButton: videos.isNotEmpty
+              ? FloatingActionButton.extended(
+                  onPressed: () => _openImmersivePlayer(),
+                  backgroundColor: const Color(0xFFE53E3E),
+                  foregroundColor: Colors.white,
+                  icon: const Icon(LucideIcons.play),
+                  label: const Text(
+                    '',
+                    style: TextStyle(
+                      fontFamily: 'OpenSans',
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                )
+              : null,
         ),
-        
+
         // Modal d'authentification
         if (_showAuthModal) ...[
           Positioned.fill(
@@ -270,13 +276,13 @@ with AutomaticKeepAliveClientMixin {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header avec stats
-          _buildHeader(videos),
-          
+          //_buildHeader(videos),
+
           const SizedBox(height: 24),
 
           // Bouton d'accès rapide au mode immersif
-          _buildImmersiveModeCard(videos),
-          
+          //_buildImmersiveModeCard(videos),
+
           const SizedBox(height: 24),
 
           // Liste des vidéos
@@ -289,9 +295,9 @@ with AutomaticKeepAliveClientMixin {
               color: Color(0xFF2D3748),
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -307,7 +313,8 @@ with AutomaticKeepAliveClientMixin {
 
   Widget _buildHeader(List<VideoData> videos) {
     final totalViews = videos.fold<int>(0, (sum, video) => sum + video.views);
-    final totalLikes = videos.fold<int>(0, (sum, video) => sum + video.likesCount);
+    final totalLikes =
+        videos.fold<int>(0, (sum, video) => sum + video.likesCount);
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -493,26 +500,30 @@ with AutomaticKeepAliveClientMixin {
             child: Stack(
               children: [
                 ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(12)),
                   child: AspectRatio(
                     aspectRatio: 16 / 9,
                     child: video.thumbnailUrl != null
                         ? CachedNetworkImage(
                             imageUrl: video.thumbnailUrl!,
                             fit: BoxFit.cover,
-                            placeholder: (context, url) => _buildThumbnailPlaceholder(),
-                            errorWidget: (context, url, error) => _buildThumbnailPlaceholder(),
+                            placeholder: (context, url) =>
+                                _buildThumbnailPlaceholder(),
+                            errorWidget: (context, url, error) =>
+                                _buildThumbnailPlaceholder(),
                           )
                         : _buildThumbnailPlaceholder(),
                   ),
                 ),
-                
+
                 // Overlay play button
                 Positioned.fill(
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.3),
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                      borderRadius:
+                          const BorderRadius.vertical(top: Radius.circular(12)),
                     ),
                     child: const Center(
                       child: Icon(
@@ -530,7 +541,8 @@ with AutomaticKeepAliveClientMixin {
                     bottom: 8,
                     right: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: Colors.black.withOpacity(0.8),
                         borderRadius: BorderRadius.circular(4),
@@ -561,12 +573,13 @@ with AutomaticKeepAliveClientMixin {
                     CircleAvatar(
                       radius: 16,
                       backgroundColor: const Color(0xFFE2E8F0),
-                      backgroundImage: video.authorAvatar != null 
-                        ? NetworkImage(video.authorAvatar!)
-                        : null,
+                      backgroundImage: video.authorAvatar != null
+                          ? NetworkImage(video.authorAvatar!)
+                          : null,
                       child: video.authorAvatar == null
-                        ? const Icon(LucideIcons.user, size: 16, color: Color(0xFF4A5568))
-                        : null,
+                          ? const Icon(LucideIcons.user,
+                              size: 16, color: Color(0xFF4A5568))
+                          : null,
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -618,15 +631,8 @@ with AutomaticKeepAliveClientMixin {
                 // Stats and actions
                 Row(
                   children: [
-                    // Views
-                    _buildStatChip(LucideIcons.eye, '${video.views}'),
-                    const SizedBox(width: 12),
-                    
-                    // Comments
-                    _buildStatChip(LucideIcons.messageCircle, '${video.commentsCount}'),
-                    
                     const Spacer(),
-                    
+
                     // Like button
                     UnifiedLikeButton(
                       type: 'video',
@@ -636,7 +642,8 @@ with AutomaticKeepAliveClientMixin {
                       showCount: true,
                       size: 'small',
                       variant: 'minimal',
-                      onAuthRequired: () => setState(() => _showAuthModal = true),
+                      onAuthRequired: () =>
+                          setState(() => _showAuthModal = true),
                     ),
                   ],
                 ),
@@ -648,22 +655,6 @@ with AutomaticKeepAliveClientMixin {
     );
   }
 
-  Widget _buildStatChip(IconData icon, String text) {
-    return Row(
-      children: [
-        Icon(icon, size: 16, color: const Color(0xFF4A5568)),
-        const SizedBox(width: 4),
-        Text(
-          text,
-          style: const TextStyle(
-            fontFamily: 'Roboto',
-            fontSize: 12,
-            color: Color(0xFF4A5568),
-          ),
-        ),
-      ],
-    );
-  }
 
   Widget _buildThumbnailPlaceholder() {
     return Container(
@@ -681,7 +672,7 @@ with AutomaticKeepAliveClientMixin {
   String _formatDuration(Duration duration) {
     final minutes = duration.inMinutes;
     final seconds = duration.inSeconds % 60;
-    return '${minutes}:${seconds.toString().padLeft(2, '0')}';
+    return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
 
   Widget _buildLoadingState() {
@@ -790,4 +781,4 @@ with AutomaticKeepAliveClientMixin {
       ),
     );
   }
-} 
+}

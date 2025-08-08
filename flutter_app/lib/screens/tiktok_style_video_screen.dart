@@ -66,7 +66,7 @@ class VideoData {
       author: json['author'] ?? json['user_name'] ?? 'Dinor',
       authorAvatar: json['author_avatar'] ?? json['user_avatar'],
       videoUrl: json['video_url'] ?? json['url'] ?? '',
-      thumbnailUrl: json['thumbnail'] ?? json['image'],
+      thumbnailUrl: json['thumbnail_url'] ?? json['thumbnail'] ?? json['image'],
       likesCount: json['likes_count'] ?? 0,
       commentsCount: json['comments_count'] ?? 0,
       sharesCount: json['shares_count'] ?? 0,

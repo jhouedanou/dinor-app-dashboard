@@ -18,13 +18,16 @@ import '../components/common/unified_content_header.dart';
 import '../components/common/unified_video_player.dart';
 import '../components/common/unified_comments_section.dart';
 import '../components/common/unified_content_actions.dart';
+import '../components/common/unified_content_navigation.dart';
 
 // Services
 import '../services/api_service.dart';
 import '../services/share_service.dart';
 import '../services/likes_service.dart';
+import '../services/content_navigation_service.dart';
 import '../composables/use_auth_handler.dart';
 import '../stores/header_state.dart';
+import '../services/navigation_service.dart';
 
 class TipDetailScreenUnified extends ConsumerStatefulWidget {
   final String id;
@@ -40,6 +43,12 @@ class _TipDetailScreenUnifiedState extends ConsumerState<TipDetailScreenUnified>
   bool _loading = true;
   bool _userLiked = false;
   String? _error;
+  
+  // Navigation entre contenus
+  String? _previousId;
+  String? _nextId;
+  String? _previousTitle;
+  String? _nextTitle;
 
   @override
   bool get wantKeepAlive => true;
@@ -67,6 +76,7 @@ class _TipDetailScreenUnifiedState extends ConsumerState<TipDetailScreenUnified>
         });
         
         await _checkUserLike();
+        await _loadNavigationInfo();
 
         // Mettre à jour le sous-titre de l'en-tête avec le titre de l'astuce
         if (mounted && _tip != null) {
@@ -90,14 +100,11 @@ class _TipDetailScreenUnifiedState extends ConsumerState<TipDetailScreenUnified>
   }
 
   @override
-  void deactivate() {
-    // Nettoyage du sous-titre en sortie d'écran (post frame pour éviter les conflits de build)
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        ref.read(headerSubtitleProvider.notifier).state = null;
-      }
-    });
-    super.deactivate();
+  void dispose() {
+    // Nettoyer le titre immédiatement lors de la destruction du widget
+    ref.read(headerSubtitleProvider.notifier).state = null;
+    print('🧹 [TipDetail] Titre nettoyé dans dispose()');
+    super.dispose();
   }
 
   Future<void> _checkUserLike() async {
@@ -105,6 +112,29 @@ class _TipDetailScreenUnifiedState extends ConsumerState<TipDetailScreenUnified>
       final isLiked = ref.read(likesProvider.notifier).isLiked('tip', widget.id);
       setState(() => _userLiked = isLiked);
     }
+  }
+
+  Future<void> _loadNavigationInfo() async {
+    try {
+      final navigationService = ref.read(contentNavigationServiceProvider);
+      final navigationInfo = await navigationService.getNavigationInfo('tip', widget.id);
+      
+      if (mounted) {
+        setState(() {
+          _previousId = navigationInfo['previousId'];
+          _nextId = navigationInfo['nextId'];
+          _previousTitle = navigationInfo['previousTitle'];
+          _nextTitle = navigationInfo['nextTitle'];
+        });
+      }
+    } catch (error) {
+      print('❌ [TipDetail] Erreur navigation info: $error');
+    }
+  }
+
+  void _navigateToContent(String contentId) {
+    // Navigation vers une autre astuce
+    NavigationService.goToTipDetail(contentId);
   }
 
   Future<void> _handleLikeAction() async {
@@ -215,7 +245,8 @@ class _TipDetailScreenUnifiedState extends ConsumerState<TipDetailScreenUnified>
           onPressed: () => NavigationService.pop(),
           heroTag: 'back_fab',
           backgroundColor: Colors.white,
-          child: const Icon(LucideIcons.arrowLeft, color: Color(0xFF2D3748)),
+          mini: true,
+          child: const Icon(LucideIcons.arrowLeft, color: Color(0xFF2D3748), size: 20),
         ),
         const SizedBox(height: 16),
         // Bouton Like flottant
@@ -223,9 +254,11 @@ class _TipDetailScreenUnifiedState extends ConsumerState<TipDetailScreenUnified>
           onPressed: () => _handleLikeAction(),
           heroTag: 'like_fab',
           backgroundColor: _userLiked ? const Color(0xFFE53E3E) : Colors.white,
+          mini: true,
           child: Icon(
             _userLiked ? LucideIcons.heart : LucideIcons.heart,
             color: _userLiked ? Colors.white : const Color(0xFFE53E3E),
+            size: 20,
           ),
         ),
         const SizedBox(height: 16),
@@ -244,7 +277,8 @@ class _TipDetailScreenUnifiedState extends ConsumerState<TipDetailScreenUnified>
           },
           heroTag: 'share_fab',
           backgroundColor: const Color(0xFFE53E3E),
-          child: const Icon(LucideIcons.share2, color: Colors.white),
+          mini: true,
+          child: const Icon(LucideIcons.share2, color: Colors.white, size: 20),
         ),
       ],
     );
@@ -535,6 +569,18 @@ class _TipDetailScreenUnifiedState extends ConsumerState<TipDetailScreenUnified>
                   initialLikeCount: _tip!['likes_count'] ?? 0,
                   onRefresh: () => _loadTip(forceRefresh: true),
                   isLoading: _loading,
+                ),
+
+                // Navigation entre contenus
+                UnifiedContentNavigation(
+                  contentType: 'tip',
+                  currentId: widget.id,
+                  previousId: _previousId,
+                  nextId: _nextId,
+                  previousTitle: _previousTitle,
+                  nextTitle: _nextTitle,
+                  onPrevious: _previousId != null ? () => _navigateToContent(_previousId!) : null,
+                  onNext: _nextId != null ? () => _navigateToContent(_nextId!) : null,
                 ),
 
                 // Comments avec composant unifié

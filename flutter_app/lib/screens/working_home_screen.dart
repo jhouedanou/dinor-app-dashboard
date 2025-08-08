@@ -22,12 +22,12 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
   List<dynamic> tips = [];
   List<dynamic> events = [];
   List<dynamic> videos = [];
-  
+
   bool isLoadingRecipes = true;
   bool isLoadingTips = true;
   bool isLoadingEvents = true;
   bool isLoadingVideos = true;
-  
+
   String? errorRecipes;
   String? errorTips;
   String? errorEvents;
@@ -43,12 +43,12 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
         .replaceAll(RegExp(r'<[^>]*>'), '') // Supprimer toutes les balises HTML
         .replaceAll(RegExp(r'\s+'), ' ') // Normaliser les espaces
         .trim();
-    
+
     // Tronquer si nécessaire
     if (text.length > maxLength) {
       text = '${text.substring(0, maxLength)}...';
     }
-    
+
     return text;
   }
 
@@ -78,7 +78,7 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
       if (result['success']) {
         final data = result['data'];
         final newRecipes = data['data'] is List ? data['data'] : [data['data']];
-        
+
         setState(() {
           recipes = newRecipes;
           isLoadingRecipes = false;
@@ -115,7 +115,7 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
       if (result['success']) {
         final data = result['data'];
         final newTips = data['data'] is List ? data['data'] : [data['data']];
-        
+
         setState(() {
           tips = newTips;
           isLoadingTips = false;
@@ -152,7 +152,7 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
       if (result['success']) {
         final data = result['data'];
         final newEvents = data['data'] is List ? data['data'] : [data['data']];
-        
+
         setState(() {
           events = newEvents;
           isLoadingEvents = false;
@@ -189,7 +189,7 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
       if (result['success']) {
         final data = result['data'];
         final newVideos = data['data'] is List ? data['data'] : [data['data']];
-        
+
         setState(() {
           videos = newVideos;
           isLoadingVideos = false;
@@ -237,11 +237,11 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
     final videoUrl = video['video_url'] as String?;
     final title = video['title'] as String? ?? 'Vidéo Dinor TV';
     final description = video['description'] as String?;
-    
+
     if (videoUrl != null && videoUrl.isNotEmpty) {
       print('🎬 [WorkingHome] Ouverture vidéo intégrée: $title');
       print('🎬 [WorkingHome] URL: $videoUrl');
-      
+
       // Afficher la modal vidéo optimisée pour la page d'accueil
       showDialog(
         context: context,
@@ -292,7 +292,7 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
 
                     // Événements d'abord
                     _buildSection(
-                      'Derniers Événements',
+                      'Événements',
                       '/events',
                       events,
                       isLoadingEvents,
@@ -305,7 +305,7 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
 
                     // Recettes
                     _buildSection(
-                      'Dernières Recettes',
+                      'Recettes',
                       '/recipes',
                       recipes,
                       isLoadingRecipes,
@@ -318,7 +318,7 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
 
                     // Astuces
                     _buildSection(
-                      'Dernières Astuces',
+                      'Astuces',
                       '/tips',
                       tips,
                       isLoadingTips,
@@ -331,7 +331,7 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
 
                     // Vidéos
                     _buildSection(
-                      'Dernières Vidéos Dinor TV',
+                      'Dinor TV',
                       '/dinor-tv',
                       videos,
                       isLoadingVideos,
@@ -463,7 +463,8 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
           children: [
             // Image
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(16)),
               child: AspectRatio(
                 aspectRatio: 16 / 9,
                 child: ImageService.buildNetworkImage(
@@ -492,21 +493,11 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 8),
-                  if (recipe['short_description'] != null) ...[
-                    HtmlWidget(
-                      recipe['short_description'],
-                      textStyle: const TextStyle(
-                        fontFamily: 'Roboto',
-                        fontSize: 14,
-                        color: Color(0xFF718096),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                  ],
                   Row(
                     children: [
                       if (recipe['total_time'] != null) ...[
-                        const Icon(Icons.schedule, size: 16, color: Color(0xFF718096)),
+                        const Icon(Icons.schedule,
+                            size: 16, color: Color(0xFF718096)),
                         const SizedBox(width: 4),
                         Text(
                           '${recipe['total_time']} min',
@@ -518,7 +509,8 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
                         const SizedBox(width: 16),
                       ],
                       if (recipe['likes_count'] != null) ...[
-                        const Icon(Icons.favorite, size: 16, color: Color(0xFFE53E3E)),
+                        const Icon(Icons.favorite,
+                            size: 16, color: Color(0xFFE53E3E)),
                         const SizedBox(width: 4),
                         Text(
                           '${recipe['likes_count']}',
@@ -562,7 +554,8 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
           children: [
             // Image
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(16)),
               child: AspectRatio(
                 aspectRatio: 16 / 9,
                 child: ImageService.buildNetworkImage(
@@ -607,21 +600,22 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 8),
-                  if (tip['content'] != null) ...[
-                    HtmlWidget(
-                      _stripHtmlAndTruncate(tip['content'] ?? '', 100),
-                      textStyle: const TextStyle(
-                        fontFamily: 'Roboto',
-                        fontSize: 14,
-                        color: Color(0xFF718096),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                  ],
+                  // if (tip['content'] != null) ...[
+                  //   HtmlWidget(
+                  //     _stripHtmlAndTruncate(tip['content'] ?? '', 100),
+                  //     textStyle: const TextStyle(
+                  //       fontFamily: 'Roboto',
+                  //       fontSize: 14,
+                  //       color: Color(0xFF718096),
+                  //     ),
+                  //   ),
+                  //   const SizedBox(height: 8),
+                  // ],
                   Row(
                     children: [
                       if (tip['estimated_time'] != null) ...[
-                        const Icon(Icons.schedule, size: 16, color: Color(0xFF718096)),
+                        const Icon(Icons.schedule,
+                            size: 16, color: Color(0xFF718096)),
                         const SizedBox(width: 4),
                         Text(
                           '${tip['estimated_time']} min',
@@ -633,7 +627,8 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
                         const SizedBox(width: 16),
                       ],
                       if (tip['likes_count'] != null) ...[
-                        const Icon(Icons.favorite, size: 16, color: Color(0xFFE53E3E)),
+                        const Icon(Icons.favorite,
+                            size: 16, color: Color(0xFFE53E3E)),
                         const SizedBox(width: 4),
                         Text(
                           '${tip['likes_count']}',
@@ -677,11 +672,12 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
           children: [
             // Image
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(16)),
               child: AspectRatio(
                 aspectRatio: 16 / 9,
                 child: ImageService.buildNetworkImage(
-                  imageUrl: event['image_url'] ?? '',
+                  imageUrl: event['image'] ?? event['thumbnail'] ?? event['image_url'] ?? '',
                   contentType: 'event',
                   fit: BoxFit.cover,
                 ),
@@ -706,21 +702,11 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 8),
-                  if (event['short_description'] != null) ...[
-                    HtmlWidget(
-                      event['short_description'],
-                      textStyle: const TextStyle(
-                        fontFamily: 'Roboto',
-                        fontSize: 14,
-                        color: Color(0xFF718096),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                  ],
                   Row(
                     children: [
                       if (event['start_date'] != null) ...[
-                        const Icon(Icons.calendar_today, size: 16, color: Color(0xFFE53E3E)),
+                        const Icon(Icons.calendar_today,
+                            size: 16, color: Color(0xFFE53E3E)),
                         const SizedBox(width: 4),
                         Text(
                           _formatDate(event['start_date']),
@@ -732,7 +718,8 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
                         const SizedBox(width: 16),
                       ],
                       if (event['likes_count'] != null) ...[
-                        const Icon(Icons.favorite, size: 16, color: Color(0xFFE53E3E)),
+                        const Icon(Icons.favorite,
+                            size: 16, color: Color(0xFFE53E3E)),
                         const SizedBox(width: 4),
                         Text(
                           '${event['likes_count']}',
@@ -776,10 +763,12 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
           children: [
             // Thumbnail avec overlay
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(16)),
               child: AspectRatio(
                 aspectRatio: 16 / 9,
                 child: Stack(
+                  fit: StackFit.expand,
                   children: [
                     ImageService.buildNetworkImage(
                       imageUrl: video['thumbnail_url'] ?? '',
@@ -793,7 +782,7 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
                           end: Alignment.bottomCenter,
                           colors: [
                             Colors.transparent,
-                            Colors.black.withOpacity(0.7),
+                            Colors.black.withValues(alpha: 0.7),
                           ],
                         ),
                       ),
@@ -828,21 +817,11 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 8),
-                  if (video['description'] != null) ...[
-                    HtmlWidget(
-                      _stripHtmlAndTruncate(video['description'] ?? '', 100),
-                      textStyle: const TextStyle(
-                        fontFamily: 'Roboto',
-                        fontSize: 14,
-                        color: Color(0xFF718096),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                  ],
                   Row(
                     children: [
                       if (video['views_count'] != null) ...[
-                        const Icon(Icons.visibility, size: 16, color: Color(0xFF718096)),
+                        const Icon(Icons.visibility,
+                            size: 16, color: Color(0xFF718096)),
                         const SizedBox(width: 4),
                         Text(
                           '${video['views_count']}',

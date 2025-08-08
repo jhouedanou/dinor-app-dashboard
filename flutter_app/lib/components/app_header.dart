@@ -50,7 +50,6 @@ class AppHeader extends ConsumerStatefulWidget {
 
 class _AppHeaderState extends ConsumerState<AppHeader> with RouteAware {
   String? _currentRouteName;
-  Timer? _routeCheckTimer;
 
   @override
   void initState() {
@@ -60,9 +59,29 @@ class _AppHeaderState extends ConsumerState<AppHeader> with RouteAware {
       _updateCurrentRoute();
     });
     
-    // Vérifier périodiquement les changements de route
-    _routeCheckTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
-      _checkRouteChange();
+    // Écouter les changements de route avec ModalRoute
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startRouteListener();
+    });
+  }
+  
+  void _startRouteListener() {
+    // Vérifier périodiquement les changements de route pour capturer les gestes système
+    Timer.periodic(const Duration(milliseconds: 200), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      
+      final route = ModalRoute.of(context);
+      final routeName = route?.settings.name ?? 'unknown';
+      
+      if (routeName != _currentRouteName) {
+        print('🔄 [AppHeader] Changement route détecté: $_currentRouteName -> $routeName');
+        _currentRouteName = routeName;
+        
+        // Le nettoyage du titre se fait maintenant dans les écrans de détail eux-mêmes
+      }
     });
   }
 
@@ -77,34 +96,33 @@ class _AppHeaderState extends ConsumerState<AppHeader> with RouteAware {
 
   @override
   void dispose() {
-    _routeCheckTimer?.cancel();
     NavigationService.routeObserver.unsubscribe(this);
     super.dispose();
   }
 
   @override
   void didPush() {
-    print('🚨 [AppHeader] RouteObserver - didPush called');
+    print('🚨 [AppHeader] didPush - nouvelle route');
     _updateCurrentRoute();
   }
 
   @override
   void didPop() {
-    print('🚨 [AppHeader] RouteObserver - didPop called');
-    _updateCurrentRoute();
+    print('🚨 [AppHeader] didPop - retour navigation système');
+    // Le nettoyage du titre se fait maintenant dans les écrans de détail eux-mêmes
   }
 
   @override
   void didPopNext() {
-    print('🚨 [AppHeader] RouteObserver - didPopNext called');
-    _updateCurrentRoute();
+    print('🚨 [AppHeader] didPopNext - retour vers cette page');
+    // Le nettoyage du titre se fait maintenant dans les écrans de détail eux-mêmes
   }
 
   void _updateCurrentRoute() {
     final route = ModalRoute.of(context);
     final routeName = route?.settings.name ?? 'unknown';
     
-    print('🔍 [AppHeader] Route détectée: $routeName');
+    print('🔍 [AppHeader] Route actuelle: $routeName (précédente: $_currentRouteName)');
     
     if (_currentRouteName != routeName) {
       _currentRouteName = routeName;
@@ -112,29 +130,29 @@ class _AppHeaderState extends ConsumerState<AppHeader> with RouteAware {
     }
   }
 
-  void _checkRouteChange() {
-    final currentNavRoute = NavigationService.currentRoute;
-    if (currentNavRoute != _currentRouteName) {
-      print('🔄 [AppHeader] Timer: Route changée de $_currentRouteName -> $currentNavRoute');
-      _currentRouteName = currentNavRoute;
-      _checkAndResetTitle();
-      // Forcer un rebuild
-      if (mounted) {
-        setState(() {});
-      }
-    }
-  }
 
   void _checkAndResetTitle() {
-    final isDetailScreen = _currentRouteName?.contains('-detail') ?? false;
+    final isDetailScreen = _isDetailRoute(_currentRouteName);
     final currentSubtitle = ref.read(headerSubtitleProvider);
     
     print('🔍 [AppHeader] Route: $_currentRouteName, IsDetail: $isDetailScreen, Subtitle: $currentSubtitle');
     
+    // Réinitialiser le titre si on n'est pas sur un écran de détail
     if (!isDetailScreen && currentSubtitle != null) {
-      print('🧹 [AppHeader] Réinitialisation du titre pour route: $_currentRouteName');
+      print('🧹 [AppHeader] Nettoyage titre pour route non-détail');
       ref.read(headerSubtitleProvider.notifier).state = null;
     }
+  }
+  
+  bool _isDetailRoute(String? routeName) {
+    if (routeName == null) return false;
+    return routeName.contains('-detail') || 
+           routeName.contains('detail') ||
+           routeName.endsWith('-detail') ||
+           routeName == '/tip-detail' ||
+           routeName == '/recipe-detail' ||
+           routeName == '/video-detail' ||
+           routeName == '/event-detail';
   }
 
   @override
@@ -244,33 +262,20 @@ class _AppHeaderState extends ConsumerState<AppHeader> with RouteAware {
                       print('💡 [AppHeader] Consumer - Subtitle: $subtitle');
                       print('💡 [AppHeader] Consumer - HasTitle: $hasTitle');
                       
-                      // Vérifier si on est sur un écran de détail en utilisant NavigationService
+                      // Vérifier si on est sur un écran de détail avec double vérification
                       final currentRoute = NavigationService.currentRoute;
-                      final isOnDetailScreen = currentRoute.contains('-detail') || currentRoute.contains('detail');
+                      final modalRoute = ModalRoute.of(context)?.settings.name;
+                      final actualRoute = modalRoute ?? currentRoute;
+                      final isOnDetailScreen = _isDetailRoute(actualRoute);
                       
                       print('🔍 [AppHeader] Current route from NavigationService: $currentRoute');
+                      print('🔍 [AppHeader] Modal route: $modalRoute'); 
+                      print('🔍 [AppHeader] Actual route: $actualRoute');
                       print('🔍 [AppHeader] Is on detail screen: $isOnDetailScreen');
                       
-                      // Si on a un titre mais qu'on n'est pas sur un écran de détail, le supprimer
-                      if (hasTitle && !isOnDetailScreen) {
-                        print('🧹 [AppHeader] Titre détecté sur écran non-détail, suppression...');
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          ref.read(headerSubtitleProvider.notifier).state = null;
-                        });
-                        // Afficher le logo en attendant que le state soit mis à jour
-                        return SvgPicture.asset(
-                          'assets/images/LOGO_DINOR_monochrome.svg',
-                          width: 32,
-                          height: 20,
-                          colorFilter: const ColorFilter.mode(
-                            Colors.white,
-                            BlendMode.srcIn,
-                          ),
-                        );
-                      }
-                      
-                      if (hasTitle && isOnDetailScreen) {
-                        // Afficher le titre du contenu
+                      // Logique claire : n'afficher le titre QUE sur les écrans de détail
+                      if (isOnDetailScreen && hasTitle) {
+                        // Afficher le titre du contenu seulement sur les pages de détail
                         print('📝 [AppHeader] Affichage du titre: $subtitle');
                         return Text(
                           subtitle,
@@ -280,7 +285,7 @@ class _AppHeaderState extends ConsumerState<AppHeader> with RouteAware {
                           style: AppTextStyles.headerTitle,
                         );
                       } else {
-                        // Afficher le logo Dinor par défaut
+                        // Dans tous les autres cas, afficher le logo
                         print('🏠 [AppHeader] Affichage du logo Dinor');
                         return SvgPicture.asset(
                           'assets/images/LOGO_DINOR_monochrome.svg',
