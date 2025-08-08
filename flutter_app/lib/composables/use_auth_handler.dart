@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../services/api_service.dart';
 import '../services/likes_service.dart';
+import '../services/analytics_service.dart';
 
 class AuthState {
   final bool isAuthenticated;
@@ -142,6 +143,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
         
         print('✅ [AuthNotifier] Connexion réussie pour: ${user['name']}');
         
+        // Analytics: connexion réussie
+        await AnalyticsService.logLogin(method: 'email');
+        await AnalyticsService.setUserId(user['id'].toString());
+        
         // Sync user likes after successful login
         await _likesService.syncWithServer();
         
@@ -239,6 +244,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
       
       // Clear user likes
       _likesService.clearUserLikes();
+      
+      // Analytics: déconnexion
+      await AnalyticsService.logLogout();
       
       // Réinitialiser l'état
       state = const AuthState();

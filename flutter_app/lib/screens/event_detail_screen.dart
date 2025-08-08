@@ -20,6 +20,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // Composables
 import '../composables/use_auth_handler.dart';
@@ -32,6 +33,7 @@ import '../components/common/unified_like_button.dart';
 import '../components/common/auth_modal.dart';
 import '../components/common/share_modal.dart';
 import '../components/common/image_gallery_carousel.dart';
+import '../components/common/maps_modal.dart';
 
 // Services
 import '../services/api_service.dart';
@@ -611,7 +613,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
             const SizedBox(height: 12),
           ],
           if (location.isNotEmpty) ...[
-            _buildDetailRow(Icons.location_on_outlined, 'Lieu', location),
+            _buildLocationRow(location),
             const SizedBox(height: 12),
           ],
           if (organizer.isNotEmpty) ...[
@@ -659,6 +661,106 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
         ),
       ],
     );
+  }
+
+  Widget _buildLocationRow(String location) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(
+          Icons.location_on_outlined,
+          size: 20,
+          color: const Color(0xFFF4D03F),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Lieu',
+                style: const TextStyle(
+                  fontFamily: 'OpenSans',
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF718096),
+                ),
+              ),
+              const SizedBox(height: 2),
+              GestureDetector(
+                onTap: () => showMapsModal(context, location),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        location,
+                        style: const TextStyle(
+                          fontFamily: 'OpenSans',
+                          fontSize: 14,
+                          color: Color(0xFF3182CE), // Bleu pour indiquer que c'est cliquable
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Icon(
+                      Icons.map_outlined,
+                      size: 16,
+                      color: const Color(0xFF3182CE),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _openGoogleMaps(String location) async {
+    try {
+      // Encoder l'adresse pour l'URL
+      final encodedLocation = Uri.encodeComponent(location);
+      
+      // URLs pour différentes plateformes
+      final googleMapsUrl = 'https://www.google.com/maps/search/?api=1&query=$encodedLocation';
+      final appleMapsUrl = 'http://maps.apple.com/?q=$encodedLocation';
+      
+      // Essayer d'abord Google Maps
+      final googleMapsUri = Uri.parse(googleMapsUrl);
+      if (await canLaunchUrl(googleMapsUri)) {
+        await launchUrl(googleMapsUri, mode: LaunchMode.externalApplication);
+        print('📍 [EventDetailScreen] Ouverture Google Maps: $location');
+        return;
+      }
+      
+      // Fallback vers Apple Maps (iOS)
+      final appleMapsUri = Uri.parse(appleMapsUrl);
+      if (await canLaunchUrl(appleMapsUri)) {
+        await launchUrl(appleMapsUri, mode: LaunchMode.externalApplication);
+        print('📍 [EventDetailScreen] Ouverture Apple Maps: $location');
+        return;
+      }
+      
+      // Fallback vers navigateur web
+      final webUri = Uri.parse(googleMapsUrl);
+      await launchUrl(webUri, mode: LaunchMode.externalApplication);
+      print('📍 [EventDetailScreen] Ouverture navigateur: $location');
+      
+    } catch (e) {
+      print('❌ [EventDetailScreen] Erreur ouverture Maps: $e');
+      
+      // Afficher un message d'erreur à l'utilisateur
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Impossible d\'ouvrir la carte pour: $location'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildCommentsSection() {

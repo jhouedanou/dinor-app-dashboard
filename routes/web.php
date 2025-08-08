@@ -280,3 +280,8 @@ Route::get('/csv/example/{type}', function ($type) {
         'Content-Type' => 'text/csv',
     ]);
 })->name('csv.example');
+
+// Route pour l'export des analytics depuis le dashboard admin
+Route::middleware(['web'])->group(function () {
+    Route::get('/admin/analytics/export', [App\Http\Controllers\Api\AnalyticsController::class, 'export'])->name('admin.analytics.export');
+});

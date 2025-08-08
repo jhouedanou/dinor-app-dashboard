@@ -31,11 +31,15 @@ import '../components/common/like_button.dart';
 import '../components/common/auth_modal.dart';
 import '../components/common/youtube_video_modal.dart';
 import '../components/common/home_video_modal.dart';
+import '../components/common/offline_indicator.dart';
 import '../components/dinor_icon.dart';
 
 // Services et composables
 import '../services/api_service.dart';
 import '../services/image_service.dart';
+import '../services/analytics_service.dart';
+import '../services/analytics_tracker.dart';
+import '../services/swipeable_navigation_service.dart';
 import '../composables/use_recipes.dart';
 import '../composables/use_tips.dart';
 import '../composables/use_events.dart';
@@ -51,7 +55,7 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAliveClientMixin {
+class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAliveClientMixin, AnalyticsScreenMixin {
   // État identique au setup() Vue
   bool _showAuthModal = false;
   String _authModalMessage = '';
@@ -81,11 +85,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
   bool get wantKeepAlive => true;
 
   @override
+  String get screenName => 'home';
+
+  @override
   void initState() {
     super.initState();
     
     // Équivalent onMounted() Vue
     print('🚀 [HomeScreen] Écran d\'accueil initialisé');
+    
     _loadAllData();
   }
 
@@ -266,15 +274,87 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
 
   // REPRODUCTION EXACTE des handlers Vue
   void _handleRecipeClick(Map<String, dynamic> recipe) {
-    NavigationService.pushNamed('/recipe/${recipe['id']}');
+    // Analytics: contenu consulté
+    AnalyticsService.logViewContent(
+      contentType: 'recipe',
+      contentId: recipe['id'].toString(),
+      contentName: recipe['title'] ?? 'Recette',
+    );
+    
+    // Tracking du clic sur la recette
+    AnalyticsTracker.trackButtonClick(
+      buttonName: 'recipe_card',
+      screenName: 'home',
+      additionalData: {
+        'recipe_id': recipe['id'].toString(),
+        'recipe_title': recipe['title'] ?? 'Recette',
+      },
+    );
+    
+    // Navigation vers le swipeable detail avec la liste des recettes
+    SwipeableNavigationService.navigateFromCarousel(
+      context: context,
+      initialId: recipe['id'].toString(),
+      contentType: 'recipe',
+      carouselItems: _latestRecipes,
+      carouselIndex: _latestRecipes.indexOf(recipe),
+    );
   }
 
   void _handleTipClick(Map<String, dynamic> tip) {
-    NavigationService.pushNamed('/tip/${tip['id']}');
+    // Analytics: contenu consulté
+    AnalyticsService.logViewContent(
+      contentType: 'tip',
+      contentId: tip['id'].toString(),
+      contentName: tip['title'] ?? 'Astuce',
+    );
+    
+    // Tracking du clic sur l'astuce
+    AnalyticsTracker.trackButtonClick(
+      buttonName: 'tip_card',
+      screenName: 'home',
+      additionalData: {
+        'tip_id': tip['id'].toString(),
+        'tip_title': tip['title'] ?? 'Astuce',
+      },
+    );
+    
+    // Navigation vers le swipeable detail avec la liste des astuces
+    SwipeableNavigationService.navigateFromCarousel(
+      context: context,
+      initialId: tip['id'].toString(),
+      contentType: 'tip',
+      carouselItems: _latestTips,
+      carouselIndex: _latestTips.indexOf(tip),
+    );
   }
 
   void _handleEventClick(Map<String, dynamic> event) {
-    NavigationService.pushNamed('/event/${event['id']}');
+    // Analytics: contenu consulté
+    AnalyticsService.logViewContent(
+      contentType: 'event',
+      contentId: event['id'].toString(),
+      contentName: event['title'] ?? 'Événement',
+    );
+    
+    // Tracking du clic sur l'événement
+    AnalyticsTracker.trackButtonClick(
+      buttonName: 'event_card',
+      screenName: 'home',
+      additionalData: {
+        'event_id': event['id'].toString(),
+        'event_title': event['title'] ?? 'Événement',
+      },
+    );
+    
+    // Navigation vers le swipeable detail avec la liste des événements
+    SwipeableNavigationService.navigateFromCarousel(
+      context: context,
+      initialId: event['id'].toString(),
+      contentType: 'event',
+      carouselItems: _latestEvents,
+      carouselIndex: _latestEvents.indexOf(event),
+    );
   }
 
   void _handleVideoClick(Map<String, dynamic> video) {
@@ -282,36 +362,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
     final title = video['title'] as String? ?? 'Vidéo Dinor TV';
     final description = video['description'] as String?;
     
-    if (videoUrl != null && videoUrl.isNotEmpty) {
-      print('🎬 [HomeScreen] Ouverture vidéo intégrée: $title');
-      print('🎬 [HomeScreen] URL: $videoUrl');
-      
-      // Afficher la modal vidéo optimisée pour la page d'accueil
-      showDialog(
-        context: context,
-        barrierDismissible: true,
-        useRootNavigator: true,
-        builder: (context) => HomeVideoModal(
-          isOpen: true,
-          videoUrl: videoUrl,
-          title: title,
-          description: description,
-          onClose: () {
-            if (Navigator.of(context, rootNavigator: true).canPop()) {
-              Navigator.of(context, rootNavigator: true).pop();
-            }
-          },
-        ),
-      );
-    } else {
-      print('⚠️ [HomeScreen] URL vidéo manquante pour: $title');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('URL de vidéo non disponible'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
+    // Analytics: contenu consulté
+    AnalyticsService.logViewContent(
+      contentType: 'video',
+      contentId: video['id'].toString(),
+      contentName: title,
+    );
+    
+    // Tracking du clic sur la vidéo
+    AnalyticsTracker.trackButtonClick(
+      buttonName: 'video_card',
+      screenName: 'home',
+      additionalData: {
+        'video_id': video['id'].toString(),
+        'video_title': title,
+        'video_url': videoUrl,
+      },
+    );
+    
+    // Navigation vers le swipeable detail avec la liste des vidéos
+    SwipeableNavigationService.navigateFromCarousel(
+      context: context,
+      initialId: video['id'].toString(),
+      contentType: 'video',
+      carouselItems: _latestVideos,
+      carouselIndex: _latestVideos.indexOf(video),
+    );
   }
 
   // IDENTIQUE à handleAuthError Vue
@@ -403,6 +479,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
           physics: const AlwaysScrollableScrollPhysics(),
           child: Column(
             children: [
+              // Indicateur hors ligne pour macOS
+              const OfflineIndicator(),
+              
               // Zone de contenu principal - .content-area CSS identique
               Container(
                 width: double.infinity,

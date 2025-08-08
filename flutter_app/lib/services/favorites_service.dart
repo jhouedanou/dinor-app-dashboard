@@ -13,6 +13,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../composables/use_auth_handler.dart';
+import 'analytics_service.dart';
 
 class Favorite {
   final String id;
@@ -81,8 +83,9 @@ class FavoritesState {
 class FavoritesService extends StateNotifier<FavoritesState> {
   static const String baseUrl = 'https://new.dinorapp.com/api/v1';
   static const _secureStorage = FlutterSecureStorage();
+  final Ref _ref;
 
-  FavoritesService() : super(FavoritesState());
+  FavoritesService(this._ref) : super(FavoritesState());
 
   // Charger les favoris
   Future<void> loadFavorites({bool refresh = false}) async {
@@ -178,6 +181,13 @@ class FavoritesService extends StateNotifier<FavoritesState> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['success'] == true && data['is_favorited'] == true) {
+          // Analytics: ajout aux favoris
+          await AnalyticsService.logFavoriteAction(
+            contentType: type,
+            contentId: id,
+            isFavorited: true,
+          );
+          
           // Recharger les favoris
           await loadFavorites(refresh: true);
           print('✅ [FavoritesService] Favori ajouté avec succès');
@@ -213,6 +223,18 @@ class FavoritesService extends StateNotifier<FavoritesState> {
       ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
+        // Trouver le favori à supprimer pour l'analytics
+        final favoriteToRemove = state.favorites
+            .firstWhere((fav) => fav.id == favoriteId, orElse: () => 
+              Favorite(id: favoriteId, type: 'unknown', content: {}, favoritedAt: DateTime.now()));
+        
+        // Analytics: suppression des favoris
+        await AnalyticsService.logFavoriteAction(
+          contentType: favoriteToRemove.type,
+          contentId: favoriteToRemove.content['id']?.toString() ?? favoriteId,
+          isFavorited: false,
+        );
+        
         // Retirer le favori de la liste locale
         final updatedFavorites = state.favorites
             .where((favorite) => favorite.id != favoriteId)
@@ -272,19 +294,26 @@ class FavoritesService extends StateNotifier<FavoritesState> {
   // Méthodes privées pour le cache et les headers
   Future<Map<String, String>> _getHeaders() async {
     try {
-      // Utiliser FlutterSecureStorage comme dans AuthNotifier
-      final token = await _secureStorage.read(key: 'auth_token');
-      
       final headers = {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       };
       
-      if (token != null && token.isNotEmpty) {
-        headers['Authorization'] = 'Bearer $token';
-        print('🔑 [FavoritesService] Token d\'authentification ajouté');
+      // Récupérer le token depuis l'AuthNotifier (useAuthHandlerProvider)
+      final authState = _ref.read(useAuthHandlerProvider);
+      
+      if (authState.isAuthenticated && authState.token != null && authState.token!.isNotEmpty) {
+        headers['Authorization'] = 'Bearer ${authState.token}';
+        print('🔑 [FavoritesService] Token d\'authentification ajouté depuis useAuthHandlerProvider');
       } else {
-        print('⚠️ [FavoritesService] Aucun token d\'authentification trouvé');
+        // Fallback: essayer de récupérer depuis FlutterSecureStorage
+        final token = await _secureStorage.read(key: 'auth_token');
+        if (token != null && token.isNotEmpty) {
+          headers['Authorization'] = 'Bearer $token';
+          print('🔑 [FavoritesService] Token d\'authentification ajouté depuis SecureStorage (fallback)');
+        } else {
+          print('⚠️ [FavoritesService] Aucun token d\'authentification trouvé');
+        }
       }
       
       return headers;
@@ -338,5 +367,5 @@ class FavoritesService extends StateNotifier<FavoritesState> {
 
 // Provider pour le service de favoris
 final favoritesServiceProvider = StateNotifierProvider<FavoritesService, FavoritesState>((ref) {
-  return FavoritesService();
+  return FavoritesService(ref);
 });

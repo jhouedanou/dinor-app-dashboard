@@ -19,12 +19,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 // Test app simple (désactivé)
 // import 'test_app.dart';
 
 // Services (remplace les services Vue)
 import 'services/notification_service.dart';
+import 'services/analytics_service.dart';
+import 'services/analytics_tracker.dart';
 // import 'services/notification_service_simple.dart' as SimpleNotificationService;
 
 // Router supprimé - remplacé par NavigationService
@@ -34,6 +37,15 @@ import 'app.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialisation Firebase
+  try {
+    await Firebase.initializeApp();
+    await AnalyticsService.initialize();
+    print('🔥 [Firebase] Initialisé avec succès');
+  } catch (e) {
+    print('❌ [Firebase] Erreur initialisation: $e');
+  }
   
   // Configuration système identique à Vue
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
@@ -66,9 +78,13 @@ void main() async {
   // runApp(TestApp());
   
   // Post-initialisation (équivalent service worker + OneSignal)
-  // WidgetsBinding.instance.addPostFrameCallback((_) {
-  //   _postInitialization();
-  // });
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    // Enregistrer l'ouverture de l'app
+    AnalyticsService.logAppOpen();
+    
+    // Démarrer le tracking de session
+    AnalyticsTracker.startSession();
+  });
 }
 
 /// Initialisation des services - REPRODUCTION EXACTE de main.js

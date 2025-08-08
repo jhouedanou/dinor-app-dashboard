@@ -5,11 +5,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'permissions_service_platform.dart';
+import 'dart:io';
 
 class PermissionsService {
   static Future<bool> requestNotificationPermission() async {
     try {
       debugPrint('🔔 [PermissionsService] Demande de permission pour les notifications...');
+
+      // Vérifier si la plateforme supporte ces permissions
+      if (!Platform.isAndroid && !Platform.isIOS) {
+        debugPrint('⚠️ [PermissionsService] Permissions non supportées sur cette plateforme: ${Platform.operatingSystem}');
+        return true; // On considère que c'est "accordé" sur les plateformes non mobiles
+      }
 
       // 1. Demander la permission via OneSignal (fonctionne sur toutes les plateformes)
       final oneSignalPermission = await OneSignal.Notifications.requestPermission(true);
@@ -53,6 +60,12 @@ class PermissionsService {
   static Future<bool> checkNotificationPermission() async {
     try {
       debugPrint('🔍 [PermissionsService] Vérification des permissions...');
+
+      // Vérifier si la plateforme supporte ces permissions
+      if (!Platform.isAndroid && !Platform.isIOS) {
+        debugPrint('⚠️ [PermissionsService] Permissions non supportées sur cette plateforme: ${Platform.operatingSystem}');
+        return true; // On considère que c'est "accordé" sur les plateformes non mobiles
+      }
 
       // 1. Vérifier la permission OneSignal (fonctionne sur toutes les plateformes)
       final oneSignalPermission = OneSignal.Notifications.permission;

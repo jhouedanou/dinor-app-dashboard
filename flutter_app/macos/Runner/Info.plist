@@ -28,5 +28,20 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	
+	<!-- Configuration réseau pour macOS -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+		<key>NSAllowsArbitraryLoadsInWebContent</key>
+		<true/>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	
+	<!-- Description pour l'accès réseau -->
+	<key>NSNetworkVolumesUsageDescription</key>
+	<string>Dinor a besoin d'accéder au réseau pour charger le contenu culinaire.</string>
 </dict>
 </plist>
