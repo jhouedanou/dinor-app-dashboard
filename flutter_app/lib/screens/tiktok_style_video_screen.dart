@@ -278,22 +278,83 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
   Future<void> _handleLikeAction(VideoData video, WidgetRef ref) async {
     final authState = ref.read(useAuthHandlerProvider);
     
+    print('🎯 [TikTokVideo] Tentative de like pour vidéo: ID=${video.id}, Auth=${authState.isAuthenticated}');
+    
     if (!authState.isAuthenticated) {
+      print('⚠️ [TikTokVideo] Utilisateur non authentifié, ouverture modal auth');
       setState(() => _showAuthModal = true);
       return;
     }
 
     try {
-      // Utiliser 'dinor-tv' au lieu de 'video' pour l'API
-      final success = await ref.read(likesProvider.notifier).toggleLike('dinor-tv', video.id);
+      print('🔄 [TikTokVideo] Envoi requête like: type=video, id=${video.id}');
       
-      if (success) {
-        // Le state est automatiquement mis à jour via Riverpod
-        print('✅ [TikTokVideo] Like toggleé pour vidéo: ${video.id}');
+      // Utiliser 'video' qui est le type de contenu reconnu par l'API
+      final result = await ref.read(likesProvider.notifier).toggleLike('video', video.id);
+      
+      if (result) {
+        print('✅ [TikTokVideo] Like toggleé avec succès');
+        
+        // Afficher un feedback visuel seulement si le widget est encore monté
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.favorite, color: Colors.white, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    ref.read(likesProvider.notifier).isLiked('video', video.id) 
+                      ? '❤️ Ajouté aux favoris' 
+                      : '💔 Retiré des favoris',
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                ],
+              ),
+              backgroundColor: const Color(0xFFE53E3E),
+              duration: const Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating,
+              margin: const EdgeInsets.all(16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          );
+        }
+      } else {
+        print('❌ [TikTokVideo] Échec du like');
+        if (mounted) {
+          _showErrorSnackBar('Impossible de mettre à jour le like');
+        }
       }
     } catch (error) {
-      print('❌ [TikTokVideo] Erreur like: $error');
+      print('❌ [TikTokVideo] Exception lors du like: $error');
+      if (mounted) {
+        _showErrorSnackBar('Erreur de connexion: ${error.toString()}');
+      }
     }
+  }
+  
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.error_outline, color: Colors.white, size: 20),
+            const SizedBox(width: 8),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: Colors.red[600],
+        duration: const Duration(seconds: 4),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        action: SnackBarAction(
+          label: 'Réessayer',
+          textColor: Colors.white,
+          onPressed: () => _handleLikeAction(widget.videos[_currentIndex], ref),
+        ),
+      ),
+    );
   }
 
   // Naviguer vers les commentaires
@@ -480,8 +541,8 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
             _buildActionButton(
               child: Consumer(
                 builder: (context, ref, _) {
-                  final authState = ref.watch(useAuthHandlerProvider);
-                  final isLiked = ref.watch(likesProvider.notifier).isLiked('dinor-tv', video.id);
+                  final isLiked = ref.watch(likesProvider.notifier).isLiked('video', video.id);
+                  final likeCount = ref.watch(likesProvider.notifier).getLikeCount('video', video.id);
                   
                   return GestureDetector(
                     onTap: () => _handleLikeAction(video, ref),
@@ -501,7 +562,7 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '${video.likesCount}',
+                          '${likeCount > 0 ? likeCount : video.likesCount}',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 12,
@@ -750,7 +811,7 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
               // Section commentaires unifiée
               Expanded(
                 child: UnifiedCommentsSection(
-                  contentType: 'dinor-tv',
+                  contentType: 'video',
                   contentId: video.id,
                   contentTitle: video.title,
                 ),

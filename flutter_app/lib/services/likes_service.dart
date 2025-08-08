@@ -72,14 +72,17 @@ class LikesService {
     try {
       print('❤️ [LikesService] Toggling like for $type:$itemId (was: $wasLiked)');
       
+      // Utiliser l'endpoint standard pour tous les types de contenu
       final response = await _apiService.post('/likes/toggle', {
         'type': type,
         'id': itemId,
       });
       
-      if (response['success']) {
+      if (response['success'] == true || response['status'] == 'success') {
         final newLiked = !wasLiked;
-        final newCount = response['data']['total_likes'] ?? (_likeCounts[key] ?? 0);
+        final newCount = response['data']?['total_likes'] ?? 
+                        response['likes_count'] ?? 
+                        (wasLiked ? (_likeCounts[key] ?? 1) - 1 : (_likeCounts[key] ?? 0) + 1);
         
         // Update local state
         _userLikes[key] = newLiked;
@@ -96,8 +99,12 @@ class LikesService {
           'total_likes': newCount,
         };
       } else {
-        print('❌ [LikesService] API returned error: ${response['error']}');
-        return response;
+        final errorMsg = response['error'] ?? response['message'] ?? 'Erreur API inconnue';
+        print('❌ [LikesService] API returned error: $errorMsg');
+        return {
+          'success': false,
+          'error': errorMsg,
+        };
       }
     } catch (e) {
       print('❌ [LikesService] Exception toggling like: $e');
@@ -206,14 +213,14 @@ class LikesNotifier extends StateNotifier<LikesState> {
   Future<bool> toggleLike(String type, String itemId) async {
     final result = await _likesService.toggleLike(type, itemId);
     
-    if (result['success']) {
+    if (result['success'] == true) {
       // Update state immediately for UI responsiveness
       final key = _likesService._getLikeKey(type, itemId);
       final newUserLikes = Map<String, bool>.from(state.userLikes);
       final newLikeCounts = Map<String, int>.from(state.likeCounts);
       
-      newUserLikes[key] = result['is_liked'];
-      newLikeCounts[key] = result['total_likes'];
+      newUserLikes[key] = result['is_liked'] ?? !newUserLikes[key]!;
+      newLikeCounts[key] = result['total_likes'] ?? newLikeCounts[key]! + (newUserLikes[key]! ? 1 : -1);
       
       state = LikesState(
         userLikes: newUserLikes,
@@ -221,9 +228,11 @@ class LikesNotifier extends StateNotifier<LikesState> {
       );
       
       return true;
+    } else {
+      // Log the error for debugging
+      print('❌ [LikesNotifier] Toggle failed: ${result['error']}');
+      return false;
     }
-    
-    return false;
   }
 
   void setInitialData(String type, String itemId, bool isLiked, int count) {

@@ -146,7 +146,7 @@ class CommentsService extends StateNotifier<Map<String, CommentsState>> {
         }
       }
 
-      // Charger depuis l'API
+      // Charger depuis l'API avec l'endpoint standard
       final result = await _apiService.get('/comments', params: {
         'type': contentType,
         'id': contentId,
