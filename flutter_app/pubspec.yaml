@@ -70,6 +70,7 @@ dependencies:
   # Web support
   url_launcher: ^6.2.2
   share_plus: ^7.2.1
+  webview_flutter: ^4.4.2
 
   # HTML rendering for recipe instructions
   flutter_widget_from_html: ^0.15.3

@@ -23,6 +23,8 @@ import 'dart:async';
 import '../services/navigation_service.dart';
 import '../components/common/like_button.dart';
 import '../components/common/youtube_video_player.dart';
+import '../components/common/unified_comments_section.dart';
+import '../services/likes_service.dart';
 import '../composables/use_auth_handler.dart';
 import '../components/common/auth_modal.dart';
 
@@ -272,6 +274,28 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
     );
   }
 
+  // Gérer l'action de like
+  Future<void> _handleLikeAction(VideoData video, WidgetRef ref) async {
+    final authState = ref.read(useAuthHandlerProvider);
+    
+    if (!authState.isAuthenticated) {
+      setState(() => _showAuthModal = true);
+      return;
+    }
+
+    try {
+      // Utiliser 'dinor-tv' au lieu de 'video' pour l'API
+      final success = await ref.read(likesProvider.notifier).toggleLike('dinor-tv', video.id);
+      
+      if (success) {
+        // Le state est automatiquement mis à jour via Riverpod
+        print('✅ [TikTokVideo] Like toggleé pour vidéo: ${video.id}');
+      }
+    } catch (error) {
+      print('❌ [TikTokVideo] Erreur like: $error');
+    }
+  }
+
   // Naviguer vers les commentaires
   void _openComments() {
     final video = widget.videos[_currentIndex];
@@ -448,85 +472,115 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
 
   // Boutons d'action à droite
   Widget _buildActionButtons(VideoData video) {
-    return Column(
-      children: [
-        // Like
-        _buildActionButton(
-          child: Column(
-            children: [
-              LikeButton(
-                type: 'video',
-                itemId: video.id,
-                initialLiked: video.isLiked,
-                initialCount: video.likesCount,
-                showCount: false, // On affiche le count séparément pour le design TikTok
-                size: 'large',
-                variant: 'minimal',
-                onAuthRequired: () => setState(() => _showAuthModal = true),
+    return Consumer(
+      builder: (context, ref, _) {
+        return Column(
+          children: [
+            // Like avec état reactif
+            _buildActionButton(
+              child: Consumer(
+                builder: (context, ref, _) {
+                  final authState = ref.watch(useAuthHandlerProvider);
+                  final isLiked = ref.watch(likesProvider.notifier).isLiked('dinor-tv', video.id);
+                  
+                  return GestureDetector(
+                    onTap: () => _handleLikeAction(video, ref),
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: isLiked ? const Color(0xFFE53E3E) : Colors.black.withValues(alpha: 0.3),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            isLiked ? Icons.favorite : Icons.favorite_border,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${video.likesCount}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
-              const SizedBox(height: 4),
-              Text(
-                '${video.likesCount}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-        
-        const SizedBox(height: 24),
+            ),
+            
+            const SizedBox(height: 24),
 
-        // Commentaires
-        _buildActionButton(
-          onTap: _openComments,
-          child: Column(
-            children: [
-              const Icon(
-                LucideIcons.messageCircle,
-                color: Colors.white,
-                size: 32,
+            // Commentaires
+            _buildActionButton(
+              onTap: _openComments,
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      LucideIcons.messageCircle,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${video.commentsCount}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 4),
-              Text(
-                '${video.commentsCount}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
+            ),
 
-        const SizedBox(height: 24),
+            const SizedBox(height: 24),
 
-        // Partage
-        _buildActionButton(
-          onTap: _shareVideo,
-          child: Column(
-            children: [
-              const Icon(
-                LucideIcons.share,
-                color: Colors.white,
-                size: 32,
+            // Partage
+            _buildActionButton(
+              onTap: _shareVideo,
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      LucideIcons.share,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${video.sharesCount}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 4),
-              Text(
-                '${video.sharesCount}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -624,12 +678,12 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
 
   // Note: Barre de progression maintenant gérée par YouTubeVideoPlayer
 
-  // Sheet des commentaires
+  // Sheet des commentaires avec composant unifié
   Widget _buildCommentsSheet(VideoData video) {
     return DraggableScrollableSheet(
-      initialChildSize: 0.5,
+      initialChildSize: 0.6,
       minChildSize: 0.3,
-      maxChildSize: 0.9,
+      maxChildSize: 0.95,
       builder: (context, scrollController) {
         return Container(
           decoration: const BoxDecoration(
@@ -640,7 +694,7 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
             children: [
               // Handle
               Container(
-                margin: const EdgeInsets.only(top: 12, bottom: 16),
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
@@ -649,9 +703,9 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
                 ),
               ),
               
-              // Header
+              // Header avec bouton fermer
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Row(
                   children: [
                     const Text(
@@ -659,32 +713,46 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
+                        color: Color(0xFF2D3748),
                       ),
                     ),
                     const Spacer(),
-                    Text(
-                      '${video.commentsCount}',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[600],
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF4D03F).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '${video.commentsCount}',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF2D3748),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(
+                        Icons.close,
+                        color: Color(0xFF718096),
+                        size: 20,
                       ),
                     ),
                   ],
                 ),
               ),
               
-              const Divider(),
+              const Divider(height: 1),
               
-              // Placeholder pour les commentaires
+              // Section commentaires unifiée
               Expanded(
-                child: Center(
-                  child: Text(
-                    'Section commentaires à implémenter',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 16,
-                    ),
-                  ),
+                child: UnifiedCommentsSection(
+                  contentType: 'dinor-tv',
+                  contentId: video.id,
+                  contentTitle: video.title,
                 ),
               ),
             ],

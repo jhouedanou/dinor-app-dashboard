@@ -9,7 +9,6 @@ import '../services/navigation_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 // Components unifiés
 import '../components/common/image_gallery_carousel.dart';
@@ -740,29 +739,53 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
                   color: Color(0xFF718096),
                 ),
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 4),
               GestureDetector(
                 onTap: () => showMapsModal(context, location),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        location,
-                        style: const TextStyle(
-                          fontFamily: 'OpenSans',
-                          fontSize: 14,
-                          color: Color(0xFF3182CE), // Bleu pour indiquer que c'est cliquable
-                          decoration: TextDecoration.underline,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF4D03F).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: const Color(0xFFF4D03F).withValues(alpha: 0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF4D03F),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Icon(
+                          LucideIcons.map,
+                          size: 14,
+                          color: Color(0xFF2D3748),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Icon(
-                      LucideIcons.map,
-                      size: 16,
-                      color: const Color(0xFF3182CE),
-                    ),
-                  ],
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          location,
+                          style: const TextStyle(
+                            fontFamily: 'OpenSans',
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF2D3748),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(
+                        LucideIcons.externalLink,
+                        size: 14,
+                        color: Color(0xFF4A5568),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -772,48 +795,4 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
     );
   }
 
-  Future<void> _openGoogleMaps(String location) async {
-    try {
-      // Encoder l'adresse pour l'URL
-      final encodedLocation = Uri.encodeComponent(location);
-      
-      // URLs pour différentes plateformes
-      final googleMapsUrl = 'https://www.google.com/maps/search/?api=1&query=$encodedLocation';
-      final appleMapsUrl = 'http://maps.apple.com/?q=$encodedLocation';
-      
-      // Essayer d'abord Google Maps
-      final googleMapsUri = Uri.parse(googleMapsUrl);
-      if (await canLaunchUrl(googleMapsUri)) {
-        await launchUrl(googleMapsUri, mode: LaunchMode.externalApplication);
-        print('📍 [EventDetailScreenUnified] Ouverture Google Maps: $location');
-        return;
-      }
-      
-      // Fallback vers Apple Maps (iOS)
-      final appleMapsUri = Uri.parse(appleMapsUrl);
-      if (await canLaunchUrl(appleMapsUri)) {
-        await launchUrl(appleMapsUri, mode: LaunchMode.externalApplication);
-        print('📍 [EventDetailScreenUnified] Ouverture Apple Maps: $location');
-        return;
-      }
-      
-      // Fallback vers navigateur web
-      final webUri = Uri.parse(googleMapsUrl);
-      await launchUrl(webUri, mode: LaunchMode.externalApplication);
-      print('📍 [EventDetailScreenUnified] Ouverture navigateur: $location');
-      
-    } catch (e) {
-      print('❌ [EventDetailScreenUnified] Erreur ouverture Maps: $e');
-      
-      // Afficher un message d'erreur à l'utilisateur
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Impossible d\'ouvrir la carte pour: $location'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
 }
