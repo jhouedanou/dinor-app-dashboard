@@ -95,18 +95,5 @@ flutter:
     - assets/icons/
     - assets/fonts/
 
-  # fonts:
-  #   - family: Roboto
-  #     fonts:
-  #       - asset: assets/fonts/Roboto-Regular.ttf
-  #       - asset: assets/fonts/Roboto-Medium.ttf
-  #         weight: 500
-  #       - asset: assets/fonts/Roboto-Bold.ttf
-  #         weight: 700
-  #   - family: OpenSans
-  #     fonts:
-  #       - asset: assets/fonts/OpenSans-Regular.ttf
-  #       - asset: assets/fonts/OpenSans-SemiBold.ttf
-  #         weight: 600
-  #       - asset: assets/fonts/OpenSans-Bold.ttf
-  #         weight: 700
+  # Utilisation de la police Roboto système - pas besoin d'assets
+  # Flutter utilise Roboto par défaut sur Android et nous la forçons via le code

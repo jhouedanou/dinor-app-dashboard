@@ -290,6 +290,19 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
                     _buildWelcomeHeader(),
                     const SizedBox(height: 24),
 
+                    // Événements d'abord
+                    _buildSection(
+                      'Derniers Événements',
+                      '/events',
+                      events,
+                      isLoadingEvents,
+                      errorEvents,
+                      _buildEventCard,
+                      Icons.event,
+                      const Color(0xFF38A169),
+                    ),
+                    const SizedBox(height: 24),
+
                     // Recettes
                     _buildSection(
                       'Dernières Recettes',
@@ -313,19 +326,6 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
                       _buildTipCard,
                       Icons.lightbulb,
                       const Color(0xFFF4D03F),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Événements
-                    _buildSection(
-                      'Derniers Événements',
-                      '/events',
-                      events,
-                      isLoadingEvents,
-                      errorEvents,
-                      _buildEventCard,
-                      Icons.event,
-                      const Color(0xFF38A169),
                     ),
                     const SizedBox(height: 24),
 

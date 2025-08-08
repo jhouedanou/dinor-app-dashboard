@@ -1,22 +1,41 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'permissions_service_platform.dart';
 
 class PermissionsService {
   static Future<bool> requestNotificationPermission() async {
     try {
       debugPrint('🔔 [PermissionsService] Demande de permission pour les notifications...');
 
-      // 1. Demander la permission via OneSignal
+      // 1. Demander la permission via OneSignal (fonctionne sur toutes les plateformes)
       final oneSignalPermission = await OneSignal.Notifications.requestPermission(true);
       debugPrint('🔔 [PermissionsService] Permission OneSignal: $oneSignalPermission');
 
-      // 2. Vérifier la permission système (Android)
-      final notificationPermission = await Permission.notification.request();
-      debugPrint('🔔 [PermissionsService] Permission système: $notificationPermission');
+      // 2. Demander la permission système selon la plateforme
+      bool systemPermissionGranted = true;
 
-      final isGranted = oneSignalPermission && notificationPermission.isGranted;
+      if (kIsWeb || Platform.isLinux) {
+        // Sur Web et Linux, pas besoin de permission système additionnelle
+        debugPrint('🔔 [PermissionsService] Plateforme Web/Linux - permission système automatique');
+        systemPermissionGranted = true;
+      } else if (Platform.isAndroid || Platform.isIOS) {
+        // Sur mobile, utiliser permission_handler si disponible
+        try {
+          final notificationPermission = await Permission.notification.request();
+          systemPermissionGranted = notificationPermission.isGranted;
+          debugPrint('🔔 [PermissionsService] Permission système: $notificationPermission');
+        } catch (e) {
+          debugPrint('⚠️ [PermissionsService] Permission handler non disponible: $e');
+          // Si permission_handler échoue, se baser uniquement sur OneSignal
+          systemPermissionGranted = oneSignalPermission;
+        }
+      }
+
+      final isGranted = oneSignalPermission && systemPermissionGranted;
       
       if (isGranted) {
         debugPrint('✅ [PermissionsService] Permission accordée pour les notifications');
@@ -35,15 +54,31 @@ class PermissionsService {
     try {
       debugPrint('🔍 [PermissionsService] Vérification des permissions...');
 
-      // 1. Vérifier la permission OneSignal
+      // 1. Vérifier la permission OneSignal (fonctionne sur toutes les plateformes)
       final oneSignalPermission = OneSignal.Notifications.permission;
       debugPrint('🔍 [PermissionsService] OneSignal permission: $oneSignalPermission');
 
-      // 2. Vérifier la permission système
-      final notificationPermission = await Permission.notification.status;
-      debugPrint('🔍 [PermissionsService] Permission système: $notificationPermission');
+      // 2. Vérifier la permission système selon la plateforme
+      bool systemPermissionGranted = true;
+      
+      if (kIsWeb || Platform.isLinux) {
+        // Sur Web et Linux, les notifications ne nécessitent pas de permission système
+        debugPrint('🔍 [PermissionsService] Plateforme Web/Linux - permission système automatique');
+        systemPermissionGranted = true;
+      } else if (Platform.isAndroid || Platform.isIOS) {
+        // Sur mobile, utiliser permission_handler
+        try {
+          final notificationPermission = await Permission.notification.status;
+          systemPermissionGranted = notificationPermission.isGranted;
+          debugPrint('🔍 [PermissionsService] Permission système: $notificationPermission');
+        } catch (e) {
+          debugPrint('⚠️ [PermissionsService] Permission handler non disponible: $e');
+          // Si permission_handler échoue, se baser uniquement sur OneSignal
+          systemPermissionGranted = true;
+        }
+      }
 
-      final isGranted = oneSignalPermission && notificationPermission.isGranted;
+      final isGranted = oneSignalPermission && systemPermissionGranted;
       
       debugPrint('🔍 [PermissionsService] Permissions accordées: $isGranted');
       return isGranted;

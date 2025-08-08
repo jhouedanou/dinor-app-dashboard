@@ -20,6 +20,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/navigation_service.dart';
+import '../../styles/shadows.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 // Components
@@ -177,13 +178,7 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
                   width: 1,
                 ),
               ),
-              boxShadow: [
-                BoxShadow(
-                  offset: Offset(0, -4),
-                  blurRadius: 20,
-                  color: Color.fromRGBO(0, 0, 0, 0.1),
-                ),
-              ],
+              boxShadow: AppShadows.softTop,
             ),
             child: SafeArea(
               child: Container(

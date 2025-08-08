@@ -66,10 +66,34 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   void _setupSections() {
     _profileSections = [
       {'key': 'favorites', 'label': 'Favoris', 'icon': LucideIcons.heart},
-      {'key': 'predictions', 'label': 'Pronostics', 'icon': LucideIcons.trendingUp},
+      // La section pronostics n'est affichée que s'il y a des tournois disponibles
+      if (_hasActiveTournaments())
+        {'key': 'predictions', 'label': 'Pronostics', 'icon': LucideIcons.trendingUp},
       {'key': 'settings', 'label': 'Paramètres', 'icon': LucideIcons.settings},
       {'key': 'legal', 'label': 'Légal', 'icon': LucideIcons.gavel},
     ];
+  }
+
+  /// Vérifie s'il y a des tournois actifs disponibles
+  bool _hasActiveTournaments() {
+    if (_tournaments.isEmpty) {
+      print('🎯 [ProfileScreen] Aucun tournoi trouvé - section pronostics cachée');
+      return false;
+    }
+    
+    // Vérifier s'il y a au moins un tournoi avec un statut actif
+    final activeTournaments = _tournaments.where((tournament) {
+      final status = tournament['status']?.toString().toLowerCase();
+      return status == 'active' || status == 'ongoing' || status == 'open';
+    }).toList();
+    
+    if (activeTournaments.isEmpty) {
+      print('🎯 [ProfileScreen] Aucun tournoi actif trouvé (${_tournaments.length} tournois au total) - section pronostics cachée');
+      return false;
+    }
+    
+    print('✅ [ProfileScreen] ${activeTournaments.length} tournois actifs trouvés - section pronostics affichée');
+    return true;
   }
 
   Future<void> _loadUserData() async {
@@ -107,6 +131,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         _predictionsLoading = false;
         _tournamentsLoading = false;
       });
+      
+      // Mettre à jour les sections après le chargement des tournois
+      _setupSections();
+      
+      // Si la section active était 'predictions' mais qu'il n'y a plus de tournois actifs,
+      // basculer vers la section 'favorites'
+      if (_activeSection == 'predictions' && !_hasActiveTournaments()) {
+        _activeSection = 'favorites';
+        print('🔄 [ProfileScreen] Section pronostics cachée - basculement vers favoris');
+      }
       print('✅ [ProfileScreen] Données chargées avec succès');
     } catch (e) {
       print('❌ [ProfileScreen] Erreur lors du chargement: $e');
@@ -116,6 +150,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         _predictionsLoading = false; // CORRECTION: s'assurer que loading est mis à false
         _tournamentsLoading = false;
       });
+      
+      // Mettre à jour les sections même en cas d'erreur
+      _setupSections();
+      
+      // Si la section active était 'predictions' mais qu'il n'y a plus de tournois actifs,
+      // basculer vers la section 'favorites'
+      if (_activeSection == 'predictions' && !_hasActiveTournaments()) {
+        _activeSection = 'favorites';
+        print('🔄 [ProfileScreen] Section pronostics cachée après erreur - basculement vers favoris');
+      }
     }
   }
 

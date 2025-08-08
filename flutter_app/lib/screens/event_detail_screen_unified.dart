@@ -22,6 +22,7 @@ import '../services/api_service.dart';
 import '../services/share_service.dart';
 import '../services/likes_service.dart';
 import '../composables/use_auth_handler.dart';
+import '../stores/header_state.dart';
 
 class EventDetailScreenUnified extends ConsumerStatefulWidget {
   final String id;
@@ -47,6 +48,7 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
     _loadEventDetails();
   }
 
+
   Future<void> _loadEventDetails() async {
     setState(() {
       _loading = true;
@@ -63,6 +65,13 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
           _event = data['data'];
           _loading = false;
         });
+        // Mettre à jour le sous-titre de l'en-tête avec le titre de l'événement
+        if (mounted && _event != null) {
+          final title = _event!['title']?.toString();
+          if (title != null && title.isNotEmpty) {
+            ref.read(headerSubtitleProvider.notifier).state = title;
+          }
+        }
         await _checkUserLike();
       } else {
         throw Exception(data['message'] ?? 'Erreur lors du chargement de l\'événement');
@@ -73,6 +82,16 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
         _loading = false;
       });
     }
+  }
+
+  @override
+  void deactivate() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.read(headerSubtitleProvider.notifier).state = null;
+      }
+    });
+    super.deactivate();
   }
 
   Future<void> _checkUserLike() async {

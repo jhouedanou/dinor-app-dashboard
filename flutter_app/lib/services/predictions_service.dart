@@ -82,18 +82,42 @@ class Match {
   });
 
   factory Match.fromJson(Map<String, dynamic> json) {
+    // Helper pour extraire le nom d'équipe (peut être un string ou un objet)
+    String extractTeamName(dynamic teamData) {
+      if (teamData == null) return '';
+      if (teamData is String) return teamData;
+      if (teamData is Map<String, dynamic>) {
+        return teamData['name']?.toString() ?? 
+               teamData['title']?.toString() ?? 
+               teamData['team_name']?.toString() ?? '';
+      }
+      return teamData.toString();
+    }
+
+    // Helper pour extraire le logo d'équipe
+    String? extractTeamLogo(dynamic teamData) {
+      if (teamData == null) return null;
+      if (teamData is String) return teamData;
+      if (teamData is Map<String, dynamic>) {
+        return teamData['logo']?.toString() ?? 
+               teamData['image']?.toString() ?? 
+               teamData['team_logo']?.toString();
+      }
+      return null;
+    }
+
     return Match(
       id: json['id']?.toString() ?? '',
       tournamentId: json['tournament_id']?.toString() ?? '',
-      homeTeam: json['home_team'] ?? '',
-      awayTeam: json['away_team'] ?? '',
-      homeTeamLogo: json['home_team_logo'],
-      awayTeamLogo: json['away_team_logo'],
-      matchDate: DateTime.tryParse(json['match_date'] ?? '') ?? DateTime.now(),
-      status: json['status'] ?? '',
-      homeScore: json['home_score'],
-      awayScore: json['away_score'],
-      canPredict: json['can_predict'] ?? false,
+      homeTeam: extractTeamName(json['home_team']),
+      awayTeam: extractTeamName(json['away_team']),
+      homeTeamLogo: extractTeamLogo(json['home_team']) ?? json['home_team_logo']?.toString(),
+      awayTeamLogo: extractTeamLogo(json['away_team']) ?? json['away_team_logo']?.toString(),
+      matchDate: DateTime.tryParse(json['match_date']?.toString() ?? '') ?? DateTime.now(),
+      status: json['status']?.toString() ?? '',
+      homeScore: json['home_score'] is int ? json['home_score'] : int.tryParse(json['home_score']?.toString() ?? ''),
+      awayScore: json['away_score'] is int ? json['away_score'] : int.tryParse(json['away_score']?.toString() ?? ''),
+      canPredict: json['can_predict'] == true || json['can_predict']?.toString().toLowerCase() == 'true',
     );
   }
 }
@@ -258,16 +282,36 @@ class PredictionsService extends StateNotifier<PredictionsState> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        print('📊 [PredictionsService] Réponse API matchs: $data');
+        
         final matchesData = data['data'] ?? [];
+        print('📋 [PredictionsService] Données matchs brutes: $matchesData');
 
-        final matches = (matchesData as List)
-            .where((item) => item is Map<String, dynamic>) // Vérification de type
-            .map((json) => Match.fromJson(json as Map<String, dynamic>))
-            .toList();
+        if (matchesData is! List) {
+          throw Exception('Les données de matchs ne sont pas une liste: ${matchesData.runtimeType}');
+        }
+
+        final matches = <Match>[];
+        for (int i = 0; i < matchesData.length; i++) {
+          final matchData = matchesData[i];
+          try {
+            if (matchData is Map<String, dynamic>) {
+              print('🔍 [PredictionsService] Traitement match $i: $matchData');
+              final match = Match.fromJson(matchData);
+              matches.add(match);
+              print('✅ [PredictionsService] Match $i traité: ${match.homeTeam} vs ${match.awayTeam}');
+            } else {
+              print('⚠️ [PredictionsService] Match $i ignoré (type: ${matchData.runtimeType}): $matchData');
+            }
+          } catch (e) {
+            print('❌ [PredictionsService] Erreur traitement match $i: $e');
+            print('📋 [PredictionsService] Données du match problématique: $matchData');
+          }
+        }
 
         state = state.copyWith(matches: matches);
 
-        print('✅ [PredictionsService] ${matches.length} matchs chargés');
+        print('✅ [PredictionsService] ${matches.length} matchs chargés sur ${matchesData.length} reçus');
       } else {
         throw Exception('HTTP ${response.statusCode}');
       }

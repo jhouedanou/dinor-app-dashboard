@@ -28,6 +28,7 @@ import '../composables/use_comments.dart';
 import '../composables/use_auth_handler.dart';
 import '../services/share_service.dart';
 import '../services/likes_service.dart';
+import '../stores/header_state.dart';
 
 class RecipeDetailScreenUnified extends ConsumerStatefulWidget {
   final String id;
@@ -62,6 +63,7 @@ class _RecipeDetailScreenUnifiedState extends ConsumerState<RecipeDetailScreenUn
     _loadRecipe();
   }
 
+
   Future<void> _loadRecipe({bool forceRefresh = false}) async {
     try {
       setState(() => _loading = true);
@@ -78,6 +80,16 @@ class _RecipeDetailScreenUnifiedState extends ConsumerState<RecipeDetailScreenUn
           _loading = false;
           _isOffline = result['offline'] ?? false;
         });
+
+        // Mettre à jour le sous-titre de l'en-tête avec le titre de la recette
+        if (mounted && _recipe != null) {
+          final title = _recipe!['title']?.toString();
+          if (title != null && title.isNotEmpty) {
+            print('📝 [RecipeDetail] Définition du titre: $title');
+            ref.read(headerSubtitleProvider.notifier).state = title;
+            print('📝 [RecipeDetail] Titre défini avec succès');
+          }
+        }
         
         await _checkUserLike();
         
@@ -96,6 +108,18 @@ class _RecipeDetailScreenUnifiedState extends ConsumerState<RecipeDetailScreenUn
         _loading = false;
       });
     }
+  }
+
+  @override
+  void deactivate() {
+    // Nettoyer le sous-titre si on quitte l'écran
+    // Utiliser addPostFrameCallback pour éviter d'émettre pendant un cycle de build/navigation
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.read(headerSubtitleProvider.notifier).state = null;
+      }
+    });
+    super.deactivate();
   }
 
   Future<void> _checkUserLike() async {

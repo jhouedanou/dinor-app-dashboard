@@ -101,15 +101,15 @@ class _ImageLightboxState extends State<ImageLightbox> {
               right: 0,
               child: Container(
                 padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black.withOpacity(0.7),
-                      Colors.transparent,
-                    ],
-                  ),
+                decoration: const BoxDecoration(
+                  color: Color.fromRGBO(255, 255, 255, 0.9),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color(0x14000000),
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -124,7 +124,7 @@ class _ImageLightboxState extends State<ImageLightbox> {
                               fontFamily: 'OpenSans',
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
-                              color: Colors.white,
+                              color: Color(0xFF2D3748),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -134,7 +134,7 @@ class _ImageLightboxState extends State<ImageLightbox> {
                             style: const TextStyle(
                               fontFamily: 'Roboto',
                               fontSize: 14,
-                              color: Colors.white70,
+                              color: Color(0xFF718096),
                             ),
                           ),
                         ],
@@ -144,7 +144,7 @@ class _ImageLightboxState extends State<ImageLightbox> {
                       onPressed: widget.onClose,
                       icon: const Icon(
                         LucideIcons.x,
-                        color: Colors.white,
+                        color: Color(0xFF2D3748),
                         size: 24,
                       ),
                     ),
@@ -172,12 +172,19 @@ class _ImageLightboxState extends State<ImageLightbox> {
                       icon: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.5),
+                          color: Colors.white.withOpacity(0.9),
                           borderRadius: BorderRadius.circular(20),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x14000000),
+                              blurRadius: 6,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
                         ),
                         child: const Icon(
                           LucideIcons.chevronLeft,
-                          color: Colors.white,
+                          color: Color(0xFF2D3748),
                           size: 24,
                         ),
                       ),
@@ -202,12 +209,19 @@ class _ImageLightboxState extends State<ImageLightbox> {
                       icon: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.5),
+                          color: Colors.white.withOpacity(0.9),
                           borderRadius: BorderRadius.circular(20),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x14000000),
+                              blurRadius: 6,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
                         ),
                         child: const Icon(
                           LucideIcons.chevronRight,
-                          color: Colors.white,
+                          color: Color(0xFF2D3748),
                           size: 24,
                         ),
                       ),
@@ -224,29 +238,30 @@ class _ImageLightboxState extends State<ImageLightbox> {
                 right: 0,
                 child: Container(
                   padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.7),
-                      ],
-                    ),
+                  color: Colors.white.withOpacity(0.9),
+                  decoration: const BoxDecoration(
+                    color: Color.fromRGBO(255, 255, 255, 0.9),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color(0x14000000),
+                        blurRadius: 6,
+                        offset: Offset(0, -2),
+                      ),
+                    ],
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: widget.images.asMap().entries.map((entry) {
                       final index = entry.key;
                       return Container(
-                        width: 8,
+                        width: index == _currentIndex ? 16 : 8,
                         height: 8,
                         margin: const EdgeInsets.symmetric(horizontal: 4),
                         decoration: BoxDecoration(
-                          shape: BoxShape.circle,
+                          borderRadius: BorderRadius.circular(4),
                           color: index == _currentIndex
-                              ? Colors.white
-                              : Colors.white.withOpacity(0.3),
+                              ? const Color(0xFF2D3748)
+                              : const Color(0xFFE2E8F0),
                         ),
                       );
                     }).toList(),

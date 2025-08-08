@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/navigation_service.dart';
+import '../../styles/shadows.dart';
 
 class SimpleBottomNavigation extends StatefulWidget {
   const SimpleBottomNavigation({Key? key}) : super(key: key);
@@ -151,13 +152,7 @@ class _SimpleBottomNavigationState extends State<SimpleBottomNavigation> {
       height: 80 + MediaQuery.of(context).padding.bottom,
       decoration: const BoxDecoration(
         color: Color(0xFFF4D03F), // Fond doré Dinor
-        boxShadow: [
-          BoxShadow(
-            offset: Offset(0, -2),
-            blurRadius: 4,
-            color: Color.fromRGBO(0, 0, 0, 0.1),
-          ),
-        ],
+        boxShadow: AppShadows.softTop,
       ),
       child: SafeArea(
         child: Row(

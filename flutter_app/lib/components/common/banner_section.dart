@@ -11,6 +11,7 @@
 import 'package:flutter/material.dart';
 
 import '../../services/image_service.dart';
+import '../../styles/shadows.dart';
 
 class BannerSection extends StatelessWidget {
   final String type;
@@ -47,13 +48,7 @@ class BannerSection extends StatelessWidget {
       margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: AppShadows.soft,
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),

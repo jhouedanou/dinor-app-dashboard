@@ -62,6 +62,10 @@
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Dinor a besoin d'accéder au microphone pour enregistrer des vidéos de vos créations culinaires.</string>
 	
+	<!-- Permissions pour les notifications push -->
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>Dinor souhaite vous envoyer des notifications pour vous tenir informé des nouvelles recettes, astuces culinaires et événements spéciaux.</string>
+	
 	<!-- Configuration réseau : accès autorisé à TOUS les domaines -->
 	<key>NSAppTransportSecurity</key>
 	<dict>

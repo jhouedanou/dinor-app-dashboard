@@ -25,6 +25,7 @@ import '../screens/event_detail_screen_unified.dart';
 
 class NavigationService {
   static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  static final RouteObserver<ModalRoute> routeObserver = RouteObserver<ModalRoute>();
   
   // Getter pour le contexte sûr
   static BuildContext? get context => navigatorKey.currentContext;
@@ -66,6 +67,7 @@ class NavigationService {
   }
   
   static void _notifyRouteChange(String route) {
+    print('🧭 [NavigationService] Route change: $_currentRoute -> $route');
     _currentRoute = route;
     for (var listener in _routeChangeListeners) {
       listener(route);

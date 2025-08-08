@@ -24,6 +24,7 @@ import '../services/api_service.dart';
 import '../services/share_service.dart';
 import '../services/likes_service.dart';
 import '../composables/use_auth_handler.dart';
+import '../stores/header_state.dart';
 
 class TipDetailScreenUnified extends ConsumerStatefulWidget {
   final String id;
@@ -49,6 +50,7 @@ class _TipDetailScreenUnifiedState extends ConsumerState<TipDetailScreenUnified>
     _loadTip();
   }
 
+
   Future<void> _loadTip({bool forceRefresh = false}) async {
     try {
       setState(() => _loading = true);
@@ -65,6 +67,14 @@ class _TipDetailScreenUnifiedState extends ConsumerState<TipDetailScreenUnified>
         });
         
         await _checkUserLike();
+
+        // Mettre à jour le sous-titre de l'en-tête avec le titre de l'astuce
+        if (mounted && _tip != null) {
+          final title = _tip!['title']?.toString();
+          if (title != null && title.isNotEmpty) {
+            ref.read(headerSubtitleProvider.notifier).state = title;
+          }
+        }
       } else {
         setState(() {
           _error = data['message'] ?? 'Erreur lors du chargement';
@@ -77,6 +87,17 @@ class _TipDetailScreenUnifiedState extends ConsumerState<TipDetailScreenUnified>
         _loading = false;
       });
     }
+  }
+
+  @override
+  void deactivate() {
+    // Nettoyage du sous-titre en sortie d'écran (post frame pour éviter les conflits de build)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.read(headerSubtitleProvider.notifier).state = null;
+      }
+    });
+    super.deactivate();
   }
 
   Future<void> _checkUserLike() async {

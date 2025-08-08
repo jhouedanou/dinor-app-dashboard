@@ -332,7 +332,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
   String _getShortDescription(String? text) {
     if (text == null || text.isEmpty) return '';
     final cleanText = text.replaceAll(RegExp(r'<[^>]*>'), '');
-    return cleanText.length > 80 ? '${cleanText.substring(0, 80)}...' : cleanText;
+    return cleanText.length > 60 ? '${cleanText.substring(0, 60)}...' : cleanText;
   }
 
   String _getDifficultyLabel(String? difficulty) {
@@ -421,7 +421,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
 
                     const SizedBox(height: 32),
 
-                    // Recettes - 4 dernières - ContentCarousel identique
+                    // Événements - d'abord
+                    ContentCarousel(
+                      title: 'Derniers Événements',
+                      items: _latestEvents,
+                      loading: _loadingEvents,
+                      error: _errorEvents,
+                      contentType: 'events',
+                      viewAllLink: '/events',
+                      onItemClick: _handleEventClick,
+                      itemBuilder: _buildEventCard,
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // Recettes
                     ContentCarousel(
                       title: 'Dernières Recettes',
                       items: _latestRecipes,
@@ -435,7 +449,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
 
                     const SizedBox(height: 32),
 
-                    // Astuces - 4 dernières - ContentCarousel identique
+                    // Astuces
                     ContentCarousel(
                       title: 'Dernières Astuces',
                       items: _latestTips,
@@ -446,22 +460,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
                       onItemClick: _handleTipClick,
                       itemBuilder: _buildTipCard,
                     ),
-
-                    const SizedBox(height: 32),
-
-                    // Événements - 4 derniers - ContentCarousel identique
-                    ContentCarousel(
-                      title: 'Derniers Événements',
-                      items: _latestEvents,
-                      loading: _loadingEvents,
-                      error: _errorEvents,
-                      contentType: 'events',
-                      viewAllLink: '/events',
-                      onItemClick: _handleEventClick,
-                      itemBuilder: _buildEventCard,
-                    ),
-
-                    const SizedBox(height: 32),
 
                     // Dinor TV - 4 dernières vidéos - ContentCarousel identique
                     Container(

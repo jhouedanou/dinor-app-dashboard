@@ -131,13 +131,13 @@ class _ImageGalleryCarouselState extends State<ImageGalleryCarousel> {
                           margin: const EdgeInsets.symmetric(horizontal: 4),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
+                             boxShadow: const [
+                               BoxShadow(
+                                 color: Color(0x14000000),
+                                 blurRadius: 6,
+                                 offset: Offset(0, 2),
+                               ),
+                             ],
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(12),
@@ -186,12 +186,19 @@ class _ImageGalleryCarouselState extends State<ImageGalleryCarousel> {
                                   child: Container(
                                     padding: const EdgeInsets.all(6),
                                     decoration: BoxDecoration(
-                                      color: Colors.black.withOpacity(0.6),
+                                      color: Colors.white.withOpacity(0.9),
                                       borderRadius: BorderRadius.circular(20),
+                                      boxShadow: const [
+                                        BoxShadow(
+                                          color: Color(0x14000000),
+                                          blurRadius: 6,
+                                          offset: Offset(0, 2),
+                                        ),
+                                      ],
                                     ),
                                     child: const Icon(
                                       LucideIcons.zoomIn,
-                                      color: Colors.white,
+                                      color: Color(0xFF2D3748),
                                       size: 16,
                                     ),
                                   ),
@@ -224,12 +231,19 @@ class _ImageGalleryCarouselState extends State<ImageGalleryCarousel> {
                           child: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.6),
+                              color: Colors.white.withOpacity(0.9),
                               borderRadius: BorderRadius.circular(20),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x14000000),
+                                  blurRadius: 6,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
                             ),
                             child: Icon(
                               LucideIcons.chevronLeft,
-                              color: _currentIndex > 0 ? Colors.white : Colors.white.withOpacity(0.5),
+                              color: _currentIndex > 0 ? const Color(0xFF2D3748) : const Color(0xFF2D3748).withOpacity(0.4),
                               size: 20,
                             ),
                           ),
@@ -255,12 +269,19 @@ class _ImageGalleryCarouselState extends State<ImageGalleryCarousel> {
                           child: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.6),
+                              color: Colors.white.withOpacity(0.9),
                               borderRadius: BorderRadius.circular(20),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x14000000),
+                                  blurRadius: 6,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
                             ),
                             child: Icon(
                               LucideIcons.chevronRight,
-                              color: _currentIndex < widget.images.length - 1 ? Colors.white : Colors.white.withOpacity(0.5),
+                              color: _currentIndex < widget.images.length - 1 ? const Color(0xFF2D3748) : const Color(0xFF2D3748).withOpacity(0.4),
                               size: 20,
                             ),
                           ),
@@ -289,13 +310,13 @@ class _ImageGalleryCarouselState extends State<ImageGalleryCarousel> {
                         );
                       },
                       child: Container(
-                        width: _currentIndex == index ? 24 : 8,
+                        width: _currentIndex == index ? 16 : 8,
                         height: 8,
                         margin: const EdgeInsets.symmetric(horizontal: 4),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(4),
                           color: _currentIndex == index
-                              ? const Color(0xFFE53E3E)
+                              ? const Color(0xFF2D3748)
                               : const Color(0xFFE2E8F0),
                         ),
                       ),

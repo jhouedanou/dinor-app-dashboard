@@ -23,14 +23,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'services/navigation_service.dart';
 import 'services/modal_service.dart';
 import 'services/offline_service.dart';
-
 import 'services/app_initialization_service.dart';
+
+// Styles
+import 'styles/text_styles.dart';
 
 // Components (équivalent des imports Vue)
 import 'components/common/loading_screen.dart';
 import 'components/app_header.dart';
 import 'components/navigation/simple_bottom_navigation.dart';
 import 'components/common/install_prompt.dart';
+import 'stores/notifications_store.dart';
 
 class DinorApp extends ConsumerStatefulWidget {
   const DinorApp({Key? key}) : super(key: key);
@@ -89,6 +92,15 @@ class _DinorAppState extends ConsumerState<DinorApp> {
     
     // Synchroniser le cache en arrière-plan
     _syncCacheInBackground();
+
+    // Rafraîchir le résumé des notifications au démarrage
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        try {
+          ref.read(notificationsSummaryProvider.notifier).refresh();
+        } catch (_) {}
+      }
+    });
   }
 
   Future<void> _syncCacheInBackground() async {
@@ -263,27 +275,30 @@ class _DinorAppState extends ConsumerState<DinorApp> {
       navigatorKey: NavigationService.navigatorKey,
       onGenerateRoute: NavigationService.generateRoute,
       initialRoute: NavigationService.home,
+      navigatorObservers: [NavigationService.routeObserver],
       
       // Thème identique aux styles CSS App.vue
       theme: ThemeData(
         useMaterial3: true,
-        fontFamily: 'Roboto',
+        fontFamily: 'Roboto', // Utilise Roboto système sur Android, fallback sur iOS
         
         // Couleurs identiques
         scaffoldBackgroundColor: const Color(0xFFF5F5F5), // background: #F5F5F5
         
-        // Typographie identique aux styles CSS
-        textTheme: const TextTheme(
-          headlineLarge: TextStyle(
-            fontFamily: 'OpenSans',
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF2D3748),
-            height: 1.3,
-          ),
-          bodyLarge: TextStyle(
+        // Force Roboto sur toutes les plateformes avec TextTheme uniforme
+        textTheme: AppTextStyles.createTextTheme(),
+        
+        // AppBar theme pour iOS consistency
+        appBarTheme: const AppBarTheme(
+          systemOverlayStyle: null, // Force default system UI
+          elevation: 0,
+          backgroundColor: Color(0xFFE53E3E),
+          foregroundColor: Colors.white,
+          titleTextStyle: TextStyle(
             fontFamily: 'Roboto',
-            color: Color(0xFF4A5568),
-            height: 1.5,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
           ),
         ),
         
@@ -297,7 +312,13 @@ class _DinorAppState extends ConsumerState<DinorApp> {
       ),
       
       builder: (context, child) {
-        return Stack(
+        final mediaQueryData = MediaQuery.maybeOf(context);
+        final baseMediaQuery = mediaQueryData ?? const MediaQueryData();
+        return MediaQuery(
+          data: baseMediaQuery.copyWith(
+            textScaler: const TextScaler.linear(1.0), // Nouvelle API pour fixer la taille du texte
+          ),
+          child: Stack(
           children: [
             // App principale (masquée pendant le loading) - v-if="!showLoading"
             if (!_showLoading)
@@ -358,6 +379,7 @@ class _DinorAppState extends ConsumerState<DinorApp> {
             // Auth Modal - v-model="showAuthModal"
             // Retiré du Stack pour éviter les problèmes de contexte de navigation
           ],
+          ),
         );
       },
     );

@@ -3,6 +3,7 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../services/image_service.dart';
+import '../../styles/shadows.dart';
 
 class ContentItemCard extends StatelessWidget {
   final String contentType;
@@ -27,13 +28,7 @@ class ContentItemCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          boxShadow: AppShadows.soft,
         ),
         child: compact ? _buildCompactCard() : _buildFullCard(),
       ),
