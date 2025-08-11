@@ -31,8 +31,10 @@ import 'styles/text_styles.dart';
 // Components (équivalent des imports Vue)
 import 'components/common/loading_screen.dart';
 import 'components/app_header.dart';
-import 'components/navigation/simple_bottom_navigation.dart';
+import 'components/navigation/bottom_navigation.dart';
 import 'components/common/install_prompt.dart';
+import 'components/common/app_tutorial.dart';
+import 'services/tutorial_service.dart';
 import 'stores/notifications_store.dart';
 
 class DinorApp extends ConsumerStatefulWidget {
@@ -99,8 +101,24 @@ class _DinorAppState extends ConsumerState<DinorApp> {
         try {
           ref.read(notificationsSummaryProvider.notifier).refresh();
         } catch (_) {}
+        
+        // Afficher le tutoriel si nécessaire après un petit délai
+        Future.delayed(const Duration(milliseconds: 1000), () {
+          if (mounted) {
+            _showTutorialIfNeeded();
+          }
+        });
       }
     });
+  }
+
+  // Afficher le tutoriel de première utilisation
+  void _showTutorialIfNeeded() async {
+    try {
+      await TutorialService.showWelcomeTutorialIfNeeded(context);
+    } catch (e) {
+      print('❌ [App] Erreur affichage tutoriel: $e');
+    }
   }
 
   Future<void> _syncCacheInBackground() async {
@@ -358,8 +376,8 @@ class _DinorAppState extends ConsumerState<DinorApp> {
                   ],
                 ),
                 
-                // Bottom Navigation - v-if="showBottomNav"
-                bottomNavigationBar: _showBottomNav ? const SimpleBottomNavigation() : null,
+                // Bottom Navigation - v-if="showBottomNav" (dynamic with API pages)
+                bottomNavigationBar: _showBottomNav ? const BottomNavigation() : null,
                 
                 // PWA Install Prompt - InstallPrompt
                 floatingActionButton: const InstallPrompt(),

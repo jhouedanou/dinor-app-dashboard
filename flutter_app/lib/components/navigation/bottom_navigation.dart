@@ -22,13 +22,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/navigation_service.dart';
 import '../../styles/shadows.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // Components
 import '../common/auth_modal.dart';
 
-
 // Composables et stores
 import '../../composables/use_auth_handler.dart';
+import '../../composables/use_pages.dart';
+import '../../services/tutorial_service.dart';
 
 
 class BottomNavigation extends ConsumerStatefulWidget {
@@ -41,6 +44,29 @@ class BottomNavigation extends ConsumerStatefulWidget {
 class _BottomNavigationState extends ConsumerState<BottomNavigation> {
   bool _showAuthModal = false;
   String _authModalMessage = '';
+  bool _showScrollTooltip = true;
+
+  @override
+  void initState() {
+    super.initState();
+    // Charger les pages au démarrage
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(usePagesProvider.notifier).loadPages();
+    });
+  }
+
+  // Surveiller les changements de pages pour afficher le tutoriel si nécessaire
+  void _checkForNavigationTutorial(List<PageModel> pages) {
+    final totalItems = _menuItems.length + pages.length;
+    if (totalItems > 6) {
+      // Attendre un peu que l'interface soit stable
+      Future.delayed(const Duration(milliseconds: 2000), () {
+        if (mounted) {
+          TutorialService.showNavigationTutorialIfNeeded(context, totalItems);
+        }
+      });
+    }
+  }
 
   // Menu statique identique à BottomNavigation.vue
   final List<Map<String, dynamic>> _menuItems = [
@@ -113,13 +139,17 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
         break;
 
       case 'web_embed':
-        // Charger la dernière page depuis le système Pages dans WebEmbed
-        NavigationService.pushNamed('/web-embed');
+        // Ouvrir la page dans une webview intégrée
+        if (item['url'] != null) {
+          _openPageInWebView(item['url'], item['label']);
+        }
         break;
 
       case 'external_link':
-        // Ouvrir dans un nouvel onglet (équivalent window.open())
-        // En Flutter mobile, on utilise url_launcher
+        // Ouvrir dans un navigateur externe
+        if (item['url'] != null) {
+          _launchURL(item['url']);
+        }
         break;
 
       default:
@@ -152,6 +182,36 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
     return false;
   }
 
+  // Ouvrir une page dans une WebView intégrée
+  void _openPageInWebView(String url, String title) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          appBar: AppBar(
+            title: Text(title),
+            backgroundColor: const Color(0xFFF4D03F),
+            foregroundColor: Colors.black,
+          ),
+          body: WebViewWidget(
+            controller: WebViewController()
+              ..setJavaScriptMode(JavaScriptMode.unrestricted)
+              ..loadRequest(Uri.parse(url)),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Ouvrir une URL dans le navigateur externe
+  Future<void> _launchURL(String url) async {
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      print('❌ Impossible d\'ouvrir l\'URL: $url');
+    }
+  }
+
   // Gestion de l'authentification réussie
   void _onAuthSuccess() {
     setState(() => _showAuthModal = false);
@@ -161,17 +221,39 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
 
   @override
   Widget build(BuildContext context) {
+    final pagesState = ref.watch(usePagesProvider);
+    final navigationPages = ref.watch(navigationPagesProvider);
+    
+    // Vérifier si on doit afficher le tutoriel de navigation
+    if (navigationPages.isNotEmpty) {
+      _checkForNavigationTutorial(navigationPages);
+    }
+    
+    // Combiner les éléments de menu statiques avec les pages dynamiques
+    final allMenuItems = [
+      ..._menuItems,
+      // Ajouter les pages depuis le dashboard Filament
+      ...navigationPages.map((page) => {
+        'name': 'page_${page.id}',
+        'path': '/page/${page.id}',
+        'icon': LucideIcons.globe,
+        'label': page.title,
+        'action_type': page.isExternal ? 'external_link' : 'web_embed',
+        'url': page.url,
+      }).toList(),
+    ];
+
     return Stack(
       children: [
-        // Bottom Navigation Bar - REPRODUCTION EXACTE du CSS
+        // Bottom Navigation Bar avec support du défilement horizontal
         Positioned(
           bottom: 0,
           left: 0,
           right: 0,
           child: Container(
-            height: 80 + MediaQuery.of(context).padding.bottom, // Hauteur exacte + safe area
+            height: 80 + MediaQuery.of(context).padding.bottom,
             decoration: const BoxDecoration(
-              color: Color(0xFFF4D03F), // Fond doré identique
+              color: Color(0xFFF4D03F),
               border: Border(
                 top: BorderSide(
                   color: Color.fromRGBO(0, 0, 0, 0.1),
@@ -182,19 +264,70 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
             ),
             child: SafeArea(
               child: Container(
-                height: 80, // Hauteur fixe de la navigation
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround, // justify-content: space-around
-                  children: _menuItems.map((item) => _buildNavItem(item)).toList(),
+                height: 80,
+                child: Stack(
+                  children: [
+                    // Navigation scrollable
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Row(
+                        children: allMenuItems.map((item) => 
+                          Container(
+                            width: allMenuItems.length > 6 ? 70 : null,
+                            child: _buildNavItem(item, isCompact: allMenuItems.length > 6),
+                          )
+                        ).toList(),
+                      ),
+                    ),
+                    
+                    // Tooltip pour indiquer le défilement (si overflow)
+                    if (allMenuItems.length > 6 && _showScrollTooltip)
+                      Positioned(
+                        right: 8,
+                        top: 8,
+                        child: GestureDetector(
+                          onTap: () => setState(() => _showScrollTooltip = false),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.black87,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.swap_horiz,
+                                  size: 12,
+                                  color: Colors.white,
+                                ),
+                                const SizedBox(width: 4),
+                                const Text(
+                                  'Faites défiler →',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                const Icon(
+                                  LucideIcons.x,
+                                  size: 10,
+                                  color: Colors.white70,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),
           ),
         ),
-
-        // Auth Modal - v-model="showAuthModal"
-        // Retiré du Stack pour éviter les problèmes de contexte de navigation
       ],
     );
   }
@@ -229,66 +362,67 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
   }
 
   // Construction d'un item de navigation - STYLES CSS IDENTIQUES
-  Widget _buildNavItem(Map<String, dynamic> item) {
+  Widget _buildNavItem(Map<String, dynamic> item, {bool isCompact = false}) {
     final isActive = _isActive(item);
 
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => _handleItemClick(item),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-          decoration: BoxDecoration(
-            // État hover et actif
-            color: isActive
-                ? const Color.fromRGBO(255, 107, 53, 0.1) // rgba(255, 107, 53, 0.1)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(16), // border-radius: 16px
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Icône - 24px identique
+    return GestureDetector(
+      onTap: () => _handleItemClick(item),
+      child: Container(
+        width: isCompact ? 70 : null,
+        padding: EdgeInsets.symmetric(
+          vertical: 8, 
+          horizontal: isCompact ? 2 : 4,
+        ),
+        decoration: BoxDecoration(
+          color: isActive
+              ? const Color.fromRGBO(255, 107, 53, 0.1)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Icône - taille adaptée selon le mode
+            Container(
+              margin: const EdgeInsets.only(bottom: 4),
+              child: Icon(
+                item['icon'],
+                size: isCompact ? 18 : 24, // Icônes plus petites en mode compact
+                color: isActive
+                    ? const Color(0xFFFF6B35)
+                    : const Color.fromRGBO(0, 0, 0, 0.7),
+              ),
+            ),
+
+            // Label - taille adaptée selon le mode
+            Text(
+              item['label'],
+              style: TextStyle(
+                fontFamily: 'Roboto',
+                fontSize: isCompact ? 9 : 12, // Texte plus petit en mode compact
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                color: isActive
+                    ? const Color(0xFFFF6B35)
+                    : const Color.fromRGBO(0, 0, 0, 0.7),
+                height: 1.2,
+              ),
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+
+            // Soulignement orange pour l'item actif
+            if (isActive)
               Container(
-                margin: const EdgeInsets.only(bottom: 4), // margin-bottom: 4px
-                child: Icon(
-                  item['icon'],
-                  size: 24, // Taille exacte
-                  color: isActive
-                      ? const Color(0xFFFF6B35) // Orange accent pour l'item actif
-                      : const Color.fromRGBO(0, 0, 0, 0.7), // Texte sombre sur fond doré
+                margin: const EdgeInsets.only(top: 4),
+                width: isCompact ? 16 : 24, // Soulignement plus petit en mode compact
+                height: 2,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF6B35),
+                  borderRadius: BorderRadius.circular(1),
                 ),
               ),
-
-              // Label - Police Roboto identique
-              Text(
-                item['label'],
-                style: TextStyle(
-                  fontFamily: 'Roboto', // Police Roboto pour les textes
-                  fontSize: 12, // font-size: 12px
-                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w500, // font-weight
-                  color: isActive
-                      ? const Color(0xFFFF6B35) // Orange accent pour l'item actif
-                      : const Color.fromRGBO(0, 0, 0, 0.7), // Texte sombre
-                  height: 1.2, // line-height: 1.2
-                ),
-                textAlign: TextAlign.center,
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-              ),
-
-              // Soulignement orange pour l'item actif - ::after CSS
-              if (isActive)
-                Container(
-                  margin: const EdgeInsets.only(top: 4), // Équivalent bottom: 4px
-                  width: 24, // width: 24px
-                  height: 2, // height: 2px
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFF6B35), // background: #FF6B35
-                    borderRadius: BorderRadius.circular(1), // border-radius: 1px
-                  ),
-                ),
-            ],
-          ),
+          ],
         ),
       ),
     );

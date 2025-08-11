@@ -381,6 +381,15 @@ class ApiService {
     return await get('/recipes/categories');
   }
 
+  // Méthodes pour les pages
+  Future<Map<String, dynamic>> getPages() async {
+    return await get('/pages');
+  }
+
+  Future<Map<String, dynamic>> getMenuPages() async {
+    return await get('/pages/menu');
+  }
+
   // Méthode pour vider le cache
   void clearCache() {
     // En Flutter, nous n'avons pas besoin d'implémenter un cache complexe
