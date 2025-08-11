@@ -329,6 +329,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
         elevation: 1,
+        toolbarHeight: 56,
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),

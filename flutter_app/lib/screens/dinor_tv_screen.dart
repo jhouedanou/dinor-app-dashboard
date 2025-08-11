@@ -191,6 +191,7 @@ class _DinorTVScreenState extends ConsumerState<DinorTVScreen> with AutomaticKee
         ),
         backgroundColor: Colors.white,
         elevation: 2,
+        toolbarHeight: 56,
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3748)),

@@ -29,6 +29,7 @@ class _SimpleRecipesScreenState extends State<SimpleRecipesScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
+        toolbarHeight: 56,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3748)),
           onPressed: () => NavigationService.pop(),

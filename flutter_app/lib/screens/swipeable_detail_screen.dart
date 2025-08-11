@@ -288,6 +288,7 @@ class _SwipeableDetailScreenState extends ConsumerState<SwipeableDetailScreen>
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        toolbarHeight: 56,
         leading: IconButton(
           icon: const Icon(LucideIcons.arrowLeft),
           onPressed: () => Navigator.of(context).pop(),

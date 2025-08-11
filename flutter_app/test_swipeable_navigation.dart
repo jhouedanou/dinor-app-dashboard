@@ -144,6 +144,7 @@ class _TestSwipeableNavigationScreenState extends ConsumerState<TestSwipeableNav
       appBar: AppBar(
         title: const Text('Test Navigation Swipeable'),
         backgroundColor: Colors.orange,
+        toolbarHeight: 56,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),

@@ -49,6 +49,7 @@ class _TestAnalyticsScreenState extends State<TestAnalyticsScreen> with Analytic
       appBar: AppBar(
         title: const Text('Test Firebase Analytics'),
         backgroundColor: Colors.orange,
+        toolbarHeight: 56,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),

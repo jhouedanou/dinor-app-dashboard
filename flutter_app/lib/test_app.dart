@@ -24,6 +24,7 @@ class TestHomePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Test Dinor App'),
+        toolbarHeight: 56,
       ),
       body: Center(
         child: Column(

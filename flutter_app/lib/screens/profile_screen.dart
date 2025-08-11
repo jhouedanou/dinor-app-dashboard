@@ -181,6 +181,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
             backgroundColor: const Color(0xFFE53E3E),
             elevation: 0,
+            toolbarHeight: 56,
           ),
           body: _isLoading
               ? const Center(child: CircularProgressIndicator())

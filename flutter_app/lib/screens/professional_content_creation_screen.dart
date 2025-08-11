@@ -68,6 +68,7 @@ class _ProfessionalContentCreationScreenState extends ConsumerState<Professional
           title: const Text('Création de contenu'),
           backgroundColor: Colors.green,
           foregroundColor: Colors.white,
+          toolbarHeight: 56,
         ),
         body: Center(
           child: Column(
@@ -102,6 +103,7 @@ class _ProfessionalContentCreationScreenState extends ConsumerState<Professional
           title: const Text('Création de contenu'),
           backgroundColor: Colors.green,
           foregroundColor: Colors.white,
+          toolbarHeight: 56,
         ),
         body: Center(
           child: Column(
@@ -156,6 +158,7 @@ class _ProfessionalContentCreationScreenState extends ConsumerState<Professional
         title: const Text('Créer du contenu'),
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
+        toolbarHeight: 56,
         actions: [
           TextButton(
             onPressed: _isLoading ? null : _submitContent,

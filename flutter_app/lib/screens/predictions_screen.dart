@@ -77,6 +77,7 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen>
             ),
             backgroundColor: const Color(0xFFE53E3E),
             elevation: 0,
+            toolbarHeight: 56,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.white),
               onPressed: () => NavigationService.pop(),

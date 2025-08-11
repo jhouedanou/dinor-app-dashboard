@@ -88,6 +88,7 @@ Vérifiez:
       appBar: AppBar(
         title: const Text('Debug - Pages API'),
         backgroundColor: const Color(0xFFF4D03F),
+        toolbarHeight: 56,
         actions: [
           IconButton(
             onPressed: () {

@@ -75,6 +75,7 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
             ),
             backgroundColor: const Color(0xFFE53E3E),
             elevation: 0,
+            toolbarHeight: 56,
           ),
           body: _buildBody(authState, favoritesState),
         ),

@@ -536,6 +536,7 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
         title: const Text('Erreur'),
         backgroundColor: Colors.white,
         elevation: 0,
+        toolbarHeight: 56,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3748)),
           onPressed: () => NavigationService.pop(),
