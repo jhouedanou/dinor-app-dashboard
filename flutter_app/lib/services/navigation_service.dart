@@ -356,7 +356,6 @@ class NavigationService {
               title: Text(title ?? 'Page'),
               backgroundColor: const Color(0xFFF4D03F),
               foregroundColor: Colors.black,
-              toolbarHeight: 56,
             ),
             body: WebViewWidget(
               controller: WebViewController()
