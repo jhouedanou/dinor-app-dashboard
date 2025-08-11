@@ -6,6 +6,7 @@ import '../services/navigation_service.dart';
 import '../services/cache_service.dart';
 import '../services/offline_service.dart';
 import '../services/image_service.dart';
+import '../services/tutorial_service.dart';
 import '../components/app_header.dart';
 import '../components/common/home_video_modal.dart';
 import 'cache_management_screen.dart';
@@ -56,6 +57,13 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
   void initState() {
     super.initState();
     _loadAllData();
+    
+    // Afficher le tutoriel de la page d'accueil si nécessaire (désactivé temporairement)
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   if (mounted) {
+    //     TutorialService.showHomePageTutorialIfNeeded(context);
+    //   }
+    // });
   }
 
   Future<void> _loadAllData() async {

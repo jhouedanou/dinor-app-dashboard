@@ -17,6 +17,8 @@ class TutorialService {
   static const String _firstLaunchKey = 'first_launch_completed';
   static const String _navigationTutorialKey = 'navigation_tutorial_shown';
   static const String _pagesTutorialKey = 'dynamic_pages_tutorial_shown';
+  static const String _homePageTutorialKey = 'home_page_tutorial_shown';
+  static const String _loginTutorialKey = 'login_tutorial_shown';
 
   // Vérifier si c'est le premier lancement
   static Future<bool> isFirstLaunch() async {
@@ -91,6 +93,46 @@ class TutorialService {
     ),
   ];
 
+  // Tutoriel pour la page d'accueil
+  static List<TutorialStep> getHomePageTutorial() => [
+    TutorialStep(
+      title: '🏠 Page d\'accueil',
+      description: 'Bienvenue sur votre tableau de bord ! Ici vous pouvez voir les dernières recettes, astuces et événements.',
+    ),
+    TutorialStep(
+      title: '⭐ Contenus populaires',
+      description: 'Découvrez les recettes et astuces les plus appréciées par la communauté Dinor.',
+    ),
+    TutorialStep(
+      title: '🎯 Recommandations',
+      description: 'Nous vous proposons du contenu personnalisé basé sur vos goûts et préférences culinaires.',
+    ),
+    TutorialStep(
+      title: '🔍 Recherche rapide',
+      description: 'Utilisez la barre de recherche en haut pour trouver instantanément ce que vous cherchez.',
+    ),
+  ];
+
+  // Tutoriel pour la connexion/authentification
+  static List<TutorialStep> getLoginTutorial() => [
+    TutorialStep(
+      title: '🔐 Connexion à votre compte',
+      description: 'Connectez-vous pour accéder à toutes les fonctionnalités exclusives de Dinor !',
+    ),
+    TutorialStep(
+      title: '👤 Profil personnalisé',
+      description: 'Une fois connecté, vous pourrez personnaliser votre profil, sauvegarder vos favoris et suivre vos progrès.',
+    ),
+    TutorialStep(
+      title: '💾 Sauvegarde automatique',
+      description: 'Toutes vos recettes favorites, vos notes et vos préférences seront sauvegardées automatiquement.',
+    ),
+    TutorialStep(
+      title: '🏆 Fonctionnalités premium',
+      description: 'Accédez aux tournois, aux notifications personnalisées et aux contenus exclusifs.',
+    ),
+  ];
+
   // Afficher le tutoriel de bienvenue si nécessaire
   static Future<void> showWelcomeTutorialIfNeeded(BuildContext context) async {
     final isFirst = await isFirstLaunch();
@@ -131,6 +173,37 @@ class TutorialService {
 
     // Sauvegarder le nombre actuel de pages
     await prefs.setInt('last_known_page_count', currentPageCount);
+  }
+
+  // Afficher le tutoriel de la page d'accueil si nécessaire
+  static Future<void> showHomePageTutorialIfNeeded(BuildContext context) async {
+    final hasShown = await hasTutorialBeenSeen(_homePageTutorialKey);
+    if (!hasShown && context.mounted) {
+      TutorialOverlay.show(
+        context: context,
+        steps: getHomePageTutorial(),
+        tutorialKey: _homePageTutorialKey,
+        onComplete: () async {
+          await markTutorialAsSeen(_homePageTutorialKey);
+          print('✅ [TutorialService] Tutoriel page d\'accueil terminé');
+        },
+      );
+    }
+  }
+
+  // Afficher le tutoriel de connexion
+  static Future<void> showLoginTutorial(BuildContext context) async {
+    if (context.mounted) {
+      TutorialOverlay.show(
+        context: context,
+        steps: getLoginTutorial(),
+        tutorialKey: _loginTutorialKey,
+        onComplete: () async {
+          await markTutorialAsSeen(_loginTutorialKey);
+          print('✅ [TutorialService] Tutoriel de connexion terminé');
+        },
+      );
+    }
   }
 
   // Réinitialiser tous les tutoriels (pour le debug/test)

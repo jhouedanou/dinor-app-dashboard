@@ -128,7 +128,11 @@ class _LoadingScreenState extends State<LoadingScreen>
             height: double.infinity,
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFFE53E3E), Color(0xFFC53030), Color(0xFFE53E3E)], // Gradient rouge identique au PWA
+                colors: [
+                  Color(0xFFE53E3E),
+                  Color(0xFFC53030),
+                  Color(0xFFE53E3E)
+                ], // Gradient rouge identique au PWA
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 stops: [0.0, 0.5, 1.0],
@@ -138,10 +142,10 @@ class _LoadingScreenState extends State<LoadingScreen>
               children: [
                 // Bulles animées en arrière-plan
                 ...List.generate(8, (index) => _buildBubble(index)),
-                
+
                 // Icônes de cuisine flottantes
                 ...List.generate(6, (index) => _buildFloatingIcon(index)),
-                
+
                 // Contenu principal centré
                 Center(
                   child: Transform.scale(
@@ -224,12 +228,18 @@ class _LoadingScreenState extends State<LoadingScreen>
                                         height: 6,
                                         decoration: BoxDecoration(
                                           gradient: const LinearGradient(
-                                            colors: [Color(0xFFF4D03F), Color(0xFFF7DC6F), Color(0xFFF4D03F)],
+                                            colors: [
+                                              Color(0xFFF4D03F),
+                                              Color(0xFFF7DC6F),
+                                              Color(0xFFF4D03F)
+                                            ],
                                           ),
-                                          borderRadius: BorderRadius.circular(3),
+                                          borderRadius:
+                                              BorderRadius.circular(3),
                                           boxShadow: [
                                             BoxShadow(
-                                              color: const Color(0xFFF4D03F).withOpacity(0.5),
+                                              color: const Color(0xFFF4D03F)
+                                                  .withOpacity(0.5),
                                               blurRadius: 10,
                                             ),
                                           ],
@@ -282,20 +292,20 @@ class _LoadingScreenState extends State<LoadingScreen>
       builder: (context, child) {
         final screenWidth = MediaQuery.of(context).size.width;
         final screenHeight = MediaQuery.of(context).size.height;
-        
+
         // Position aléatoire mais déterministe basée sur l'index
         final random = math.Random(index);
         final x = random.nextDouble() * screenWidth;
         final y = screenHeight + 50; // Commence en bas
-        
+
         // Animation de montée
         final progress = (_bubbleController.value + index * 0.1) % 1.0;
         final currentY = y - (progress * (screenHeight + 100));
-        
+
         // Taille et opacité variables
         final size = 20.0 + random.nextDouble() * 30.0;
         final opacity = (1.0 - progress) * 0.6;
-        
+
         return Positioned(
           left: x,
           top: currentY,
@@ -328,20 +338,20 @@ class _LoadingScreenState extends State<LoadingScreen>
       builder: (context, child) {
         final screenWidth = MediaQuery.of(context).size.width;
         final screenHeight = MediaQuery.of(context).size.height;
-        
+
         // Position aléatoire mais déterministe
         final random = math.Random(index);
         final x = random.nextDouble() * screenWidth;
         final y = random.nextDouble() * screenHeight;
-        
+
         // Animation de flottement
         final progress = (_iconController.value + index * 0.2) % 1.0;
         final offsetY = math.sin(progress * 2 * math.pi) * 20;
         final rotation = progress * 2 * math.pi;
         final scale = 0.8 + math.sin(progress * 4 * math.pi) * 0.2;
-        
+
         final iconIndex = index % _cookingIcons.length;
-        
+
         return Positioned(
           left: x,
           top: y + offsetY,

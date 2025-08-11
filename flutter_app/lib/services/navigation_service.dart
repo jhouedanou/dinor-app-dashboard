@@ -13,6 +13,7 @@ import '../screens/simple_events_screen.dart';
 import '../screens/enhanced_dinor_tv_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/pages_list_screen.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import '../screens/terms_of_service_screen.dart';
 import '../screens/privacy_policy_screen.dart';
 import '../screens/cookie_policy_screen.dart';
@@ -50,6 +51,7 @@ class NavigationService {
   static const String predictions = '/predictions';
   static const String leaderboard = '/leaderboard';
   static const String notifications = '/notifications';
+  static const String webEmbed = '/web-embed';
   
   // Route actuelle
   static String _currentRoute = home;
@@ -340,6 +342,27 @@ class NavigationService {
       case pages:
         return MaterialPageRoute(
           builder: (_) => const PagesListScreen(),
+          settings: settings,
+        );
+        
+      case webEmbed:
+        final arguments = settings.arguments as Map<String, dynamic>?;
+        final url = arguments != null ? arguments['url'] as String? : null;
+        final title = arguments != null ? arguments['title'] as String? : null;
+        if (url == null) return _errorRoute();
+        return MaterialPageRoute(
+          builder: (_) => Scaffold(
+            appBar: AppBar(
+              title: Text(title ?? 'Page'),
+              backgroundColor: const Color(0xFFF4D03F),
+              foregroundColor: Colors.black,
+            ),
+            body: WebViewWidget(
+              controller: WebViewController()
+                ..setJavaScriptMode(JavaScriptMode.unrestricted)
+                ..loadRequest(Uri.parse(url)),
+            ),
+          ),
           settings: settings,
         );
         
