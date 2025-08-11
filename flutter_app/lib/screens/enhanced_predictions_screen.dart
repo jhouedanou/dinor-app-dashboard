@@ -59,6 +59,7 @@ class _EnhancedPredictionsScreenState extends ConsumerState<EnhancedPredictionsS
             ),
             backgroundColor: const Color(0xFFE53E3E),
             elevation: 0,
+            toolbarHeight: 56,
             actions: [
               if (_selectedTournament != null)
                 IconButton(
