@@ -18,6 +18,7 @@ class Recipe extends Model
         'description',
         'short_description',
         'ingredients',
+        'dinor_ingredients',
         'instructions',
         'preparation_time',
         'cooking_time',
@@ -61,6 +62,7 @@ class Recipe extends Model
 
     protected $casts = [
         'ingredients' => 'array',
+        'dinor_ingredients' => 'array',
         'instructions' => 'array',
         'gallery' => 'array',
         'required_equipment' => 'array',

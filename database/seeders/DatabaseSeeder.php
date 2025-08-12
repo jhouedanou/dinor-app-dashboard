@@ -68,6 +68,14 @@ class DatabaseSeeder extends Seeder
                     ['name' => 'Oignons', 'quantity' => '2', 'unit' => 'pièces'],
                     ['name' => 'Piment', 'quantity' => '2', 'unit' => 'pièces'],
                 ],
+                'dinor_ingredients' => [
+                    [
+                        'name' => 'Huile Dinor Classique',
+                        'quantity' => '3 c. à soupe',
+                        'purchase_url' => 'https://new.dinorapp.com/shop/huile-dinor-classique',
+                        'description' => 'Idéale pour les fritures croustillantes',
+                    ],
+                ],
                 'instructions' => [
                     ['step' => 'Nettoyer et assaisonner le poisson'],
                     ['step' => 'Faire griller le poisson sur le charbon'],
@@ -97,6 +105,14 @@ class DatabaseSeeder extends Seeder
                     ['name' => 'Crevettes', 'quantity' => '300', 'unit' => 'g'],
                     ['name' => 'Huile de palme', 'quantity' => '3', 'unit' => 'cuillères à soupe'],
                     ['name' => 'Gingembre', 'quantity' => '1', 'unit' => 'morceau'],
+                ],
+                'dinor_ingredients' => [
+                    [
+                        'name' => 'Riz Vietnamien Dinor Jasmine',
+                        'quantity' => '1 tasse (en accompagnement)',
+                        'purchase_url' => 'https://new.dinorapp.com/shop/riz-dinor-vietnamien-jasmine',
+                        'description' => 'Grains longs, parfumés, parfaits avec alloco',
+                    ],
                 ],
                 'instructions' => [
                     ['step' => 'Éplucher et couper les bananes plantains'],

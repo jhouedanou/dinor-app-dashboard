@@ -176,9 +176,7 @@ class _SimpleBottomNavigationState extends State<SimpleBottomNavigation> {
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
         decoration: BoxDecoration(
-          color: isPressed 
-            ? const Color(0xFFFF6B35).withOpacity(0.1)
-            : Colors.transparent,
+          color: Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Column(
@@ -211,10 +209,10 @@ class _SimpleBottomNavigationState extends State<SimpleBottomNavigation> {
               ),
               textAlign: TextAlign.center,
             ),
-            // Indicateur actif
+            // Indicateur actif fin sous le label
             if (isActive)
               Container(
-                margin: const EdgeInsets.only(top: 2),
+                margin: const EdgeInsets.only(top: 6),
                 width: 24,
                 height: 2,
                 decoration: BoxDecoration(

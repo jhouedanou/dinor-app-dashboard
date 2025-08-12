@@ -99,6 +99,24 @@ class ViewRecipe extends ViewRecord
                             ])
                             ->columns(3)
                             ->columnSpanFull(),
+
+                        Infolists\Components\RepeatableEntry::make('dinor_ingredients')
+                            ->label('Produits Dinor')
+                            ->schema([
+                                Infolists\Components\TextEntry::make('name')
+                                    ->label('Produit'),
+                                Infolists\Components\TextEntry::make('quantity')
+                                    ->label('Quantité'),
+                                Infolists\Components\TextEntry::make('description')
+                                    ->label('Description'),
+                                Infolists\Components\TextEntry::make('purchase_url')
+                                    ->label('Acheter')
+                                    ->url(fn ($state) => is_string($state) ? $state : null)
+                                    ->openUrlInNewTab(),
+                            ])
+                            ->columns(4)
+                            ->columnSpanFull()
+                            ->visible(fn ($record) => !empty($record->dinor_ingredients)),
                     ]),
 
                 Infolists\Components\Section::make('Instructions')

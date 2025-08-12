@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // Components unifiés
 import '../components/common/accordion.dart';
@@ -270,6 +271,27 @@ class _RecipeDetailScreenUnifiedState extends ConsumerState<RecipeDetailScreenUn
     }
     
     return instructions.toString();
+  }
+
+  Future<void> _launchPurchaseUrl(String url) async {
+    try {
+      final uri = Uri.tryParse(url);
+      if (uri == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Lien invalide'), backgroundColor: Colors.red),
+        );
+        return;
+      }
+      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Impossible d\'ouvrir le lien'), backgroundColor: Colors.red),
+        );
+      }
+    } catch (_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Erreur lors de l\'ouverture du lien'), backgroundColor: Colors.red),
+      );
+    }
   }
 
   @override
@@ -751,6 +773,79 @@ class _RecipeDetailScreenUnifiedState extends ConsumerState<RecipeDetailScreenUn
                             fontSize: 16,
                             color: Color(0xFF4A5568),
                           ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+
+        // Produits Dinor
+        if (_recipe!['dinor_ingredients'] != null && (_recipe!['dinor_ingredients'] as List).isNotEmpty)
+          Accordion(
+            title: 'Produits Dinor',
+            initiallyOpen: true,
+            child: Column(
+              children: (_recipe!['dinor_ingredients'] as List).map((item) {
+                final map = item as Map;
+                final name = map['name']?.toString() ?? 'Produit Dinor';
+                final qty = map['quantity']?.toString();
+                final desc = map['description']?.toString();
+                final url = map['purchase_url']?.toString();
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.only(top: 6, right: 12),
+                        width: 6,
+                        height: 6,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFE53E3E),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              [if (qty != null && qty.isNotEmpty) qty, name].join(' '),
+                              style: const TextStyle(
+                                fontFamily: 'Roboto',
+                                fontSize: 16,
+                                color: Color(0xFF4A5568),
+                              ),
+                            ),
+                            if (desc != null && desc.isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                desc,
+                                style: const TextStyle(
+                                  fontFamily: 'Roboto',
+                                  fontSize: 14,
+                                  color: Color(0xFF718096),
+                                ),
+                              ),
+                            ],
+                            if (url != null && url.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: OutlinedButton.icon(
+                                  onPressed: () => _launchPurchaseUrl(url),
+                                  icon: const Icon(Icons.shopping_cart_outlined, size: 18),
+                                  label: const Text('Acheter'),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: const Color(0xFFE53E3E),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       ),
                     ],

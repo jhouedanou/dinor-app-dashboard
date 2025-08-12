@@ -6,6 +6,7 @@ use App\Filament\Resources\RecipeResource\Pages;
 use App\Filament\Components\IngredientsRepeater;
 use App\Filament\Components\InstructionsField;
 use App\Filament\Components\CategorySelect;
+use App\Filament\Components\DinorIngredientsRepeater;
 use App\Models\Recipe;
 use App\Models\Category;
 use Filament\Forms;
@@ -109,6 +110,7 @@ class RecipeResource extends Resource
 
                 Forms\Components\Section::make('Détails de la recette')
                     ->schema([
+                        DinorIngredientsRepeater::make('dinor_ingredients'),
                         IngredientsRepeater::make('ingredients'),
                         InstructionsField::make('instructions'),
                     ]),

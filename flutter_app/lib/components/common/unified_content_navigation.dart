@@ -45,11 +45,11 @@ class UnifiedContentNavigation extends ConsumerWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Colors.black,
-            blurRadius: 10,
-            offset: Offset(0, 2),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
         border: Border.all(
@@ -71,7 +71,7 @@ class UnifiedContentNavigation extends ConsumerWidget {
                 ),
                 child: Icon(
                   _getContentIcon(),
-                  color: _getContentColor(),
+                  color: Colors.white,
                   size: 16,
                 ),
               ),
@@ -138,7 +138,7 @@ class UnifiedContentNavigation extends ConsumerWidget {
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: isEnabled 
-              ? _getContentColor()
+              ? _getContentColor().withOpacity(0.1)
               : const Color(0xFFF8F9FA),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(

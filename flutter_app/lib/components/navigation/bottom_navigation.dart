@@ -27,6 +27,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 // Components
 import '../common/auth_modal.dart';
+import '../dinor_icon.dart';
 
 // Composables et stores
 import '../../composables/use_auth_handler.dart';
@@ -101,35 +102,35 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
     {
       'name': 'all',
       'path': '/',
-      'icon': LucideIcons.home,
+      'icon': 'home',
       'label': 'Accueil',
       'action_type': 'route'
     },
     {
       'name': 'recipes',
       'path': '/recipes',
-      'icon': LucideIcons.chefHat,
+      'icon': 'chef-hat',
       'label': 'Recettes',
       'action_type': 'route'
     },
     {
       'name': 'tips',
       'path': '/tips',
-      'icon': LucideIcons.lightbulb,
+      'icon': 'lightbulb',
       'label': 'Astuces',
       'action_type': 'route'
     },
     {
       'name': 'events',
       'path': '/events',
-      'icon': LucideIcons.calendar,
+      'icon': 'calendar',
       'label': 'Événements',
       'action_type': 'route'
     },
     {
       'name': 'dinor-tv',
       'path': '/dinor-tv',
-      'icon': LucideIcons.playCircle,
+      'icon': 'play',
       'label': 'DinorTV',
       'action_type': 'route'
     },
@@ -255,7 +256,7 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
       ...navigationPages.map((page) => {
         'name': 'page_${page.id}',
         'path': '/page/${page.id}',
-        'icon': LucideIcons.globe,
+        'icon': 'link',
         'label': page.title,
         'action_type': page.isExternal ? 'external_link' : 'web_embed',
         'url': page.url,
@@ -395,26 +396,10 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
           vertical: 8,
           horizontal: 4,
         ),
+        // Style allégé: pas de fond ni de contour pour l'actif, seulement icône/texte orange
         decoration: BoxDecoration(
-          color: isActive
-              ? const Color.fromRGBO(255, 107, 53, 0.15)
-              : Colors.transparent,
+          color: Colors.transparent,
           borderRadius: BorderRadius.circular(16),
-          border: isActive
-              ? Border.all(
-                  color: const Color(0xFFFF6B35),
-                  width: 1,
-                )
-              : null,
-          boxShadow: isActive
-              ? [
-                  const BoxShadow(
-                    color: Color(0xFFFF6B35),
-                    blurRadius: 8,
-                    offset: Offset(0, 2),
-                  )
-                ]
-              : null,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -422,8 +407,8 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
             // Icône - taille uniforme
             Container(
               margin: const EdgeInsets.only(bottom: 4),
-              child: Icon(
-                item['icon'],
+              child: DinorIcon(
+                name: item['icon'],
                 size: 22, // Taille uniforme pour tous
                 color: isActive
                     ? const Color(0xFFFF6B35)
@@ -448,11 +433,11 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
               maxLines: 1,
             ),
 
-            // Soulignement orange pour l'item actif
+            // Soulignement bas pour l'item actif
             if (isActive)
               Container(
-                margin: const EdgeInsets.only(top: 4),
-                width: 20, // Largeur uniforme pour tous
+                margin: const EdgeInsets.only(top: 6),
+                width: 24, // Largeur uniforme pour tous
                 height: 2,
                 decoration: BoxDecoration(
                   color: const Color(0xFFFF6B35),

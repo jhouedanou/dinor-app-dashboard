@@ -5,9 +5,14 @@
         v-for="item in menuItems" 
         :key="item.name"
         @click.prevent="handleItemClick(item)"
+        @touchstart.passive="handleTouchStart"
+        @touchend.passive="handleTouchEnd"
         class="nav-item"
         :class="{ 'active': isActive(item) }"
+        :data-item-name="item.name"
         href="#"
+        role="button"
+        :aria-label="item.label"
       >
         <div class="nav-icon">
           <DinorIcon :name="item.icon" :size="24" :filled="isActive(item)" />
@@ -30,6 +35,7 @@ import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useApiStore } from '@/stores/api'
 import { useAuthHandler } from '@/composables/useAuthHandler'
+import { useAnalytics } from '@/composables/useAnalytics'
 import AuthModal from '@/components/common/AuthModal.vue'
 import DinorIcon from '@/components/DinorIcon.vue'
 
@@ -44,6 +50,7 @@ export default {
     const router = useRouter()
     const apiStore = useApiStore()
     const { requireAuth, showAuthModal, authModalMessage, closeAuthModal, handleAuthSuccess } = useAuthHandler()
+    const { trackNavigation, trackClick } = useAnalytics()
     
     // Menu statique avec icônes Lucide
     const menuItems = ref([
@@ -57,6 +64,13 @@ export default {
     const loading = ref(false)
 
     const handleItemClick = (item) => {
+      // Tracking analytics
+      trackClick(`bottom_nav_${item.name}`, 'navigation', {
+        label: item.label,
+        action_type: item.action_type,
+        path: item.path
+      })
+
       // Vérifier l'authentification pour le profil
       if (item.name === 'profile') {
         if (!requireAuth('accéder à votre profil')) {
@@ -68,18 +82,24 @@ export default {
         case 'route':
           // Navigation interne standard
           if (item.path) {
+            trackNavigation(item.path, route.path, 'bottom_navigation')
             router.push(item.path)
           }
           break
           
         case 'web_embed':
           // Charger la dernière page depuis le système Pages dans WebEmbed
+          trackNavigation('/web-embed', route.path, 'bottom_navigation')
           router.push('/web-embed')
           break
           
         case 'external_link':
           // Ouvrir dans un nouvel onglet
           if (item.web_url) {
+            trackClick(`external_link_${item.name}`, 'external_navigation', {
+              url: item.web_url,
+              label: item.label
+            })
             window.open(item.web_url, '_blank', 'noopener,noreferrer')
           } else {
             // Aucune web_url définie
@@ -90,6 +110,7 @@ export default {
           // Type d'action non géré
           // Fallback vers navigation route si définie
           if (item.path) {
+            trackNavigation(item.path, route.path, 'bottom_navigation')
             router.push(item.path)
           }
       }
@@ -110,6 +131,41 @@ export default {
     }
     
 
+    // Gestion des événements tactiles
+    const handleTouchStart = (event) => {
+      // Trouver l'élément nav-item parent
+      const navItem = event.target.closest('.nav-item')
+      if (navItem) {
+        // Ajouter une classe d'état tactile sans affecter la visibilité
+        navItem.classList.add('touching')
+        navItem.style.transform = 'scale(0.95)'
+        
+        // S'assurer que les enfants restent visibles
+        const icon = navItem.querySelector('.nav-icon')
+        const label = navItem.querySelector('.nav-label')
+        if (icon) {
+          icon.style.opacity = '1'
+          icon.style.visibility = 'visible'
+        }
+        if (label) {
+          label.style.opacity = '1'
+          label.style.visibility = 'visible'
+        }
+      }
+    }
+
+    const handleTouchEnd = (event) => {
+      // Trouver l'élément nav-item parent
+      const navItem = event.target.closest('.nav-item')
+      if (navItem) {
+        // Remettre l'élément à sa taille normale
+        setTimeout(() => {
+          navItem.classList.remove('touching')
+          navItem.style.transform = 'scale(1)'
+        }, 100)
+      }
+    }
+
     // Gestion de l'authentification réussie
     const onAuthSuccess = (user) => {
       // Authentification réussie, redirection vers le profil
@@ -123,6 +179,8 @@ export default {
       menuItems,
       loading,
       handleItemClick,
+      handleTouchStart,
+      handleTouchEnd,
       isActive,
       showAuthModal,
       authModalMessage,
@@ -135,7 +193,7 @@ export default {
 
 <style scoped>
 .bottom-navigation {
-  position: absolute;
+  position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
@@ -144,6 +202,10 @@ export default {
   backdrop-filter: blur(10px);
   z-index: 1000;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+  
+  /* Empêcher les problèmes de scroll et swipe */
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .nav-items {
@@ -169,6 +231,18 @@ export default {
   flex: 1;
   max-width: 80px;
   font-family: 'Roboto', sans-serif; /* Police Roboto pour les textes */
+  
+  /* Améliorer les interactions tactiles */
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  
+  /* Empêcher les problèmes de swipe */
+  overflow: visible;
+  position: relative;
 }
 
 .nav-item:hover {
@@ -177,9 +251,13 @@ export default {
 }
 
 .nav-item.active {
-  color: #FF6B35; /* Orange accent pour l'item actif */
+  color: #FF6B35 !important; /* Orange accent pour l'item actif */
   background: rgba(255, 107, 53, 0.1);
   position: relative;
+  
+  /* S'assurer que l'état actif est visible pendant les transitions */
+  z-index: 2;
+  transform: translateZ(0); /* Force hardware acceleration */
 }
 
 /* Soulignement orange pour l'item actif */
@@ -197,8 +275,74 @@ export default {
 
 .nav-icon {
   margin-bottom: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
+/* S'assurer que l'icône hérite bien de la couleur */
+.nav-item.active .nav-icon {
+  color: #FF6B35 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: flex !important;
+  
+  /* Force l'affichage pendant les transitions */
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+/* Forcer la visibilité de l'icône à l'intérieur */
+.nav-item.active .nav-icon svg,
+.nav-item.active .nav-icon *:not(.nav-label) {
+  color: #FF6B35 !important;
+  fill: #FF6B35 !important;
+  stroke: #FF6B35 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.nav-icon,
+.nav-icon * {
+  color: inherit !important;
+  transition: color 0.2s ease !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Style de base pour toutes les icônes */
+.nav-icon svg {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Force la visibilité pendant les interactions tactiles */
+.nav-item.touching .nav-icon,
+.nav-item.touching .nav-label,
+.nav-item:active .nav-icon,
+.nav-item:active .nav-label {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+}
+
+/* Styles spécifiques pour les éléments actifs pendant le touch */
+.nav-item.active.touching .nav-icon,
+.nav-item.active:active .nav-icon {
+  color: #FF6B35 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.nav-item.active.touching .nav-label,
+.nav-item.active:active .nav-label {
+  color: #FF6B35 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  font-weight: 600 !important;
+}
 
 .nav-label {
   font-size: 12px;
@@ -209,10 +353,24 @@ export default {
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 100%;
+  color: inherit;
+  opacity: 1;
+  visibility: visible;
+  transition: color 0.2s ease, font-weight 0.2s ease;
+  
+  /* Empêcher la disparition pendant les transitions */
+  will-change: color, font-weight;
+  backface-visibility: hidden;
 }
 
 .nav-item.active .nav-label {
   font-weight: 600;
+  color: #FF6B35 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  
+  /* Force l'affichage */
+  display: block !important;
 }
 
 /* Safe area pour iPhone */
@@ -258,6 +416,27 @@ export default {
   .nav-item {
     max-width: 160px;
   }
+}
+
+/* DEBUG: Force visible pour tous les éléments d'icônes */
+.nav-icon,
+.nav-icon *,
+.nav-icon svg,
+.nav-icon svg *,
+.dinor-icon,
+.dinor-icon * {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+}
+
+.nav-icon {
+  display: flex !important;
+}
+
+/* DEBUG: S'assurer que rien ne cache les icônes */
+.nav-item * {
+  pointer-events: auto !important;
 }
 
 

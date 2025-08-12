@@ -61,11 +61,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
   String _authModalMessage = '';
   
   // Données des composables (équivalent useRecipes, useTips, etc.)
-  List<dynamic> _latestRecipes = [];
-  List<dynamic> _latestTips = [];
-  List<dynamic> _latestEvents = [];
-  List<dynamic> _latestVideos = [];
-  List<dynamic> _banners = [];
+  List<Map<String, dynamic>> _latestRecipes = [];
+  List<Map<String, dynamic>> _latestTips = [];
+  List<Map<String, dynamic>> _latestEvents = [];
+  List<Map<String, dynamic>> _latestVideos = [];
+  List<Map<String, dynamic>> _banners = [];
   
   // États de chargement (équivalent loading refs Vue)
   bool _loadingRecipes = true;
@@ -156,7 +156,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
 
       if (data['success'] == true) {
         setState(() {
-          _latestRecipes = (data['data'] as List).take(4).toList();
+          _latestRecipes = (data['data'] as List).cast<Map<String, dynamic>>().take(4).toList();
           _loadingRecipes = false;
         });
         print('✅ [HomeScreen] ${_latestRecipes.length} recettes chargées');
@@ -188,7 +188,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
 
       if (data['success'] == true) {
         setState(() {
-          _latestTips = (data['data'] as List).take(4).toList();
+          _latestTips = (data['data'] as List).cast<Map<String, dynamic>>().take(4).toList();
           _loadingTips = false;
         });
         print('✅ [HomeScreen] ${_latestTips.length} astuces chargées');
@@ -220,7 +220,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
 
       if (data['success'] == true) {
         setState(() {
-          _latestEvents = (data['data'] as List).take(4).toList();
+          _latestEvents = (data['data'] as List).cast<Map<String, dynamic>>().take(4).toList();
           _loadingEvents = false;
         });
         print('✅ [HomeScreen] ${_latestEvents.length} événements chargés');
@@ -252,7 +252,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
 
       if (data['success'] == true) {
         setState(() {
-          _latestVideos = (data['data'] as List).take(4).toList();
+          _latestVideos = (data['data'] as List).cast<Map<String, dynamic>>().take(4).toList();
           _loadingVideos = false;
         });
         print('✅ [HomeScreen] ${_latestVideos.length} vidéos chargées');

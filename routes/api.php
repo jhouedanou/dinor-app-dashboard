@@ -26,6 +26,27 @@ use App\Http\Controllers\Api\AnalyticsController;
 |--------------------------------------------------------------------------
 */
 
+// Routes Analytics
+Route::prefix('analytics')->group(function () {
+    Route::post('/event', [AnalyticsController::class, 'trackEvent']);
+    Route::get('/metrics', [AnalyticsController::class, 'getDashboardMetrics']);
+    Route::get('/realtime', [AnalyticsController::class, 'getRealTimeMetrics']);
+});
+
+// Routes Firebase Analytics v1
+Route::prefix('v1/analytics')->group(function () {
+    Route::get('/', [AnalyticsController::class, 'index']);
+    Route::get('/app-statistics', [AnalyticsController::class, 'appStatistics']);
+    Route::get('/content-statistics', [AnalyticsController::class, 'contentStatistics']);
+    Route::get('/engagement', [AnalyticsController::class, 'engagementMetrics']);
+    Route::get('/realtime', [AnalyticsController::class, 'realTimeMetrics']);
+    Route::get('/platforms', [AnalyticsController::class, 'platformStatistics']);
+    Route::get('/geographic', [AnalyticsController::class, 'geographicStatistics']);
+    Route::post('/clear-cache', [AnalyticsController::class, 'clearCache']);
+    Route::get('/export', [AnalyticsController::class, 'export']);
+    Route::get('/info', [AnalyticsController::class, 'info']);
+});
+
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });

@@ -24,6 +24,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../components/common/youtube_video_modal.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 
 // Components unifiés
@@ -397,6 +398,21 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
     }
     
     return instructions.toString();
+  }
+
+  Future<void> _launchPurchaseUrl(String url) async {
+    try {
+      final uri = Uri.tryParse(url);
+      if (uri == null) {
+        _showSnackBar('Lien invalide', Colors.red);
+        return;
+      }
+      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+        _showSnackBar('Impossible d\'ouvrir le lien', Colors.red);
+      }
+    } catch (_) {
+      _showSnackBar('Erreur lors de l\'ouverture du lien', Colors.red);
+    }
   }
 
   void _openGalleryModal(int index) {
@@ -939,6 +955,80 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
                             fontSize: 16,
                             color: Color(0xFF4A5568),
                           ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+
+        // Produits Dinor
+        if (_recipe!['dinor_ingredients'] != null && (_recipe!['dinor_ingredients'] as List).isNotEmpty)
+          Accordion(
+            title: 'Produits Dinor',
+            initiallyOpen: true,
+            child: Column(
+              children: (_recipe!['dinor_ingredients'] as List).map((item) {
+                final name = (item as Map)['name']?.toString() ?? 'Produit Dinor';
+                final qty = item['quantity']?.toString();
+                final desc = item['description']?.toString();
+                final url = item['purchase_url']?.toString();
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Puce
+                      Container(
+                        margin: const EdgeInsets.only(top: 6, right: 12),
+                        width: 6,
+                        height: 6,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFE53E3E),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      // Texte et bouton
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              [if (qty != null && qty.isNotEmpty) qty, name].join(' '),
+                              style: const TextStyle(
+                                fontFamily: 'Roboto',
+                                fontSize: 16,
+                                color: Color(0xFF4A5568),
+                              ),
+                            ),
+                            if (desc != null && desc.isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                desc,
+                                style: const TextStyle(
+                                  fontFamily: 'Roboto',
+                                  fontSize: 14,
+                                  color: Color(0xFF718096),
+                                ),
+                              ),
+                            ],
+                            if (url != null && url.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: OutlinedButton.icon(
+                                  onPressed: () => _launchPurchaseUrl(url),
+                                  icon: const Icon(Icons.shopping_cart_outlined, size: 18),
+                                  label: const Text('Acheter'),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: const Color(0xFFE53E3E),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       ),
                     ],

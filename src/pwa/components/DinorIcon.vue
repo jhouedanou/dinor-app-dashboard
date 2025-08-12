@@ -153,27 +153,45 @@ const props = defineProps({
   }
 })
 
-// Composant d'icône à utiliser
+// Composant d'icône à utiliser avec support des icônes filled
 const iconComponent = computed(() => {
+  let iconName = props.name
+  
+  // Si filled est true, utiliser des variantes filled spéciales
+  if (props.filled) {
+    const filledMapping = {
+      'home': 'LucideHome',
+      'chef-hat': 'LucideChefHat', 
+      'lightbulb': 'LucideLightbulb',
+      'calendar': 'LucideCalendar',
+      'play-circle': 'LucidePlayCircle',
+      'user': 'LucideUser'
+    }
+    
+    if (filledMapping[iconName]) {
+      return filledMapping[iconName]
+    }
+  }
+  
   // Vérifier d'abord le mapping
-  const mappedIcon = iconMapping[props.name]
+  const mappedIcon = iconMapping[iconName]
   if (mappedIcon) {
     return mappedIcon
   }
   
   // Essayer les noms Lucide directs (convertir kebab-case vers PascalCase)
-  const lucideName = 'Lucide' + props.name
+  const lucideName = 'Lucide' + iconName
     .split('-')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join('')
   
   // Pour les icônes du menu, on accepte les noms Lucide directs  
-  if (props.name.includes('-') || ['home', 'user', 'calendar', 'lightbulb'].includes(props.name)) {
+  if (iconName.includes('-') || ['home', 'user', 'calendar', 'lightbulb'].includes(iconName)) {
     return lucideName
   }
   
   // Fallback vers l'icône par défaut
-  console.warn(`Icône non mappée: ${props.name}`)
+  console.warn(`Icône non mappée: ${iconName}`)
   return 'LucideHelpCircle'
 })
 
@@ -198,6 +216,11 @@ const iconClass = computed(() => {
 
 .dinor-icon--filled {
   fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 2;
+  opacity: 1 !important;
+  visibility: visible !important;
+  font-weight: 600;
 }
 
 .dinor-icon:hover {
@@ -244,5 +267,13 @@ const iconClass = computed(() => {
 
 .dinor-icon--warning {
   color: #FFC107;
+}
+
+/* DEBUG: Ensure all icon elements are always visible */
+.dinor-icon,
+.dinor-icon * {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: inline-block !important;
 }
 </style>

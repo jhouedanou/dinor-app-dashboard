@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\FirebaseAnalyticsService;
+use App\Models\AnalyticsEvent;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 
 class AnalyticsController extends Controller
@@ -270,6 +272,218 @@ class AnalyticsController extends Controller
     }
 
     /**
+     * Recevoir un événement d'analytics depuis le frontend
+     */
+    public function trackEvent(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'event_type' => 'required|string|max:100',
+            'timestamp' => 'required|integer',
+            'session_id' => 'required|string|max:255',
+            'user_id' => 'nullable|string|max:255',
+            'page_path' => 'nullable|string|max:500',
+            'device_info' => 'nullable|array'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            // Créer l'événement dans la base de données
+            $event = AnalyticsEvent::create([
+                'event_type' => $request->input('event_type'),
+                'event_data' => $request->except(['event_type', 'timestamp', 'session_id', 'user_id', 'page_path', 'device_info']),
+                'session_id' => $request->input('session_id'),
+                'user_id' => $request->input('user_id'),
+                'page_path' => $request->input('page_path'),
+                'user_agent' => $request->header('User-Agent'),
+                'ip_address' => $request->ip(),
+                'device_info' => $request->input('device_info', []),
+                'timestamp' => Carbon::createFromTimestamp($request->input('timestamp') / 1000)
+            ]);
+
+            // Log pour debugging (optionnel)
+            if (config('app.debug')) {
+                \Log::info('Analytics Event Tracked', [
+                    'id' => $event->id,
+                    'type' => $event->event_type,
+                    'session' => $event->session_id,
+                    'user' => $event->user_id
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'event_id' => $event->id
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Analytics Event Tracking Failed', [
+                'error' => $e->getMessage(),
+                'event_type' => $request->input('event_type'),
+                'session_id' => $request->input('session_id')
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to track event'
+            ], 500);
+        }
+    }
+
+    /**
+     * Obtenir les métriques depuis la base de données
+     */
+    public function getDashboardMetrics(Request $request)
+    {
+        try {
+            $period = $request->input('period', '7d'); // 1d, 7d, 30d
+            $startDate = $this->getStartDate($period);
+
+            $metrics = [
+                'total_events' => AnalyticsEvent::where('timestamp', '>=', $startDate)->count(),
+                'unique_sessions' => AnalyticsEvent::where('timestamp', '>=', $startDate)->distinct('session_id')->count('session_id'),
+                'unique_users' => AnalyticsEvent::where('timestamp', '>=', $startDate)->whereNotNull('user_id')->distinct('user_id')->count('user_id'),
+                'page_views' => AnalyticsEvent::where('timestamp', '>=', $startDate)->where('event_type', 'page_view')->count(),
+                'top_events' => $this->getTopEventsFromDb($startDate, 10),
+                'top_pages' => $this->getTopPagesFromDb($startDate, 10),
+                'hourly_activity' => $this->getHourlyActivityFromDb($startDate),
+                'device_breakdown' => $this->getDeviceBreakdownFromDb($startDate)
+            ];
+
+            return response()->json([
+                'success' => true,
+                'data' => $metrics,
+                'period' => $period,
+                'start_date' => $startDate->toISOString()
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Analytics Dashboard Metrics Failed', [
+                'error' => $e->getMessage()
+            ]);
+
+            // Fallback vers les données simulées Firebase
+            return response()->json([
+                'success' => true,
+                'data' => $this->analyticsService->getDashboardMetrics(),
+                'source' => 'firebase_simulation'
+            ]);
+        }
+    }
+
+    /**
+     * Obtenir les statistiques en temps réel depuis la DB
+     */
+    public function getRealTimeMetrics()
+    {
+        try {
+            $now = now();
+            $lastHour = $now->copy()->subHour();
+            $today = $now->copy()->startOfDay();
+
+            $metrics = [
+                'current_active_sessions' => AnalyticsEvent::where('timestamp', '>=', $now->copy()->subMinutes(30))->distinct('session_id')->count('session_id'),
+                'events_last_hour' => AnalyticsEvent::where('timestamp', '>=', $lastHour)->count(),
+                'page_views_today' => AnalyticsEvent::where('timestamp', '>=', $today)->where('event_type', 'page_view')->count(),
+                'unique_visitors_today' => AnalyticsEvent::where('timestamp', '>=', $today)->distinct('session_id')->count('session_id'),
+                'top_events_now' => $this->getTopEventsFromDb($lastHour, 5),
+                'latest_activities' => $this->getLatestActivitiesFromDb(20)
+            ];
+
+            return response()->json([
+                'success' => true,
+                'data' => $metrics,
+                'timestamp' => $now->toISOString()
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Analytics Real-time Metrics Failed', [
+                'error' => $e->getMessage()
+            ]);
+
+            // Fallback vers Firebase
+            return response()->json([
+                'success' => true,
+                'data' => $this->analyticsService->getRealTimeMetrics(),
+                'source' => 'firebase_simulation'
+            ]);
+        }
+    }
+
+    // Méthodes privées pour les requêtes DB
+    private function getStartDate($period)
+    {
+        switch ($period) {
+            case '1d':
+                return now()->subDay();
+            case '7d':
+                return now()->subWeek();
+            case '30d':
+                return now()->subMonth();
+            default:
+                return now()->subWeek();
+        }
+    }
+
+    private function getTopEventsFromDb($startDate, $limit = 10)
+    {
+        return AnalyticsEvent::selectRaw('event_type, COUNT(*) as count')
+            ->where('timestamp', '>=', $startDate)
+            ->groupBy('event_type')
+            ->orderBy('count', 'desc')
+            ->limit($limit)
+            ->get()
+            ->toArray();
+    }
+
+    private function getTopPagesFromDb($startDate, $limit = 10)
+    {
+        return AnalyticsEvent::selectRaw('page_path, COUNT(*) as views')
+            ->where('timestamp', '>=', $startDate)
+            ->where('event_type', 'page_view')
+            ->whereNotNull('page_path')
+            ->groupBy('page_path')
+            ->orderBy('views', 'desc')
+            ->limit($limit)
+            ->get()
+            ->toArray();
+    }
+
+    private function getHourlyActivityFromDb($startDate)
+    {
+        return AnalyticsEvent::selectRaw('EXTRACT(hour FROM timestamp) as hour, COUNT(*) as events')
+            ->where('timestamp', '>=', $startDate)
+            ->groupByRaw('EXTRACT(hour FROM timestamp)')
+            ->orderBy('hour')
+            ->get()
+            ->toArray();
+    }
+
+    private function getDeviceBreakdownFromDb($startDate)
+    {
+        return AnalyticsEvent::selectRaw('device_info->>\'isMobile\' as is_mobile, COUNT(*) as count')
+            ->where('timestamp', '>=', $startDate)
+            ->whereNotNull('device_info')
+            ->groupByRaw('device_info->>\'isMobile\'')
+            ->get()
+            ->toArray();
+    }
+
+    private function getLatestActivitiesFromDb($limit = 20)
+    {
+        return AnalyticsEvent::select('event_type', 'page_path', 'session_id', 'user_id', 'timestamp')
+            ->orderBy('timestamp', 'desc')
+            ->limit($limit)
+            ->get()
+            ->toArray();
+    }
+
+    /**
      * Informations sur l'API Analytics
      */
     public function info(): JsonResponse
@@ -288,7 +502,8 @@ class AnalyticsController extends Controller
                     'GET /api/v1/analytics/platforms' => 'Statistiques par plateforme',
                     'GET /api/v1/analytics/geographic' => 'Statistiques géographiques',
                     'POST /api/v1/analytics/clear-cache' => 'Vider le cache',
-                    'GET /api/v1/analytics/export' => 'Exporter les données CSV'
+                    'GET /api/v1/analytics/export' => 'Exporter les données CSV',
+                    'POST /api/analytics/event' => 'Enregistrer un événement'
                 ],
                 'cache_duration' => '15 minutes',
                 'last_updated' => Carbon::now()->toISOString()
