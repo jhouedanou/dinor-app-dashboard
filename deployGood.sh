@@ -240,7 +240,7 @@ log_info "🏗️ Build PWA Vue.js avec optimisations..."
 
 # Générer les fichiers statiques PWA optimisés
 npm run pwa:build
-if [ $? -eq 0 ]; then
+if [ -eq 0 ]; then
     log_success "PWA buildée avec succès"
     
     # Vérifier que les fichiers ont été générés
@@ -394,6 +394,81 @@ if [ -f artisan ]; then
             fi
         else
             log_warning "Autre problème de migration détecté, continue..."
+        fi
+    fi
+
+    # 13.bis. Vérification / correction de la colonne dinor_ingredients
+    log_info "🥣 Vérification de la colonne recipes.dinor_ingredients..."
+
+    DINOR_ING_CHECK=$($FORGE_PHP artisan tinker --execute="
+    try {
+        if (Schema::hasTable('recipes')) {
+            echo Schema::hasColumn('recipes', 'dinor_ingredients') ? 'DINOR_ING:1' : 'DINOR_ING:0';
+        } else {
+            echo 'DINOR_ING:NO_TABLE';
+        }
+    } catch (Exception \$e) {
+        echo 'DINOR_ING:ERROR:' . \$e->getMessage();
+    }
+    " 2>/dev/null | grep "DINOR_ING")
+
+    if [[ $DINOR_ING_CHECK == *"DINOR_ING:1"* ]]; then
+        log_success "✅ Colonne dinor_ingredients déjà présente"
+    else
+        log_warning "⚠️ Colonne dinor_ingredients absente, tentative de correction..."
+
+        # Tenter d'abord la migration ciblée si elle existe
+        DINOR_MIG_FILE=$(ls database/migrations/*add_dinor_ingredients_to_recipes_table*.php 2>/dev/null | head -n 1)
+        if [ -n "$DINOR_MIG_FILE" ]; then
+            log_info "🔧 Application de la migration: $DINOR_MIG_FILE"
+            if $FORGE_PHP artisan migrate --path="$DINOR_MIG_FILE" --force; then
+                log_success "✅ Migration dinor_ingredients appliquée"
+            else
+                log_warning "⚠️ Échec de la migration ciblée, tentative ALTER TABLE..."
+                DINOR_ALTER=$($FORGE_PHP artisan tinker --execute="
+                try {
+                    \Illuminate\Support\Facades\DB::statement(\"ALTER TABLE recipes ADD COLUMN dinor_ingredients JSON NULL AFTER ingredients\");
+                    echo 'ALTER:JSON_OK';
+                } catch (Exception \$e) {
+                    try {
+                        \Illuminate\Support\Facades\DB::statement(\"ALTER TABLE recipes ADD COLUMN dinor_ingredients LONGTEXT NULL AFTER ingredients\");
+                        echo 'ALTER:LONGTEXT_OK';
+                    } catch (Exception \$e2) {
+                        echo 'ALTER:ERROR:' . \$e2->getMessage();
+                    }
+                }" 2>/dev/null | grep "ALTER:")
+                log_info "Résultat: $DINOR_ALTER"
+            fi
+        else
+            log_info "ℹ️ Aucune migration ciblée trouvée, tentative ALTER TABLE directe..."
+            DINOR_ALTER=$($FORGE_PHP artisan tinker --execute="
+            try {
+                \Illuminate\Support\Facades\DB::statement(\"ALTER TABLE recipes ADD COLUMN dinor_ingredients JSON NULL AFTER ingredients\");
+                echo 'ALTER:JSON_OK';
+            } catch (Exception \$e) {
+                try {
+                    \Illuminate\Support\Facades\DB::statement(\"ALTER TABLE recipes ADD COLUMN dinor_ingredients LONGTEXT NULL AFTER ingredients\");
+                    echo 'ALTER:LONGTEXT_OK';
+                } catch (Exception \$e2) {
+                    echo 'ALTER:ERROR:' . \$e2->getMessage();
+                }
+            }" 2>/dev/null | grep "ALTER:")
+            log_info "Résultat: $DINOR_ALTER"
+        fi
+
+        # Re-vérification finale
+        DINOR_ING_RECHECK=$($FORGE_PHP artisan tinker --execute="
+        try {
+            echo Schema::hasColumn('recipes', 'dinor_ingredients') ? 'DINOR_ING_FINAL:1' : 'DINOR_ING_FINAL:0';
+        } catch (Exception \$e) {
+            echo 'DINOR_ING_FINAL:ERROR:' . \$e->getMessage();
+        }
+        " 2>/dev/null | grep "DINOR_ING_FINAL")
+
+        if [[ $DINOR_ING_RECHECK == *"DINOR_ING_FINAL:1"* ]]; then
+            log_success "✅ Colonne dinor_ingredients disponible après correction"
+        else
+            log_error "❌ Impossible d'ajouter la colonne dinor_ingredients. Vérifier manuellement."
         fi
     fi
     
@@ -734,7 +809,8 @@ echo "   ✅ Migration de la colonne 'rank' corrigée"
 echo "   ✅ Tournois configurés pour les inscriptions"
 echo "   ✅ Pages iframe opérationnelles"
 echo "   ✅ Notifications push avec colonnes content_type/content_id"
+echo "   ✅ Colonne recipes.dinor_ingredients ajoutée si manquante"
 echo ""
 echo "💡 Note: Identifiants admin identiques au développement local"
 echo ""
-echo "✅ Déploiement terminé!" 
+echo "✅ Déploiement terminé!"
