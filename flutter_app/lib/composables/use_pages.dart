@@ -179,7 +179,7 @@ class PagesNotifier extends StateNotifier<PagesState> {
   // Obtenir les pages visibles pour la navigation
   List<PageModel> getNavigationPages() {
     return state.pages
-        .where((page) => page.isPublished && page.url != null)
+        .where((page) => page.isPublished && (page.embedUrl != null || page.url != null))
         .toList();
   }
 

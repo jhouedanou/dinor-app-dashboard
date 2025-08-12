@@ -253,13 +253,16 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
     final allMenuItems = [
       ..._menuItems,
       // Ajouter les pages depuis le dashboard Filament
-      ...navigationPages.map((page) => {
-        'name': 'page_${page.id}',
-        'path': '/page/${page.id}',
-        'icon': 'link',
-        'label': page.title,
-        'action_type': page.isExternal ? 'external_link' : 'web_embed',
-        'url': page.url,
+      ...navigationPages.map((page) {
+        final String? resolvedUrl = page.embedUrl ?? page.url;
+        return {
+          'name': 'page_${page.id}',
+          'path': '/page/${page.id}',
+          'icon': 'link',
+          'label': page.title,
+          'action_type': page.isExternal ? 'external_link' : 'web_embed',
+          'url': resolvedUrl,
+        };
       }).toList(),
     ];
 

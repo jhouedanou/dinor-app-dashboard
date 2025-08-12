@@ -54,7 +54,7 @@ Status: ${response['success'] ? 'SUCCESS' : 'FAILED'}
 Nombre de pages: ${response['data']?.length ?? 0}
 
 Pages trouvées:
-${response['data']?.map((page) => '- ${page['title']} (${page['url']})').join('\n') ?? 'Aucune page'}
+${response['data']?.map((page) => '- ' + (page['title']?.toString() ?? '') + ' (url=' + (page['url']?.toString() ?? 'null') + ', embed_url=' + (page['embed_url']?.toString() ?? 'null') + ', is_external=' + (page['is_external']?.toString() ?? 'false') + ')').join('\n') ?? 'Aucune page'}
 ''';
       });
     } catch (e) {
