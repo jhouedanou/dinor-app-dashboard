@@ -509,6 +509,36 @@ class EventResource extends Resource
                     ->label('Catégorie d\'événement'),
                 Tables\Filters\SelectFilter::make('event_type'),
                 Tables\Filters\SelectFilter::make('status'),
+                Tables\Filters\Filter::make('date_range')
+                    ->form([
+                        Forms\Components\DatePicker::make('start_from')
+                            ->label('Début à partir du')
+                            ->native(false),
+                        Forms\Components\DatePicker::make('start_until')
+                            ->label('Début jusqu\'au')
+                            ->native(false),
+                    ])
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+                        if (!empty($data['start_from'])) {
+                            $indicators[] = Tables\Filters\Indicator::make('Après le ' . \Carbon\Carbon::parse($data['start_from'])->format('d/m/Y'));
+                        }
+                        if (!empty($data['start_until'])) {
+                            $indicators[] = Tables\Filters\Indicator::make('Avant le ' . \Carbon\Carbon::parse($data['start_until'])->format('d/m/Y'));
+                        }
+                        return $indicators;
+                    })
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['start_from'] ?? null,
+                                fn (Builder $q, $date): Builder => $q->whereDate('start_date', '>=', $date)
+                            )
+                            ->when(
+                                $data['start_until'] ?? null,
+                                fn (Builder $q, $date): Builder => $q->whereDate('start_date', '<=', $date)
+                            );
+                    }),
                 Tables\Filters\Filter::make('upcoming')
                     ->query(fn (Builder $query): Builder => $query->upcoming()),
                 Tables\Filters\Filter::make('is_featured')
