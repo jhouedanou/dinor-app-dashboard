@@ -134,6 +134,16 @@
                         <DinorIcon name="verified" :size="14" class="dinor-brand-icon" />
                         {{ ingredient.brand || ingredient.supplier }}
                       </div>
+                      <div v-if="ingredient.purchase_url" class="dinor-ingredient-purchase">
+                        <button 
+                          @click="openPurchaseLink(ingredient.purchase_url)"
+                          class="dinor-purchase-button"
+                          title="Acheter cet ingrédient"
+                        >
+                          <DinorIcon name="shopping_cart" :size="16" />
+                          Acheter
+                        </button>
+                      </div>
                     </div>
                   </li>
                 </ul>
@@ -718,6 +728,26 @@ export default {
       showLightbox.value = false
     }
 
+    // Fonction pour ouvrir les liens d'achat des ingrédients Dinor
+    const openPurchaseLink = (url) => {
+      if (!url) return
+      
+      try {
+        // Vérifier si l'URL est valide
+        const validUrl = new URL(url)
+        
+        // Ouvrir dans un nouvel onglet
+        window.open(url, '_blank', 'noopener,noreferrer')
+        
+        console.log('🛒 [RecipeDetail] Lien d\'achat ouvert:', url)
+      } catch (error) {
+        console.error('❌ [RecipeDetail] URL invalide:', error)
+        
+        // Afficher une notification d'erreur
+        // TODO: Implémenter un système de notifications si nécessaire
+      }
+    }
+
     // Exposer les méthodes et les refs nécessaires au template et au parent
     return {
       recipe,
@@ -753,7 +783,8 @@ export default {
       formatDinorIngredientDisplay,
       showLightbox,
       lightboxIndex,
-      closeLightbox
+      closeLightbox,
+      openPurchaseLink
     }
   }
 }
@@ -997,6 +1028,43 @@ p, span, div {
   color: #E1251B;
 }
 
+.dinor-ingredient-purchase {
+  margin-top: 0.75rem;
+}
+
+.dinor-purchase-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #E1251B 0%, #C53030 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Roboto', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(225, 37, 27, 0.2);
+}
+
+.dinor-purchase-button:hover {
+  background: linear-gradient(135deg, #C53030 0%, #9B2C2C 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(225, 37, 27, 0.3);
+}
+
+.dinor-purchase-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(225, 37, 27, 0.2);
+}
+
+.dinor-purchase-button:focus {
+  outline: 2px solid #E1251B;
+  outline-offset: 2px;
+}
+
 @media (max-width: 768px) {
   .dinor-ingredients-section {
     padding: 1rem;
@@ -1004,6 +1072,11 @@ p, span, div {
   
   .dinor-ingredient-item {
     padding: 0.75rem;
+  }
+  
+  .dinor-purchase-button {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
   }
 }
 
