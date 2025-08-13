@@ -80,6 +80,15 @@ log_success "Dépendances Composer installées"
 log_info "🔄 Mise en mode maintenance..."
 $FORGE_PHP artisan down --retry=60 --render="errors::503" --secret="dinor-maintenance-secret" || log_warning "Impossible de mettre en mode maintenance"
 
+# 5.ter Vérification du plugin Filament Spatie Media Library (pour SpatieMediaLibraryFileUpload)
+log_info "🔍 Vérification du plugin Filament Spatie Media Library..."
+if [ ! -d "vendor/filament/spatie-laravel-media-library-plugin" ]; then
+    log_warning "Plugin manquant, installation..."
+    $FORGE_COMPOSER require filament/spatie-laravel-media-library-plugin:^3.0 --no-interaction || log_error "Impossible d'installer le plugin Filament Media Library"
+else
+    log_success "Plugin Filament Spatie Media Library présent"
+fi
+
 # 6. Vérification que les dépendances critiques sont installées
 log_info "🔍 Vérification des dépendances critiques..."
 if [ ! -d "vendor/nunomaduro/collision" ]; then
@@ -381,6 +390,16 @@ if [ -f artisan ]; then
     else
         log_warning "Problème avec les migrations générales, tentative de correction..."
         
+        # Correction ciblée: migration ENUM/constraint push_notifications adaptée MySQL/Postgres
+        if [ -f database/migrations/2025_08_01_185849_add_send_now_status_to_push_notifications_table.php ]; then
+            log_info "🔧 Application de la migration push_notifications (compat MySQL/PGSQL)..."
+            if $FORGE_PHP artisan migrate --path=database/migrations/2025_08_01_185849_add_send_now_status_to_push_notifications_table.php --force; then
+                log_success "✅ Migration push_notifications appliquée"
+            else
+                log_warning "⚠️ Échec migration ciblée push_notifications (peut être déjà appliquée)"
+            fi
+        fi
+
         # Diagnostic spécifique pour la colonne 'rank' en double
         log_info "🔍 Diagnostic des problèmes de migration..."
         

@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
   # État global (remplace Pinia)
   provider: ^6.1.5
@@ -59,7 +61,7 @@ dependencies:
   permission_handler: ^11.0.1
 
   # Utils
-  intl: ^0.18.1
+  intl: ^0.20.2
   json_annotation: ^4.8.1
   equatable: ^2.0.5
 

@@ -18,6 +18,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 // Services
 import 'services/navigation_service.dart';
@@ -288,6 +289,15 @@ class _DinorAppState extends ConsumerState<DinorApp> {
     return MaterialApp(
       title: 'Dinor App - Votre chef de poche',
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('fr'),
+        Locale('en'),
+      ],
       
       // Navigation avec NavigationService
       navigatorKey: NavigationService.navigatorKey,

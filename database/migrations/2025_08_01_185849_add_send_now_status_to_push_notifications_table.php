@@ -12,9 +12,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Pour PostgreSQL, nous devons modifier l'enum en utilisant du SQL brut
-        DB::statement("ALTER TABLE push_notifications DROP CONSTRAINT push_notifications_status_check");
-        DB::statement("ALTER TABLE push_notifications ADD CONSTRAINT push_notifications_status_check CHECK (status IN ('draft', 'scheduled', 'sent', 'failed', 'send_now'))");
+        $driver = Schema::getConnection()->getDriverName();
+
+        if ($driver === 'mysql') {
+            // MySQL: modifier l'ENUM pour inclure send_now
+            DB::statement("ALTER TABLE push_notifications MODIFY status ENUM('draft','scheduled','sent','failed','send_now') NOT NULL DEFAULT 'draft'");
+        } elseif ($driver === 'pgsql') {
+            // PostgreSQL: utiliser une contrainte CHECK (tolérer l'absence de contrainte)
+            DB::statement("ALTER TABLE push_notifications DROP CONSTRAINT IF EXISTS push_notifications_status_check");
+            DB::statement("ALTER TABLE push_notifications ADD CONSTRAINT push_notifications_status_check CHECK (status IN ('draft','scheduled','sent','failed','send_now'))");
+        } else {
+            // Autres SGBD: ne rien faire (pas critique)
+        }
     }
 
     /**
@@ -22,8 +31,17 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Remettre l'ancienne contrainte
-        DB::statement("ALTER TABLE push_notifications DROP CONSTRAINT push_notifications_status_check");
-        DB::statement("ALTER TABLE push_notifications ADD CONSTRAINT push_notifications_status_check CHECK (status IN ('draft', 'scheduled', 'sent', 'failed'))");
+        $driver = Schema::getConnection()->getDriverName();
+
+        if ($driver === 'mysql') {
+            // Revenir à l'ENUM sans send_now
+            DB::statement("ALTER TABLE push_notifications MODIFY status ENUM('draft','scheduled','sent','failed') NOT NULL DEFAULT 'draft'");
+        } elseif ($driver === 'pgsql') {
+            // Restaurer la contrainte CHECK d'origine
+            DB::statement("ALTER TABLE push_notifications DROP CONSTRAINT IF EXISTS push_notifications_status_check");
+            DB::statement("ALTER TABLE push_notifications ADD CONSTRAINT push_notifications_status_check CHECK (status IN ('draft','scheduled','sent','failed'))");
+        } else {
+            // Autres SGBD: pas d'action
+        }
     }
 };
