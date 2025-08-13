@@ -179,28 +179,48 @@ class _DinorTVScreenState extends ConsumerState<DinorTVScreen> with AutomaticKee
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
-      appBar: AppBar(
-        title: SvgPicture.asset(
-          'assets/images/LOGO_DINOR_monochrome.svg',
-          width: 32,
-          height: 32,
-          colorFilter: const ColorFilter.mode(
-            Color(0xFF2D3748),
-            BlendMode.srcIn,
+      body: Column(
+        children: [
+          // Header personnalisé sans espace superflu
+          Container(
+            color: Colors.white,
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top,
+              left: 16,
+              right: 16,
+              bottom: 0,
+            ),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3748)),
+                  onPressed: () => NavigationService.pop(),
+                ),
+                Expanded(
+                  child: Center(
+                    child: SvgPicture.asset(
+                      'assets/images/LOGO_DINOR_monochrome.svg',
+                      width: 32,
+                      height: 32,
+                      colorFilter: const ColorFilter.mode(
+                        Color(0xFF2D3748),
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 48), // Pour équilibrer le bouton retour
+              ],
+            ),
           ),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 2,
-        toolbarHeight: 56,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3748)),
-          onPressed: () => NavigationService.pop(),
-        ),
-      ),
-      body: RefreshIndicator(
-        onRefresh: _handleRefresh,
-        child: _buildBody(videos, loading, error),
+          // Body
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: _handleRefresh,
+              child: _buildBody(videos, loading, error),
+            ),
+          ),
+        ],
       ),
     );
   }

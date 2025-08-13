@@ -94,7 +94,7 @@ Vérifiez:
               top: MediaQuery.of(context).padding.top,
               left: 16,
               right: 16,
-              bottom: 8,
+              bottom: 0,
             ),
             child: Row(
               children: [
