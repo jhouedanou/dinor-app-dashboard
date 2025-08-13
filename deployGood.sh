@@ -303,6 +303,35 @@ else
     $FORGE_PHP artisan vendor:publish --provider="Spatie\\MediaLibrary\\MediaLibraryServiceProvider" --tag="migrations" --force 2>/dev/null || log_warning "Publication des migrations MediaLibrary échouée"
 fi
 
+# 12.ter Vérification de l'existence de la table media (Spatie) et correction si nécessaire
+log_info "🧪 Vérification de l'existence de la table media..."
+MEDIA_CHECK=$($FORGE_PHP artisan tinker --execute="echo Schema::hasTable('media') ? 'MEDIA:1' : 'MEDIA:0';" 2>/dev/null | grep "MEDIA:")
+if [[ $MEDIA_CHECK == *"MEDIA:0"* ]]; then
+    log_warning "⚠️ Table media absente, tentative de migration ciblée..."
+    # Republier au cas où et migrer spécifiquement le fichier create_media_table
+    $FORGE_PHP artisan vendor:publish --provider="Spatie\\MediaLibrary\\MediaLibraryServiceProvider" --tag="migrations" --force 2>/dev/null || true
+    MEDIA_FILE=$(ls database/migrations/*create_media_table*.php 2>/dev/null | head -n 1)
+    if [ -n "$MEDIA_FILE" ]; then
+        if $FORGE_PHP artisan migrate --path="$MEDIA_FILE" --force; then
+            log_success "✅ Table media créée via migration: $MEDIA_FILE"
+        else
+            log_warning "⚠️ Échec de la migration ciblée media ($MEDIA_FILE)"
+        fi
+    else
+        log_warning "⚠️ Aucune migration create_media_table trouvée"
+    fi
+
+    # Re-vérifier
+    MEDIA_RECHECK=$($FORGE_PHP artisan tinker --execute="echo Schema::hasTable('media') ? 'MEDIA_FINAL:1' : 'MEDIA_FINAL:0';" 2>/dev/null | grep "MEDIA_FINAL:")
+    if [[ $MEDIA_RECHECK == *"MEDIA_FINAL:1"* ]]; then
+        log_success "✅ Table media disponible après correction"
+    else
+        log_error "❌ Impossible de créer la table media automatiquement. Vérifier manuellement."
+    fi
+else
+    log_success "✅ Table media déjà présente"
+fi
+
 # 13. Migration de la base de données avec correction des erreurs
 log_info "🗄️ Migration de la base de données avec corrections..."
 if [ -f artisan ]; then
