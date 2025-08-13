@@ -58,6 +58,7 @@ export default {
       { name: 'recipes', path: '/recipes', icon: 'chef-hat', label: 'Recettes', action_type: 'route' },
       { name: 'tips', path: '/tips', icon: 'lightbulb', label: 'Astuces', action_type: 'route' },
       { name: 'events', path: '/events', icon: 'calendar', label: 'Événements', action_type: 'route' },
+      { name: 'pages', path: '/pages', icon: 'book-open', label: 'Pages', action_type: 'route' },
       { name: 'dinor-tv', path: '/dinor-tv', icon: 'play-circle', label: 'DinorTV', action_type: 'route' },
       { name: 'profile', path: '/profile', icon: 'user', label: 'Profil', action_type: 'route' }
     ])
@@ -229,7 +230,7 @@ export default {
   border-radius: 16px;
   min-width: 0;
   flex: 1;
-  max-width: 80px;
+  max-width: 70px;
   font-family: 'Roboto', sans-serif; /* Police Roboto pour les textes */
   
   /* Améliorer les interactions tactiles */
@@ -345,7 +346,7 @@ export default {
 }
 
 .nav-label {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
   text-align: center;
   line-height: 1.2;
