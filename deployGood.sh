@@ -501,12 +501,15 @@ if [ -f artisan ]; then
     if [[ $SPLASH_CHECK == *"SPLASH:0"* ]]; then
         log_warning "⚠️ Table splash_screens absente, tentative de migration ciblée..."
         if [ -f database/migrations/2025_08_13_205112_create_splash_screens_table.php ]; then
+            # Appliquer une correction à chaud pour les apostrophes ASCII qui cassent MySQL
+            sed -i "s/Chargement de l\\'application/Chargement de l’application/g" database/migrations/2025_08_13_205112_create_splash_screens_table.php 2>/dev/null || true
             if $FORGE_PHP artisan migrate --path=database/migrations/2025_08_13_205112_create_splash_screens_table.php --force; then
                 log_success "✅ Table splash_screens créée via migration ciblée"
             else
                 log_warning "⚠️ Échec de la migration ciblée, tentative via glob..."
                 FILE=$(ls database/migrations/*create_splash_screens_table*.php 2>/dev/null | head -n 1)
                 if [ -n "$FILE" ]; then
+                    sed -i "s/Chargement de l\\'application/Chargement de l’application/g" "$FILE" 2>/dev/null || true
                     $FORGE_PHP artisan migrate --path="$FILE" --force 2>/dev/null || log_warning "Migration via glob échouée"
                 else
                     log_warning "⚠️ Aucune migration create_splash_screens_table trouvée"

@@ -19,7 +19,8 @@ return new class extends Migration
             
             // Contenu textuel
             $table->string('title')->default('Dinor se prépare...');
-            $table->string('subtitle')->default('Chargement de l\'application');
+            // Avoid ASCII apostrophe in default to prevent MySQL quoting issues during deployment
+            $table->string('subtitle')->default('Chargement de l’application');
             
             // Timing
             $table->integer('duration')->default(2500); // millisecondes
