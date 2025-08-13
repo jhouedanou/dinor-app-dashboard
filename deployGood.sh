@@ -311,6 +311,10 @@ if [[ $MEDIA_CHECK == *"MEDIA:0"* ]]; then
     # Republier au cas où et migrer spécifiquement le fichier create_media_table
     $FORGE_PHP artisan vendor:publish --provider="Spatie\\MediaLibrary\\MediaLibraryServiceProvider" --tag="migrations" --force 2>/dev/null || true
     MEDIA_FILE=$(ls database/migrations/*create_media_table*.php 2>/dev/null | head -n 1)
+    # Fallback to our published filename if glob fails
+    if [ -z "$MEDIA_FILE" ] && [ -f database/migrations/2025_08_13_215618_create_media_table.php ]; then
+        MEDIA_FILE=database/migrations/2025_08_13_215618_create_media_table.php
+    fi
     if [ -n "$MEDIA_FILE" ]; then
         if $FORGE_PHP artisan migrate --path="$MEDIA_FILE" --force; then
             log_success "✅ Table media créée via migration: $MEDIA_FILE"
