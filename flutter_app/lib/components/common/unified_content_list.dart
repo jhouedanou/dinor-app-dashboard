@@ -48,8 +48,11 @@ class _UnifiedContentListState extends ConsumerState<UnifiedContentList> {
   bool _isLoading = true;
   bool _isLoadingMore = false;
   bool _showTags = false;
+  bool _showDateFilters = false;
   String? _error;
   int _currentPage = 0;
+  DateTime? _startDate;
+  DateTime? _endDate;
 
   @override
   void initState() {
@@ -153,7 +156,21 @@ class _UnifiedContentListState extends ConsumerState<UnifiedContentList> {
           matchesTags = _selectedTags.contains(categoryName);
         }
         
-        return matchesSearch && matchesTags;
+        // Filtre par dates (pour les événements)
+        bool matchesDate = true;
+        if (widget.contentType == 'event' && (_startDate != null || _endDate != null)) {
+          DateTime? itemDate = _extractDateFromItem(item);
+          if (itemDate != null) {
+            if (_startDate != null && itemDate.isBefore(_startDate!)) {
+              matchesDate = false;
+            }
+            if (_endDate != null && itemDate.isAfter(_endDate!.add(const Duration(days: 1)))) {
+              matchesDate = false;
+            }
+          }
+        }
+        
+        return matchesSearch && matchesTags && matchesDate;
       }).toList();
       
       // Reset pagination
@@ -348,6 +365,114 @@ class _UnifiedContentListState extends ConsumerState<UnifiedContentList> {
               ),
             ],
           ],
+          
+          // Filtre par dates (pour les événements)
+          if (widget.contentType == 'event') ...[
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                const Text(
+                  'Filtrer par dates',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Spacer(),
+                IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _showDateFilters = !_showDateFilters;
+                    });
+                  },
+                  icon: Icon(_showDateFilters ? LucideIcons.chevronUp : LucideIcons.chevronDown),
+                ),
+              ],
+            ),
+            
+            if (_showDateFilters) ...[
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  // Date de début
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => _selectStartDate(context),
+                      child: InputDecorator(
+                        decoration: const InputDecoration(
+                          labelText: 'Date de début',
+                          border: OutlineInputBorder(),
+                          suffixIcon: Icon(LucideIcons.calendar),
+                        ),
+                        child: Text(
+                          _startDate != null
+                              ? '${_startDate!.day.toString().padLeft(2, '0')}/${_startDate!.month.toString().padLeft(2, '0')}/${_startDate!.year}'
+                              : 'Sélectionner',
+                          style: TextStyle(
+                            color: _startDate != null ? Colors.black : Colors.grey,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  // Date de fin
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => _selectEndDate(context),
+                      child: InputDecorator(
+                        decoration: const InputDecoration(
+                          labelText: 'Date de fin',
+                          border: OutlineInputBorder(),
+                          suffixIcon: Icon(LucideIcons.calendar),
+                        ),
+                        child: Text(
+                          _endDate != null
+                              ? '${_endDate!.day.toString().padLeft(2, '0')}/${_endDate!.month.toString().padLeft(2, '0')}/${_endDate!.year}'
+                              : 'Sélectionner',
+                          style: TextStyle(
+                            color: _endDate != null ? Colors.black : Colors.grey,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              
+              if (_startDate != null || _endDate != null) ...[
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          _startDate = null;
+                          _endDate = null;
+                        });
+                        _filterItems();
+                      },
+                      icon: const Icon(LucideIcons.x, size: 16),
+                      label: const Text('Effacer les dates'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey[100],
+                        foregroundColor: Colors.grey[600],
+                        elevation: 0,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      '${_filteredItems.length} événement${_filteredItems.length > 1 ? 's' : ''} trouvé${_filteredItems.length > 1 ? 's' : ''}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF718096),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ],
         ],
       ),
     );
@@ -491,5 +616,76 @@ class _UnifiedContentListState extends ConsumerState<UnifiedContentList> {
   int _getRemainingItemsCount() {
     final remaining = _filteredItems.length - _displayedItems.length;
     return remaining.clamp(0, widget.itemsPerPage);
+  }
+
+  // Extraire la date d'un élément pour le filtrage
+  DateTime? _extractDateFromItem(Map<String, dynamic> item) {
+    final possibleDateFields = [
+      'date', 'event_date', 'start_date', 'scheduled_date', 
+      'datetime', 'event_datetime', 'start_datetime', 'begins_at',
+      'created_at', 'published_at'
+    ];
+    
+    for (final field in possibleDateFields) {
+      final value = item[field];
+      if (value != null && value.toString().isNotEmpty) {
+        try {
+          return DateTime.parse(value.toString());
+        } catch (e) {
+          // Essayer d'autres formats
+          try {
+            final parts = value.toString().split('/');
+            if (parts.length == 3) {
+              return DateTime(
+                int.parse(parts[2]), // année
+                int.parse(parts[1]), // mois  
+                int.parse(parts[0]), // jour
+              );
+            }
+          } catch (e) {
+            continue;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  // Sélectionner la date de début
+  Future<void> _selectStartDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _startDate ?? DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2030),
+      locale: const Locale('fr', 'FR'),
+    );
+    if (picked != null && picked != _startDate) {
+      setState(() {
+        _startDate = picked;
+        // Si la date de fin est antérieure à la date de début, la réinitialiser
+        if (_endDate != null && _endDate!.isBefore(_startDate!)) {
+          _endDate = null;
+        }
+      });
+      _filterItems();
+    }
+  }
+
+  // Sélectionner la date de fin
+  Future<void> _selectEndDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _endDate ?? _startDate ?? DateTime.now(),
+      firstDate: _startDate ?? DateTime(2020),
+      lastDate: DateTime(2030),
+      locale: const Locale('fr', 'FR'),
+    );
+    if (picked != null && picked != _endDate) {
+      setState(() {
+        _endDate = picked;
+      });
+      _filterItems();
+    }
   }
 }

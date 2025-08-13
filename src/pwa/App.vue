@@ -62,6 +62,7 @@ import { computed, ref, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useSocialShare } from '@/composables/useSocialShare'
 import { useAuthStore } from '@/stores/auth'
+import { notificationService } from '@/services/notificationService'
 import AppHeader from '@/components/common/AppHeader.vue'
 import BottomNavigation from '@/components/navigation/BottomNavigation.vue'
 import InstallPrompt from '@/components/common/InstallPrompt.vue'
@@ -249,10 +250,26 @@ export default {
       console.log('🎉 [App] Chargement terminé, app prête !')
     }
     
-    // Pour tester, on peut forcer le loading à s'arrêter après un délai
-    onMounted(() => {
+    // Initialisation des services
+    onMounted(async () => {
       // Le loading se terminera automatiquement via le composant LoadingScreen
       console.log('🚀 [App] Application démarrée avec loading screen')
+      
+      // Initialiser le service de notifications
+      try {
+        await notificationService.init()
+        
+        // Demander la permission après un délai pour une meilleure UX
+        setTimeout(async () => {
+          const status = notificationService.getStatus()
+          if (status.isSupported && status.permission === 'default') {
+            console.log('🔔 Demande de permission notifications...')
+            await notificationService.requestPermissionWithPrompt()
+          }
+        }, 3000) // Attendre 3 secondes après le chargement
+      } catch (error) {
+        console.error('❌ Erreur initialisation notifications:', error)
+      }
     })
     
     return {

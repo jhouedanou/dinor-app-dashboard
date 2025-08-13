@@ -254,7 +254,7 @@ class ContentItemCard extends StatelessWidget {
         break;
       case 'event':
         icon = LucideIcons.calendar;
-        label = 'Événement';
+        label = _getEventDateRange();
         color = const Color(0xFFE53E3E);
         break;
       default:
@@ -535,6 +535,80 @@ class ContentItemCard extends StatelessWidget {
         return LucideIcons.calendar;
       default:
         return LucideIcons.fileText;
+    }
+  }
+
+  // Méthode pour obtenir la plage de dates pour les événements
+  String _getEventDateRange() {
+    if (contentType != 'event') return 'Événement';
+    
+    // Essayer différents champs possibles pour la date de début
+    final possibleStartDateFields = [
+      'date', 'start_date', 'event_date', 'scheduled_date', 
+      'datetime', 'event_datetime', 'start_datetime', 'begins_at'
+    ];
+    
+    // Essayer différents champs possibles pour la date de fin
+    final possibleEndDateFields = [
+      'end_date', 'finish_date', 'event_end_date', 'end_datetime', 
+      'event_end_datetime', 'ends_at', 'until'
+    ];
+    
+    String? startDate;
+    String? endDate;
+    
+    // Chercher la date de début
+    for (final field in possibleStartDateFields) {
+      final value = item[field];
+      if (value != null && value.toString().isNotEmpty) {
+        startDate = _formatDateShort(value.toString());
+        break;
+      }
+    }
+    
+    // Chercher la date de fin
+    for (final field in possibleEndDateFields) {
+      final value = item[field];
+      if (value != null && value.toString().isNotEmpty) {
+        endDate = _formatDateShort(value.toString());
+        break;
+      }
+    }
+    
+    // Construire le label en fonction des dates trouvées
+    if (startDate != null && endDate != null && startDate != endDate) {
+      return '$startDate-$endDate';
+    } else if (startDate != null) {
+      return startDate;
+    } else {
+      return 'Événement';
+    }
+  }
+
+  // Méthode pour formater une date courte (ex: "15/03/2024")
+  String _formatDateShort(String? dateString) {
+    if (dateString == null || dateString.isEmpty) return '';
+    try {
+      final date = DateTime.parse(dateString);
+      return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+    } catch (e) {
+      // Si ce n'est pas parsable comme DateTime ISO, essayer d'autres formats
+      try {
+        // Essayer format dd/mm/yyyy
+        final parts = dateString.split('/');
+        if (parts.length >= 3) {
+          return '${parts[0].padLeft(2, '0')}/${parts[1].padLeft(2, '0')}/${parts[2]}';
+        } else if (parts.length >= 2) {
+          return '${parts[0].padLeft(2, '0')}/${parts[1].padLeft(2, '0')}/${DateTime.now().year}';
+        }
+      } catch (e) {
+        // Essayer format yyyy-mm-dd
+        final parts = dateString.split('-');
+        if (parts.length >= 3) {
+          return '${parts[2].padLeft(2, '0')}/${parts[1].padLeft(2, '0')}/${parts[0]}';
+        }
+      }
+      return dateString.length > 10 ? dateString.substring(0, 10) : dateString;
     }
   }
 } 

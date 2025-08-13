@@ -34,6 +34,8 @@ import '../components/common/auth_modal.dart';
 import '../components/common/share_modal.dart';
 import '../components/common/image_gallery_carousel.dart';
 import '../components/common/maps_modal.dart';
+import '../components/common/accordion.dart';
+import '../components/common/unified_video_player.dart';
 
 // Services
 import '../services/api_service.dart';
@@ -74,7 +76,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
     try {
       print('📅 [EventDetailScreen] Chargement détails événement: ${widget.id}');
       final apiService = ref.read(apiServiceProvider);
-      final data = await apiService.get('/events/${widget.id}');
+      final data = await apiService.get('/events/${widget.id}?include=category,organizer,location,gallery&fields=*');
 
       if (data['success'] == true) {
         print('📅 [EventDetailScreen] Données reçues: ${data['data']}');
@@ -300,10 +302,19 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
                     children: [
                       _buildEventInfo(),
                       const SizedBox(height: 24),
-                      _buildEventDescription(),
+                      _buildEventDescriptionAccordion(),
                       const SizedBox(height: 24),
-                      _buildEventGallery(),
+                      _buildEventGalleryAccordion(),
+                      const SizedBox(height: 24),
+                      _buildVideoSection(),
+                      const SizedBox(height: 24),
                       _buildEventDetails(),
+                      const SizedBox(height: 24),
+                      _buildPricingSection(),
+                      const SizedBox(height: 24),
+                      _buildContactSection(),
+                      const SizedBox(height: 24),
+                      _buildOrganizerSection(),
                       const SizedBox(height: 24),
                       _buildCommentsSection(),
                     ],
@@ -320,7 +331,12 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
                 'title': _event!['title'],
                 'text': _event!['description'],
                 'url': 'https://new.dinorapp.com/pwa/event/${widget.id}',
-                'image': _event!['image'] ?? _event!['thumbnail'],
+                'image': _event!['image'] ?? 
+                         _event!['thumbnail'] ?? 
+                         _event!['image_url'] ?? 
+                         _event!['thumbnail_url'] ?? 
+                         _event!['featured_image'] ?? 
+                         _event!['featured_image_url'],
               },
               onClose: _closeShareModal,
             ),
@@ -330,7 +346,12 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
   }
 
   Widget _buildHeroImage() {
-    final image = _event!['image'] ?? _event!['thumbnail'] ?? '';
+    final image = _event!['image'] ?? 
+                  _event!['thumbnail'] ?? 
+                  _event!['image_url'] ?? 
+                  _event!['thumbnail_url'] ?? 
+                  _event!['featured_image'] ?? 
+                  _event!['featured_image_url'] ?? '';
     
     return Stack(
       children: [
@@ -466,34 +487,21 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
     );
   }
 
-  Widget _buildEventDescription() {
+  Widget _buildEventDescriptionAccordion() {
     final description = _event!['description'] ?? '';
-    
     if (description.isEmpty) return const SizedBox.shrink();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Description',
-          style: TextStyle(
-            fontFamily: 'OpenSans',
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF2D3748),
-          ),
+    return Accordion(
+      title: 'Description',
+      initiallyOpen: true,
+      child: Text(
+        description,
+        style: const TextStyle(
+          fontFamily: 'OpenSans',
+          fontSize: 16,
+          color: Color(0xFF4A5568),
+          height: 1.5,
         ),
-        const SizedBox(height: 8),
-        Text(
-          description,
-          style: const TextStyle(
-            fontFamily: 'OpenSans',
-            fontSize: 16,
-            color: Color(0xFF4A5568),
-            height: 1.5,
-          ),
-        ),
-      ],
+      ),
     );
   }
 
@@ -558,11 +566,11 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
     }
   }
 
-  Widget _buildEventGallery() {
-    // Vérifier si l'événement a des images de galerie
+  Widget _buildEventGalleryAccordion() {
     if (_event!['gallery_urls'] != null && (_event!['gallery_urls'] as List).isNotEmpty) {
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 24),
+      return Accordion(
+        title: 'Galerie photos',
+        initiallyOpen: false,
         child: ImageGalleryCarousel(
           images: List<String>.from(_event!['gallery_urls']),
           title: 'Galerie photos',
@@ -571,6 +579,124 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
       );
     }
     return const SizedBox.shrink();
+  }
+
+  Widget _buildVideoSection() {
+    final videoUrl = _event!['video_url'] ??
+        _event!['promotional_video'] ??
+        _event!['promo_video'] ??
+        _event!['youtube_url'] ??
+        _event!['vimeo_url'];
+    if (videoUrl == null) return const SizedBox.shrink();
+    return Accordion(
+      title: 'Vidéo promotionnelle',
+      initiallyOpen: false,
+      child: UnifiedVideoPlayer(
+        videoUrl: videoUrl,
+        title: 'Voir la vidéo promotionnelle',
+        subtitle: 'Appuyez pour ouvrir',
+      ),
+    );
+  }
+
+  Widget _buildPricingSection() {
+    final info = <String, String>{};
+    final priceFields = {
+      'is_paid': 'Événement payant',
+      'is_free': 'Événement gratuit',
+      'price': 'Prix',
+      'ticket_price': 'Prix du billet',
+      'entry_fee': 'Frais d\'entrée',
+      'fee': 'Frais',
+      'cost': 'Coût',
+      'price_min': 'Prix minimum',
+      'price_max': 'Prix maximum',
+      'currency': 'Devise',
+      'registration_fee': 'Frais d\'inscription',
+      'registration_status': 'Statut d\'inscription',
+      'tickets_url': 'Lien billets',
+      'registration_url': 'Lien d\'inscription',
+    };
+    priceFields.forEach((field, label) {
+      final value = _event![field];
+      if (value != null && value.toString().isNotEmpty && value.toString() != '0') {
+        info[label] = value.toString();
+      }
+    });
+    if (info.isEmpty) return const SizedBox.shrink();
+    return Accordion(
+      title: 'Tarification',
+      initiallyOpen: false,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: info.entries
+            .map((e) => _buildInfoRow(e.key, e.value))
+            .toList(),
+      ),
+    );
+  }
+
+  Widget _buildContactSection() {
+    final contactInfo = <String, String>{};
+    final fields = {
+      'contact_name': 'Contact principal',
+      'contact_email': 'Email de contact',
+      'contact_phone': 'Téléphone de contact',
+      'website': 'Site web',
+      'facebook': 'Facebook',
+      'instagram': 'Instagram',
+      'twitter': 'Twitter',
+      'linkedin': 'LinkedIn',
+      'social_media': 'Réseaux sociaux',
+    };
+    fields.forEach((field, label) {
+      final value = _event![field];
+      if (value != null && value.toString().isNotEmpty) {
+        contactInfo[label] = value.toString();
+      }
+    });
+    if (contactInfo.isEmpty) return const SizedBox.shrink();
+    return Accordion(
+      title: 'Contact',
+      initiallyOpen: false,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children:
+            contactInfo.entries.map((e) => _buildInfoRow(e.key, e.value)).toList(),
+      ),
+    );
+  }
+
+  Widget _buildOrganizerSection() {
+    final info = <String, String>{};
+    final fields = {
+      'organizer': 'Nom de l\'organisateur',
+      'organiser': 'Nom de l\'organisateur',
+      'organizer_description': 'À propos',
+      'organizer_bio': 'Biographie',
+      'organizer_email': 'Email',
+      'organizer_phone': 'Téléphone',
+      'organizer_website': 'Site web',
+      'organizer_facebook': 'Facebook',
+      'organizer_instagram': 'Instagram',
+      'organizer_twitter': 'Twitter',
+      'organizer_linkedin': 'LinkedIn',
+    };
+    fields.forEach((field, label) {
+      final value = _event![field];
+      if (value != null && value.toString().isNotEmpty) {
+        info[label] = value.toString();
+      }
+    });
+    if (info.isEmpty) return const SizedBox.shrink();
+    return Accordion(
+      title: 'Organisateur',
+      initiallyOpen: false,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: info.entries.map((e) => _buildInfoRow(e.key, e.value)).toList(),
+      ),
+    );
   }
 
   Widget _buildEventDetails() {
@@ -584,10 +710,10 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Colors.black,
-            blurRadius: 10,
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
@@ -649,14 +775,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
                 ),
               ),
               const SizedBox(height: 2),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontFamily: 'OpenSans',
-                  fontSize: 14,
-                  color: Color(0xFF2D3748),
-                ),
-              ),
+              _buildValueWithOptionalPhoneLink(label, value),
             ],
           ),
         ),
@@ -665,57 +784,126 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
   }
 
   Widget _buildLocationRow(String location) {
-    return Row(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(
-          Icons.location_on_outlined,
-          size: 20,
-          color: const Color(0xFFF4D03F),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              Icons.location_on_outlined,
+              size: 20,
+              color: const Color(0xFFF4D03F),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Lieu',
+                    style: const TextStyle(
+                      fontFamily: 'OpenSans',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF718096),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  GestureDetector(
+                    onTap: () => showMapsModal(context, location),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            location,
+                            style: const TextStyle(
+                              fontFamily: 'OpenSans',
+                              fontSize: 14,
+                              color: Color(0xFF3182CE),
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Icon(
+                          Icons.map_outlined,
+                          size: 16,
+                          color: const Color(0xFF3182CE),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        const SizedBox(height: 12),
+        // Boutons pour les cartes et calendrier
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            _buildActionButton(
+              'Google Maps',
+              Icons.map,
+              () => _openGoogleMaps(location),
+              const Color(0xFF4285F4),
+            ),
+            _buildActionButton(
+              'Apple Maps',
+              Icons.map_outlined,
+              () => _openAppleMaps(location),
+              const Color(0xFF007AFF),
+            ),
+            _buildActionButton(
+              'Yandex Maps',
+              Icons.alt_route,
+              () => _openYandexMaps(location),
+              const Color(0xFFFFCC00),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButton(String label, IconData icon, VoidCallback onTap, Color color) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: color.withOpacity(0.3)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
+              Icon(
+                icon,
+                size: 16,
+                color: color,
+              ),
+              const SizedBox(width: 6),
               Text(
-                'Lieu',
-                style: const TextStyle(
+                label,
+                style: TextStyle(
                   fontFamily: 'OpenSans',
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
-                  color: Color(0xFF718096),
-                ),
-              ),
-              const SizedBox(height: 2),
-              GestureDetector(
-                onTap: () => showMapsModal(context, location),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        location,
-                        style: const TextStyle(
-                          fontFamily: 'OpenSans',
-                          fontSize: 14,
-                          color: Color(0xFF3182CE), // Bleu pour indiquer que c'est cliquable
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Icon(
-                      Icons.map_outlined,
-                      size: 16,
-                      color: const Color(0xFF3182CE),
-                    ),
-                  ],
+                  color: color,
                 ),
               ),
             ],
           ),
         ),
-      ],
+      ),
     );
   }
 
@@ -764,6 +952,57 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
     }
   }
 
+  Future<void> _openAppleMaps(String location) async {
+    try {
+      final encodedLocation = Uri.encodeComponent(location);
+      final appleMapsUrl = 'http://maps.apple.com/?q=$encodedLocation';
+      final appleMapsUri = Uri.parse(appleMapsUrl);
+      
+      if (await canLaunchUrl(appleMapsUri)) {
+        await launchUrl(appleMapsUri, mode: LaunchMode.externalApplication);
+        print('📍 [EventDetailScreen] Ouverture Apple Maps: $location');
+      } else {
+        throw Exception('Impossible d\'ouvrir Apple Maps');
+      }
+    } catch (e) {
+      print('❌ [EventDetailScreen] Erreur ouverture Apple Maps: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Apple Maps n\'est pas disponible sur cet appareil'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _openYandexMaps(String location) async {
+    try {
+      final encodedLocation = Uri.encodeComponent(location);
+      final yandexMapsUrl = 'https://yandex.com/maps/?text=$encodedLocation';
+      final yandexMapsUri = Uri.parse(yandexMapsUrl);
+      
+      if (await canLaunchUrl(yandexMapsUri)) {
+        await launchUrl(yandexMapsUri, mode: LaunchMode.externalApplication);
+        print('📍 [EventDetailScreen] Ouverture Yandex Maps: $location');
+      } else {
+        throw Exception('Impossible d\'ouvrir Yandex Maps');
+      }
+    } catch (e) {
+      print('❌ [EventDetailScreen] Erreur ouverture Yandex Maps: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Impossible d\'ouvrir Yandex Maps'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+
   Widget _buildCommentsSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -784,10 +1023,10 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
-            boxShadow: const [
+            boxShadow: [
               BoxShadow(
-                color: Colors.black,
-                blurRadius: 10,
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
             ],
@@ -805,5 +1044,99 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
         ),
       ],
     );
+  }
+
+  String _formatDisplayValue(dynamic raw) {
+    if (raw == null) return '';
+    if (raw is bool) return raw ? 'oui' : 'non';
+    var value = raw.toString().trim();
+    if (value.isEmpty) return '';
+    final lower = value.toLowerCase();
+    if (lower == 'false' || lower == '0' || lower == 'no' || lower == 'non') return 'non';
+    if (lower == 'true' || lower == '1' || lower == 'yes' || lower == 'oui') return 'oui';
+    final translations = <String, String>{
+      'free': 'gratuit',
+      'paid': 'payant',
+      'open': 'ouvert',
+      'closed': 'fermé',
+      'pending': 'en attente',
+      'cancelled': 'annulé',
+      'canceled': 'annulé',
+      'confirmed': 'confirmé',
+      'online': 'en ligne',
+      'offline': 'sur place',
+      'english': 'anglais',
+      'french': 'français',
+      'spanish': 'espagnol',
+      'german': 'allemand',
+      'all_ages': 'tous les âges',
+      'alll_ages': 'tous les âges',
+    };
+    if (translations.containsKey(lower)) {
+      return translations[lower]!;
+    }
+    return value;
+  }
+
+  Widget _buildValueWithOptionalPhoneLink(String label, String rawValue) {
+    final value = _formatDisplayValue(rawValue);
+    if (value.isEmpty) return const SizedBox.shrink();
+    final isPhone = _isPhoneLabel(label) || _looksLikePhone(rawValue);
+    if (!isPhone) {
+      return Text(
+        value,
+        style: const TextStyle(
+          fontFamily: 'OpenSans',
+          fontSize: 14,
+          color: Color(0xFF2D3748),
+        ),
+      );
+    }
+    return InkWell(
+      onTap: () => _launchPhone(rawValue),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.phone, size: 16, color: Color(0xFF3182CE)),
+          const SizedBox(width: 6),
+          Text(
+            value,
+            style: const TextStyle(
+              fontFamily: 'OpenSans',
+              fontSize: 14,
+              color: Color(0xFF3182CE),
+              decoration: TextDecoration.underline,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  bool _isPhoneLabel(String label) {
+    final l = label.toLowerCase();
+    return l.contains('téléphone') || l.contains('phone') || l.contains('tel');
+  }
+
+  bool _looksLikePhone(String value) {
+    final v = value.replaceAll(RegExp(r'[^0-9+]+'), '');
+    return RegExp(r'^\+?[0-9]{6,}$').hasMatch(v);
+  }
+
+  Future<void> _launchPhone(String value) async {
+    final normalized = value.replaceAll(RegExp(r'[^0-9+]+'), '');
+    final uri = Uri.parse('tel:$normalized');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Impossible d\'ouvrir l\'application téléphone'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }

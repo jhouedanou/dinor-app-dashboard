@@ -78,43 +78,43 @@ define(['./workbox-fb107ff4'], (function (workbox) { 'use strict';
    * See https://goo.gl/S9QRab
    */
   workbox.precacheAndRoute([{
+    "url": "assets/Badge.CdKG500o.js",
+    "revision": null
+  }, {
     "url": "assets/Badge.CyRVNslW.css",
     "revision": null
   }, {
-    "url": "assets/Badge.DyXEPUhr.js",
-    "revision": null
-  }, {
-    "url": "assets/BannerSection.B2oN4XQD.js",
+    "url": "assets/BannerSection.BIM1sVFf.js",
     "revision": null
   }, {
     "url": "assets/BannerSection.CMVqwP19.css",
     "revision": null
   }, {
+    "url": "assets/CookiePolicy.BYWDrLb4.js",
+    "revision": null
+  }, {
     "url": "assets/CookiePolicy.CBPAEsFF.css",
     "revision": null
   }, {
-    "url": "assets/CookiePolicy.CSxVrOZD.js",
-    "revision": null
-  }, {
-    "url": "assets/DinorTV.DBlqFKSB.js",
+    "url": "assets/DinorTV.BShmoHS7.js",
     "revision": null
   }, {
     "url": "assets/DinorTV.Dg3lzYbb.css",
     "revision": null
   }, {
-    "url": "assets/EventDetail.CClnn6Z9.js",
+    "url": "assets/EventDetail.D3519ub4.css",
     "revision": null
   }, {
-    "url": "assets/EventDetail.WLZIMIs3.css",
+    "url": "assets/EventDetail.DCBubhMo.js",
     "revision": null
   }, {
-    "url": "assets/EventsList.DJOdTNFp.js",
+    "url": "assets/EventsList.BWmITWSl.js",
     "revision": null
   }, {
     "url": "assets/EventsList.DKdPWiZo.css",
     "revision": null
   }, {
-    "url": "assets/FavoriteButton.C_Al6jlz.js",
+    "url": "assets/FavoriteButton.BvxifCY-.js",
     "revision": null
   }, {
     "url": "assets/FavoriteButton.HOKXQ-I5.css",
@@ -123,28 +123,28 @@ define(['./workbox-fb107ff4'], (function (workbox) { 'use strict';
     "url": "assets/Home.4R0HFCAY.css",
     "revision": null
   }, {
-    "url": "assets/Home.CouI2pqN.js",
+    "url": "assets/Home.Co3Ih_yv.js",
     "revision": null
   }, {
-    "url": "assets/index.Bsia8KuI.js",
+    "url": "assets/index.Bp0EUSzT.css",
     "revision": null
   }, {
-    "url": "assets/index.D3HhlXfx.css",
+    "url": "assets/index.CsDJUcBR.js",
     "revision": null
   }, {
-    "url": "assets/LikeButton.BaS3FP9-.js",
+    "url": "assets/LikeButton.CFABpba2.js",
     "revision": null
   }, {
     "url": "assets/LikeButton.DCsx9HV7.css",
     "revision": null
   }, {
-    "url": "assets/PagesList.B4hFMhqb.css",
+    "url": "assets/PagesList.BDjeEwhH.css",
     "revision": null
   }, {
-    "url": "assets/PagesList.H6vnEyD_.js",
+    "url": "assets/PagesList.NKIiaR3O.js",
     "revision": null
   }, {
-    "url": "assets/Predictions.CfCxvo-7.js",
+    "url": "assets/Predictions.DPS6AWnk.js",
     "revision": null
   }, {
     "url": "assets/Predictions.DSa3Y-AN.css",
@@ -153,79 +153,79 @@ define(['./workbox-fb107ff4'], (function (workbox) { 'use strict';
     "url": "assets/PredictionsLeaderboard.D8Fsuwim.css",
     "revision": null
   }, {
-    "url": "assets/PredictionsLeaderboard.DMGUU7MM.js",
+    "url": "assets/PredictionsLeaderboard.HhnwqTmt.js",
+    "revision": null
+  }, {
+    "url": "assets/PredictionsTeams.B2e4RiBP.js",
     "revision": null
   }, {
     "url": "assets/PredictionsTeams.B2N2jqx8.css",
     "revision": null
   }, {
-    "url": "assets/PredictionsTeams.Cpe5AizB.js",
-    "revision": null
-  }, {
-    "url": "assets/PrivacyPolicy.CEM_pCjI.js",
+    "url": "assets/PrivacyPolicy.BTT3IGcZ.js",
     "revision": null
   }, {
     "url": "assets/PrivacyPolicy.DeflSHSI.css",
     "revision": null
   }, {
-    "url": "assets/Profile.Ejzdf5GE.css",
+    "url": "assets/Profile.Bl8EyzKY.js",
     "revision": null
   }, {
-    "url": "assets/Profile.qglg942e.js",
+    "url": "assets/Profile.BtcN_gh2.css",
     "revision": null
   }, {
     "url": "assets/RecipeDetail.CikpOQcH.css",
     "revision": null
   }, {
-    "url": "assets/RecipeDetail.Dx2661gS.js",
+    "url": "assets/RecipeDetail.D0vh68zy.js",
     "revision": null
   }, {
     "url": "assets/RecipesList.CEsnQzT2.css",
     "revision": null
   }, {
-    "url": "assets/RecipesList.Dvb5P6Mj.js",
+    "url": "assets/RecipesList.guZI0kWc.js",
     "revision": null
   }, {
     "url": "assets/SearchAndFilters.DhpLTWqq.css",
     "revision": null
   }, {
-    "url": "assets/SearchAndFilters.DPYZdhhF.js",
+    "url": "assets/SearchAndFilters.W3J7mw0t.js",
     "revision": null
   }, {
-    "url": "assets/TermsOfService.BKmXz-7b.js",
+    "url": "assets/TermsOfService.DECMJgph.js",
     "revision": null
   }, {
     "url": "assets/TermsOfService.DiEZV5Dq.css",
     "revision": null
   }, {
-    "url": "assets/TipDetail.D-y5Yl8q.js",
+    "url": "assets/TipDetail.Cc5_gJNa.js",
     "revision": null
   }, {
     "url": "assets/TipDetail.D6kw8lRb.css",
     "revision": null
   }, {
+    "url": "assets/TipsList.2dCFkIAv.js",
+    "revision": null
+  }, {
     "url": "assets/TipsList.BFkvQqZq.css",
-    "revision": null
-  }, {
-    "url": "assets/TipsList.CbapSz0v.js",
-    "revision": null
-  }, {
-    "url": "assets/TournamentBetting.BaUSjOlL.js",
     "revision": null
   }, {
     "url": "assets/TournamentBetting.BnIiBiUJ.css",
     "revision": null
   }, {
+    "url": "assets/TournamentBetting.CuF2c02s.js",
+    "revision": null
+  }, {
     "url": "assets/Tournaments.B5MFIoVu.css",
     "revision": null
   }, {
-    "url": "assets/Tournaments.BQj70mv_.js",
+    "url": "assets/Tournaments.qER3TaLS.js",
     "revision": null
   }, {
-    "url": "assets/useApi.CD5SC-zH.js",
+    "url": "assets/useApi.Cm5RO5Cj.js",
     "revision": null
   }, {
-    "url": "assets/useComments.783SSx2G.js",
+    "url": "assets/useComments.BHb34im3.js",
     "revision": null
   }, {
     "url": "assets/utils.l0sNRNKZ.js",
@@ -237,11 +237,11 @@ define(['./workbox-fb107ff4'], (function (workbox) { 'use strict';
     "url": "assets/WebEmbed.7JmI38mu.css",
     "revision": null
   }, {
-    "url": "assets/WebEmbed.DPIliKWd.js",
+    "url": "assets/WebEmbed.B7OVzc3d.js",
     "revision": null
   }, {
     "url": "index.html",
-    "revision": "ab4041f03a654028d67972bf7a62433c"
+    "revision": "fef7dde79ed5e26dda42597ba358ca75"
   }, {
     "url": "registerSW.js",
     "revision": "36a8c3eb862bdcf4382e8845651d1c5f"

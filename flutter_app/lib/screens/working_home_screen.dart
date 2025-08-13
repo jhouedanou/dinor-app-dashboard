@@ -685,7 +685,7 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
               child: AspectRatio(
                 aspectRatio: 16 / 9,
                 child: ImageService.buildNetworkImage(
-                  imageUrl: event['image'] ?? event['thumbnail'] ?? event['image_url'] ?? '',
+                  imageUrl: ImageService.getEventImageUrl(event),
                   contentType: 'event',
                   fit: BoxFit.cover,
                 ),
@@ -779,7 +779,7 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
                   fit: StackFit.expand,
                   children: [
                     ImageService.buildNetworkImage(
-                      imageUrl: video['thumbnail_url'] ?? '',
+                      imageUrl: ImageService.getVideoImageUrl(video),
                       contentType: 'video',
                       fit: BoxFit.cover,
                     ),

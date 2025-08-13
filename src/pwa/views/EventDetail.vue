@@ -73,6 +73,21 @@
             <div v-if="event.location" class="detail-item">
               <h3 class="md3-title-small dinor-text-primary">Lieu</h3>
               <p class="md3-body-medium">{{ event.location }}</p>
+              
+              <!-- Liens de navigation -->
+              <div class="location-links">
+                <h4 class="md3-title-small dinor-text-primary">Ouvrir dans</h4>
+                <div class="location-buttons">
+                  <button @click="openInGoogleMaps" class="location-button google-maps">
+                    <DinorIcon name="map" :size="16" />
+                    Google Maps
+                  </button>
+                  <button @click="openInAppleMaps" class="location-button apple-maps">
+                    <DinorIcon name="navigation" :size="16" />
+                    Apple Maps
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -532,6 +547,22 @@ END:VCALENDAR`
       URL.revokeObjectURL(url)
     }
 
+    const openInGoogleMaps = () => {
+      if (!event.value?.location) return
+      
+      const query = encodeURIComponent(event.value.location)
+      const url = `https://www.google.com/maps/search/?api=1&query=${query}`
+      window.open(url, '_blank')
+    }
+
+    const openInAppleMaps = () => {
+      if (!event.value?.location) return
+      
+      const query = encodeURIComponent(event.value.location)
+      const url = `https://maps.apple.com/?q=${query}`
+      window.open(url, '_blank')
+    }
+
     onMounted(() => {
       loadEvent()
     })
@@ -562,7 +593,9 @@ END:VCALENDAR`
       authStore,
       showAuthModal,
       addToGoogleCalendar,
-      addToIcal
+      addToIcal,
+      openInGoogleMaps,
+      openInAppleMaps
     }
   }
 }
@@ -640,7 +673,7 @@ p, span, div {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-sm);
 }
 
 .event-location {
@@ -667,7 +700,7 @@ p, span, div {
   background: #F4D03F; /* Fond doré */
   border-radius: 12px;
   border: 1px solid #E2E8F0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .stat-item {
@@ -698,7 +731,7 @@ p, span, div {
   background: #FFFFFF; /* Fond blanc */
   border-radius: 12px;
   border: 1px solid #E2E8F0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
 }
 
 .detail-item h3 {
@@ -722,7 +755,7 @@ p, span, div {
   background: #FFFFFF; /* Fond blanc */
   border-radius: 12px;
   border: 1px solid #E2E8F0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
 }
 
 .event-description h2,
@@ -910,12 +943,12 @@ html.force-emoji .emoji-fallback {
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .calendar-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-md);
 }
 
 .calendar-button.google-calendar {
@@ -946,6 +979,83 @@ html.force-emoji .emoji-fallback {
   }
   
   .calendar-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Location Links Styles */
+.location-links {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #E2E8F0;
+}
+
+.location-links h4 {
+  margin-bottom: 0.75rem;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2D3748;
+}
+
+.location-buttons {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.location-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background: #FFFFFF;
+  color: #2D3748;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid #E2E8F0;
+}
+
+.location-button:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.location-button.google-maps {
+  background: #34A853;
+  color: white;
+  border-color: #34A853;
+}
+
+.location-button.google-maps:hover {
+  background: #2E8B47;
+}
+
+.location-button.apple-maps {
+  background: #007AFF;
+  color: white;
+  border-color: #007AFF;
+}
+
+.location-button.apple-maps:hover {
+  background: #0056CC;
+}
+
+.location-button .dinor-icon {
+  /* Size handled by component */
+}
+
+@media (max-width: 480px) {
+  .location-buttons {
+    flex-direction: column;
+  }
+  
+  .location-button {
     width: 100%;
     justify-content: center;
   }

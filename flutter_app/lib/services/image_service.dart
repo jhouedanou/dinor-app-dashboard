@@ -44,34 +44,45 @@ class ImageService {
 
   /// Obtenir l'URL d'image pour les recettes
   static String getRecipeImageUrl(dynamic recipe) {
-    final imageUrl = recipe['featured_image_url'] ?? 
+    final imageUrl = recipe['image'] ?? 
+                    recipe['thumbnail'] ?? 
                     recipe['image_url'] ?? 
-                    recipe['image'];
+                    recipe['thumbnail_url'] ?? 
+                    recipe['featured_image'] ?? 
+                    recipe['featured_image_url'];
     return getImageUrl(imageUrl, 'recipe');
   }
 
   /// Obtenir l'URL d'image pour les astuces
   static String getTipImageUrl(dynamic tip) {
-    final imageUrl = tip['featured_image_url'] ?? 
+    final imageUrl = tip['image'] ?? 
+                    tip['thumbnail'] ?? 
                     tip['image_url'] ?? 
-                    tip['image'];
+                    tip['thumbnail_url'] ?? 
+                    tip['featured_image'] ?? 
+                    tip['featured_image_url'];
     return getImageUrl(imageUrl, 'tip');
   }
 
   /// Obtenir l'URL d'image pour les événements
   static String getEventImageUrl(dynamic event) {
-    final imageUrl = event['image_url'] ?? 
-                    event['featured_image_url'] ?? 
-                    event['image'];
+    final imageUrl = event['image'] ?? 
+                    event['thumbnail'] ?? 
+                    event['image_url'] ?? 
+                    event['thumbnail_url'] ?? 
+                    event['featured_image'] ?? 
+                    event['featured_image_url'];
     return getImageUrl(imageUrl, 'event');
   }
 
   /// Obtenir l'URL d'image pour les vidéos
   static String getVideoImageUrl(dynamic video) {
     final imageUrl = video['thumbnail_url'] ?? 
+                    video['thumbnail'] ?? 
+                    video['image'] ?? 
                     video['image_url'] ?? 
-                    video['featured_image_url'] ?? 
-                    video['image'];
+                    video['featured_image'] ?? 
+                    video['featured_image_url'];
     return getImageUrl(imageUrl, 'video');
   }
 

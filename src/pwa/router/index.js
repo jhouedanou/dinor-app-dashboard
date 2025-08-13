@@ -90,7 +90,7 @@ const routes = [
     path: '/web-embed',
     name: 'web-embed',
     component: WebEmbed,
-    meta: { title: 'Web Embed' }
+    meta: { title: 'Page Web' }
   },
   {
     path: '/profile',

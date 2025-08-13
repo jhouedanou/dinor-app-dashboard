@@ -584,6 +584,35 @@
           </div>
         </div>
 
+        <!-- Settings Section -->
+        <div v-if="activeSection === 'settings'" class="section-content">
+          <h2 class="section-title">Paramètres</h2>
+          
+          <!-- Notifications Settings -->
+          <div class="form-section">
+            <h3 class="form-title">Notifications push</h3>
+            <p class="form-description">
+              Activez les notifications pour recevoir les dernières actualités, événements et astuces culinaires.
+            </p>
+            <NotificationButton />
+          </div>
+          
+          <!-- App Info -->
+          <div class="form-section">
+            <h3 class="form-title">Informations de l'application</h3>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">Version</span>
+                <span class="info-value">1.0.0</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Dernière mise à jour</span>
+                <span class="info-value">{{ new Date().toLocaleDateString('fr-FR') }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Account Section -->
         <div v-if="activeSection === 'account'" class="section-content">
           <h2 class="section-title">Mon Compte</h2>
@@ -763,12 +792,14 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useApiStore } from '@/stores/api'
 import AuthModal from '@/components/common/AuthModal.vue'
+import NotificationButton from '@/components/common/NotificationButton.vue'
 import DinorIcon from '@/components/DinorIcon.vue'
 
 export default {
   name: 'Profile',
   components: {
     AuthModal,
+    NotificationButton,
     DinorIcon
   },
   setup() {
@@ -835,6 +866,7 @@ export default {
     const profileSections = ref([
       { key: 'favorites', label: 'Favoris', icon: 'favorite' },
       { key: 'predictions', label: 'Pronostics', icon: 'sports_soccer' },
+      { key: 'settings', label: 'Paramètres', icon: 'settings' },
       { key: 'account', label: 'Compte', icon: 'person' },
       { key: 'security', label: 'Sécurité', icon: 'security' },
       { key: 'legal', label: 'Légal', icon: 'gavel' }
@@ -2109,6 +2141,39 @@ export default {
   color: #2D3748;
 }
 
+/* Info Grid Styles */
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  background: #FFFFFF;
+  border-radius: 8px;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.info-label {
+  font-size: 12px;
+  color: #6B7280;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-value {
+  font-size: 14px;
+  color: #1F2937;
+  font-weight: 600;
+}
+
 .form-description {
   margin: 0 0 16px 0;
   font-size: 14px;
@@ -2660,6 +2725,11 @@ export default {
   
   .form-section {
     padding: 12px;
+  }
+  
+  .info-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
 }
 

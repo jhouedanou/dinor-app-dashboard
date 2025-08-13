@@ -101,11 +101,11 @@ class UnifiedContentStats extends StatelessWidget {
         color: backgroundColor,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Colors.black,
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
-            offset:Offset(0, 2),
+            offset: const Offset(0, 2),
           ),
         ],
       ),

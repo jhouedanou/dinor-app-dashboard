@@ -324,7 +324,12 @@ class _DinorTVScreenState extends ConsumerState<DinorTVScreen> with AutomaticKee
   }
 
   Widget _buildVideoCard(dynamic video) {
-    final thumbnail = video['thumbnail_url'] ?? video['thumbnail'] ?? video['image'] ?? '';
+    final thumbnail = video['thumbnail_url'] ?? 
+                      video['thumbnail'] ?? 
+                      video['image'] ?? 
+                      video['image_url'] ?? 
+                      video['featured_image'] ?? 
+                      video['featured_image_url'] ?? '';
     final title = video['title'] ?? 'Sans titre';
     final views = video['views'] ?? 0;
 

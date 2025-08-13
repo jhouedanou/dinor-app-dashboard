@@ -279,7 +279,12 @@ class _SimpleDinorTVScreenState extends State<SimpleDinorTVScreen> {
   Widget _buildVideoCard(Map<String, dynamic> video) {
     final title = video['title'] ?? video['name'] ?? 'Vidéo sans titre';
     final description = video['description'] ?? video['excerpt'] ?? 'Aucune description';
-    final imageUrl = video['image'] ?? video['thumbnail'] ?? video['featured_image'];
+    final imageUrl = video['image'] ?? 
+                     video['thumbnail'] ?? 
+                     video['thumbnail_url'] ?? 
+                     video['image_url'] ?? 
+                     video['featured_image'] ?? 
+                     video['featured_image_url'];
     final duration = video['duration'] ?? video['length'] ?? '5:00';
     
     return GestureDetector(

@@ -32,7 +32,7 @@
       <article
         v-for="page in pages"
         :key="page.id"
-        @click="goToPage(page.id)"
+        @click="goToPage(page)"
         class="page-card"
       >
         <div class="page-icon">
@@ -79,8 +79,12 @@ export default {
     const error = ref(null)
     
     // Methods
-    const goToPage = (id) => {
-      router.push(`/page/${id}`)
+    const goToPage = (page) => {
+      // Rediriger directement vers WebEmbed avec l'URL de la page
+      if (page.url) {
+        const encodedUrl = encodeURIComponent(page.url)
+        router.push(`/web-embed?url=${encodedUrl}`)
+      }
     }
     
     const retry = () => {
