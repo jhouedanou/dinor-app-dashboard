@@ -139,26 +139,46 @@ class _SimpleDinorTVScreenState extends State<SimpleDinorTVScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
-      appBar: AppBar(
-        title: SvgPicture.asset(
-          'assets/images/LOGO_DINOR_monochrome.svg',
-          width: 32,
-          height: 32,
-          colorFilter: const ColorFilter.mode(
-            Color(0xFF2D3748),
-            BlendMode.srcIn,
+      body: Column(
+        children: [
+          // Header personnalisé sans espace superflu
+          Container(
+            color: Colors.white,
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top,
+              left: 16,
+              right: 16,
+              bottom: 8,
+            ),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3748)),
+                  onPressed: () => NavigationService.pop(),
+                ),
+                Expanded(
+                  child: Center(
+                    child: SvgPicture.asset(
+                      'assets/images/LOGO_DINOR_monochrome.svg',
+                      width: 32,
+                      height: 32,
+                      colorFilter: const ColorFilter.mode(
+                        Color(0xFF2D3748),
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 48), // Pour équilibrer le bouton retour
+              ],
+            ),
           ),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        toolbarHeight: 56,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3748)),
-          onPressed: () => NavigationService.pop(),
-        ),
+          // Body
+          Expanded(
+            child: _buildBody(),
+          ),
+        ],
       ),
-      body: _buildBody(),
     );
   }
 

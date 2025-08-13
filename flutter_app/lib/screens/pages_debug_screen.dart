@@ -85,24 +85,50 @@ Vérifiez:
     final hasPages = ref.watch(hasPagesProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Debug - Pages API'),
-        backgroundColor: const Color(0xFFF4D03F),
-        toolbarHeight: 56,
-        actions: [
-          IconButton(
-            onPressed: () {
-              ref.read(usePagesProvider.notifier).refreshPages();
-            },
-            icon: const Icon(Icons.refresh),
+      body: Column(
+        children: [
+          // Header personnalisé sans espace superflu
+          Container(
+            color: const Color(0xFFF4D03F),
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top,
+              left: 16,
+              right: 16,
+              bottom: 8,
+            ),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.black),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'Debug - Pages API',
+                  style: TextStyle(
+                    fontFamily: 'OpenSans',
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black,
+                  ),
+                ),
+                const Spacer(),
+                IconButton(
+                  onPressed: () {
+                    ref.read(usePagesProvider.notifier).refreshPages();
+                  },
+                  icon: const Icon(Icons.refresh, color: Colors.black),
+                ),
+              ],
+            ),
           ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+          // Body
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
             // État des pages
             Card(
               child: Padding(
@@ -259,8 +285,11 @@ Vérifiez:
                 ),
               ),
             ),
-          ],
-        ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

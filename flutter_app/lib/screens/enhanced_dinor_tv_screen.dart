@@ -161,58 +161,58 @@ class _EnhancedDinorTVScreenState extends ConsumerState<EnhancedDinorTVScreen>
       children: [
         Scaffold(
           backgroundColor: const Color(0xFFF8F9FA),
-          appBar: AppBar(
-            title: Row(
-              children: [
-                // SvgPicture.asset(
-                //   'assets/images/LOGO_DINOR_monochrome.svg',
-                //   width: 28,
-                //   height: 28,
-                //   colorFilter: const ColorFilter.mode(
-                //     Color(0xFF2D3748),
-                //     BlendMode.srcIn,
-                //   ),
-                // ),
-                const SizedBox(width: 8),
-                const Text(
-                  'Dinor TV',
-                  style: TextStyle(
-                    fontFamily: 'OpenSans',
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF2D3748),
-                  ),
+          body: Column(
+            children: [
+              // Header personnalisé sans espace superflu
+              Container(
+                color: Colors.white,
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).padding.top,
+                  left: 16,
+                  right: 16,
+                  bottom: 8,
                 ),
-              ],
-            ),
-            backgroundColor: Colors.white,
-            elevation: 0,
-            toolbarHeight: 56,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3748)),
-              onPressed: () => NavigationService.pop(),
-            ),
-            actions: [
-              // Bouton Mode Immersif
-              if (videos.isNotEmpty)
-                IconButton(
-                  onPressed: () => _openImmersivePlayer(),
-                  icon: const Icon(LucideIcons.maximize,
-                      color: Color(0xFF2D3748)),
-                  tooltip: 'Mode Immersif',
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3748)),
+                      onPressed: () => NavigationService.pop(),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Dinor TV',
+                      style: TextStyle(
+                        fontFamily: 'OpenSans',
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF2D3748),
+                      ),
+                    ),
+                    const Spacer(),
+                    // Bouton Mode Immersif
+                    if (videos.isNotEmpty)
+                      IconButton(
+                        onPressed: () => _openImmersivePlayer(),
+                        icon: const Icon(LucideIcons.maximize,
+                            color: Color(0xFF2D3748)),
+                        tooltip: 'Mode Immersif',
+                      ),
+                    IconButton(
+                      onPressed: _handleRefresh,
+                      icon: const Icon(LucideIcons.refreshCw, color: Color(0xFF2D3748)),
+                      tooltip: 'Actualiser',
+                    ),
+                  ],
                 ),
-
-              IconButton(
-                onPressed: _handleRefresh,
-                icon:
-                    const Icon(LucideIcons.refreshCw, color: Color(0xFF2D3748)),
-                tooltip: 'Actualiser',
+              ),
+              // Body
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: _handleRefresh,
+                  child: _buildBody(videos, isLoading, error),
+                ),
               ),
             ],
-          ),
-          body: RefreshIndicator(
-            onRefresh: _handleRefresh,
-            child: _buildBody(videos, isLoading, error),
           ),
 
           // Bouton flottant pour lancer l'expérience immersive

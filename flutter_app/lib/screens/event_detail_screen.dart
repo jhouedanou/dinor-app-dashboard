@@ -1139,4 +1139,30 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
       }
     }
   }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(
+              '$label:',
+              style: const TextStyle(
+                fontFamily: 'OpenSans',
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF718096),
+              ),
+            ),
+          ),
+          Expanded(
+            child: _buildValueWithOptionalPhoneLink(label, value),
+          ),
+        ],
+      ),
+    );
+  }
 }
