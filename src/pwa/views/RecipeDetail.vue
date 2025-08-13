@@ -110,6 +110,36 @@
               </ul>
             </Accordion>
 
+            <!-- Dinor Ingredients Accordion -->
+            <Accordion 
+              v-if="recipe.dinor_ingredients && recipe.dinor_ingredients.length"
+              title="Ingrédients Dinor"
+              :initial-open="true"
+              id="dinor-ingredients-accordion"
+            >
+              <div class="dinor-ingredients-section">
+                <p class="dinor-ingredients-description md3-body-small">
+                  <strong>Ingrédients recommandés par Dinor</strong> - Des produits sélectionnés pour leur qualité et leur saveur authentique.
+                </p>
+                <ul class="dinor-ingredients-list">
+                  <li v-for="(ingredient, index) in recipe.dinor_ingredients" :key="index" class="dinor-ingredient-item">
+                    <div class="dinor-ingredient-content">
+                      <span class="dinor-ingredient-main md3-body-medium">
+                        {{ formatDinorIngredientDisplay(ingredient) }}
+                      </span>
+                      <div v-if="ingredient.description" class="dinor-ingredient-description md3-body-small">
+                        {{ ingredient.description }}
+                      </div>
+                      <div v-if="ingredient.brand || ingredient.supplier" class="dinor-ingredient-brand md3-body-small">
+                        <DinorIcon name="verified" :size="14" class="dinor-brand-icon" />
+                        {{ ingredient.brand || ingredient.supplier }}
+                      </div>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </Accordion>
+
             <!-- Instructions Accordion -->
             <Accordion 
               v-if="recipe.instructions"
@@ -646,6 +676,36 @@ export default {
       return result.trim()
     }
 
+    const formatDinorIngredientDisplay = (ingredient) => {
+      if (!ingredient) return ''
+      
+      let result = ''
+      
+      // Ajouter la quantité si elle existe
+      if (ingredient.quantity) {
+        result += `${ingredient.quantity} `
+      }
+      
+      // Ajouter l'unité si elle existe
+      if (ingredient.unit) {
+        result += `${ingredient.unit} `
+      }
+      
+      // Ajouter le nom de l'ingrédient
+      if (ingredient.name) {
+        result += `de ${ingredient.name}`
+      } else if (ingredient.ingredient_name) {
+        result += `de ${ingredient.ingredient_name}`
+      }
+      
+      // Ajouter les notes si elles existent
+      if (ingredient.notes) {
+        result += ` (${ingredient.notes})`
+      }
+      
+      return result.trim()
+    }
+
     // Fonction pour ouvrir la galerie d'images
     const openGalleryModal = (index) => {
       if (recipe.value?.gallery_urls?.[index]) {
@@ -690,6 +750,7 @@ export default {
       handleAuthenticated,
       openGalleryModal,
       formatIngredientDisplay,
+      formatDinorIngredientDisplay,
       showLightbox,
       lightboxIndex,
       closeLightbox
@@ -865,6 +926,85 @@ p, span, div {
 
 .ingredient-item:last-child {
   border-bottom: none;
+}
+
+/* Dinor Ingredients Styles */
+.dinor-ingredients-section {
+  background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 2px solid #E1251B;
+  margin-top: 0.5rem;
+}
+
+.dinor-ingredients-description {
+  color: #E1251B;
+  margin-bottom: 1rem;
+  text-align: center;
+  padding: 0.5rem;
+  background: rgba(225, 37, 27, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(225, 37, 27, 0.2);
+}
+
+.dinor-ingredients-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.dinor-ingredient-item {
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(225, 37, 27, 0.2);
+  background: rgba(255, 255, 255, 0.6);
+  margin-bottom: 0.5rem;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.dinor-ingredient-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.dinor-ingredient-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.dinor-ingredient-main {
+  font-weight: 600;
+  color: #2D3748;
+  font-size: 1rem;
+}
+
+.dinor-ingredient-description {
+  color: #4A5568;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.dinor-ingredient-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #E1251B;
+  font-weight: 500;
+}
+
+.dinor-brand-icon {
+  color: #E1251B;
+}
+
+@media (max-width: 768px) {
+  .dinor-ingredients-section {
+    padding: 1rem;
+  }
+  
+  .dinor-ingredient-item {
+    padding: 0.75rem;
+  }
 }
 
 .loading-container,
