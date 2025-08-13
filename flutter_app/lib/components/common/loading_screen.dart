@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:async';
 import 'dart:math' as math;
+import '../../services/splash_screen_service.dart';
 
 class LoadingScreen extends StatefulWidget {
   final bool visible;
@@ -38,6 +39,10 @@ class _LoadingScreenState extends State<LoadingScreen>
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
   Timer? _timer;
+  
+  // Configuration du splash screen depuis l'API
+  Map<String, dynamic>? _config;
+  bool _configLoaded = false;
 
   // Icônes de cuisine pour l'animation
   final List<IconData> _cookingIcons = [
@@ -57,9 +62,41 @@ class _LoadingScreenState extends State<LoadingScreen>
   void initState() {
     super.initState();
 
-    // Animations identiques à Vue
+    // Charger la configuration depuis l'API
+    _loadConfiguration();
+  }
+
+  void _loadConfiguration() async {
+    try {
+      final config = await SplashScreenService.getActiveConfig();
+      setState(() {
+        _config = config;
+        _configLoaded = true;
+      });
+      
+      // Initialiser les animations avec la configuration chargée
+      _initializeAnimations();
+      
+      if (widget.visible) {
+        _startLoading();
+      }
+    } catch (e) {
+      print('❌ [LoadingScreen] Erreur chargement config: $e');
+      // Utiliser la configuration par défaut en cas d'erreur
+      _configLoaded = true;
+      _initializeAnimations();
+      if (widget.visible) {
+        _startLoading();
+      }
+    }
+  }
+
+  void _initializeAnimations() {
+    final duration = _config?['duration'] ?? widget.duration;
+    
+    // Animations identiques à Vue mais avec durée configurable
     _animationController = AnimationController(
-      duration: Duration(milliseconds: widget.duration),
+      duration: Duration(milliseconds: duration),
       vsync: this,
     );
 
@@ -117,6 +154,18 @@ class _LoadingScreenState extends State<LoadingScreen>
   @override
   Widget build(BuildContext context) {
     if (!widget.visible) return const SizedBox.shrink();
+    
+    // Afficher un loading simple si la config n'est pas encore chargée
+    if (!_configLoaded) {
+      return Container(
+        width: double.infinity,
+        height: double.infinity,
+        color: const Color(0xFFE53E3E),
+        child: const Center(
+          child: CircularProgressIndicator(color: Colors.white),
+        ),
+      );
+    }
 
     return AnimatedBuilder(
       animation: _animationController,
@@ -126,18 +175,7 @@ class _LoadingScreenState extends State<LoadingScreen>
           child: Container(
             width: double.infinity,
             height: double.infinity,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Color(0xFFE53E3E),
-                  Color(0xFFC53030),
-                  Color(0xFFE53E3E)
-                ], // Gradient rouge identique au PWA
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                stops: [0.0, 0.5, 1.0],
-              ),
-            ),
+            decoration: _buildBackgroundDecoration(),
             child: Stack(
               children: [
                 // Bulles animées en arrière-plan
@@ -339,6 +377,59 @@ class _LoadingScreenState extends State<LoadingScreen>
           ),
         );
       },
+    );
+  }
+
+  /// Construit la décoration de fond basée sur la configuration API
+  BoxDecoration _buildBackgroundDecoration() {
+    final backgroundType = _config?['background_type'] ?? 'gradient';
+    
+    switch (backgroundType) {
+      case 'solid':
+        final color = SplashScreenService.parseColor(
+          _config?['background_color_start'] ?? '#E53E3E',
+          fallback: const Color(0xFFE53E3E),
+        );
+        return BoxDecoration(color: color);
+        
+      case 'image':
+        final imageUrl = _config?['background_image_url'];
+        if (imageUrl != null && imageUrl.isNotEmpty) {
+          return BoxDecoration(
+            image: DecorationImage(
+              image: NetworkImage(imageUrl),
+              fit: BoxFit.cover,
+            ),
+          );
+        }
+        // Fallback au gradient si pas d'image
+        return _buildGradientDecoration();
+        
+      case 'gradient':
+      default:
+        return _buildGradientDecoration();
+    }
+  }
+
+  /// Construit la décoration gradient
+  BoxDecoration _buildGradientDecoration() {
+    final startColor = SplashScreenService.parseColor(
+      _config?['background_color_start'] ?? '#E53E3E',
+      fallback: const Color(0xFFE53E3E),
+    );
+    final endColor = SplashScreenService.parseColor(
+      _config?['background_color_end'] ?? '#C53030',
+      fallback: const Color(0xFFC53030),
+    );
+    final direction = _config?['background_gradient_direction'] ?? 'top_left';
+    
+    return BoxDecoration(
+      gradient: LinearGradient(
+        colors: [startColor, endColor, startColor],
+        begin: SplashScreenService.getGradientAlignment(direction, true),
+        end: SplashScreenService.getGradientAlignment(direction, false),
+        stops: const [0.0, 0.5, 1.0],
+      ),
     );
   }
 }

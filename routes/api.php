@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\PWA\CacheController as PWACacheController;
 use App\Http\Controllers\Api\ProfessionalContentController;
 use App\Http\Controllers\Api\AnalyticsController;
+use App\Http\Controllers\Api\SplashScreenController;
 
 /*
 |--------------------------------------------------------------------------
@@ -368,6 +369,16 @@ Route::post('/event-categories/check-exists', [App\Http\Controllers\Api\EventCat
             ]
         ]);
     });
+});
+
+// Routes SplashScreen (publiques)
+Route::prefix('v1/splash-screen')->group(function () {
+    Route::get('/active', [SplashScreenController::class, 'getActive']);
+});
+
+// Routes SplashScreen Admin (protégées)
+Route::middleware('auth:sanctum')->prefix('v1/splash-screen')->group(function () {
+    Route::post('/clear-cache', [SplashScreenController::class, 'clearCache']);
 });
 
 // Routes avec middleware d'authentification

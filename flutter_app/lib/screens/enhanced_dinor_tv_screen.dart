@@ -505,16 +505,7 @@ class _EnhancedDinorTVScreenState extends ConsumerState<EnhancedDinorTVScreen>
                       const BorderRadius.vertical(top: Radius.circular(12)),
                   child: AspectRatio(
                     aspectRatio: 16 / 9,
-                    child: video.thumbnailUrl != null
-                        ? CachedNetworkImage(
-                            imageUrl: video.thumbnailUrl!,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) =>
-                                _buildThumbnailPlaceholder(),
-                            errorWidget: (context, url, error) =>
-                                _buildThumbnailPlaceholder(),
-                          )
-                        : _buildThumbnailPlaceholder(),
+                    child: _buildVideoThumbnail(video),
                   ),
                 ),
 
@@ -656,6 +647,40 @@ class _EnhancedDinorTVScreenState extends ConsumerState<EnhancedDinorTVScreen>
     );
   }
 
+
+  /// Construit la thumbnail avec support des nouvelles images customisées
+  Widget _buildVideoThumbnail(VideoData video) {
+    // Prioriser les nouvelles images customisées depuis les métadonnées API
+    String? imageUrl;
+    
+    // 1. Featured image en premier
+    if (video.metadata?['featured_image_url'] != null) {
+      imageUrl = video.metadata!['featured_image_url'];
+    }
+    // 2. Banner image pour l'aspect ratio 16:9
+    else if (video.metadata?['banner_image_url'] != null) {
+      imageUrl = video.metadata!['banner_image_url'];  
+    }
+    // 3. Poster image en dernier recours
+    else if (video.metadata?['poster_image_url'] != null) {
+      imageUrl = video.metadata!['poster_image_url'];
+    }
+    // 4. Fallback sur thumbnail legacy
+    else if (video.thumbnailUrl != null) {
+      imageUrl = video.thumbnailUrl;
+    }
+
+    if (imageUrl != null && imageUrl.isNotEmpty) {
+      return CachedNetworkImage(
+        imageUrl: imageUrl,
+        fit: BoxFit.cover,
+        placeholder: (context, url) => _buildThumbnailPlaceholder(),
+        errorWidget: (context, url, error) => _buildThumbnailPlaceholder(),
+      );
+    }
+
+    return _buildThumbnailPlaceholder();
+  }
 
   Widget _buildThumbnailPlaceholder() {
     return Container(

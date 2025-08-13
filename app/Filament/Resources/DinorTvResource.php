@@ -41,20 +41,93 @@ class DinorTvResource extends Resource
                             ->helperText('URL complète à afficher dans un embed/iframe dans la PWA (ex: https://www.youtube.com/embed/...)')
                             ->placeholder('https://'),
 
+                        Forms\Components\TextInput::make('short_description')
+                            ->label('Description courte')
+                            ->maxLength(500)
+                            ->helperText('Description courte affichée dans les listes'),
+
+                        Forms\Components\Textarea::make('description')
+                            ->label('Description complète')
+                            ->maxLength(2000)
+                            ->rows(4)
+                            ->helperText('Description détaillée du contenu'),
+                    ]),
+
+                Forms\Components\Section::make('Images et visuels')
+                    ->description('Gérez les différentes images associées au contenu')
+                    ->schema([
                         Forms\Components\FileUpload::make('thumbnail')
-                            ->label('Miniature/Thumbnail')
+                            ->label('Miniature (legacy)')
                             ->image()
                             ->directory('dinor-tv-thumbnails')
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                             ->maxSize(2048)
-                            ->helperText('Image d\'aperçu pour la vidéo (JPEG, PNG, WebP - max 2MB)')
-                            ->columnSpanFull(),
+                            ->helperText('Image d\'aperçu legacy (utiliser Image principale de préférence)'),
 
-                        Forms\Components\Textarea::make('description')
-                            ->label('Description (optionnelle)')
-                            ->maxLength(500)
-                            ->rows(3)
-                            ->helperText('Description courte du contenu'),
+                        Forms\Components\FileUpload::make('featured_image')
+                            ->label('Image principale')
+                            ->image()
+                            ->directory('dinor-tv-featured')
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                            ->maxSize(5120)
+                            ->helperText('Image principale du contenu (JPEG, PNG, WebP - max 5MB)'),
+
+                        Forms\Components\SpatieMediaLibraryFileUpload::make('featured_media')
+                            ->label('Images mises en avant (Spatie)')
+                            ->collection('featured_images')
+                            ->multiple()
+                            ->image()
+                            ->reorderable()
+                            ->helperText('Images uploadées via Spatie Media Library'),
+
+                        Forms\Components\FileUpload::make('poster_image')
+                            ->label('Image poster')
+                            ->image()
+                            ->directory('dinor-tv-posters')
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                            ->maxSize(5120)
+                            ->helperText('Image de type poster/affiche (format portrait recommandé)'),
+
+                        Forms\Components\FileUpload::make('banner_image')
+                            ->label('Image bannière')
+                            ->image()
+                            ->directory('dinor-tv-banners')
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                            ->maxSize(5120)
+                            ->helperText('Image bannière (format paysage 16:9 recommandé)'),
+
+                        Forms\Components\SpatieMediaLibraryFileUpload::make('gallery_media')
+                            ->label('Galerie d\'images (Spatie)')
+                            ->collection('gallery')
+                            ->multiple()
+                            ->image()
+                            ->reorderable()
+                            ->helperText('Galerie d\'images pour ce contenu'),
+
+                        Forms\Components\Repeater::make('gallery')
+                            ->label('Galerie d\'images (URLs)')
+                            ->schema([
+                                Forms\Components\TextInput::make('url')
+                                    ->label('URL de l\'image')
+                                    ->url()
+                                    ->required(),
+                                Forms\Components\TextInput::make('alt')
+                                    ->label('Texte alternatif')
+                                    ->maxLength(255),
+                            ])
+                            ->collapsed()
+                            ->itemLabel(fn (array $state): ?string => $state['url'] ?? null)
+                            ->addActionLabel('Ajouter une image')
+                            ->helperText('Images de la galerie via URLs externes'),
+
+                        Forms\Components\KeyValue::make('image_metadata')
+                            ->label('Métadonnées des images')
+                            ->helperText('Informations supplémentaires sur les images (crédits, sources, etc.)')
+                            ->collapsible(),
+                    ]),
+
+                Forms\Components\Section::make('Configuration')
+                    ->schema([
 
                         Forms\Components\Toggle::make('is_published')
                             ->label('Visible dans l\'app')
@@ -73,8 +146,11 @@ class DinorTvResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('thumbnail')
-                    ->label('Miniature')
+                Tables\Columns\ImageColumn::make('featured_image')
+                    ->label('Image')
+                    ->getStateUsing(function ($record) {
+                        return $record->featured_image_url ?? $record->thumbnail;
+                    })
                     ->circular()
                     ->size(60)
                     ->defaultImageUrl('/images/default-video-thumb.jpg'),
@@ -93,10 +169,15 @@ class DinorTvResource extends Resource
                     ->limit(50)
                     ->tooltip(fn ($record) => $record->video_url),
 
-                Tables\Columns\TextColumn::make('description')
-                    ->label('Description')
+                Tables\Columns\TextColumn::make('short_description')
+                    ->label('Description courte')
                     ->limit(60)
                     ->placeholder('Aucune description')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\ViewColumn::make('images_status')
+                    ->label('Images')
+                    ->view('filament.tables.columns.dinor-tv-images-status')
                     ->toggleable(),
 
                 Tables\Columns\IconColumn::make('is_featured')

@@ -148,7 +148,7 @@ class VideoService extends StateNotifier<VideoState> {
           createdAt: item['created_at'] != null 
             ? DateTime.parse(item['created_at']) 
             : DateTime.now(),
-          metadata: item['metadata'],
+          metadata: item, // Store the entire API response in metadata for custom image access
         );
 
         videos.add(video);
@@ -315,7 +315,7 @@ class VideoService extends StateNotifier<VideoState> {
       'duration': video.duration?.inSeconds,
       'tags': video.tags,
       'createdAt': video.createdAt.toIso8601String(),
-      'metadata': video.metadata,
+      'metadata': video.metadata, // Preserve the full API response data
     };
   }
 
