@@ -545,11 +545,12 @@ if [ -f artisan ]; then
     
     # Migration SplashScreen pour la customisation via Filament
     log_info "🎨 Migration de la table splash_screens..."
-    $FORGE_PHP artisan migrate --path=database/migrations/*create_splash_screens_table*.php --force 2>/dev/null || log_warning "Migration splash_screens déjà appliquée ou erreur"
+    # Eviter l'appel migrate avec un chemin glob qui provoque une FileNotFoundException.
+    # La vérification/correction robuste ci-dessous gère la migration de façon fiable.
 
     # Vérification robuste de l'existence de la table splash_screens et correction si nécessaire
     log_info "🧪 Vérification de l'existence de la table splash_screens..."
-    SPLASH_CHECK=$($FORGE_PHP artisan tinker --execute="echo Schema::hasTable('splash_screens') ? 'SPLASH:1' : 'SPLASH:0';" 2>/dev/null | grep "SPLASH:")
+    SPLASH_CHECK=$($FORGE_PHP artisan tinker --execute="try{echo Schema::hasTable('splash_screens') ? 'SPLASH:1' : 'SPLASH:0';}catch(Exception $e){echo 'SPLASH:ERROR';}" 2>/dev/null | grep "SPLASH:")
     if [[ $SPLASH_CHECK == *"SPLASH:0"* ]]; then
         log_warning "⚠️ Table splash_screens absente, tentative de migration ciblée..."
         if [ -f database/migrations/2025_08_13_205112_create_splash_screens_table.php ]; then
@@ -559,25 +560,10 @@ if [ -f artisan ]; then
                 log_success "✅ Table splash_screens créée via migration ciblée"
             else
                 log_warning "⚠️ Échec de la migration ciblée, tentative via glob..."
-                FILE=$(ls database/migrations/*create_splash_screens_table*.php 2>/dev/null | head -n 1)
-                if [ -n "$FILE" ]; then
-                    sed -i "s/Chargement de l\\'application/Chargement de l’application/g" "$FILE" 2>/dev/null || true
-                    $FORGE_PHP artisan migrate --path="$FILE" --force 2>/dev/null || log_warning "Migration via glob échouée"
-                else
-                    log_warning "⚠️ Aucune migration create_splash_screens_table trouvée"
-                fi
+                # Pas d'appel avec glob pour éviter FileNotFoundException
             fi
         else
-            FILE=$(ls database/migrations/*create_splash_screens_table*.php 2>/dev/null | head -n 1)
-            if [ -n "$FILE" ]; then
-                if $FORGE_PHP artisan migrate --path="$FILE" --force; then
-                    log_success "✅ Table splash_screens créée via migration trouvée: $FILE"
-                else
-                    log_warning "⚠️ Échec de la migration ciblée ($FILE)"
-                fi
-            else
-                log_warning "⚠️ Aucune migration create_splash_screens_table trouvée dans le dépôt"
-            fi
+            log_warning "⚠️ Aucune migration spécifique splash_screens incluse dans le dépôt"
         fi
 
         # Re-vérification finale
