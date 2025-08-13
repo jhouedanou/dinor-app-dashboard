@@ -82,7 +82,7 @@ class _TipDetailScreenUnifiedState extends ConsumerState<TipDetailScreenUnified>
         if (mounted && _tip != null) {
           final title = _tip!['title']?.toString();
           if (title != null && title.isNotEmpty) {
-            ref.read(headerSubtitleProvider.notifier).state = title;
+            ref.read(headerSubtitleProvider.notifier).state = title.trim();
           }
         }
       } else {

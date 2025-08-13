@@ -278,7 +278,7 @@ class _AppHeaderState extends ConsumerState<AppHeader> with RouteAware {
                         // Afficher le titre du contenu seulement sur les pages de détail
                         print('📝 [AppHeader] Affichage du titre: $subtitle');
                         return Text(
-                          subtitle,
+                          subtitle.trim(),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.center,

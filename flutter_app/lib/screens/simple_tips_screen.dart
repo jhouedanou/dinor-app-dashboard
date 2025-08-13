@@ -16,26 +16,44 @@ class _SimpleTipsScreenState extends State<SimpleTipsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
-      appBar: AppBar(
-        title: const Text(
-          'Astuces',
-          style: TextStyle(
-            fontFamily: 'OpenSans',
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF2D3748),
+      body: Column(
+        children: [
+          // Header secondaire collé sans espace
+          Container(
+            width: double.infinity,
+            height: 56,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              border: Border(
+                bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+              ),
+            ),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3748)),
+                  onPressed: () => NavigationService.pop(),
+                ),
+                const Expanded(
+                  child: Center(
+                    child: Text(
+                      'Astuces',
+                      style: TextStyle(
+                        fontFamily: 'OpenSans',
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF2D3748),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 48), // Pour équilibrer le bouton retour
+              ],
+            ),
           ),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        toolbarHeight: 56,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3748)),
-          onPressed: () => NavigationService.pop(),
-        ),
-      ),
-      body: UnifiedContentList(
+          // Contenu principal
+          Expanded(
+            child: UnifiedContentList(
         contentType: 'tip',
         apiEndpoint: 'https://new.dinorapp.com/api/v1/tips',
         itemsPerPage: 4,
@@ -47,10 +65,13 @@ class _SimpleTipsScreenState extends State<SimpleTipsScreen> {
           item: item,
           onTap: () => _navigateToTipDetail(item['id']?.toString() ?? ''),
         ),
-        titleExtractor: (item) => item['title']?.toString() ?? '',
-        imageExtractor: (item) => item['featured_image_url']?.toString() ?? '',
-        descriptionExtractor: (item) => item['description']?.toString() ?? item['content']?.toString() ?? '',
-        onItemTap: (item) => () => _navigateToTipDetail(item['id']?.toString() ?? ''),
+              titleExtractor: (item) => item['title']?.toString() ?? '',
+              imageExtractor: (item) => item['featured_image_url']?.toString() ?? '',
+              descriptionExtractor: (item) => item['description']?.toString() ?? item['content']?.toString() ?? '',
+              onItemTap: (item) => () => _navigateToTipDetail(item['id']?.toString() ?? ''),
+            ),
+          ),
+        ],
       ),
     );
   }

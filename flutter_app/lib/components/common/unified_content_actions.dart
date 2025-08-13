@@ -32,6 +32,21 @@ class UnifiedContentActions extends StatelessWidget {
     this.isLoading = false,
   });
 
+  void _handleShare() async {
+    try {
+      // Construire le message de partage
+      final message = '$title\n\n$description\n\n🔗 $shareUrl';
+      
+      // Partager le contenu
+      await Share.share(
+        message,
+        subject: title,
+      );
+    } catch (e) {
+      print('❌ [UnifiedContentActions] Erreur partage: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     print('❤️  [LikeButton] Building for: $contentType, ID: $contentId');
@@ -78,7 +93,7 @@ class UnifiedContentActions extends StatelessWidget {
 
           // Share Button
           IconButton(
-            onPressed: () => {}, // La logique est maintenant dans le FAB
+            onPressed: () => _handleShare(),
             icon: const Icon(
               LucideIcons.share,
               size: 20,

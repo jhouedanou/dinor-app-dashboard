@@ -95,7 +95,7 @@ class _RecipeDetailScreenUnifiedState extends ConsumerState<RecipeDetailScreenUn
           final title = _recipe!['title']?.toString();
           if (title != null && title.isNotEmpty) {
             print('📝 [RecipeDetail] Définition du titre: $title');
-            ref.read(headerSubtitleProvider.notifier).state = title;
+            ref.read(headerSubtitleProvider.notifier).state = title.trim();
             print('📝 [RecipeDetail] Titre défini avec succès');
           }
         }

@@ -21,6 +21,7 @@ import '../components/common/unified_comments_section.dart';
 import '../components/common/unified_content_actions.dart';
 import '../components/common/unified_content_navigation.dart';
 import '../components/common/accordion.dart';
+import '../components/common/youtube_video_modal.dart';
 
 // Services
 import '../services/api_service.dart';
@@ -81,7 +82,7 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
         if (mounted && _event != null) {
           final title = _event!['title']?.toString();
           if (title != null && title.isNotEmpty) {
-            ref.read(headerSubtitleProvider.notifier).state = title;
+            ref.read(headerSubtitleProvider.notifier).state = title.trim();
           }
         }
         await _checkUserLike();
@@ -413,11 +414,14 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
                       ),
                     ),
 
-                  // Images et médias
-                  _buildMediaSection(),
+                  // Galerie photo
+                  _buildGallerySection(),
                   
-                  // Vidéo promotionnelle
+                  // Vidéos promotionnelles
                   _buildVideoSection(),
+                  
+                  // Images et médias supplémentaires
+                  _buildAdditionalMediaSection(),
                   
                   // Informations de localisation complètes
                   _buildLocationSection(),
@@ -946,65 +950,172 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
   }
 
   // Sections de contenu manquantes
-  Widget _buildMediaSection() {
+  Widget _buildGallerySection() {
     final images = _getEventImages();
-    final videos = _getEventVideos();
     
-    if (images.isEmpty && videos.isEmpty) return const SizedBox.shrink();
+    if (images.isEmpty) return const SizedBox.shrink();
     
-    return Accordion(
-      title: 'Images et médias',
-      initiallyOpen: images.isNotEmpty,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (images.isNotEmpty) ...[
-            ImageGalleryCarousel(
-              images: images,
-              title: 'Galerie photos',
-              height: 240,
-            ),
-            const SizedBox(height: 12),
-          ],
-          if (videos.isNotEmpty) ...[
-            const Text(
-              'Vidéos disponibles',
-              style: TextStyle(
-                fontFamily: 'OpenSans',
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF4A5568),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              children: videos.take(3).map((video) => 
-                Chip(label: Text('Vidéo ${videos.indexOf(video) + 1}'))
-              ).toList(),
-            ),
-          ],
-        ],
-      ),
+    return Column(
+      children: [
+        const SizedBox(height: 16),
+        Accordion(
+          title: 'Galerie photos (${images.length})',
+          initiallyOpen: true,
+          child: ImageGalleryCarousel(
+            images: images,
+            title: 'Photos de l\'événement',
+            height: 280,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAdditionalMediaSection() {
+    final additionalImages = _getAdditionalImages();
+    final mediaVideos = _getMediaVideos();
+    
+    if (additionalImages.isEmpty && mediaVideos.isEmpty) return const SizedBox.shrink();
+    
+    return Column(
+      children: [
+        const SizedBox(height: 16),
+        Accordion(
+          title: 'Médias supplémentaires',
+          initiallyOpen: false,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (additionalImages.isNotEmpty) ...[
+                const Text(
+                  'Images supplémentaires',
+                  style: TextStyle(
+                    fontFamily: 'OpenSans',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF2D3748),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ImageGalleryCarousel(
+                  images: additionalImages,
+                  title: 'Images supplémentaires',
+                  height: 200,
+                ),
+                const SizedBox(height: 16),
+              ],
+              if (mediaVideos.isNotEmpty) ...[
+                const Text(
+                  'Vidéos de l\'événement',
+                  style: TextStyle(
+                    fontFamily: 'OpenSans',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF2D3748),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ...mediaVideos.take(3).map((video) => 
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _buildVideoPlayerCard(
+                      video,
+                      'Vidéo ${mediaVideos.indexOf(video) + 1}',
+                      'Voir la vidéo',
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildVideoSection() {
-    final videoUrl = _event!['video_url'] ?? 
-                    _event!['promotional_video'] ?? 
-                    _event!['promo_video'] ?? 
-                    _event!['youtube_url'] ?? 
-                    _event!['vimeo_url'];
+    final promotionalVideos = _getPromotionalVideos();
     
-    if (videoUrl == null) return const SizedBox.shrink();
+    if (promotionalVideos.isEmpty) return const SizedBox.shrink();
     
-    return Accordion(
-      title: 'Vidéo promotionnelle',
-      initiallyOpen: false,
+    return Column(
+      children: [
+        const SizedBox(height: 16),
+        Accordion(
+          title: promotionalVideos.length > 1 
+            ? 'Vidéos promotionnelles (${promotionalVideos.length})'
+            : 'Vidéo promotionnelle',
+          initiallyOpen: true,
+          child: Column(
+            children: promotionalVideos.asMap().entries.map((entry) {
+              final index = entry.key;
+              final videoUrl = entry.value;
+              final title = promotionalVideos.length > 1 
+                ? 'Vidéo promotionnelle ${index + 1}'
+                : 'Voir la vidéo promotionnelle';
+              
+              return Padding(
+                padding: EdgeInsets.only(
+                  bottom: index < promotionalVideos.length - 1 ? 16 : 0,
+                ),
+                child: _buildVideoPlayerCard(
+                  videoUrl,
+                  title,
+                  'Appuyez pour ouvrir',
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildVideoPlayerCard(String videoUrl, String title, String subtitle) {
+    return GestureDetector(
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (context) => Dialog(
+            backgroundColor: Colors.transparent,
+            child: Container(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.8,
+                maxWidth: MediaQuery.of(context).size.width * 0.9,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      IconButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(
+                          LucideIcons.x,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Flexible(
+                    child: UnifiedVideoPlayer(
+                      videoUrl: videoUrl,
+                      title: title,
+                      subtitle: subtitle,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
       child: UnifiedVideoPlayer(
         videoUrl: videoUrl,
-        title: 'Voir la vidéo promotionnelle',
-        subtitle: 'Appuyez pour ouvrir',
+        title: title,
+        subtitle: subtitle,
       ),
     );
   }
@@ -1143,19 +1254,33 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
   List<String> _getEventImages() {
     final images = <String>[];
     
-    // Gallery URLs
+    // Gallery URLs principale
     if (_event!['gallery_urls'] != null) {
       if (_event!['gallery_urls'] is List) {
         images.addAll(List<String>.from(_event!['gallery_urls']));
       }
     }
     
-    // Images additionnelles
-    final additionalImages = [
-      'images', 'additional_images', 'media_gallery', 'photo_gallery'
+    // Gallery alternative (pour compatibilité)
+    if (_event!['gallery'] != null) {
+      if (_event!['gallery'] is List) {
+        images.addAll(List<String>.from(_event!['gallery']));
+      }
+    }
+    
+    return images.where((img) => img.isNotEmpty).toList();
+  }
+
+  List<String> _getAdditionalImages() {
+    final images = <String>[];
+    
+    // Images supplémentaires
+    final additionalImageFields = [
+      'additional_images', 'media_gallery', 'photo_gallery', 
+      'event_images', 'venue_images', 'behind_scenes'
     ];
     
-    for (final field in additionalImages) {
+    for (final field in additionalImageFields) {
       final value = _event![field];
       if (value != null) {
         if (value is List) {
@@ -1166,17 +1291,44 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
       }
     }
     
-    return images;
+    return images.where((img) => img.isNotEmpty).toList();
   }
 
-  List<String> _getEventVideos() {
+  List<String> _getPromotionalVideos() {
     final videos = <String>[];
     
-    final videoFields = [
-      'videos', 'video_gallery', 'additional_videos', 'media_videos'
+    // Debug: Afficher toutes les clés disponibles
+    print('🎬 [EventDetail] Clés disponibles dans _event: ${_event?.keys.toList()}');
+    
+    // Vidéos promotionnelles principales
+    final promotionalVideoFields = [
+      'video_url', 'promotional_video', 'promo_video', 
+      'youtube_url', 'vimeo_url', 'trailer_url'
     ];
     
-    for (final field in videoFields) {
+    for (final field in promotionalVideoFields) {
+      final value = _event![field];
+      print('🎬 [EventDetail] Champ $field: $value');
+      if (value != null && value.toString().isNotEmpty) {
+        print('🎬 [EventDetail] Ajout vidéo: $value');
+        videos.add(value.toString());
+      }
+    }
+    
+    print('🎬 [EventDetail] Vidéos promotionnelles trouvées: $videos');
+    return videos;
+  }
+
+  List<String> _getMediaVideos() {
+    final videos = <String>[];
+    
+    // Vidéos supplémentaires/médias
+    final mediaVideoFields = [
+      'additional_videos', 'media_videos', 'event_videos',
+      'behind_scenes_videos', 'highlight_videos'
+    ];
+    
+    for (final field in mediaVideoFields) {
       final value = _event![field];
       if (value != null) {
         if (value is List) {
@@ -1187,7 +1339,7 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
       }
     }
     
-    return videos;
+    return videos.where((video) => video.isNotEmpty).toList();
   }
 
   Map<String, String> _getRegistrationInfo() {

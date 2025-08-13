@@ -481,6 +481,10 @@ if [ -f artisan ]; then
     # Migration de l'ajout de event_category_id aux events
     $FORGE_PHP artisan migrate --path=database/migrations/2025_01_01_000001_add_event_category_id_to_events_table.php --force 2>/dev/null || log_warning "Migration event_category_id déjà appliquée ou erreur"
     
+    # Migration SplashScreen pour la customisation via Filament
+    log_info "🎨 Migration de la table splash_screens..."
+    $FORGE_PHP artisan migrate --path=database/migrations/*create_splash_screens_table*.php --force 2>/dev/null || log_warning "Migration splash_screens déjà appliquée ou erreur"
+    
 else
     log_warning "Fichier artisan non trouvé"
 fi

@@ -166,46 +166,7 @@ class _LoadingScreenState extends State<LoadingScreen>
                           ),
                         ),
 
-                        const SizedBox(height: 32),
-
-                        // Texte de chargement dynamique (similaire au PWA)
-                        const Text(
-                          'Dinor se prépare...',
-                          style: TextStyle(
-                            fontFamily: 'OpenSans',
-                            fontSize: 24,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                            shadows: [
-                              Shadow(
-                                offset: Offset(0, 2),
-                                blurRadius: 10,
-                                color: Colors.black26,
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 8),
-
-                        // Sous-texte
-                        const Text(
-                          'Chargement de l\'application',
-                          style: TextStyle(
-                            fontFamily: 'Roboto',
-                            fontSize: 16,
-                            color: Color(0xFFFFFFFF), // Blanc avec transparence
-                            shadows: [
-                              Shadow(
-                                offset: Offset(0, 1),
-                                blurRadius: 5,
-                                color: Colors.black26,
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 48),
+                        const SizedBox(height: 80),
 
                         // Barre de progression (similaire au PWA)
                         Column(
