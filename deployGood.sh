@@ -817,6 +817,14 @@ else
     log_warning "Problème potentiel avec la base de données"
 fi
 
+# Application des migrations de correction
+log_info "🔧 Application des migrations de correction..."
+if $FORGE_PHP artisan migrate --force; then
+    log_success "Migrations appliquées avec succès"
+else
+    log_warning "Problème avec les migrations"
+fi
+
 # Vérification finale de l'admin
 FINAL_ADMIN_CHECK=$($FORGE_PHP artisan tinker --execute="
 \$admin = App\\Models\\AdminUser::where('email', 'admin@dinor.app')->first();
@@ -906,6 +914,8 @@ echo "   ✅ Tournois configurés pour les inscriptions"
 echo "   ✅ Pages iframe opérationnelles"
 echo "   ✅ Notifications push avec colonnes content_type/content_id"
 echo "   ✅ Colonne recipes.dinor_ingredients ajoutée si manquante"
+echo "   ✅ ENUM difficulty des recettes étendu (beginner, easy, medium, hard, expert)"
+echo "   ✅ Champ category_id des événements rendu nullable"
 echo ""
 echo "💡 Note: Identifiants admin identiques au développement local"
 echo ""

@@ -191,12 +191,16 @@ class Recipe extends Model
     public function getDifficultyLabelAttribute()
     {
         switch($this->difficulty) {
+            case 'beginner':
+                return 'Débutant';
             case 'easy':
                 return 'Facile';
             case 'medium':
                 return 'Moyen';
             case 'hard':
                 return 'Difficile';
+            case 'expert':
+                return 'Expert';
             default:
                 return 'Non défini';
         }
