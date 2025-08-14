@@ -7,106 +7,18 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        [x-cloak] { display: none !important; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .tab-button.active { 
-            @apply border-yellow-500 text-yellow-600 bg-yellow-50;
-        }
-        .loading {
-            @apply animate-pulse;
-        }
-        .gradient-bg {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        }
-        .card-hover {
-            transition: all 0.3s ease;
-        }
-        .card-hover:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-        }
-        .modal {
-            -webkit-backdrop-filter: blur(4px);
-            backdrop-filter: blur(4px);
-        }
-        .gallery-thumb {
-            transition: transform 0.2s ease;
-        }
-        .gallery-thumb:hover {
-            transform: scale(1.05);
-        }
-        .image-overlay {
-            background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 50%);
-        }
-        
-        /* Animations pour la modal */
-        @keyframes modalFadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        @keyframes modalSlideIn {
-            from { 
-                opacity: 0; 
-                transform: translateY(-50px) scale(0.95); 
-            }
-            to { 
-                opacity: 1; 
-                transform: translateY(0) scale(1); 
-            }
-        }
-        
-        .modal-enter {
-            animation: modalFadeIn 0.3s ease-out;
-        }
-        
-        .modal-content-enter {
-            animation: modalSlideIn 0.3s ease-out;
-        }
-        
-        /* Zoom pour les images */
-        .image-zoom {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.9);
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: zoom-out;
-        }
-        
-        .image-zoom img {
-            max-width: 90vw;
-            max-height: 90vh;
-            object-fit: contain;
-            border-radius: 8px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-        }
-        
-        @keyframes zoomIn {
-            from { 
-                opacity: 0; 
-                transform: scale(0.5); 
-            }
-            to { 
-                opacity: 1; 
-                transform: scale(1); 
-            }
-        }
-        
-        .zoom-enter {
-            animation: zoomIn 0.3s ease-out;
-        }
-    </style>
+    <link rel="stylesheet" href="css/material-design-theme.css">
 </head>
 <body class="bg-gray-50" x-data="dashboardApp()">
-    <div class="min-h-screen">
+    <!-- Loading Screen avec logo Dinor -->
+    <div class="dinor-loading" x-show="loading" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+        <img src="https://yt3.googleusercontent.com/ytc/AIdro_nzKOdChzl2V5Y3lBfh9RRzCTBaNUtdLDLq_9fjmjXHrNVg=s900-c-k-c0x00ffffff-no-rj" 
+             alt="Logo Dinor" 
+             class="dinor-logo">
+        <div class="dinor-loading-text">Chargement de Dinor...</div>
+    </div>
+    
+    <div class="min-h-screen" x-show="!loading">
         <!-- Header avec gradient Dinor -->
         <header class="gradient-bg shadow-lg">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
