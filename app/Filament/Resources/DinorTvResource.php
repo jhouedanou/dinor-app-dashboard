@@ -122,8 +122,7 @@ class DinorTvResource extends Resource
 
                         Forms\Components\KeyValue::make('image_metadata')
                             ->label('Métadonnées des images')
-                            ->helperText('Informations supplémentaires sur les images (crédits, sources, etc.)')
-                            ->collapsible(),
+                            ->helperText('Informations supplémentaires sur les images (crédits, sources, etc.)'),
                     ]),
 
                 Forms\Components\Section::make('Configuration')
