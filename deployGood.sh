@@ -819,10 +819,36 @@ fi
 
 # Application des migrations de correction
 log_info "🔧 Application des migrations de correction..."
-if $FORGE_PHP artisan migrate --force; then
-    log_success "Migrations appliquées avec succès"
+
+# Migration spécifique pour corriger la contrainte MySQL users_role_check
+log_info "🔧 Correction de la contrainte MySQL users_role_check..."
+if [ -f database/migrations/2025_08_14_221203_fix_users_role_check_constraint_mysql_syntax.php ]; then
+    if $FORGE_PHP artisan migrate --path=database/migrations/2025_08_14_221203_fix_users_role_check_constraint_mysql_syntax.php --force; then
+        log_success "✅ Contrainte users_role_check corrigée pour MySQL"
+    else
+        log_warning "⚠️ Échec de la correction de la contrainte users_role_check"
+    fi
 else
-    log_warning "Problème avec les migrations"
+    log_warning "⚠️ Migration de correction de contrainte MySQL non trouvée"
+fi
+
+# Migration pour ajouter les colonnes manquantes à dinor_tv (short_description, etc.)
+log_info "🔧 Vérification des colonnes DinorTV..."
+if [ -f database/migrations/2025_08_13_210051_add_custom_images_support_to_dinor_tv_table.php ]; then
+    if $FORGE_PHP artisan migrate --path=database/migrations/2025_08_13_210051_add_custom_images_support_to_dinor_tv_table.php --force; then
+        log_success "✅ Colonnes DinorTV (short_description, images) ajoutées"
+    else
+        log_warning "⚠️ Migration DinorTV déjà appliquée ou échec"
+    fi
+else
+    log_warning "⚠️ Migration DinorTV custom images non trouvée"
+fi
+
+# Application générale des migrations restantes
+if $FORGE_PHP artisan migrate --force; then
+    log_success "Migrations générales appliquées avec succès"
+else
+    log_warning "Problème avec les migrations générales"
 fi
 
 # Vérification finale de l'admin

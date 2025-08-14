@@ -155,6 +155,34 @@ Le script `scripts/test-filament-fixes.sh` vérifie automatiquement :
 
 ---
 
+### 5. Erreur de Syntaxe MySQL pour les Contraintes
+**Erreur :** `SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'IF EXISTS users_role_check'`
+
+**Cause :**
+- Migration `2025_08_05_170500_add_professional_role_to_users.php` utilisait la syntaxe PostgreSQL
+- Commande `DROP CONSTRAINT IF EXISTS` non supportée par MySQL
+- Syntaxe `role::text = ANY (ARRAY[...])` spécifique à PostgreSQL
+
+**Solution appliquée :**
+- Migration `2025_08_14_221203_fix_users_role_check_constraint_mysql_syntax.php`
+- Remplacement par syntaxe MySQL : `DROP CHECK` et `role IN (...)`
+- Gestion d'exceptions pour éviter les erreurs si contrainte n'existe pas
+
+### 6. Erreur DinorTV - Colonne short_description Manquante
+**Erreur :** `SQLSTATE[42S22]: Column not found: 1054 Unknown column 'short_description' in 'field list'`
+
+**Cause :**
+- Migration `2025_08_13_210051_add_custom_images_support_to_dinor_tv_table.php` pas exécutée en production
+- Interface Filament tentait d'insérer dans colonne `short_description` inexistante
+- Création de contenu DinorTV échouait en production
+
+**Solution appliquée :**
+- Migration existante `2025_08_13_210051_add_custom_images_support_to_dinor_tv_table.php` déjà correcte
+- Ajoute `short_description` et autres champs manquants
+- Sera appliquée lors du prochain déploiement
+
+---
+
 **Date :** 14 Août 2025  
 **Auteur :** Assistant IA  
-**Version :** 2.0
+**Version :** 3.0
