@@ -25,6 +25,7 @@ import '../models/video_data.dart';
 import '../components/common/unified_like_button.dart';
 import '../components/common/youtube_video_modal.dart';
 import '../components/common/auth_modal.dart';
+import '../components/common/content_gallery_grid.dart';
 
 class EnhancedDinorTVScreen extends ConsumerStatefulWidget {
   const EnhancedDinorTVScreen({Key? key}) : super(key: key);
@@ -286,26 +287,23 @@ class _EnhancedDinorTVScreenState extends ConsumerState<EnhancedDinorTVScreen>
 
           const SizedBox(height: 24),
 
-          // Liste des vidéos
-          const Text(
-            'Toutes les vidéos',
-            style: TextStyle(
-              fontFamily: 'OpenSans',
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF2D3748),
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: videos.length,
-            itemBuilder: (context, index) {
-              return _buildVideoCard(videos[index], index);
-            },
+          // Grille de vidéos en mosaïque
+          ContentGalleryGrid(
+            title: 'Toutes les vidéos',
+            items: videos.map((video) => {
+              'id': video.id,
+              'title': video.title,
+              'description': video.description,
+              'featured_image_url': video.thumbnailUrl,
+              'video_url': video.videoUrl,
+              'likes_count': video.likesCount,
+              'views': video.views,
+            }).toList(),
+            loading: false,
+            contentType: 'videos',
+            viewAllLink: '/dinor-tv',
+            onItemClick: (item) => _openImmersivePlayer(startIndex: videos.indexWhere((v) => v.id == item['id'])),
+            darkTheme: true,
           ),
         ],
       ),

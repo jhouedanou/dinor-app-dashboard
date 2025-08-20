@@ -56,7 +56,7 @@ class _SimpleRecipesScreenState extends State<SimpleRecipesScreen> {
             child: UnifiedContentList(
               contentType: 'recipe',
               apiEndpoint: 'https://new.dinorapp.com/api/v1/recipes',
-              itemsPerPage: 4,
+              itemsPerPage: 10,
               enableSearch: true,
               enableFilters: true,
               useGridView: false,
@@ -64,6 +64,7 @@ class _SimpleRecipesScreenState extends State<SimpleRecipesScreen> {
                 contentType: 'recipe',
                 item: item,
                 onTap: () => _navigateToRecipeDetail(item['id']?.toString() ?? ''),
+                compact: false,
               ),
               titleExtractor: (item) => item['title']?.toString() ?? '',
               imageExtractor: (item) => item['featured_image_url']?.toString() ?? '',

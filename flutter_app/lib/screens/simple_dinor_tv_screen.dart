@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/navigation_service.dart';
 import '../components/common/youtube_video_modal.dart';
+import '../components/common/content_gallery_grid.dart';
 
 class SimpleDinorTVScreen extends StatefulWidget {
   const SimpleDinorTVScreen({Key? key}) : super(key: key);
@@ -285,13 +286,16 @@ class _SimpleDinorTVScreenState extends State<SimpleDinorTVScreen> {
 
     return RefreshIndicator(
       onRefresh: _loadVideos,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: videos.length,
-        itemBuilder: (context, index) {
-          final video = videos[index];
-          return _buildVideoCard(video);
-        },
+      child: SingleChildScrollView(
+        child: ContentGalleryGrid(
+          title: 'Dinor TV',
+          items: videos,
+          loading: false,
+          contentType: 'videos',
+          viewAllLink: '/dinor-tv',
+          onItemClick: _openVideo,
+          darkTheme: true,
+        ),
       ),
     );
   }

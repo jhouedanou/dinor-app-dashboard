@@ -40,6 +40,8 @@ class ContentCarousel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('🎠 [ContentCarousel] Build: title=$title, items=${items.length}, loading=$loading, error=$error');
+    
     return Container(
       padding: darkTheme ? const EdgeInsets.all(20) : null,
       child: Column(
@@ -86,9 +88,9 @@ class ContentCarousel extends StatelessWidget {
           
           const SizedBox(height: 24),
           
-          // Contenu du carousel
+          // Contenu du carousel avec hauteur réduite
           SizedBox(
-            height: 350, // Hauteur augmentée pour éviter les overflows
+            height: 200, // Hauteur réduite
             child: _buildCarouselContent(),
           ),
         ],
@@ -97,8 +99,11 @@ class ContentCarousel extends StatelessWidget {
   }
 
   Widget _buildCarouselContent() {
+    print('🎠 [ContentCarousel] _buildCarouselContent: loading=$loading, error=$error, items.isEmpty=${items.isEmpty}');
+    
     // État de chargement - .carousel-loading CSS
     if (loading) {
+      print('🎠 [ContentCarousel] Affichage état loading');
       return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -127,6 +132,7 @@ class ContentCarousel extends StatelessWidget {
 
     // État d'erreur
     if (error != null) {
+      print('🎠 [ContentCarousel] Affichage état erreur: $error');
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -152,6 +158,7 @@ class ContentCarousel extends StatelessWidget {
 
     // État vide
     if (items.isEmpty) {
+      print('🎠 [ContentCarousel] Affichage état vide - aucun item');
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -176,6 +183,7 @@ class ContentCarousel extends StatelessWidget {
     }
 
     // Carousel avec items - .carousel CSS identique
+    print('🎠 [ContentCarousel] Affichage carousel avec ${items.length} items');
     return ListView.separated(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -184,7 +192,7 @@ class ContentCarousel extends StatelessWidget {
       itemBuilder: (context, index) {
         final item = items[index];
         return SizedBox(
-          width: 280, // Largeur fixe identique CSS : flex: 0 0 280px
+          width: 200, // Largeur réduite pour s'adapter à la hauteur réduite
           child: GestureDetector(
             onTap: () => onItemClick(item),
             child: AnimatedContainer(

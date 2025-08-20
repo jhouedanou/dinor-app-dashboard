@@ -9,6 +9,8 @@ import '../services/image_service.dart';
 import '../services/tutorial_service.dart';
 import '../components/app_header.dart';
 import '../components/common/home_video_modal.dart';
+import '../components/common/content_carousel.dart';
+import '../components/common/content_item_card.dart';
 import 'cache_management_screen.dart';
 
 class WorkingHomeScreen extends StatefulWidget {
@@ -241,6 +243,22 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
     );
   }
 
+  void _handleRecipeClick(Map<String, dynamic> recipe) {
+    NavigationService.goToRecipeDetail(recipe['id'].toString());
+  }
+
+  void _handleTipClick(Map<String, dynamic> tip) {
+    NavigationService.pushNamed('/tip-detail-unified/${tip['id']}');
+  }
+
+  void _handleEventClick(Map<String, dynamic> event) {
+    NavigationService.pushNamed('/event-detail-unified/${event['id']}');
+  }
+
+  void _handleVideoClick(Map<String, dynamic> video) {
+    _openVideo(video);
+  }
+
   void _openVideo(Map<String, dynamic> video) {
     final videoUrl = video['video_url'] as String?;
     final title = video['title'] as String? ?? 'Vidéo Dinor TV';
@@ -298,55 +316,92 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
                     _buildWelcomeHeader(),
                     const SizedBox(height: 24),
 
-                    // Événements d'abord
-                    _buildSection(
-                      'Événements',
-                      '/events',
-                      events,
-                      isLoadingEvents,
-                      errorEvents,
-                      _buildEventCard,
-                      Icons.event,
-                      const Color(0xFF38A169),
+                    // Événements - Format Carousel avec logs
+                    Builder(
+                      builder: (context) {
+                        print('🏠 [WorkingHomeScreen] Affichage ContentCarousel Événements');
+                        print('🏠 [WorkingHomeScreen] Événements - items: ${events.length}, loading: $isLoadingEvents, error: $errorEvents');
+                        return ContentCarousel(
+                          title: 'Événements',
+                          items: events.take(6).toList(),
+                          loading: isLoadingEvents,
+                          error: errorEvents,
+                          contentType: 'events',
+                          viewAllLink: '/events',
+                          onItemClick: _handleEventClick,
+                          itemBuilder: (item) => ContentItemCard(
+                            contentType: 'event',
+                            item: item,
+                            onTap: () => _handleEventClick(item),
+                            compact: true,
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(height: 24),
 
-                    // Recettes
-                    _buildSection(
-                      'Recettes',
-                      '/recipes',
-                      recipes,
-                      isLoadingRecipes,
-                      errorRecipes,
-                      _buildRecipeCard,
-                      Icons.restaurant,
-                      const Color(0xFFE53E3E),
+                    // Recettes - Format Carousel
+                    ContentCarousel(
+                      title: 'Recettes',
+                      items: recipes.take(6).toList(),
+                      loading: isLoadingRecipes,
+                      error: errorRecipes,
+                      contentType: 'recipes',
+                      viewAllLink: '/recipes',
+                      onItemClick: _handleRecipeClick,
+                      itemBuilder: (item) => ContentItemCard(
+                        contentType: 'recipe',
+                        item: item,
+                        onTap: () => _handleRecipeClick(item),
+                        compact: true,
+                      ),
                     ),
                     const SizedBox(height: 24),
 
-                    // Astuces
-                    _buildSection(
-                      'Astuces',
-                      '/tips',
-                      tips,
-                      isLoadingTips,
-                      errorTips,
-                      _buildTipCard,
-                      Icons.lightbulb,
-                      const Color(0xFFF4D03F),
+                    // Astuces - Format Carousel
+                    ContentCarousel(
+                      title: 'Astuces',
+                      items: tips.take(6).toList(),
+                      loading: isLoadingTips,
+                      error: errorTips,
+                      contentType: 'tips',
+                      viewAllLink: '/tips',
+                      onItemClick: _handleTipClick,
+                      itemBuilder: (item) => ContentItemCard(
+                        contentType: 'tip',
+                        item: item,
+                        onTap: () => _handleTipClick(item),
+                        compact: true,
+                      ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
 
-                    // Vidéos
-                    _buildSection(
-                      'Dinor TV',
-                      '/dinor-tv',
-                      videos,
-                      isLoadingVideos,
-                      errorVideos,
-                      _buildVideoCard,
-                      Icons.play_circle,
-                      const Color(0xFF9B59B6),
+                    // Dinor TV - Format Carousel avec thème sombre
+                    Container(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Color(0xFF1a1a1a), Color(0xFF333333)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                      ),
+                      child: ContentCarousel(
+                        title: 'Dinor TV',
+                        items: videos.take(6).toList(),
+                        loading: isLoadingVideos,
+                        error: errorVideos,
+                        contentType: 'videos',
+                        viewAllLink: '/dinor-tv',
+                        onItemClick: _handleVideoClick,
+                        darkTheme: true,
+                        itemBuilder: (item) => ContentItemCard(
+                          contentType: 'video',
+                          item: item,
+                          onTap: () => _handleVideoClick(item),
+                          compact: true,
+                        ),
+                      ),
                     ),
                   ],
                 ),

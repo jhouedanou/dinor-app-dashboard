@@ -269,9 +269,9 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
     // IMPORTANT: Retourner un Container dimensionné pour bottomNavigationBar
     return Container
       (
-      height: 56 + MediaQuery.of(context).padding.bottom, // Réduit davantage pour moins d'espace
+      height: 48 + MediaQuery.of(context).padding.bottom, // Encore plus réduit comme les autres apps
       decoration: const BoxDecoration(
-        color: Color(0xFFF4D03F),
+        color: Color(0xFFF4D03F), // Fond jaune restauré
         border: Border(
           top: BorderSide(
             color: Color.fromRGBO(0, 0, 0, 0.1),
@@ -282,7 +282,7 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
       ),
       child: SafeArea(
         child: SizedBox(
-          height: 56, // Cohérent avec la hauteur du container
+          height: 48, // Cohérent avec la hauteur du container
           child: Stack(
             children: [
               // Navigation avec largeurs uniformes

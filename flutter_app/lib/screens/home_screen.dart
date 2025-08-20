@@ -27,6 +27,7 @@ import 'package:url_launcher/url_launcher.dart';
 // Components (équivalent des imports Vue)
 import '../components/common/banner_section.dart';
 import '../components/common/content_carousel.dart';
+import '../components/common/content_item_card.dart';
 import '../components/common/like_button.dart';
 import '../components/common/auth_modal.dart';
 import '../components/common/youtube_video_modal.dart';
@@ -138,7 +139,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
     }
   }
 
-  // IDENTIQUE à useRecipes({ limit: 4, sort_by: 'created_at', sort_order: 'desc' }) Vue
+  // Chargement des recettes mises en avant (featured) pour l'accueil
   Future<void> _loadLatestRecipes() async {
     setState(() {
       _loadingRecipes = true;
@@ -146,20 +147,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
     });
 
     try {
-      print('🍳 [HomeScreen] Chargement des 4 dernières recettes');
+      print('🍳 [HomeScreen] Chargement des recettes mises en avant');
       final apiService = ref.read(apiServiceProvider);
-      final data = await apiService.get('/recipes', params: {
-        'limit': '4',
-        'sort_by': 'created_at',
-        'sort_order': 'desc',
+      
+      // Essayer d'abord les recettes featured
+      final featuredData = await apiService.get('/recipes/featured/list', params: {
+        'limit': '6',
       });
 
-      if (data['success'] == true) {
+      if (featuredData['success'] == true && (featuredData['data'] as List).isNotEmpty) {
         setState(() {
-          _latestRecipes = (data['data'] as List).cast<Map<String, dynamic>>().take(4).toList();
+          _latestRecipes = (featuredData['data'] as List).cast<Map<String, dynamic>>().take(6).toList();
           _loadingRecipes = false;
         });
-        print('✅ [HomeScreen] ${_latestRecipes.length} recettes chargées');
+        print('✅ [HomeScreen] ${_latestRecipes.length} recettes mises en avant chargées');
+      } else {
+        // Fallback vers les dernières recettes si pas de featured
+        final data = await apiService.get('/recipes', params: {
+          'limit': '6',
+          'sort_by': 'created_at',
+          'sort_order': 'desc',
+        });
+
+        if (data['success'] == true) {
+          setState(() {
+            _latestRecipes = (data['data'] as List).cast<Map<String, dynamic>>().take(6).toList();
+            _loadingRecipes = false;
+          });
+          print('✅ [HomeScreen] ${_latestRecipes.length} recettes récentes chargées (fallback)');
+        }
       }
     } catch (error) {
       print('❌ [HomeScreen] Erreur chargement recettes: $error');
@@ -170,7 +186,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
     }
   }
 
-  // IDENTIQUE à useTips({ limit: 4, sort_by: 'created_at', sort_order: 'desc' }) Vue
+  // Chargement des astuces mises en avant (featured) pour l'accueil
   Future<void> _loadLatestTips() async {
     setState(() {
       _loadingTips = true;
@@ -178,20 +194,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
     });
 
     try {
-      print('💡 [HomeScreen] Chargement des 4 dernières astuces');
+      print('💡 [HomeScreen] Chargement des astuces mises en avant');
       final apiService = ref.read(apiServiceProvider);
-      final data = await apiService.get('/tips', params: {
-        'limit': '4',
-        'sort_by': 'created_at',
-        'sort_order': 'desc',
+      
+      // Essayer d'abord les astuces featured
+      final featuredData = await apiService.get('/tips/featured/list', params: {
+        'limit': '6',
       });
 
-      if (data['success'] == true) {
+      if (featuredData['success'] == true && (featuredData['data'] as List).isNotEmpty) {
         setState(() {
-          _latestTips = (data['data'] as List).cast<Map<String, dynamic>>().take(4).toList();
+          _latestTips = (featuredData['data'] as List).cast<Map<String, dynamic>>().take(6).toList();
           _loadingTips = false;
         });
-        print('✅ [HomeScreen] ${_latestTips.length} astuces chargées');
+        print('✅ [HomeScreen] ${_latestTips.length} astuces mises en avant chargées');
+      } else {
+        // Fallback vers les dernières astuces si pas de featured
+        final data = await apiService.get('/tips', params: {
+          'limit': '6',
+          'sort_by': 'created_at',
+          'sort_order': 'desc',
+        });
+
+        if (data['success'] == true) {
+          setState(() {
+            _latestTips = (data['data'] as List).cast<Map<String, dynamic>>().take(6).toList();
+            _loadingTips = false;
+          });
+          print('✅ [HomeScreen] ${_latestTips.length} astuces récentes chargées (fallback)');
+        }
       }
     } catch (error) {
       print('❌ [HomeScreen] Erreur chargement astuces: $error');
@@ -202,7 +233,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
     }
   }
 
-  // IDENTIQUE à useEvents({ limit: 4, sort_by: 'created_at', sort_order: 'desc' }) Vue
+  // Chargement des événements mis en avant (featured) pour l'accueil
   Future<void> _loadLatestEvents() async {
     setState(() {
       _loadingEvents = true;
@@ -210,20 +241,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
     });
 
     try {
-      print('📅 [HomeScreen] Chargement des 4 derniers événements');
+      print('📅 [HomeScreen] Chargement des événements mis en avant');
       final apiService = ref.read(apiServiceProvider);
-      final data = await apiService.get('/events', params: {
-        'limit': '4',
-        'sort_by': 'created_at',
-        'sort_order': 'desc',
+      
+      // Essayer d'abord les événements featured
+      final featuredData = await apiService.get('/events/featured/list', params: {
+        'limit': '6',
       });
 
-      if (data['success'] == true) {
+      if (featuredData['success'] == true && (featuredData['data'] as List).isNotEmpty) {
         setState(() {
-          _latestEvents = (data['data'] as List).cast<Map<String, dynamic>>().take(4).toList();
+          _latestEvents = (featuredData['data'] as List).cast<Map<String, dynamic>>().take(6).toList();
           _loadingEvents = false;
         });
-        print('✅ [HomeScreen] ${_latestEvents.length} événements chargés');
+        print('✅ [HomeScreen] ${_latestEvents.length} événements mis en avant chargés');
+      } else {
+        // Fallback vers les derniers événements si pas de featured
+        final data = await apiService.get('/events', params: {
+          'limit': '6',
+          'sort_by': 'created_at',
+          'sort_order': 'desc',
+        });
+
+        if (data['success'] == true) {
+          setState(() {
+            _latestEvents = (data['data'] as List).cast<Map<String, dynamic>>().take(6).toList();
+            _loadingEvents = false;
+          });
+          print('✅ [HomeScreen] ${_latestEvents.length} événements récents chargés (fallback)');
+        }
       }
     } catch (error) {
       print('❌ [HomeScreen] Erreur chargement événements: $error');
@@ -234,7 +280,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
     }
   }
 
-  // IDENTIQUE à useDinorTV({ limit: 4, sort_by: 'created_at', sort_order: 'desc' }) Vue
+  // Chargement des vidéos mises en avant (featured) pour l'accueil
   Future<void> _loadLatestVideos() async {
     setState(() {
       _loadingVideos = true;
@@ -242,20 +288,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
     });
 
     try {
-      print('📺 [HomeScreen] Chargement des 4 dernières vidéos');
+      print('📺 [HomeScreen] Chargement des vidéos mises en avant');
       final apiService = ref.read(apiServiceProvider);
-      final data = await apiService.get('/dinor-tv', params: {
-        'limit': '4',
-        'sort_by': 'created_at',
-        'sort_order': 'desc',
+      
+      // Essayer d'abord les vidéos featured
+      final featuredData = await apiService.get('/dinor-tv/featured/list', params: {
+        'limit': '6',
       });
 
-      if (data['success'] == true) {
+      if (featuredData['success'] == true && (featuredData['data'] as List).isNotEmpty) {
         setState(() {
-          _latestVideos = (data['data'] as List).cast<Map<String, dynamic>>().take(4).toList();
+          _latestVideos = (featuredData['data'] as List).cast<Map<String, dynamic>>().take(6).toList();
           _loadingVideos = false;
         });
-        print('✅ [HomeScreen] ${_latestVideos.length} vidéos chargées');
+        print('✅ [HomeScreen] ${_latestVideos.length} vidéos mises en avant chargées');
+      } else {
+        // Fallback vers les dernières vidéos si pas de featured
+        final data = await apiService.get('/dinor-tv', params: {
+          'limit': '6',
+          'sort_by': 'created_at',
+          'sort_order': 'desc',
+        });
+
+        if (data['success'] == true) {
+          setState(() {
+            _latestVideos = (data['data'] as List).cast<Map<String, dynamic>>().take(6).toList();
+            _loadingVideos = false;
+          });
+          print('✅ [HomeScreen] ${_latestVideos.length} vidéos récentes chargées (fallback)');
+        }
       }
     } catch (error) {
       print('❌ [HomeScreen] Erreur chargement vidéos: $error');
@@ -495,51 +556,74 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
 
                     const SizedBox(height: 32),
 
-                    // Événements - d'abord
-                    ContentCarousel(
-                      title: 'Événements',
-                      items: _latestEvents,
-                      loading: _loadingEvents,
-                      error: _errorEvents,
-                      contentType: 'events',
-                      viewAllLink: '/events',
-                      onItemClick: _handleEventClick,
-                      itemBuilder: _buildEventCard,
+                    // Événements - format carousel
+                    Builder(
+                      builder: (context) {
+                        print('🏠 [HomeScreen] Affichage ContentCarousel Événements');
+                        print('🏠 [HomeScreen] Événements - items: ${_latestEvents.length}, loading: $_loadingEvents, error: $_errorEvents');
+                        return ContentCarousel(
+                          title: 'Événements',
+                          items: _latestEvents.take(6).toList(),
+                          loading: _loadingEvents,
+                          error: _errorEvents,
+                          contentType: 'events',
+                          viewAllLink: '/events',
+                          onItemClick: _handleEventClick,
+                          itemBuilder: (item) => ContentItemCard(
+                            contentType: 'event',
+                            item: item,
+                            onTap: () => _handleEventClick(item),
+                            compact: true,
+                          ),
+                        );
+                      },
                     ),
 
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 24),
 
-                    // Recettes
+                    // Recettes - format carousel
                     ContentCarousel(
                       title: 'Recettes',
-                      items: _latestRecipes,
+                      items: _latestRecipes.take(6).toList(),
                       loading: _loadingRecipes,
                       error: _errorRecipes,
                       contentType: 'recipes',
                       viewAllLink: '/recipes',
                       onItemClick: _handleRecipeClick,
-                      itemBuilder: _buildRecipeCard,
+                      itemBuilder: (item) => ContentItemCard(
+                        contentType: 'recipe',
+                        item: item,
+                        onTap: () => _handleRecipeClick(item),
+                        compact: true,
+                      ),
                     ),
 
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 24),
 
-                    // Astuces
+                    // Astuces - format carousel
                     ContentCarousel(
                       title: 'Astuces',
-                      items: _latestTips,
+                      items: _latestTips.take(6).toList(),
                       loading: _loadingTips,
                       error: _errorTips,
                       contentType: 'tips',
                       viewAllLink: '/tips',
                       onItemClick: _handleTipClick,
-                      itemBuilder: _buildTipCard,
+                      itemBuilder: (item) => ContentItemCard(
+                        contentType: 'tip',
+                        item: item,
+                        onTap: () => _handleTipClick(item),
+                        compact: true,
+                      ),
                     ),
 
-                    // Dinor TV - 4 dernières vidéos - ContentCarousel identique
+                    const SizedBox(height: 16),
+
+                    // Dinor TV - format carousel avec thème sombre
                     Container(
                       decoration: const BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [Color(0xFF1a1a1a), Color(0xFF333333)], // Dégradé identique
+                          colors: [Color(0xFF1a1a1a), Color(0xFF333333)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -547,14 +631,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
                       ),
                       child: ContentCarousel(
                         title: 'Dinor TV',
-                        items: _latestVideos,
+                        items: _latestVideos.take(6).toList(),
                         loading: _loadingVideos,
                         error: _errorVideos,
                         contentType: 'videos',
                         viewAllLink: '/dinor-tv',
                         onItemClick: _handleVideoClick,
-                        itemBuilder: _buildVideoCard,
-                        darkTheme: true, // Section sombre
+                        darkTheme: true,
+                        itemBuilder: (item) => ContentItemCard(
+                          contentType: 'video',
+                          item: item,
+                          onTap: () => _handleVideoClick(item),
+                          compact: true,
+                        ),
                       ),
                     ),
                   ],

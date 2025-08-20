@@ -56,7 +56,7 @@ class _SimpleTipsScreenState extends State<SimpleTipsScreen> {
             child: UnifiedContentList(
         contentType: 'tip',
         apiEndpoint: 'https://new.dinorapp.com/api/v1/tips',
-        itemsPerPage: 4,
+        itemsPerPage: 10,
         enableSearch: true,
         enableFilters: true,
         useGridView: false,
@@ -64,6 +64,7 @@ class _SimpleTipsScreenState extends State<SimpleTipsScreen> {
           contentType: 'tip',
           item: item,
           onTap: () => _navigateToTipDetail(item['id']?.toString() ?? ''),
+          compact: false,
         ),
               titleExtractor: (item) => item['title']?.toString() ?? '',
               imageExtractor: (item) => item['featured_image_url']?.toString() ?? '',

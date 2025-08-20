@@ -387,6 +387,12 @@ class _DinorAppState extends ConsumerState<DinorApp> {
           ),
           child: Stack(
           children: [
+            // Fond de chargement pour éviter l'écran noir
+            if (_showLoading)
+              Container(
+                color: _getPreloadBackgroundColor(),
+              ),
+            
             // App principale (masquée pendant le loading) - v-if="!showLoading"
             if (!_showLoading)
               Scaffold(

@@ -17,12 +17,14 @@ class BannerSection extends StatelessWidget {
   final String type;
   final String section;
   final List<dynamic> banners;
+  final double? height;
 
   const BannerSection({
     Key? key,
     required this.type,
     required this.section,
     required this.banners,
+    this.height,
   }) : super(key: key);
 
   @override
@@ -32,7 +34,7 @@ class BannerSection extends StatelessWidget {
     }
 
     return Container(
-      height: 200,
+      height: height ?? 200,
       child: PageView.builder(
         itemCount: banners.length,
         itemBuilder: (context, index) {

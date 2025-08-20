@@ -155,7 +155,8 @@ class _LoadingScreenState extends State<LoadingScreen>
       curve: const Interval(0.0, 0.6, curve: Curves.elasticOut),
     ));
 
-    if (widget.visible) {
+    // Démarrer le loading seulement si visible et config chargée
+    if (widget.visible && _configLoaded) {
       _startLoading();
     }
   }
@@ -166,8 +167,9 @@ class _LoadingScreenState extends State<LoadingScreen>
     // Démarrer l'animation Ken Burns
     _kenBurnsController.forward();
 
-    // Timer identique à Vue : 2500ms
-    _timer = Timer(Duration(milliseconds: widget.duration), () {
+    // Timer utilisant la durée de l'API ou fallback sur widget.duration
+    final duration = _config?['duration'] ?? widget.duration;
+    _timer = Timer(Duration(milliseconds: duration), () {
       widget.onComplete?.call();
     });
   }

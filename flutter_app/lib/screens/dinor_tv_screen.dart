@@ -29,6 +29,7 @@ import '../composables/use_auth_handler.dart';
 // Components
 import '../components/common/banner_section.dart';
 import '../components/common/auth_modal.dart';
+import '../components/common/content_gallery_grid.dart';
 
 
 
@@ -87,7 +88,7 @@ class _DinorTVScreenState extends ConsumerState<DinorTVScreen> with AutomaticKee
 
 
 
-  void _handleVideoTap(dynamic video) {
+  void _handleVideoClick(Map<String, dynamic> video) {
     final videoUrl = video['video_url'] as String?;
     final title = video['title'] as String? ?? 'Vidéo Dinor TV';
     final description = video['description'] as String?;
@@ -240,253 +241,26 @@ class _DinorTVScreenState extends ConsumerState<DinorTVScreen> with AutomaticKee
                   type: 'dinor-tv',
                   section: 'hero',
                   banners: _banners,
+                  height: 150, // Hauteur réduite pour Dinor TV
                 ),
               ),
-            // Contenu principal
+            // Contenu principal - Filtrer les vidéos vides et enlever les marges
             SliverToBoxAdapter(
-              child: _buildBody(videos, loading, error),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBody(List<dynamic> videos, bool loading, String? error) {
-    if (loading && videos.isEmpty) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFF4D03F)),
-            ),
-            SizedBox(height: 16),
-            Text(
-              'Chargement des vidéos...',
-              style: TextStyle(
-                fontFamily: 'OpenSans',
-                fontSize: 16,
-                color: Color(0xFF718096),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (error != null && videos.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Color(0xFFE53E3E),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Erreur de chargement',
-              style: const TextStyle(
-                fontFamily: 'OpenSans',
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF2D3748),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              error,
-              style: const TextStyle(
-                fontFamily: 'OpenSans',
-                fontSize: 14,
-                color: Color(0xFF718096),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadVideos,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFF4D03F),
-                foregroundColor: const Color(0xFF2D3748),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              ),
-              child: const Text('Réessayer'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (videos.isEmpty) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.video_library_outlined,
-              size: 64,
-              color: Color(0xFFCBD5E0),
-            ),
-            SizedBox(height: 16),
-            Text(
-              'Aucune vidéo disponible',
-              style: TextStyle(
-                fontFamily: 'OpenSans',
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF2D3748),
-              ),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Les nouvelles vidéos apparaîtront ici',
-              style: TextStyle(
-                fontFamily: 'OpenSans',
-                fontSize: 14,
-                color: Color(0xFF718096),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return GridView.builder(
-      padding: const EdgeInsets.all(16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 0.75,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-      ),
-      itemCount: videos.length,
-      itemBuilder: (context, index) {
-        final video = videos[index];
-        return _buildVideoCard(video);
-      },
-    );
-  }
-
-  Widget _buildVideoCard(dynamic video) {
-    final thumbnail = video['thumbnail_url'] ?? 
-                      video['thumbnail'] ?? 
-                      video['image'] ?? 
-                      video['image_url'] ?? 
-                      video['featured_image'] ?? 
-                      video['featured_image_url'] ?? '';
-    final title = video['title'] ?? 'Sans titre';
-    final views = video['views'] ?? 0;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black,
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: InkWell(
-        onTap: () => _handleVideoTap(video),
-        borderRadius: BorderRadius.circular(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Image avec overlay play button
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-              child: AspectRatio(
-                aspectRatio: 16 / 9,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    ImageService.buildNetworkImage(
-                      imageUrl: thumbnail,
-                      contentType: 'video',
-                      fit: BoxFit.cover,
-                      errorWidget: Container(
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Color(0xFF9B59B6), Color(0xFFE53E3E)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                        ),
-                        child: const Center(
-                          child: Icon(
-                            Icons.play_circle,
-                            size: 48,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                    // Gradient overlay d'arrière-plan
-                    Container(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Colors.black,
-                          ],
-                        ),
-                      ),
-                    ),
-                    // Play button centré
-                    const Center(
-                      child: Icon(
-                        Icons.play_circle_outline,
-                        size: 48,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Contenu
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontFamily: 'OpenSans',
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF2D3748),
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      if (views > 0) ...[
-                        const Icon(Icons.visibility, size: 16, color: Color(0xFF718096)),
-                        const SizedBox(width: 4),
-                        Text(
-                          '$views',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF718096),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ],
+              child: ContentGalleryGrid(
+                title: 'Dinor TV',
+                items: videos.where((video) => 
+                  video != null && 
+                  video['video_url'] != null && 
+                  video['video_url'].toString().isNotEmpty &&
+                  video['title'] != null &&
+                  video['title'].toString().isNotEmpty
+                ).toList(),
+                loading: loading,
+                error: error,
+                contentType: 'videos',
+                viewAllLink: '/dinor-tv', 
+                onItemClick: _handleVideoClick,
+                darkTheme: true,
               ),
             ),
           ],
@@ -494,4 +268,6 @@ class _DinorTVScreenState extends ConsumerState<DinorTVScreen> with AutomaticKee
       ),
     );
   }
+
+
 }

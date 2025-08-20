@@ -56,7 +56,7 @@ class _SimpleEventsScreenState extends State<SimpleEventsScreen> {
             child: UnifiedContentList(
               contentType: 'event',
               apiEndpoint: 'https://new.dinorapp.com/api/v1/events',
-              itemsPerPage: 4,
+              itemsPerPage: 10,
               enableSearch: true,
               enableFilters: true,
               useGridView: false,
@@ -64,6 +64,7 @@ class _SimpleEventsScreenState extends State<SimpleEventsScreen> {
                 contentType: 'event',
                 item: item,
                 onTap: () => _navigateToEventDetail(item['id']?.toString() ?? ''),
+                compact: false,
               ),
               titleExtractor: (item) => item['title']?.toString() ?? '',
               imageExtractor: (item) => item['image']?.toString() ?? item['thumbnail']?.toString() ?? '',

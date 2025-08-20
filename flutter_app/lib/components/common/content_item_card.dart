@@ -24,13 +24,109 @@ class ContentItemCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
+        height: compact ? 180 : 240, // Hauteur fixe pour effet mosaïque
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: AppShadows.soft,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
-        child: compact ? _buildCompactCard() : _buildFullCard(),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Stack(
+            children: [
+              // Image de fond
+              Positioned.fill(
+                child: _getImageUrl().isNotEmpty
+                  ? ImageService.buildCachedNetworkImage(
+                      imageUrl: _getImageUrl(),
+                      contentType: contentType,
+                      fit: BoxFit.cover,
+                    )
+                  : Container(
+                      color: const Color(0xFFF7FAFC),
+                      child: Center(
+                        child: Icon(
+                          _getTypeIcon(),
+                          size: 64,
+                          color: const Color(0xFFCBD5E0),
+                        ),
+                      ),
+                    ),
+              ),
+              
+              // Gradient overlay
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withOpacity(0.3),
+                        Colors.black.withOpacity(0.7),
+                      ],
+                      stops: const [0.0, 0.5, 1.0],
+                    ),
+                  ),
+                ),
+              ),
+              
+              // Contenu texte
+              Positioned.fill(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Titre principal
+                      Text(
+                        _getTitle(),
+                        style: TextStyle(
+                          fontFamily: 'OpenSans',
+                          fontSize: compact ? 16 : 18,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          shadows: [
+                            Shadow(
+                              offset: const Offset(0, 1),
+                              blurRadius: 3,
+                              color: Colors.black.withOpacity(0.8),
+                            ),
+                          ],
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      
+                      const SizedBox(height: 8),
+                      
+                      // Badge de type au-dessus
+                      Row(
+                        children: [
+                          _buildOverlayTypeBadge(),
+                        ],
+                      ),
+                      
+                      const SizedBox(height: 6),
+                      
+                      // Stats en dessous (durée, likes, etc.)
+                      Row(
+                        children: _buildOverlayStats(),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -243,19 +339,28 @@ class ContentItemCard extends StatelessWidget {
 
     switch (contentType) {
       case 'recipe':
+      case 'recipes':
         icon = LucideIcons.chefHat;
-        label = 'Recette';
+        label = _getRecipeCategoryLabel();
         color = const Color(0xFF38A169);
         break;
       case 'tip':
+      case 'tips':
         icon = LucideIcons.lightbulb;
-        label = 'Astuce';
+        label = _getTipCategoryLabel();
         color = const Color(0xFF3182CE);
         break;
       case 'event':
+      case 'events':
         icon = LucideIcons.calendar;
         label = _getEventDateRange();
         color = const Color(0xFFE53E3E);
+        break;
+      case 'video':
+      case 'videos':
+        icon = LucideIcons.play;
+        label = _getVideoCategoryLabel();
+        color = const Color(0xFF6B46C1);
         break;
       default:
         icon = LucideIcons.fileText;
@@ -528,11 +633,17 @@ class ContentItemCard extends StatelessWidget {
   IconData _getTypeIcon() {
     switch (contentType) {
       case 'recipe':
+      case 'recipes':
         return LucideIcons.chefHat;
       case 'tip':
+      case 'tips':
         return LucideIcons.lightbulb;
       case 'event':
+      case 'events':
         return LucideIcons.calendar;
+      case 'video':
+      case 'videos':
+        return LucideIcons.play;
       default:
         return LucideIcons.fileText;
     }
@@ -540,7 +651,7 @@ class ContentItemCard extends StatelessWidget {
 
   // Méthode pour obtenir la plage de dates pour les événements
   String _getEventDateRange() {
-    if (contentType != 'event') return 'Événement';
+    if (contentType != 'event' && contentType != 'events') return 'Événement';
     
     // Essayer différents champs possibles pour la date de début
     final possibleStartDateFields = [
@@ -585,6 +696,43 @@ class ContentItemCard extends StatelessWidget {
     }
   }
 
+  // Méthodes pour obtenir les labels des badges avec catégories
+  String _getRecipeCategoryLabel() {
+    String categoryName = '';
+    if (item['category'] != null) {
+      if (item['category'] is String) {
+        categoryName = item['category'];
+      } else if (item['category'] is Map && item['category']['name'] != null) {
+        categoryName = item['category']['name'].toString();
+      }
+    }
+    return categoryName.isNotEmpty ? categoryName : 'Recette';
+  }
+  
+  String _getTipCategoryLabel() {
+    String categoryName = '';
+    if (item['category'] != null) {
+      if (item['category'] is String) {
+        categoryName = item['category'];
+      } else if (item['category'] is Map && item['category']['name'] != null) {
+        categoryName = item['category']['name'].toString();
+      }
+    }
+    return categoryName.isNotEmpty ? categoryName : 'Astuce';
+  }
+  
+  String _getVideoCategoryLabel() {
+    String categoryName = '';
+    if (item['category'] != null) {
+      if (item['category'] is String) {
+        categoryName = item['category'];
+      } else if (item['category'] is Map && item['category']['name'] != null) {
+        categoryName = item['category']['name'].toString();
+      }
+    }
+    return categoryName.isNotEmpty ? categoryName : 'Vidéo';
+  }
+
   // Méthode pour formater une date courte (ex: "15/03/2024")
   String _formatDateShort(String? dateString) {
     if (dateString == null || dateString.isEmpty) return '';
@@ -610,5 +758,154 @@ class ContentItemCard extends StatelessWidget {
       }
       return dateString.length > 10 ? dateString.substring(0, 10) : dateString;
     }
+  }
+
+  // Nouveaux méthodes pour le layout overlay
+
+  List<Widget> _buildOverlayStats() {
+    final stats = <Widget>[];
+    
+    switch (contentType) {
+      case 'recipe':
+        if (item['cooking_time'] != null) {
+          stats.add(_buildOverlayStat(LucideIcons.clock, '${item['cooking_time']}min'));
+        }
+        if (item['servings'] != null) {
+          stats.add(const SizedBox(width: 12));
+          stats.add(_buildOverlayStat(LucideIcons.users, '${item['servings']} pers.'));
+        }
+        break;
+        
+      case 'event':
+        if (item['date'] != null) {
+          stats.add(_buildOverlayStat(LucideIcons.calendar, _formatDate(item['date'])));
+        }
+        break;
+        
+      case 'tip':
+        if (item['likes_count'] != null) {
+          stats.add(_buildOverlayStat(LucideIcons.heart, '${item['likes_count']}'));
+        }
+        break;
+    }
+    
+    // Ajouter les likes/commentaires si disponibles
+    if (item['likes_count'] != null && contentType != 'tip') {
+      if (stats.isNotEmpty) stats.add(const SizedBox(width: 12));
+      stats.add(_buildOverlayStat(LucideIcons.heart, '${item['likes_count']}'));
+    }
+    
+    return stats;
+  }
+
+  Widget _buildOverlayStat(IconData icon, String text) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          icon,
+          size: 14,
+          color: Colors.white,
+          shadows: [
+            Shadow(
+              offset: const Offset(0, 1),
+              blurRadius: 2,
+              color: Colors.black.withOpacity(0.8),
+            ),
+          ],
+        ),
+        const SizedBox(width: 4),
+        Text(
+          text,
+          style: TextStyle(
+            fontFamily: 'Roboto',
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+            shadows: [
+              Shadow(
+                offset: const Offset(0, 1),
+                blurRadius: 2,
+                color: Colors.black.withOpacity(0.8),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOverlayTypeBadge() {
+    IconData icon;
+    String label;
+
+    switch (contentType) {
+      case 'recipe':
+      case 'recipes':
+        icon = LucideIcons.chefHat;
+        label = _getRecipeCategoryLabel();
+        break;
+      case 'tip':
+      case 'tips':
+        icon = LucideIcons.lightbulb;
+        label = _getTipCategoryLabel();
+        break;
+      case 'event':
+      case 'events':
+        icon = LucideIcons.calendar;
+        label = _getEventDateRange();
+        break;
+      case 'video':
+      case 'videos':
+        icon = LucideIcons.play;
+        label = _getVideoCategoryLabel();
+        break;
+      default:
+        icon = LucideIcons.fileText;
+        label = 'Contenu';
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: Colors.white.withOpacity(0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 12,
+            color: Colors.white,
+            shadows: [
+              Shadow(
+                offset: const Offset(0, 1),
+                blurRadius: 2,
+                color: Colors.black.withOpacity(0.8),
+              ),
+            ],
+          ),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'Roboto',
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+              shadows: [
+                Shadow(
+                  offset: const Offset(0, 1),
+                  blurRadius: 2,
+                  color: Colors.black.withOpacity(0.8),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 } 
