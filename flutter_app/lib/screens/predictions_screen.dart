@@ -70,14 +70,14 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen>
               'Pronostics',
               style: TextStyle(
                 fontFamily: 'OpenSans',
-                fontSize: 20,
+                fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
               ),
             ),
             backgroundColor: const Color(0xFFE53E3E),
             elevation: 0,
-            toolbarHeight: 56,
+            toolbarHeight: 48,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.white),
               onPressed: () => NavigationService.pop(),

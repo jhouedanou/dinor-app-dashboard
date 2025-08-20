@@ -25,6 +25,7 @@ import 'services/navigation_service.dart';
 import 'services/modal_service.dart';
 import 'services/offline_service.dart';
 import 'services/app_initialization_service.dart';
+import 'services/splash_screen_service.dart';
 
 // Styles
 import 'styles/text_styles.dart';
@@ -51,6 +52,11 @@ class _DinorAppState extends ConsumerState<DinorApp> {
   bool _showAuthModal = false;
   // _showShareModal supprimé car géré par ModalService
   
+  // Configuration splash screen depuis l'API
+  int _splashDuration = 2500; // Par défaut
+  bool _splashConfigLoaded = false; // Pour éviter le fond noir
+  Map<String, dynamic>? _splashConfig; // Configuration complète
+  
   // Header state - REPRODUCTION EXACTE des ref() Vue
   String _currentPageTitle = 'Dinor';
   bool _showFavoriteButton = false;
@@ -73,18 +79,51 @@ class _DinorAppState extends ConsumerState<DinorApp> {
     // Écouter les changements de route
     NavigationService.addRouteChangeListener(_updateTitle);
     
-    // Auto-complete loading après 2500ms (identique à App.vue)
-    Future.delayed(const Duration(milliseconds: 2500), () {
-      if (mounted) {
-        _onLoadingComplete();
-      }
-    });
+    // Auto-complete loading après durée configurée via API
+    _loadSplashConfig();
   }
   
   @override
   void dispose() {
     NavigationService.removeRouteChangeListener(_updateTitle);
     super.dispose();
+  }
+
+  Future<void> _loadSplashConfig() async {
+    try {
+      // Utiliser le même service que LoadingScreen
+      final config = await SplashScreenService.getActiveConfig();
+      setState(() {
+        _splashDuration = config['duration'] ?? 2500;
+        _splashConfig = config;
+        _splashConfigLoaded = true; // Configuration chargée
+      });
+      
+      print('🎨 [App] Configuration splash chargée: ${_splashDuration}ms');
+      
+      // Ne PAS démarrer le timer ici, le LoadingScreen le gère
+      
+    } catch (e) {
+      print('❌ [App] Erreur chargement config splash: $e');
+      // Configuration par défaut et on démarre quand même
+      setState(() {
+        _splashConfigLoaded = true;
+      });
+    }
+  }
+
+  Color _getPreloadBackgroundColor() {
+    if (_splashConfig == null) {
+      return const Color(0xFFE53E3E); // Rouge par défaut
+    }
+    
+    final backgroundType = _splashConfig!['background_type'] ?? 'gradient';
+    if (backgroundType == 'gradient' || backgroundType == 'solid') {
+      final colorHex = _splashConfig!['background_color_start'] ?? '#E53E3E';
+      return SplashScreenService.parseColor(colorHex, fallback: const Color(0xFFE53E3E));
+    }
+    
+    return const Color(0xFFE53E3E); // Fallback
   }
 
   void _onLoadingComplete() {
@@ -348,8 +387,19 @@ class _DinorAppState extends ConsumerState<DinorApp> {
           ),
           child: Stack(
           children: [
+            // Écran de préchargement avec la même couleur que le splash screen
+            if (!_splashConfigLoaded)
+              Container(
+                width: double.infinity,
+                height: double.infinity,
+                color: _getPreloadBackgroundColor(),
+                child: const Center(
+                  child: CircularProgressIndicator(color: Colors.white),
+                ),
+              ),
+            
             // App principale (masquée pendant le loading) - v-if="!showLoading"
-            if (!_showLoading)
+            if (!_showLoading && _splashConfigLoaded)
               Scaffold(
                 backgroundColor: const Color(0xFFF5F5F5),
                 body: Column(
@@ -394,10 +444,10 @@ class _DinorAppState extends ConsumerState<DinorApp> {
               ),
             
             // Loading Screen - v-if="showLoading"
-            if (_showLoading)
+            if (_showLoading && _splashConfigLoaded)
               LoadingScreen(
                 visible: _showLoading,
-                duration: 2500,
+                duration: _splashDuration,
                 onComplete: _onLoadingComplete,
               ),
             

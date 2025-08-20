@@ -36,8 +36,11 @@ class _LoadingScreenState extends State<LoadingScreen>
   late AnimationController _animationController;
   late AnimationController _bubbleController;
   late AnimationController _iconController;
+  late AnimationController _kenBurnsController; // Pour l'animation Ken Burns
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
+  late Animation<double> _kenBurnsScale; // Zoom Ken Burns
+  late Animation<Offset> _kenBurnsPan; // Panoramique Ken Burns
   Timer? _timer;
   
   // Configuration du splash screen depuis l'API
@@ -112,6 +115,30 @@ class _LoadingScreenState extends State<LoadingScreen>
       vsync: this,
     )..repeat();
 
+    // Animation Ken Burns (zoom + panoramique lent)
+    _kenBurnsController = AnimationController(
+      duration: Duration(milliseconds: duration), // Durée complète du splash
+      vsync: this,
+    );
+
+    // Zoom Ken Burns : de 1.0 à 1.3 (30% d'agrandissement)
+    _kenBurnsScale = Tween<double>(
+      begin: 1.0,
+      end: 1.3,
+    ).animate(CurvedAnimation(
+      parent: _kenBurnsController,
+      curve: Curves.easeInOut,
+    ));
+
+    // Panoramique Ken Burns : de centre-haut à centre-bas
+    _kenBurnsPan = Tween<Offset>(
+      begin: const Offset(0, -0.1), // Léger décalage vers le haut
+      end: const Offset(0, 0.1),    // Léger décalage vers le bas
+    ).animate(CurvedAnimation(
+      parent: _kenBurnsController,
+      curve: Curves.easeInOut,
+    ));
+
     _fadeAnimation = Tween<double>(
       begin: 1.0,
       end: 0.0,
@@ -135,6 +162,9 @@ class _LoadingScreenState extends State<LoadingScreen>
 
   void _startLoading() {
     _animationController.forward();
+    
+    // Démarrer l'animation Ken Burns
+    _kenBurnsController.forward();
 
     // Timer identique à Vue : 2500ms
     _timer = Timer(Duration(milliseconds: widget.duration), () {
@@ -148,6 +178,7 @@ class _LoadingScreenState extends State<LoadingScreen>
     _animationController.dispose();
     _bubbleController.dispose();
     _iconController.dispose();
+    _kenBurnsController.dispose();
     super.dispose();
   }
 
@@ -175,9 +206,12 @@ class _LoadingScreenState extends State<LoadingScreen>
           child: Container(
             width: double.infinity,
             height: double.infinity,
-            decoration: _buildBackgroundDecoration(),
             child: Stack(
               children: [
+                // Image de fond avec animation Ken Burns (si applicable)
+                _buildAnimatedBackground(),
+                
+                // Contenu par-dessus
                 // Bulles animées en arrière-plan
                 ...List.generate(8, (index) => _buildBubble(index)),
 
@@ -282,6 +316,48 @@ class _LoadingScreenState extends State<LoadingScreen>
           ),
         );
       },
+    );
+  }
+
+  /// Construit le fond avec animation Ken Burns pour les images
+  Widget _buildAnimatedBackground() {
+    final backgroundType = _config?['background_type'] ?? 'gradient';
+    
+    if (backgroundType == 'image') {
+      final imageUrl = _config?['background_image_url'];
+      if (imageUrl != null && imageUrl.isNotEmpty) {
+        return AnimatedBuilder(
+          animation: _kenBurnsController,
+          builder: (context, child) {
+            return Transform.scale(
+              scale: _kenBurnsScale.value,
+              child: Transform.translate(
+                offset: Offset(
+                  _kenBurnsPan.value.dx * MediaQuery.of(context).size.width * 0.1,
+                  _kenBurnsPan.value.dy * MediaQuery.of(context).size.height * 0.1,
+                ),
+                child: Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: NetworkImage(imageUrl),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      }
+    }
+    
+    // Fallback vers décoration gradient/couleur
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      decoration: _buildBackgroundDecoration(),
     );
   }
 

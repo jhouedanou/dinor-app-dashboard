@@ -356,12 +356,9 @@ class NavigationService {
               title: Text(title ?? 'Page'),
               backgroundColor: const Color(0xFFF4D03F),
               foregroundColor: Colors.black,
+              toolbarHeight: 48,
             ),
-            body: WebViewWidget(
-              controller: WebViewController()
-                ..setJavaScriptMode(JavaScriptMode.unrestricted)
-                ..loadRequest(Uri.parse(url)),
-            ),
+            body: _buildWebViewWidget(url),
           ),
           settings: settings,
         );
@@ -399,6 +396,17 @@ class NavigationService {
       default:
         return _errorRoute();
     }
+  }
+
+  static Widget _buildWebViewWidget(String url) {
+    print('🌐 [NavigationService] Création WebView pour URL: $url');
+    
+    // Retour au WebView embeddé comme avant les modifications
+    final controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..loadRequest(Uri.parse(url));
+    
+    return WebViewWidget(controller: controller);
   }
   
   static Route<dynamic> _errorRoute() {

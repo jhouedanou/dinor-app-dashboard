@@ -269,7 +269,7 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
     // IMPORTANT: Retourner un Container dimensionné pour bottomNavigationBar
     return Container
       (
-      height: 80 + MediaQuery.of(context).padding.bottom,
+      height: 56 + MediaQuery.of(context).padding.bottom, // Réduit davantage pour moins d'espace
       decoration: const BoxDecoration(
         color: Color(0xFFF4D03F),
         border: Border(
@@ -282,7 +282,7 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
       ),
       child: SafeArea(
         child: SizedBox(
-          height: 80,
+          height: 56, // Cohérent avec la hauteur du container
           child: Stack(
             children: [
               // Navigation avec largeurs uniformes
@@ -293,14 +293,17 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
                   
                   return SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 4), // Réduit pour plus d'espace items
                     child: Row(
-                      children: allMenuItems.map((item) => 
-                        SizedBox(
+                      children: allMenuItems.map((item) {
+                        return Container(
                           width: itemWidth.clamp(70.0, 120.0), // Min 70px, max 120px par item
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 2, // Marge uniforme entre items
+                          ),
                           child: _buildNavItem(item, isCompact: allMenuItems.length > 6),
-                        )
-                      ).toList(),
+                        );
+                      }).toList(),
                     ),
                   );
                 },
@@ -396,7 +399,7 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
       },
       child: Container(
         padding: const EdgeInsets.symmetric(
-          vertical: 8,
+          vertical: 4, // Réduit de 8 à 4
           horizontal: 4,
         ),
         // Style allégé: pas de fond ni de contour pour l'actif, seulement icône/texte orange
@@ -409,7 +412,7 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
           children: [
             // Icône - taille uniforme
             Container(
-              margin: const EdgeInsets.only(bottom: 4),
+              margin: const EdgeInsets.only(bottom: 2), // Réduit de 4 à 2
               child: DinorIcon(
                 name: item['icon'],
                 size: 22, // Taille uniforme pour tous
@@ -439,7 +442,7 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
             // Soulignement bas pour l'item actif
             if (isActive)
               Container(
-                margin: const EdgeInsets.only(top: 6),
+                margin: const EdgeInsets.only(top: 3), // Réduit de 6 à 3
                 width: 24, // Largeur uniforme pour tous
                 height: 2,
                 decoration: BoxDecoration(

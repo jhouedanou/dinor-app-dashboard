@@ -27,7 +27,7 @@ import '../composables/use_dinor_tv.dart';
 import '../composables/use_auth_handler.dart';
 
 // Components
-
+import '../components/common/banner_section.dart';
 import '../components/common/auth_modal.dart';
 
 
@@ -42,6 +42,7 @@ class DinorTVScreen extends ConsumerStatefulWidget {
 class _DinorTVScreenState extends ConsumerState<DinorTVScreen> with AutomaticKeepAliveClientMixin {
   bool _showAuthModal = false;
   String _authModalMessage = '';
+  List<dynamic> _banners = [];
 
 
   @override
@@ -52,6 +53,7 @@ class _DinorTVScreenState extends ConsumerState<DinorTVScreen> with AutomaticKee
     super.initState();
     print('📺 [DinorTVScreen] Écran DinorTV initialisé');
     _loadVideos();
+    _loadBanners();
   }
 
 
@@ -64,6 +66,18 @@ class _DinorTVScreenState extends ConsumerState<DinorTVScreen> with AutomaticKee
         'sort_order': 'desc',
       },
     );
+  }
+
+  Future<void> _loadBanners() async {
+    try {
+      print('🎨 [DinorTVScreen] Chargement bannières pour type: dinor-tv');
+      // TODO: Implémenter le chargement des bannières spécifiques à Dinor TV
+      setState(() {
+        _banners = []; // TODO: Charger les vraies bannières
+      });
+    } catch (error) {
+      print('❌ [DinorTVScreen] Erreur chargement bannières: $error');
+    }
   }
 
   Future<void> _handleRefresh() async {
@@ -179,48 +193,61 @@ class _DinorTVScreenState extends ConsumerState<DinorTVScreen> with AutomaticKee
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
-      body: Column(
-        children: [
-          // Header personnalisé sans espace superflu
-          Container(
-            color: Colors.white,
-            padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top,
-              left: 16,
-              right: 16,
-              bottom: 0,
-            ),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3748)),
-                  onPressed: () => NavigationService.pop(),
+      body: RefreshIndicator(
+        onRefresh: _handleRefresh,
+        child: CustomScrollView(
+          slivers: [
+            // Header compact avec logo
+            SliverToBoxAdapter(
+              child: Container(
+                color: Colors.white,
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).padding.top + 8,
+                  left: 16,
+                  right: 16,
+                  bottom: 12,
                 ),
-                Expanded(
-                  child: Center(
-                    child: SvgPicture.asset(
-                      'assets/images/LOGO_DINOR_monochrome.svg',
-                      width: 32,
-                      height: 32,
-                      colorFilter: const ColorFilter.mode(
-                        Color(0xFF2D3748),
-                        BlendMode.srcIn,
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3748)),
+                      onPressed: () => NavigationService.pop(),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                    ),
+                    Expanded(
+                      child: Center(
+                        child: SvgPicture.asset(
+                          'assets/images/LOGO_DINOR_monochrome.svg',
+                          width: 28,
+                          height: 28,
+                          colorFilter: const ColorFilter.mode(
+                            Color(0xFF2D3748),
+                            BlendMode.srcIn,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                    const SizedBox(width: 32), // Pour équilibrer le bouton retour
+                  ],
                 ),
-                const SizedBox(width: 48), // Pour équilibrer le bouton retour
-              ],
+              ),
             ),
-          ),
-          // Body
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: _handleRefresh,
+            // Bannières Dinor TV
+            if (_banners.isNotEmpty)
+              SliverToBoxAdapter(
+                child: BannerSection(
+                  type: 'dinor-tv',
+                  section: 'hero',
+                  banners: _banners,
+                ),
+              ),
+            // Contenu principal
+            SliverToBoxAdapter(
               child: _buildBody(videos, loading, error),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
