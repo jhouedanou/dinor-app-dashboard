@@ -54,8 +54,8 @@ class _DinorAppState extends ConsumerState<DinorApp> {
   
   // Configuration splash screen depuis l'API
   int _splashDuration = 2500; // Par défaut
-  bool _splashConfigLoaded = false; // Pour éviter le fond noir
-  Map<String, dynamic>? _splashConfig; // Configuration complète
+  Map<String, dynamic>? _splashConfig;
+  bool _splashConfigLoaded = false;
   
   // Header state - REPRODUCTION EXACTE des ref() Vue
   String _currentPageTitle = 'Dinor';
@@ -387,19 +387,8 @@ class _DinorAppState extends ConsumerState<DinorApp> {
           ),
           child: Stack(
           children: [
-            // Écran de préchargement avec la même couleur que le splash screen
-            if (!_splashConfigLoaded)
-              Container(
-                width: double.infinity,
-                height: double.infinity,
-                color: _getPreloadBackgroundColor(),
-                child: const Center(
-                  child: CircularProgressIndicator(color: Colors.white),
-                ),
-              ),
-            
             // App principale (masquée pendant le loading) - v-if="!showLoading"
-            if (!_showLoading && _splashConfigLoaded)
+            if (!_showLoading)
               Scaffold(
                 backgroundColor: const Color(0xFFF5F5F5),
                 body: Column(
@@ -444,7 +433,7 @@ class _DinorAppState extends ConsumerState<DinorApp> {
               ),
             
             // Loading Screen - v-if="showLoading"
-            if (_showLoading && _splashConfigLoaded)
+            if (_showLoading)
               LoadingScreen(
                 visible: _showLoading,
                 duration: _splashDuration,

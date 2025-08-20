@@ -186,14 +186,28 @@ class _LoadingScreenState extends State<LoadingScreen>
   Widget build(BuildContext context) {
     if (!widget.visible) return const SizedBox.shrink();
     
-    // Afficher un loading simple si la config n'est pas encore chargée
+    // Afficher un splash screen avec couleur par défaut si la config n'est pas encore chargée
     if (!_configLoaded) {
       return Container(
         width: double.infinity,
         height: double.infinity,
-        color: const Color(0xFFE53E3E),
-        child: const Center(
-          child: CircularProgressIndicator(color: Colors.white),
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFE53E3E), Color(0xFFC53030), Color(0xFFE53E3E)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            stops: [0.0, 0.5, 1.0],
+          ),
+        ),
+        child: Center(
+          child: SvgPicture.asset(
+            'assets/images/LOGO_DINOR_monochrome.svg',
+            colorFilter: const ColorFilter.mode(
+              Colors.white,
+              BlendMode.srcIn,
+            ),
+            height: 80,
+          ),
         ),
       );
     }

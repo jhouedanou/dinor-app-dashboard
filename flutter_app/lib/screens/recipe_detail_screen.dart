@@ -594,6 +594,19 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Recipe Title
+                Text(
+                  _recipe!['title'] ?? 'Recette',
+                  style: const TextStyle(
+                    fontFamily: 'OpenSans',
+                    fontSize: 18, // Réduit de 24 à 18
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF2D3748),
+                    height: 1.3,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                
                 // Recipe Stats avec composant unifié
                 UnifiedContentStats(
                   stats: [
