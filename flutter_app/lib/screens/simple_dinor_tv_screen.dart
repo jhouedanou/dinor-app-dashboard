@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import '../services/navigation_service.dart';
 import '../components/common/youtube_video_modal.dart';
 import '../components/common/unified_content_list.dart';
@@ -237,14 +236,15 @@ class _SimpleDinorTVScreenState extends State<SimpleDinorTVScreen> {
       backgroundColor: const Color(0xFFF5F5F5),
       body: Column(
         children: [
-          // Header personnalisé sans espace superflu
+          // Header secondaire collé sans espace
           Container(
-            color: Colors.white,
-            padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top,
-              left: 16,
-              right: 16,
-              bottom: 0,
+            width: double.infinity,
+            height: 56,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              border: Border(
+                bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+              ),
             ),
             child: Row(
               children: [
@@ -252,15 +252,15 @@ class _SimpleDinorTVScreenState extends State<SimpleDinorTVScreen> {
                   icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3748)),
                   onPressed: () => NavigationService.pop(),
                 ),
-                Expanded(
+                const Expanded(
                   child: Center(
-                    child: SvgPicture.asset(
-                      'assets/images/LOGO_DINOR_monochrome.svg',
-                      width: 32,
-                      height: 32,
-                      colorFilter: const ColorFilter.mode(
-                        Color(0xFF2D3748),
-                        BlendMode.srcIn,
+                    child: Text(
+                      'Dinor TV',
+                      style: TextStyle(
+                        fontFamily: 'OpenSans',
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF2D3748),
                       ),
                     ),
                   ),

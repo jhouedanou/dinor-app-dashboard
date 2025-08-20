@@ -41,11 +41,14 @@ class _KenBurnsSlideshowWidgetState extends State<KenBurnsSlideshowWidget>
   late Timer _timer;
   
   int _currentImageIndex = 0;
-  List<KenBurnsAnimation> _animations = [];
+  final List<KenBurnsAnimation> _animations = [];
   
   @override
   void initState() {
     super.initState();
+    
+    print('🎬 [KenBurnsSlideshow] Initialisation du diaporama avec ${widget.images.length} images');
+    print('🎬 [KenBurnsSlideshow] Durée totale: ${widget.totalDuration.inMilliseconds}ms');
     
     _pageController = PageController();
     
@@ -92,6 +95,7 @@ class _KenBurnsSlideshowWidgetState extends State<KenBurnsSlideshowWidget>
   }
   
   void _startSlideshow() {
+    print('🎬 [KenBurnsSlideshow] Démarrage du diaporama');
     _kenBurnsController.forward();
     
     // Timer pour changer d'image toutes les 3 secondes
@@ -108,6 +112,7 @@ class _KenBurnsSlideshowWidgetState extends State<KenBurnsSlideshowWidget>
     if (!mounted) return;
     
     final nextIndex = (_currentImageIndex + 1) % widget.images.length;
+    print('🎬 [KenBurnsSlideshow] Passage à l\'image ${nextIndex + 1}/${widget.images.length}: ${widget.images[nextIndex]}');
     
     setState(() {
       _currentImageIndex = nextIndex;

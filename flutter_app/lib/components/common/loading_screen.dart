@@ -48,6 +48,7 @@ class _LoadingScreenState extends State<LoadingScreen>
   // Configuration du splash screen depuis l'API
   Map<String, dynamic>? _config;
   bool _configLoaded = false;
+  bool _configLoading = false;
 
   // Icônes de cuisine pour l'animation
   final List<IconData> _cookingIcons = [
@@ -72,26 +73,36 @@ class _LoadingScreenState extends State<LoadingScreen>
   }
 
   void _loadConfiguration() async {
+    if (_configLoading || _configLoaded) return;
+    
+    _configLoading = true;
+    
     try {
       final config = await SplashScreenService.getActiveConfig();
-      setState(() {
-        _config = config;
-        _configLoaded = true;
-      });
-      
-      // Initialiser les animations avec la configuration chargée
-      _initializeAnimations();
-      
-      if (widget.visible) {
-        _startLoading();
+      if (mounted) {
+        setState(() {
+          _config = config;
+          _configLoaded = true;
+        });
+        
+        // Initialiser les animations avec la configuration chargée
+        _initializeAnimations();
+        
+        if (widget.visible) {
+          _startLoading();
+        }
       }
     } catch (e) {
       print('❌ [LoadingScreen] Erreur chargement config: $e');
-      // Utiliser la configuration par défaut en cas d'erreur
-      _configLoaded = true;
-      _initializeAnimations();
-      if (widget.visible) {
-        _startLoading();
+      if (mounted) {
+        // Utiliser la configuration par défaut en cas d'erreur
+        setState(() {
+          _configLoaded = true;
+        });
+        _initializeAnimations();
+        if (widget.visible) {
+          _startLoading();
+        }
       }
     }
   }
@@ -230,11 +241,11 @@ class _LoadingScreenState extends State<LoadingScreen>
                 _buildAnimatedBackground(),
                 
                 // Contenu par-dessus
-                // Bulles animées en arrière-plan
-                ...List.generate(8, (index) => _buildBubble(index)),
+                // Bulles animées en arrière-plan (seulement si pas de diaporama Ken Burns)
+                ...(_isUsingKenBurnsSlideshow() ? [] : List.generate(8, (index) => _buildBubble(index))),
 
-                // Icônes de cuisine flottantes
-                ...List.generate(6, (index) => _buildFloatingIcon(index)),
+                // Icônes de cuisine flottantes (seulement si pas de diaporama Ken Burns)
+                ...(_isUsingKenBurnsSlideshow() ? [] : List.generate(6, (index) => _buildFloatingIcon(index))),
 
                 // Contenu principal centré
                 Center(
@@ -337,45 +348,71 @@ class _LoadingScreenState extends State<LoadingScreen>
     );
   }
 
+  /// Détermine si on utilise le diaporama Ken Burns
+  bool _isUsingKenBurnsSlideshow() {
+    final backgroundType = _config?['background_type'] ?? 'gradient';
+    final imageUrl = _config?['background_image_url'];
+    
+    // Utiliser le diaporama Ken Burns dans ces cas :
+    // 1. background_type = "image" mais pas d'URL d'image
+    // 2. Durée longue (>= 8 secondes) suggérant un diaporama
+    final isLongDuration = (_config?['duration'] ?? widget.duration) >= 8000;
+    
+    return (backgroundType == 'image' && (imageUrl == null || imageUrl.isEmpty)) || 
+           isLongDuration;
+  }
+
   /// Construit le fond avec animation Ken Burns pour les images
   Widget _buildAnimatedBackground() {
     final backgroundType = _config?['background_type'] ?? 'gradient';
+    final imageUrl = _config?['background_image_url'];
+    final duration = _config?['duration'] ?? widget.duration;
     
-    if (backgroundType == 'image') {
-      final imageUrl = _config?['background_image_url'];
-      if (imageUrl != null && imageUrl.isNotEmpty) {
-        // Utiliser l'image de l'API avec animation Ken Burns simple
-        return AnimatedBuilder(
-          animation: _kenBurnsController,
-          builder: (context, child) {
-            return Transform.scale(
-              scale: _kenBurnsScale.value,
-              child: Transform.translate(
-                offset: Offset(
-                  _kenBurnsPan.value.dx * MediaQuery.of(context).size.width * 0.1,
-                  _kenBurnsPan.value.dy * MediaQuery.of(context).size.height * 0.1,
-                ),
-                child: Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: ImageCacheService.getCachedImageProvider(imageUrl),
-                      fit: BoxFit.cover,
-                    ),
+    print('🎨 [LoadingScreen] Background type: $backgroundType, Image URL: $imageUrl, Duration: ${duration}ms');
+    
+    // Vérifier si on doit utiliser le diaporama Ken Burns
+    if (_isUsingKenBurnsSlideshow()) {
+      print('🎬 [LoadingScreen] Activation du diaporama Ken Burns');
+      return KenBurnsSlideshowWidget(
+        totalDuration: Duration(milliseconds: duration),
+      );
+    }
+    
+    if (backgroundType == 'image' && imageUrl != null && imageUrl.isNotEmpty) {
+      print('🎨 [LoadingScreen] Utilisation image API: $imageUrl');
+      // Utiliser l'image de l'API avec animation Ken Burns simple
+      return AnimatedBuilder(
+        animation: _kenBurnsController,
+        builder: (context, child) {
+          return Transform.scale(
+            scale: _kenBurnsScale.value,
+            child: Transform.translate(
+              offset: Offset(
+                _kenBurnsPan.value.dx * MediaQuery.of(context).size.width * 0.1,
+                _kenBurnsPan.value.dy * MediaQuery.of(context).size.height * 0.1,
+              ),
+              child: Container(
+                width: double.infinity,
+                height: double.infinity,
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: ImageCacheService.getCachedImageProvider(imageUrl),
+                    fit: BoxFit.cover,
                   ),
                 ),
               ),
-            );
-          },
-        );
-      }
+            ),
+          );
+        },
+      );
     }
     
-    // Pas d'image de l'API -> utiliser le diaporama Ken Burns avec images locales
-    final duration = _config?['duration'] ?? widget.duration;
-    return KenBurnsSlideshowWidget(
-      totalDuration: Duration(milliseconds: duration),
+    print('🎨 [LoadingScreen] Utilisation gradient par défaut');
+    // Fallback vers décoration gradient/couleur
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      decoration: _buildBackgroundDecoration(),
     );
   }
 
@@ -496,8 +533,8 @@ class _LoadingScreenState extends State<LoadingScreen>
             ),
           );
         }
-        // Fallback au gradient si pas d'image
-        return _buildGradientDecoration();
+        // Fallback au diaporama Ken Burns avec images locales
+        return const BoxDecoration(color: Colors.transparent);
         
       case 'gradient':
       default:

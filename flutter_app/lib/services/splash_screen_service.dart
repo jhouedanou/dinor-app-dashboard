@@ -6,13 +6,13 @@ import 'image_cache_service.dart';
 class SplashScreenService {
   static const String _endpoint = '/v1/splash-screen/active';
   
-  /// Configuration par défaut du splash screen
+  /// Configuration par défaut du splash screen (utilise le diaporama Ken Burns)
   static const Map<String, dynamic> _defaultConfig = {
     'is_active': true,
     'title': '',
     'subtitle': '',
-    'duration': 2500,
-    'background_type': 'gradient',
+    'duration': 9000,
+    'background_type': 'image',
     'background_color_start': '#E53E3E',
     'background_color_end': '#C53030',
     'background_gradient_direction': 'top_left',

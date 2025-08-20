@@ -127,27 +127,41 @@ class _PagesListScreenState extends ConsumerState<PagesListScreen> with Automati
     
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
-      appBar: AppBar(
-        title: const Text(
-          'Pages',
-          style: TextStyle(
-            fontFamily: 'OpenSans',
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF2D3748),
-          ),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        toolbarHeight: 48,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3748)),
-          onPressed: () => NavigationService.pop(),
-        ),
-      ),
       body: Column(
         children: [
+          // Header secondaire collé sans espace
+          Container(
+            width: double.infinity,
+            height: 56,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              border: Border(
+                bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+              ),
+            ),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3748)),
+                  onPressed: () => NavigationService.pop(),
+                ),
+                const Expanded(
+                  child: Center(
+                    child: Text(
+                      'Pages',
+                      style: TextStyle(
+                        fontFamily: 'OpenSans',
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF2D3748),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 48), // Pour équilibrer le bouton retour
+              ],
+            ),
+          ),
           // Barre de recherche
           Container(
             padding: const EdgeInsets.all(16),

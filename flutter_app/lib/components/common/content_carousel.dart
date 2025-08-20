@@ -56,8 +56,8 @@ class ContentCarousel extends StatelessWidget {
                 title,
                 style: TextStyle(
                   fontFamily: 'OpenSans',
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
                   color: darkTheme ? Colors.white : const Color(0xFF2D3748),
                 ),
               ),
