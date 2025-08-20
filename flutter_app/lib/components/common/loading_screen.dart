@@ -14,6 +14,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:async';
 import 'dart:math' as math;
 import '../../services/splash_screen_service.dart';
+import '../../services/image_cache_service.dart';
+import '../../services/ken_burns_slideshow_service.dart';
 
 class LoadingScreen extends StatefulWidget {
   final bool visible;
@@ -342,6 +344,7 @@ class _LoadingScreenState extends State<LoadingScreen>
     if (backgroundType == 'image') {
       final imageUrl = _config?['background_image_url'];
       if (imageUrl != null && imageUrl.isNotEmpty) {
+        // Utiliser l'image de l'API avec animation Ken Burns simple
         return AnimatedBuilder(
           animation: _kenBurnsController,
           builder: (context, child) {
@@ -357,7 +360,7 @@ class _LoadingScreenState extends State<LoadingScreen>
                   height: double.infinity,
                   decoration: BoxDecoration(
                     image: DecorationImage(
-                      image: NetworkImage(imageUrl),
+                      image: ImageCacheService.getCachedImageProvider(imageUrl),
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -369,11 +372,10 @@ class _LoadingScreenState extends State<LoadingScreen>
       }
     }
     
-    // Fallback vers décoration gradient/couleur
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      decoration: _buildBackgroundDecoration(),
+    // Pas d'image de l'API -> utiliser le diaporama Ken Burns avec images locales
+    final duration = _config?['duration'] ?? widget.duration;
+    return KenBurnsSlideshowWidget(
+      totalDuration: Duration(milliseconds: duration),
     );
   }
 
@@ -489,7 +491,7 @@ class _LoadingScreenState extends State<LoadingScreen>
         if (imageUrl != null && imageUrl.isNotEmpty) {
           return BoxDecoration(
             image: DecorationImage(
-              image: NetworkImage(imageUrl),
+              image: ImageCacheService.getCachedImageProvider(imageUrl),
               fit: BoxFit.cover,
             ),
           );

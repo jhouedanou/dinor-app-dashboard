@@ -56,10 +56,11 @@ class _SimpleRecipesScreenState extends State<SimpleRecipesScreen> {
             child: UnifiedContentList(
               contentType: 'recipe',
               apiEndpoint: 'https://new.dinorapp.com/api/v1/recipes',
-              itemsPerPage: 10,
+              itemsPerPage: 3,
               enableSearch: true,
               enableFilters: true,
               useGridView: false,
+              enableInfiniteScroll: true,
               itemBuilder: (item) => ContentItemCard(
                 contentType: 'recipe',
                 item: item,

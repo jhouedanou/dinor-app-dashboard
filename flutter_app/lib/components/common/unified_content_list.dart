@@ -18,6 +18,7 @@ class UnifiedContentList extends ConsumerStatefulWidget {
   final bool enableSearch;
   final bool enableFilters;
   final bool useGridView;
+  final bool enableInfiniteScroll;
 
   const UnifiedContentList({
     super.key,
@@ -28,10 +29,11 @@ class UnifiedContentList extends ConsumerStatefulWidget {
     required this.imageExtractor,
     required this.descriptionExtractor,
     required this.onItemTap,
-    this.itemsPerPage = 2,
+    this.itemsPerPage = 3,
     this.enableSearch = true,
     this.enableFilters = true,
     this.useGridView = false,
+    this.enableInfiniteScroll = true,
   });
 
   @override
@@ -53,11 +55,32 @@ class _UnifiedContentListState extends ConsumerState<UnifiedContentList> {
   int _currentPage = 0;
   DateTime? _startDate;
   DateTime? _endDate;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _loadItems();
+    
+    // Ajouter un listener pour le défilement infini
+    if (widget.enableInfiniteScroll) {
+      _scrollController.addListener(_onScroll);
+    }
+  }
+  
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+  
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent * 0.8) {
+      // Charger plus d'éléments quand on arrive à 80% du défilement
+      if (!_isLoadingMore && _hasMoreItems()) {
+        _loadMoreItems();
+      }
+    }
   }
 
   Future<void> _loadItems() async {
@@ -189,8 +212,8 @@ class _UnifiedContentListState extends ConsumerState<UnifiedContentList> {
       _isLoadingMore = true;
     });
     
-    // Simuler un délai de chargement
-    Future.delayed(const Duration(milliseconds: 500), () {
+    // Simuler un délai de chargement plus court pour une expérience fluide
+    Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) {
         setState(() {
           final startIndex = _currentPage * widget.itemsPerPage;
@@ -209,6 +232,7 @@ class _UnifiedContentListState extends ConsumerState<UnifiedContentList> {
     return RefreshIndicator(
       onRefresh: _loadItems,
       child: CustomScrollView(
+        controller: widget.enableInfiniteScroll ? _scrollController : null,
         slivers: [
           // Barre de recherche et filtres
           if (widget.enableSearch || widget.enableFilters)
@@ -266,7 +290,12 @@ class _UnifiedContentListState extends ConsumerState<UnifiedContentList> {
                       child: widget.itemBuilder(_displayedItems[index]),
                     );
                   } else if (index == _displayedItems.length && _hasMoreItems()) {
-                    return _buildLoadMoreButton();
+                    // Afficher un indicateur de chargement discret si scroll infini activé
+                    if (widget.enableInfiniteScroll) {
+                      return _buildInfiniteScrollIndicator();
+                    } else {
+                      return _buildLoadMoreButton();
+                    }
                   }
                   return null;
                 },
@@ -497,6 +526,39 @@ class _UnifiedContentListState extends ConsumerState<UnifiedContentList> {
               ),
             ),
             const SizedBox(height: 8),
+            Text(
+              'Affichage de ${_displayedItems.length} sur ${_filteredItems.length} éléments',
+              style: const TextStyle(
+                fontSize: 12,
+                color: Color(0xFF718096),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildInfiniteScrollIndicator() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          if (_isLoadingMore) ...[
+            const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Chargement...',
+              style: TextStyle(
+                fontSize: 12,
+                color: Color(0xFF718096),
+              ),
+            ),
+          ] else ...[
             Text(
               'Affichage de ${_displayedItems.length} sur ${_filteredItems.length} éléments',
               style: const TextStyle(

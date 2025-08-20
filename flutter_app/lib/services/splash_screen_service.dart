@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'image_cache_service.dart';
 
 class SplashScreenService {
   static const String _endpoint = '/v1/splash-screen/active';
@@ -41,8 +42,18 @@ class SplashScreenService {
         final data = json.decode(response.body);
         
         if (data['success'] == true && data['data'] != null) {
-          print('🎨 [SplashScreenService] Configuration récupérée: ${data['data']}');
-          return Map<String, dynamic>.from(data['data']);
+          final config = Map<String, dynamic>.from(data['data']);
+          
+          // Précharger l'image de fond en cache si elle existe
+          final backgroundImageUrl = config['background_image_url'];
+          if (backgroundImageUrl != null && backgroundImageUrl.isNotEmpty) {
+            ImageCacheService.cacheImageUrl(backgroundImageUrl).then((_) {
+              print('🎨 [SplashScreenService] Image de fond mise en cache');
+            });
+          }
+          
+          print('🎨 [SplashScreenService] Configuration récupérée: ${config}');
+          return config;
         }
       }
       

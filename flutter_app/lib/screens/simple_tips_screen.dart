@@ -54,18 +54,19 @@ class _SimpleTipsScreenState extends State<SimpleTipsScreen> {
           // Contenu principal
           Expanded(
             child: UnifiedContentList(
-        contentType: 'tip',
-        apiEndpoint: 'https://new.dinorapp.com/api/v1/tips',
-        itemsPerPage: 10,
-        enableSearch: true,
-        enableFilters: true,
-        useGridView: false,
-        itemBuilder: (item) => ContentItemCard(
-          contentType: 'tip',
-          item: item,
-          onTap: () => _navigateToTipDetail(item['id']?.toString() ?? ''),
-          compact: false,
-        ),
+              contentType: 'tip',
+              apiEndpoint: 'https://new.dinorapp.com/api/v1/tips',
+              itemsPerPage: 3,
+              enableSearch: true,
+              enableFilters: true,
+              useGridView: false,
+              enableInfiniteScroll: true,
+              itemBuilder: (item) => ContentItemCard(
+                contentType: 'tip',
+                item: item,
+                onTap: () => _navigateToTipDetail(item['id']?.toString() ?? ''),
+                compact: false,
+              ),
               titleExtractor: (item) => item['title']?.toString() ?? '',
               imageExtractor: (item) => item['featured_image_url']?.toString() ?? '',
               descriptionExtractor: (item) => item['description']?.toString() ?? item['content']?.toString() ?? '',

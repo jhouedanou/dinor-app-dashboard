@@ -56,10 +56,11 @@ class _SimpleEventsScreenState extends State<SimpleEventsScreen> {
             child: UnifiedContentList(
               contentType: 'event',
               apiEndpoint: 'https://new.dinorapp.com/api/v1/events',
-              itemsPerPage: 10,
+              itemsPerPage: 3,
               enableSearch: true,
               enableFilters: true,
               useGridView: false,
+              enableInfiniteScroll: true,
               itemBuilder: (item) => ContentItemCard(
                 contentType: 'event',
                 item: item,
