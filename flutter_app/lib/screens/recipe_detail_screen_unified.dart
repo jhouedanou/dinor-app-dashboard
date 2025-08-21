@@ -459,8 +459,8 @@ class _RecipeDetailScreenUnifiedState extends ConsumerState<RecipeDetailScreenUn
                         end: Alignment.bottomCenter,
                         colors: [
                           Colors.transparent,
-                          Colors.black,
-                          Colors.black,
+                          Colors.white,
+                          Colors.white,
                         ],
                       ),
                     ),
@@ -478,15 +478,8 @@ class _RecipeDetailScreenUnifiedState extends ConsumerState<RecipeDetailScreenUn
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.95),
+                            color: Colors.transparent,
                             borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.2),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,

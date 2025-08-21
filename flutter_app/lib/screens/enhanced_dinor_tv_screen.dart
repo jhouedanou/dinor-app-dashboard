@@ -161,7 +161,7 @@ class _EnhancedDinorTVScreenState extends ConsumerState<EnhancedDinorTVScreen>
     return Stack(
       children: [
         Scaffold(
-          backgroundColor: const Color(0xFFF8F9FA),
+          backgroundColor: Colors.black,
           body: Column(
             children: [
               // Header pareil que sur les pages recettes, astuces et events
@@ -304,7 +304,7 @@ class _EnhancedDinorTVScreenState extends ConsumerState<EnhancedDinorTVScreen>
                       'id': video.id,
                       'title': video.title,
                       'description': video.description,
-                      'featured_image_url': video.thumbnailUrl,
+                      'featured_image_url': video.metadata?['featured_image_url'] ?? video.thumbnailUrl,
                       'video_url': video.videoUrl,
                       'likes_count': video.likesCount,
                       'views': video.views,

@@ -149,7 +149,7 @@ class _SimpleBottomNavigationState extends State<SimpleBottomNavigation> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 80 + MediaQuery.of(context).padding.bottom,
+      height: 60,
       decoration: const BoxDecoration(
         color: Color(0xFFF4D03F), // Fond doré Dinor
         boxShadow: AppShadows.softTop,

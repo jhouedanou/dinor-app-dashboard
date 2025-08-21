@@ -262,8 +262,8 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
                           end: Alignment.bottomCenter,
                           colors: [
                             Colors.transparent,
-                            Colors.black,
-                            Colors.black,
+                            Colors.white,
+                            Colors.white,
                           ],
                         ),
                       ),
@@ -281,15 +281,8 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.95),
+                              color: Colors.transparent,
                               borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.2),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -385,13 +378,17 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
                 children: [
 
                   // Titre de l'événement
-                  Text(
-                    _event!['title'] ?? 'Sans titre',
-                    style: const TextStyle(
-                      fontFamily: 'OpenSans',
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF2D3748),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 5),
+                    child: Text(
+                      _event!['title'] ?? 'Sans titre',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontFamily: 'OpenSans',
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF2D3748),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),

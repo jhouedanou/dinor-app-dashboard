@@ -352,12 +352,6 @@ class NavigationService {
         if (url == null) return _errorRoute();
         return MaterialPageRoute(
           builder: (_) => Scaffold(
-            appBar: AppBar(
-              title: Text(title ?? 'Page'),
-              backgroundColor: const Color(0xFFF4D03F),
-              foregroundColor: Colors.black,
-              toolbarHeight: 48,
-            ),
             body: _buildWebViewWidget(url),
           ),
           settings: settings,

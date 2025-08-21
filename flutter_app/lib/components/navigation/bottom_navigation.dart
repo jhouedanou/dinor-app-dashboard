@@ -269,7 +269,7 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
     // IMPORTANT: Retourner un Container dimensionné pour bottomNavigationBar
     return Container
       (
-      height: 48 + MediaQuery.of(context).padding.bottom, // Encore plus réduit comme les autres apps
+      height: 40 + MediaQuery.of(context).padding.bottom, // Hauteur réduite pour un design plus compact
       decoration: const BoxDecoration(
         color: Color(0xFFF4D03F), // Fond jaune restauré
         border: Border(
@@ -282,30 +282,47 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
       ),
       child: SafeArea(
         child: SizedBox(
-          height: 48, // Cohérent avec la hauteur du container
+          height: 26, // Cohérent avec la nouvelle hauteur du container
           child: Stack(
             children: [
-              // Navigation avec largeurs uniformes
+              // Navigation avec largeurs uniformes et centrage sur tablettes
               LayoutBuilder(
                 builder: (context, constraints) {
-                  final availableWidth = constraints.maxWidth - 16; // Padding horizontal
+                  final screenWidth = MediaQuery.of(context).size.width;
+                  final isTablet = screenWidth > 600; // Détection tablette
+                  final availableWidth = constraints.maxWidth - 16;
                   final itemWidth = availableWidth / allMenuItems.length;
                   
-                  return SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 4), // Réduit pour plus d'espace items
-                    child: Row(
-                      children: allMenuItems.map((item) {
-                        return Container(
-                          width: itemWidth.clamp(70.0, 120.0), // Min 70px, max 120px par item
-                          margin: const EdgeInsets.symmetric(
-                            horizontal: 2, // Marge uniforme entre items
-                          ),
-                          child: _buildNavItem(item, isCompact: allMenuItems.length > 6),
-                        );
-                      }).toList(),
-                    ),
+                  Widget navigationRow = Row(
+                    children: allMenuItems.map((item) {
+                      return Container(
+                        width: itemWidth.clamp(70.0, 120.0),
+                        margin: const EdgeInsets.symmetric(horizontal: 2),
+                        child: _buildNavItem(item, isCompact: allMenuItems.length > 6),
+                      );
+                    }).toList(),
                   );
+                  
+                  if (isTablet) {
+                    // Centrer la navigation sur tablettes
+                    return Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 600),
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: navigationRow,
+                        ),
+                      ),
+                    );
+                  } else {
+                    // Navigation normale sur mobile
+                    return SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: navigationRow,
+                    );
+                  }
                 },
               ),
               

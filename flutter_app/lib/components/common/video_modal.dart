@@ -260,8 +260,10 @@ class _VideoModalState extends State<VideoModal> {
 
     return Stack(
       children: [
-        // WebView
-        WebViewWidget(controller: _controller),
+        // WebView centrée
+        Center(
+          child: WebViewWidget(controller: _controller),
+        ),
         
         // Indicateur de chargement
         if (_isLoading)

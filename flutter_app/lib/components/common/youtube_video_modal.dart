@@ -234,23 +234,25 @@ class _YouTubeVideoModalState extends State<YouTubeVideoModal>
         maxWidth: MediaQuery.of(context).size.width - 32,
         maxHeight: MediaQuery.of(context).size.height * 0.7,
       ),
-      child: ClipRRect(
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(16),
-          bottomRight: Radius.circular(16),
-        ),
-        child: YouTubeVideoPlayer(
-          key: _playerKey,
-          videoUrl: widget.videoUrl,
-          title: '', // Pas besoin du titre ici, il est dans le header
-          autoPlay: true,
-          showControls: true,
-          onReady: () {
-            print('✅ [YouTubeVideoModal] Player ready dans la modal');
-          },
-          onPause: () {
-            print('⏸️ [YouTubeVideoModal] Vidéo mise en pause par le player');
-          },
+      child: Center(
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            bottomLeft: Radius.circular(16),
+            bottomRight: Radius.circular(16),
+          ),
+          child: YouTubeVideoPlayer(
+            key: _playerKey,
+            videoUrl: widget.videoUrl,
+            title: '', // Pas besoin du titre ici, il est dans le header
+            autoPlay: true,
+            showControls: true,
+            onReady: () {
+              print('✅ [YouTubeVideoModal] Player ready dans la modal');
+            },
+            onPause: () {
+              print('⏸️ [YouTubeVideoModal] Vidéo mise en pause par le player');
+            },
+          ),
         ),
       ),
     );
