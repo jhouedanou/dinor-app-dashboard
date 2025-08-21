@@ -4,12 +4,20 @@
     class="banner-section"
     :class="`banner-section--${section}`"
   >
+    <!-- Conteneur du carousel -->
     <div 
-      v-for="banner in visibleBanners" 
-      :key="banner.id"
-      class="banner-item"
-      :style="getBannerStyle(banner)"
+      class="banner-carousel" 
+      ref="carousel"
+      @mouseenter="pauseAutoPlay"
+      @mouseleave="resumeAutoPlay"
     >
+      <div 
+        v-for="(banner, index) in visibleBanners" 
+        :key="banner.id"
+        class="banner-item"
+        :class="{ 'active': index === currentSlide }"
+        :style="getBannerStyle(banner)"
+      >
       <!-- Image de fond si disponible -->
       <div 
         v-if="banner.image_url" 
@@ -71,6 +79,42 @@
           {{ banner.button_text }}
         </button>
       </div>
+      </div>
+    </div>
+
+    <!-- Contrôles du carousel (seulement si plusieurs bannières) -->
+    <div v-if="visibleBanners.length > 1" class="carousel-controls">
+      <!-- Indicateurs -->
+      <div class="carousel-indicators">
+        <button
+          v-for="(banner, index) in visibleBanners"
+          :key="`indicator-${banner.id}`"
+          class="indicator"
+          :class="{ 'active': index === currentSlide }"
+          @click="goToSlide(index)"
+          :aria-label="`Aller à la bannière ${index + 1}`"
+        ></button>
+      </div>
+
+      <!-- Boutons précédent/suivant -->
+      <div class="carousel-nav">
+        <button
+          class="nav-btn prev-btn"
+          @click="prevSlide"
+          :disabled="isTransitioning"
+          aria-label="Bannière précédente"
+        >
+          <DinorIcon name="chevron_left" :size="24" />
+        </button>
+        <button
+          class="nav-btn next-btn"
+          @click="nextSlide"
+          :disabled="isTransitioning"
+          aria-label="Bannière suivante"
+        >
+          <DinorIcon name="chevron_right" :size="24" />
+        </button>
+      </div>
     </div>
   </section>
 </template>
@@ -97,15 +141,95 @@ export default {
     banners: {
       type: Array,
       default: () => []
+    },
+    autoPlay: {
+      type: Boolean,
+      default: true
+    },
+    interval: {
+      type: Number,
+      default: 5000
+    }
+  },
+  data() {
+    return {
+      currentSlide: 0,
+      isTransitioning: false,
+      autoPlayInterval: null,
+      isPaused: false
     }
   },
   computed: {
     visibleBanners() {
-      // Cacher les bannières sans image d'arrière-plan
       return this.banners.filter(banner => banner.image_url);
     }
   },
+  watch: {
+    visibleBanners: {
+      handler() {
+        // Réinitialiser le slide si les bannières changent
+        this.currentSlide = 0;
+        this.setupAutoPlay();
+      },
+      immediate: true
+    }
+  },
+  mounted() {
+    this.setupAutoPlay();
+  },
+  beforeUnmount() {
+    this.clearAutoPlay();
+  },
   methods: {
+    // Méthodes du carousel
+    setupAutoPlay() {
+      this.clearAutoPlay();
+      if (this.autoPlay && this.visibleBanners.length > 1 && !this.isPaused) {
+        this.autoPlayInterval = setInterval(() => {
+          if (!this.isPaused) {
+            this.nextSlide();
+          }
+        }, this.interval);
+      }
+    },
+    pauseAutoPlay() {
+      this.isPaused = true;
+      this.clearAutoPlay();
+    },
+    resumeAutoPlay() {
+      this.isPaused = false;
+      this.setupAutoPlay();
+    },
+    clearAutoPlay() {
+      if (this.autoPlayInterval) {
+        clearInterval(this.autoPlayInterval);
+        this.autoPlayInterval = null;
+      }
+    },
+    goToSlide(index) {
+      if (this.isTransitioning || index === this.currentSlide) return;
+      
+      this.isTransitioning = true;
+      this.currentSlide = index;
+      
+      setTimeout(() => {
+        this.isTransitioning = false;
+      }, 500);
+
+      // Réinitialiser l'autoplay
+      this.setupAutoPlay();
+    },
+    nextSlide() {
+      const nextIndex = (this.currentSlide + 1) % this.visibleBanners.length;
+      this.goToSlide(nextIndex);
+    },
+    prevSlide() {
+      const prevIndex = this.currentSlide === 0 
+        ? this.visibleBanners.length - 1 
+        : this.currentSlide - 1;
+      this.goToSlide(prevIndex);
+    },
+    // Méthodes existantes
     getBannerStyle(banner) {
       return {
         backgroundColor: banner.background_color || '#E1251B',
@@ -154,18 +278,40 @@ export default {
 .banner-section {
   width: 100%;
   margin-bottom: 1rem;
+  position: relative;
+}
+
+/* Conteneur du carousel */
+.banner-carousel {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .banner-item {
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   padding: 2rem 1.5rem;
-  border-radius: 12px;
-  margin-bottom: 1rem;
   overflow: hidden;
-  min-height: 200px;
   display: flex;
   align-items: center;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(100%);
+  transition: all 0.5s ease-in-out;
+}
+
+.banner-item.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
 }
 
 .banner-background {
@@ -270,9 +416,93 @@ html.force-emoji .video-play-button .emoji-fallback {
   display: inline-block !important;
 }
 
+/* Contrôles du carousel */
+.carousel-controls {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Indicateurs */
+.carousel-indicators {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.indicator.active {
+  background: #E1251B;
+  transform: scale(1.2);
+}
+
+.indicator:hover {
+  background: rgba(225, 37, 27, 0.7);
+}
+
+/* Navigation */
+.carousel-nav {
+  display: flex;
+  gap: 0.5rem;
+  position: absolute;
+  top: 50%;
+  width: 100%;
+  padding: 0 1rem;
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.nav-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  pointer-events: auto;
+  backdrop-filter: blur(10px);
+}
+
+.nav-btn:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.8);
+  transform: scale(1.1);
+}
+
+.nav-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.prev-btn {
+  margin-right: auto;
+}
+
+.next-btn {
+  margin-left: auto;
+}
+
 /* Variations par section */
+.banner-section--header .banner-carousel {
+  height: 200px;
+}
+
 .banner-section--header .banner-item {
-  min-height: 120px;
   padding: 1rem 1.5rem;
 }
 
@@ -280,8 +510,11 @@ html.force-emoji .video-play-button .emoji-fallback {
   font-size: 1.5rem;
 }
 
+.banner-section--hero .banner-carousel {
+  height: 400px;
+}
+
 .banner-section--hero .banner-item {
-  min-height: 300px;
   padding: 3rem 2rem;
 }
 
@@ -289,21 +522,30 @@ html.force-emoji .video-play-button .emoji-fallback {
   font-size: 2.5rem;
 }
 
+.banner-section--featured .banner-carousel {
+  height: 250px;
+}
+
 .banner-section--featured .banner-item {
-  min-height: 180px;
   padding: 1.5rem;
 }
 
+.banner-section--footer .banner-carousel {
+  height: 200px;
+}
+
 .banner-section--footer .banner-item {
-  min-height: 150px;
   padding: 1.5rem;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
+  .banner-carousel {
+    height: 300px;
+  }
+  
   .banner-item {
     padding: 1.5rem 1rem;
-    min-height: 160px;
   }
   
   .banner-title {
@@ -314,20 +556,39 @@ html.force-emoji .video-play-button .emoji-fallback {
     font-size: 1.1rem;
   }
   
+  .banner-section--hero .banner-carousel {
+    height: 350px;
+  }
+  
   .banner-section--hero .banner-item {
-    min-height: 250px;
     padding: 2rem 1rem;
   }
   
   .banner-section--hero .banner-title {
     font-size: 2rem;
   }
+  
+  .banner-section--header .banner-carousel {
+    height: 180px;
+  }
+  
+  .nav-btn {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .carousel-nav {
+    padding: 0 0.5rem;
+  }
 }
 
 @media (max-width: 480px) {
+  .banner-carousel {
+    height: 250px;
+  }
+  
   .banner-item {
     padding: 1rem;
-    min-height: 140px;
   }
   
   .banner-title {
@@ -338,8 +599,30 @@ html.force-emoji .video-play-button .emoji-fallback {
     font-size: 1rem;
   }
   
+  .banner-section--hero .banner-carousel {
+    height: 280px;
+  }
+  
   .banner-section--hero .banner-title {
     font-size: 1.75rem;
+  }
+  
+  .banner-section--header .banner-carousel {
+    height: 150px;
+  }
+  
+  .nav-btn {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .indicator {
+    width: 10px;
+    height: 10px;
+  }
+  
+  .carousel-controls {
+    margin-top: 0.5rem;
   }
 }
 </style>

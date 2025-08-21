@@ -5,9 +5,9 @@ import 'dart:math' as math;
 class KenBurnsSlideshowService {
   /// Images par défaut pour le diaporama
   static const List<String> _defaultImages = [
-    'assets/images/pexels-rethaferguson-3622643.jpg',
-    'assets/images/pexels-picha-6210449.jpg',
-    'assets/images/pexels-saizstudio-17952746.jpg',
+    'assets/images/01.jpg',
+    'assets/images/02.jpg',
+    'assets/images/03.jpg',
   ];
   
   /// Durée par image (3 secondes)
@@ -85,6 +85,8 @@ class _KenBurnsSlideshowWidgetState extends State<KenBurnsSlideshowWidget>
       final startY = -0.1 + random.nextDouble() * 0.2; // -0.1 à 0.1
       final endY = -0.1 + random.nextDouble() * 0.2;
       
+      print('🧡 [KenBurnsSlideshow] Image ${i + 1}: ${widget.images[i]} - Scale: ${startScale.toStringAsFixed(2)} → ${endScale.toStringAsFixed(2)}');
+      
       _animations.add(KenBurnsAnimation(
         startScale: startScale,
         endScale: endScale,
@@ -112,7 +114,10 @@ class _KenBurnsSlideshowWidgetState extends State<KenBurnsSlideshowWidget>
     if (!mounted) return;
     
     final nextIndex = (_currentImageIndex + 1) % widget.images.length;
-    print('🎬 [KenBurnsSlideshow] Passage à l\'image ${nextIndex + 1}/${widget.images.length}: ${widget.images[nextIndex]}');
+    final imageName = widget.images[nextIndex].split('/').last;
+    print('🧡 [KenBurnsSlideshow] 🖼️ Changement vers image ${nextIndex + 1}/${widget.images.length}: $imageName');
+    print('🧡 [KenBurnsSlideshow] Ancien index: $_currentImageIndex -> Nouveau index: $nextIndex');
+    print('🧡 [KenBurnsSlideshow] Chemin complet image: ${widget.images[nextIndex]}');
     
     setState(() {
       _currentImageIndex = nextIndex;
@@ -121,6 +126,9 @@ class _KenBurnsSlideshowWidgetState extends State<KenBurnsSlideshowWidget>
     // Redémarrer l'animation Ken Burns pour la nouvelle image
     _kenBurnsController.reset();
     _kenBurnsController.forward();
+    
+    print('🧡 [KenBurnsSlideshow] ✨ Animation Ken Burns redémarrée pour $imageName');
+    print('🧡 [KenBurnsSlideshow] setState appelé, index actuel confirmé: $_currentImageIndex');
   }
   
   @override
@@ -134,13 +142,20 @@ class _KenBurnsSlideshowWidgetState extends State<KenBurnsSlideshowWidget>
   
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // Image actuelle avec animation Ken Burns
-        AnimatedBuilder(
+    // Utiliser IndexedStack pour forcer le changement d'images
+    return IndexedStack(
+      index: _currentImageIndex,
+      children: widget.images.map((imagePath) {
+        final currentIndex = widget.images.indexOf(imagePath);
+        final animation = _animations[currentIndex];
+        
+        return AnimatedBuilder(
           animation: _kenBurnsController,
           builder: (context, child) {
-            final animation = _animations[_currentImageIndex];
+            // N'animer que l'image actuellement visible
+            if (currentIndex != _currentImageIndex) {
+              return Container(); // Image invisible
+            }
             
             final scale = Tween<double>(
               begin: animation.startScale,
@@ -158,6 +173,8 @@ class _KenBurnsSlideshowWidgetState extends State<KenBurnsSlideshowWidget>
               curve: Curves.easeInOut,
             )).value;
             
+            print('🧡 [KenBurnsSlideshow] 🎭 Affichage image: $currentIndex, Path: $imagePath');
+            
             return Transform.scale(
               scale: scale,
               child: Transform.translate(
@@ -170,34 +187,31 @@ class _KenBurnsSlideshowWidgetState extends State<KenBurnsSlideshowWidget>
                   height: double.infinity,
                   decoration: BoxDecoration(
                     image: DecorationImage(
-                      image: AssetImage(widget.images[_currentImageIndex]),
+                      image: AssetImage(imagePath),
                       fit: BoxFit.cover,
+                    ),
+                  ),
+                  // Overlay léger pour la lisibilité
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black.withValues(alpha: 0.1),
+                          Colors.black.withValues(alpha: 0.2),
+                          Colors.black.withValues(alpha: 0.1),
+                        ],
+                        stops: const [0.0, 0.5, 1.0],
+                      ),
                     ),
                   ),
                 ),
               ),
             );
           },
-        ),
-        
-        // Overlay sombre pour améliorer la lisibilité du contenu
-        Container(
-          width: double.infinity,
-          height: double.infinity,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.black.withValues(alpha: 0.1),
-                Colors.black.withValues(alpha: 0.3),
-                Colors.black.withValues(alpha: 0.1),
-              ],
-              stops: const [0.0, 0.5, 1.0],
-            ),
-          ),
-        ),
-      ],
+        );
+      }).toList(),
     );
   }
 }

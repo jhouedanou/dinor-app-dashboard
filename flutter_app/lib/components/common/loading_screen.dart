@@ -49,6 +49,7 @@ class _LoadingScreenState extends State<LoadingScreen>
   Map<String, dynamic>? _config;
   bool _configLoaded = false;
   bool _configLoading = false;
+  bool? _useKenBurns; // Cache pour éviter les appels répétitifs
 
   // Icônes de cuisine pour l'animation
   final List<IconData> _cookingIcons = [
@@ -180,9 +181,12 @@ class _LoadingScreenState extends State<LoadingScreen>
     // Démarrer l'animation Ken Burns
     _kenBurnsController.forward();
 
-    // Timer utilisant la durée de l'API ou fallback sur widget.duration
-    final duration = _config?['duration'] ?? widget.duration;
-    _timer = Timer(Duration(milliseconds: duration), () {
+    // Timer utilisant la durée adaptée selon le type de splash
+    final baseDuration = _config?['duration'] ?? widget.duration;
+    final actualDuration = _isUsingKenBurnsSlideshow() ? 9000 : baseDuration;
+    
+    print('🧡 [LoadingScreen] Timer configuré pour ${actualDuration}ms');
+    _timer = Timer(Duration(milliseconds: actualDuration), () {
       widget.onComplete?.call();
     });
   }
@@ -350,31 +354,55 @@ class _LoadingScreenState extends State<LoadingScreen>
 
   /// Détermine si on utilise le diaporama Ken Burns
   bool _isUsingKenBurnsSlideshow() {
+    // Utiliser le cache si déjà calculé
+    if (_useKenBurns != null) return _useKenBurns!;
+    
     final backgroundType = _config?['background_type'] ?? 'gradient';
     final imageUrl = _config?['background_image_url'];
     
-    // Utiliser le diaporama Ken Burns dans ces cas :
-    // 1. background_type = "image" mais pas d'URL d'image
+    // Utiliser le diaporama Ken Burns quand background_image_url est null
+    // (condition spécifiée par l'utilisateur)
+    if (imageUrl == null) {
+      print('🎬 [LoadingScreen] background_image_url est null -> Activation du diaporama Ken Burns');
+      _useKenBurns = true;
+      return true;
+    }
+    
+    // Autres conditions de fallback :
+    // 1. background_type = "image" mais URL vide
     // 2. Durée longue (>= 8 secondes) suggérant un diaporama
     final isLongDuration = (_config?['duration'] ?? widget.duration) >= 8000;
+    final shouldUseSlideshow = (backgroundType == 'image' && imageUrl.isEmpty) || isLongDuration;
     
-    return (backgroundType == 'image' && (imageUrl == null || imageUrl.isEmpty)) || 
-           isLongDuration;
+    if (shouldUseSlideshow) {
+      print('🎬 [LoadingScreen] Conditions de fallback remplies -> Activation du diaporama Ken Burns');
+    }
+    
+    _useKenBurns = shouldUseSlideshow;
+    return shouldUseSlideshow;
   }
 
   /// Construit le fond avec animation Ken Burns pour les images
   Widget _buildAnimatedBackground() {
     final backgroundType = _config?['background_type'] ?? 'gradient';
     final imageUrl = _config?['background_image_url'];
-    final duration = _config?['duration'] ?? widget.duration;
+    final baseDuration = _config?['duration'] ?? widget.duration;
     
-    print('🎨 [LoadingScreen] Background type: $backgroundType, Image URL: $imageUrl, Duration: ${duration}ms');
+    // Ne log qu'une seule fois au début
+    if (_useKenBurns == null) {
+      print('🎨 [LoadingScreen] Background type: $backgroundType, Image URL: $imageUrl, Duration: ${baseDuration}ms');
+    }
     
     // Vérifier si on doit utiliser le diaporama Ken Burns
     if (_isUsingKenBurnsSlideshow()) {
-      print('🎬 [LoadingScreen] Activation du diaporama Ken Burns');
-      return KenBurnsSlideshowWidget(
-        totalDuration: Duration(milliseconds: duration),
+      // Utiliser 9 secondes (3x3 secondes) pour le diaporama Ken Burns
+      const slideshowDuration = 9000;
+      // Ne log qu'une seule fois
+      if (_useKenBurns == null) {
+        print('🧡 [LoadingScreen] Activation du diaporama Ken Burns pour ${slideshowDuration}ms (3 images × 3 secondes)');
+      }
+      return const KenBurnsSlideshowWidget(
+        totalDuration: Duration(milliseconds: slideshowDuration),
       );
     }
     

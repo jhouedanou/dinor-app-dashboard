@@ -13,6 +13,7 @@
 import 'package:flutter/material.dart';
 import '../../services/navigation_service.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'section_header.dart';
 
 class ContentCarousel extends StatelessWidget {
   final String title;
@@ -47,43 +48,11 @@ class ContentCarousel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Section Header - .section-header CSS identique
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Titre - h2 Open Sans
-              Text(
-                title,
-                style: TextStyle(
-                  fontFamily: 'OpenSans',
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: darkTheme ? Colors.white : const Color(0xFF2D3748),
-                ),
-              ),
-              
-              // Bouton "Voir tout" - .see-all-btn CSS
-              TextButton.icon(
-                onPressed: () => NavigationService.pushNamed(viewAllLink),
-                icon: Icon(
-                  LucideIcons.chevronRight,
-                  size: 16,
-                  color: darkTheme ? Colors.white : const Color(0xFF6750A4),
-                ),
-                label: Text(
-                  'Voir tout',
-                  style: TextStyle(
-                    fontFamily: 'Roboto',
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: darkTheme ? Colors.white : const Color(0xFF6750A4),
-                  ),
-                ),
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                ),
-              ),
-            ],
+          // Section Header avec cartouche moderne
+          SectionHeader(
+            title: title,
+            viewAllLink: viewAllLink,
+            darkTheme: darkTheme,
           ),
           
           const SizedBox(height: 24),
