@@ -78,7 +78,7 @@ class AppTextStyles {
   static const TextStyle headerTitle = TextStyle(
     fontFamily: _fontFamily,
     fontFamilyFallback: _fontFallbacks,
-    fontSize: 16,
+    fontSize: 14, // Réduit de 16 à 14
     fontWeight: FontWeight.w700,
     color: Colors.white,
     height: 1.2,

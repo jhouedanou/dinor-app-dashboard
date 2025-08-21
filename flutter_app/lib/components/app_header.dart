@@ -273,30 +273,17 @@ class _AppHeaderState extends ConsumerState<AppHeader> with RouteAware {
                       print('🔍 [AppHeader] Actual route: $actualRoute');
                       print('🔍 [AppHeader] Is on detail screen: $isOnDetailScreen');
                       
-                      // Logique claire : n'afficher le titre QUE sur les écrans de détail
-                      if (isOnDetailScreen && hasTitle) {
-                        // Afficher le titre du contenu seulement sur les pages de détail
-                        print('📝 [AppHeader] Affichage du titre: $subtitle');
-                        return Text(
-                          subtitle.trim(),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                          style: AppTextStyles.headerTitle,
-                        );
-                      } else {
-                        // Dans tous les autres cas, afficher le logo
-                        print('🏠 [AppHeader] Affichage du logo Dinor');
-                        return SvgPicture.asset(
-                          'assets/images/LOGO_DINOR_monochrome.svg',
-                          width: 32,
-                          height: 20,
-                          colorFilter: const ColorFilter.mode(
-                            Colors.white,
-                            BlendMode.srcIn,
-                          ),
-                        );
-                      }
+                      // Toujours afficher le logo monochrome comme demandé
+                      print('🏠 [AppHeader] Affichage du logo Dinor monochrome');
+                      return SvgPicture.asset(
+                        'assets/images/LOGO_DINOR_monochrome.svg',
+                        width: 32,
+                        height: 20,
+                        colorFilter: const ColorFilter.mode(
+                          Colors.white,
+                          BlendMode.srcIn,
+                        ),
+                      );
                     },
                   ),
                 ),
