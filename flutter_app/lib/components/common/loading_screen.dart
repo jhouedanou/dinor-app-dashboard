@@ -395,11 +395,11 @@ class _LoadingScreenState extends State<LoadingScreen>
     
     // Vérifier si on doit utiliser le diaporama Ken Burns
     if (_isUsingKenBurnsSlideshow()) {
-      // Utiliser 9 secondes (3x3 secondes) pour le diaporama Ken Burns
-      const slideshowDuration = 9000;
+      // Utiliser 3 secondes pour une seule image avec effet Ken Burns
+      const slideshowDuration = 3000;
       // Ne log qu'une seule fois
       if (_useKenBurns == null) {
-        print('🧡 [LoadingScreen] Activation du diaporama Ken Burns pour ${slideshowDuration}ms (3 images × 3 secondes)');
+        print('🧡 [LoadingScreen] Activation effet Ken Burns pour ${slideshowDuration}ms (1 image × 3 secondes)');
       }
       return const KenBurnsSlideshowWidget(
         totalDuration: Duration(milliseconds: slideshowDuration),

@@ -399,7 +399,7 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
       },
       child: Container(
         padding: const EdgeInsets.symmetric(
-          vertical: 4, // Réduit de 8 à 4
+          vertical: 8, // Augmenté de 4 à 8 pour plus d'espace en haut
           horizontal: 4,
         ),
         // Style allégé: pas de fond ni de contour pour l'actif, seulement icône/texte orange
@@ -412,9 +412,9 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
           children: [
             // Icône - taille uniforme
             Container(
-              margin: const EdgeInsets.only(bottom: 2), // Réduit de 4 à 2
+              margin: const EdgeInsets.only(bottom: 1), // Réduit de 2 à 1 pour moins d'espace en bas
               child: DinorIcon(
-                name: item['icon'],
+                name: item['icon']?.toString() ?? 'home',
                 size: 22, // Taille uniforme pour tous
                 color: isActive
                     ? const Color(0xFFFF6B35)
@@ -424,7 +424,7 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
 
             // Label - taille uniforme
             Text(
-              item['label'],
+              item['label']?.toString() ?? '',
               style: TextStyle(
                 fontFamily: 'Roboto',
                 fontSize: 11, // Taille uniforme pour tous
