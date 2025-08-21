@@ -164,45 +164,64 @@ class _EnhancedDinorTVScreenState extends ConsumerState<EnhancedDinorTVScreen>
           backgroundColor: const Color(0xFFF8F9FA),
           body: Column(
             children: [
-              // Header personnalisé sans espace superflu
+              // Header pareil que sur les pages recettes, astuces et events
               Container(
-                color: Colors.white,
-                padding: EdgeInsets.only(
-                  top: MediaQuery.of(context).padding.top,
-                  left: 16,
-                  right: 16,
-                  bottom: 0,
+                padding: const EdgeInsets.only(
+                  left: 20,
+                  right: 20,
+                  bottom: 20,
                 ),
-                child: Row(
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFFE53E3E), Color(0xFFD53F8C)],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFE53E3E).withValues(alpha: 0.3),
+                      blurRadius: 15,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Column(
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3748)),
-                      onPressed: () => NavigationService.pop(),
+                    Row(
+                      children: [
+                        IconButton(
+                          icon:
+                              const Icon(Icons.arrow_back, color: Colors.white),
+                          onPressed: () => NavigationService.pop(),
+                        ),
+                        const SizedBox(width: 8),
+                        const Expanded(
+                          child: Text(
+                            'Dinor TV',
+                            style: TextStyle(
+                              fontFamily: 'OpenSans',
+                              fontSize: 28,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        if (videos.isNotEmpty)
+                          IconButton(
+                            onPressed: () => _openImmersivePlayer(),
+                            icon: const Icon(LucideIcons.maximize,
+                                color: Colors.white),
+                            tooltip: 'Mode Immersif',
+                          ),
+                        IconButton(
+                          onPressed: _handleRefresh,
+                          icon: const Icon(LucideIcons.refreshCw,
+                              color: Colors.white),
+                          tooltip: 'Actualiser',
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'Dinor TV',
-                      style: TextStyle(
-                        fontFamily: 'OpenSans',
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF2D3748),
-                      ),
-                    ),
-                    const Spacer(),
-                    // Bouton Mode Immersif
-                    if (videos.isNotEmpty)
-                      IconButton(
-                        onPressed: () => _openImmersivePlayer(),
-                        icon: const Icon(LucideIcons.maximize,
-                            color: Color(0xFF2D3748)),
-                        tooltip: 'Mode Immersif',
-                      ),
-                    IconButton(
-                      onPressed: _handleRefresh,
-                      icon: const Icon(LucideIcons.refreshCw, color: Color(0xFF2D3748)),
-                      tooltip: 'Actualiser',
-                    ),
+                    const SizedBox(height: 8),
                   ],
                 ),
               ),
@@ -277,32 +296,25 @@ class _EnhancedDinorTVScreenState extends ConsumerState<EnhancedDinorTVScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header avec stats
-          //_buildHeader(videos),
-
-          const SizedBox(height: 24),
-
-          // Bouton d'accès rapide au mode immersif
-          //_buildImmersiveModeCard(videos),
-
-          const SizedBox(height: 24),
-
           // Grille de vidéos en mosaïque
           ContentGalleryGrid(
-            title: 'Toutes les vidéos',
-            items: videos.map((video) => {
-              'id': video.id,
-              'title': video.title,
-              'description': video.description,
-              'featured_image_url': video.thumbnailUrl,
-              'video_url': video.videoUrl,
-              'likes_count': video.likesCount,
-              'views': video.views,
-            }).toList(),
+            title: '',
+            items: videos
+                .map((video) => {
+                      'id': video.id,
+                      'title': video.title,
+                      'description': video.description,
+                      'featured_image_url': video.thumbnailUrl,
+                      'video_url': video.videoUrl,
+                      'likes_count': video.likesCount,
+                      'views': video.views,
+                    })
+                .toList(),
             loading: false,
             contentType: 'videos',
             viewAllLink: '/dinor-tv',
-            onItemClick: (item) => _openImmersivePlayer(startIndex: videos.indexWhere((v) => v.id == item['id'])),
+            onItemClick: (item) => _openImmersivePlayer(
+                startIndex: videos.indexWhere((v) => v.id == item['id'])),
             darkTheme: true,
           ),
         ],
@@ -374,23 +386,6 @@ class _EnhancedDinorTVScreenState extends ConsumerState<EnhancedDinorTVScreen>
       children: [
         Icon(icon, color: Colors.white70, size: 24),
         const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            fontFamily: 'OpenSans',
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
-          ),
-        ),
-        Text(
-          label,
-          style: const TextStyle(
-            fontFamily: 'Roboto',
-            fontSize: 12,
-            color: Colors.white70,
-          ),
-        ),
       ],
     );
   }
@@ -645,19 +640,18 @@ class _EnhancedDinorTVScreenState extends ConsumerState<EnhancedDinorTVScreen>
     );
   }
 
-
   /// Construit la thumbnail avec support des nouvelles images customisées
   Widget _buildVideoThumbnail(VideoData video) {
     // Prioriser les nouvelles images customisées depuis les métadonnées API
     String? imageUrl;
-    
+
     // 1. Featured image en premier
     if (video.metadata?['featured_image_url'] != null) {
       imageUrl = video.metadata!['featured_image_url'];
     }
     // 2. Banner image pour l'aspect ratio 16:9
     else if (video.metadata?['banner_image_url'] != null) {
-      imageUrl = video.metadata!['banner_image_url'];  
+      imageUrl = video.metadata!['banner_image_url'];
     }
     // 3. Poster image en dernier recours
     else if (video.metadata?['poster_image_url'] != null) {

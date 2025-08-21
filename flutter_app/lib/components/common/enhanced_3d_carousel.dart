@@ -26,6 +26,7 @@ class Enhanced3DCarousel extends StatefulWidget {
   final bool darkTheme;
   final double cardHeight;
   final double cardWidth;
+  final bool flatLayout; // Nouvel option pour layout plat
 
   const Enhanced3DCarousel({
     super.key,
@@ -40,6 +41,7 @@ class Enhanced3DCarousel extends StatefulWidget {
     this.darkTheme = false,
     this.cardHeight = 280,
     this.cardWidth = 280,
+    this.flatLayout = false, // Par défaut: effet 3D
   });
 
   @override
@@ -57,7 +59,7 @@ class _Enhanced3DCarouselState extends State<Enhanced3DCarousel>
   void initState() {
     super.initState();
     _pageController = PageController(
-      viewportFraction: 0.7, // Augmenté pour éviter le chevauchement
+      viewportFraction: widget.flatLayout ? 0.75 : 0.7, // Réduit pour voir plus d'éléments
       initialPage: 0,
     );
     _animationController = AnimationController(
@@ -96,15 +98,8 @@ class _Enhanced3DCarouselState extends State<Enhanced3DCarousel>
           
           const SizedBox(height: 20),
           
-          // Contenu du carousel avec navigation
-          Stack(
-            children: [
-              _buildCarouselContent(),
-              // Boutons de navigation
-              if (widget.items.isNotEmpty && widget.items.length > 1) ...
-              _buildNavigationButtons(),
-            ],
-          ),
+          // Contenu du carousel sans navigation
+          _buildCarouselContent(),
           
           // Indicateurs de progression
           if (widget.items.isNotEmpty && widget.items.length > 1)
@@ -187,26 +182,62 @@ class _Enhanced3DCarouselState extends State<Enhanced3DCarousel>
   }
 
   Widget _build3DCard(int index) {
-    // Calculer la transformation 3D basée sur la position
     double offset = _currentPage - index;
     double absOffset = offset.abs();
     
-    // Rotation Y pour l'effet 3D (plus prononcée pour l'effet coverflow)
-    double rotationY = (math.pi / 4) * offset.clamp(-1, 1); // -45° à +45°
+    if (widget.flatLayout) {
+      // Layout plat comme dans les images
+      double scale = (1 - (absOffset * 0.1)).clamp(0.9, 1.0); // Échelle minimale
+      double opacity = (1 - (absOffset * 0.3)).clamp(0.7, 1.0); // Opacité douce
+      
+      return AnimatedBuilder(
+        animation: _pageController,
+        builder: (context, child) {
+          return Transform.scale(
+            scale: scale,
+            child: Opacity(
+              opacity: opacity,
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 8), // Marges réduites
+                width: widget.cardWidth,
+                height: widget.cardHeight,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.15),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                      spreadRadius: 1,
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: widget.itemBuilder != null
+                      ? widget.itemBuilder!(widget.items[index])
+                      : CoverflowCard(
+                          item: widget.items[index],
+                          onTap: () => widget.onItemClick(widget.items[index]),
+                          contentType: widget.contentType,
+                          scale: scale,
+                          opacity: opacity,
+                          isActive: absOffset < 0.1,
+                        ),
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    }
     
-    // Échelle progressive pour créer la profondeur - Plus prononcée pour l'effet coverflow
-    double scale = (1 - (absOffset * 0.25)).clamp(0.6, 1.0); // De 0.6 à 1.0 au lieu de 0.85 à 1.0
-    
-    // Opacité pour accentuer la profondeur
-    double opacity = (1 - (absOffset * 0.2)).clamp(0.6, 1.0); // De 0.6 à 1.0
-    
-    // Translation Z pour l'effet de profondeur - Plus prononcée
-    double translateZ = -absOffset * 120; // -120 au lieu de -80
-    
-    // Translation X pour l'espacement latéral - Réduit pour éviter le chevauchement
-    double translateX = offset * 40; // Réduit de 60 à 40 pour un meilleur espacement
-    
-    // Calculer la taille dynamique des cartes pour l'effet coverflow
+    // Layout 3D existant
+    double rotationY = (math.pi / 4) * offset.clamp(-1, 1);
+    double scale = (1 - (absOffset * 0.25)).clamp(0.6, 1.0);
+    double opacity = (1 - (absOffset * 0.2)).clamp(0.6, 1.0);
+    double translateZ = -absOffset * 120;
+    double translateX = offset * 40;
     double dynamicWidth = widget.cardWidth * scale;
     double dynamicHeight = widget.cardHeight * scale;
 
@@ -216,7 +247,7 @@ class _Enhanced3DCarouselState extends State<Enhanced3DCarousel>
         return Transform(
           alignment: Alignment.center,
           transform: Matrix4.identity()
-            ..setEntry(3, 2, 0.001) // Perspective réaliste
+            ..setEntry(3, 2, 0.001)
             ..translate(translateX, 0.0, translateZ)
             ..rotateY(rotationY)
             ..scale(scale),
@@ -250,7 +281,7 @@ class _Enhanced3DCarouselState extends State<Enhanced3DCarousel>
                         contentType: widget.contentType,
                         scale: scale,
                         opacity: opacity,
-                        isActive: absOffset < 0.1, // Considère comme actif si très proche du centre
+                        isActive: absOffset < 0.1,
                       ),
               ),
             ),

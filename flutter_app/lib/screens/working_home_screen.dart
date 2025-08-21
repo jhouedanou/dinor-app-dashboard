@@ -338,7 +338,7 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
 
 
 
-                    // Événements - Format Carousel avec logs
+                    // Événements - Format Carousel plat
                     Builder(
                       builder: (context) {
                         print('🏠 [WorkingHomeScreen] Affichage Enhanced3DCarousel Événements');
@@ -351,14 +351,15 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
                           contentType: 'events',
                           viewAllLink: '/events',
                           onItemClick: _handleEventClick,
-                          cardHeight: 320,
-                          cardWidth: 320,
+                          cardHeight: 250,
+                          cardWidth: 300,
+                          flatLayout: true, // Layout plat comme dans les images
                         );
                       },
                     ),
                     const SizedBox(height: 24),
 
-                    // Recettes - Format Carousel 3D Amélioré
+                    // Recettes - Format Carousel plat
                     Enhanced3DCarousel(
                       title: 'Recettes',
                       items: recipes.take(4).toList(),
@@ -367,12 +368,13 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
                       contentType: 'recipes',
                       viewAllLink: '/recipes',
                       onItemClick: _handleRecipeClick,
-                      cardHeight: 320,
-                      cardWidth: 320,
+                      cardHeight: 250,
+                      cardWidth: 300,
+                      flatLayout: true, // Layout plat comme dans les images
                     ),
                     const SizedBox(height: 24),
 
-                    // Astuces - Format Carousel 3D Amélioré
+                    // Astuces - Format Carousel plat
                     Enhanced3DCarousel(
                       title: 'Astuces',
                       items: tips.take(4).toList(),
@@ -381,12 +383,13 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
                       contentType: 'tips',
                       viewAllLink: '/tips',
                       onItemClick: _handleTipClick,
-                      cardHeight: 320,
-                      cardWidth: 320,
+                      cardHeight: 250,
+                      cardWidth: 300,
+                      flatLayout: true, // Layout plat comme dans les images
                     ),
                     const SizedBox(height: 16),
 
-                    // Dinor TV - Format Carousel 3D Amélioré
+                    // Dinor TV - Format Carousel plat
                     Enhanced3DCarousel(
                       title: 'Dinor TV',
                       items: videos.take(4).toList(),
@@ -396,8 +399,9 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
                       viewAllLink: '/dinor-tv',
                       onItemClick: _handleVideoClick,
                       darkTheme: false,
-                      cardHeight: 320,
-                      cardWidth: 320,
+                      cardHeight: 250,
+                      cardWidth: 300,
+                      flatLayout: true, // Layout plat comme dans les images
                     ),
                   ],
                 ),
@@ -414,83 +418,4 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
   }
 
 
-  Widget _buildErrorWidget(String error) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE53E3E).withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        children: [
-          const Icon(
-            Icons.error_outline,
-            size: 32,
-            color: Color(0xFFE53E3E),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Erreur de chargement',
-            style: const TextStyle(
-              fontFamily: 'OpenSans',
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF2D3748),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            error,
-            style: const TextStyle(
-              fontFamily: 'Roboto',
-              fontSize: 12,
-              color: Color(0xFF718096),
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyWidget() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Column(
-        children: [
-          const Icon(
-            Icons.inbox_outlined,
-            size: 32,
-            color: Color(0xFFCBD5E0),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Aucun contenu disponible',
-            style: const TextStyle(
-              fontFamily: 'OpenSans',
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF2D3748),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatDate(String? dateString) {
-    if (dateString == null) return '';
-    try {
-      final date = DateTime.parse(dateString);
-      return '${date.day}/${date.month}/${date.year}';
-    } catch (e) {
-      return dateString;
-    }
-  }
 }

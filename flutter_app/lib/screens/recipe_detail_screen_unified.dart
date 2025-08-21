@@ -473,52 +473,16 @@ class _RecipeDetailScreenUnifiedState extends ConsumerState<RecipeDetailScreenUn
                   right: 16,
                   child: Row(
                     children: [
-                      if (_recipe!['difficulty'] != null) ...[
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF4D03F),
-                            borderRadius: BorderRadius.circular(25),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Colors.black,
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.signal_cellular_alt,
-                                size: 14,
-                                color: Color(0xFF2D3748),
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                _getDifficultyLabel(_recipe!['difficulty']),
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF2D3748),
-                                  fontFamily: 'Roboto',
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                      ],
+                      // Zone catégorie avec likes et commentaires
                       if (_recipe!['category'] != null)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(25),
-                            boxShadow: const [
+                            color: Colors.white.withValues(alpha: 0.95),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
                               BoxShadow(
-                                color: Colors.black,
+                                color: Colors.black.withValues(alpha: 0.2),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -527,17 +491,86 @@ class _RecipeDetailScreenUnifiedState extends ConsumerState<RecipeDetailScreenUn
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
+                              // Catégorie
                               const Icon(
                                 Icons.category,
                                 size: 14,
                                 color: Color(0xFF4A5568),
                               ),
-                              const SizedBox(width: 6),
+                              const SizedBox(width: 4),
                               Text(
                                 _recipe!['category']['name'],
                                 style: const TextStyle(
-                                  fontSize: 13,
+                                  fontSize: 12,
                                   fontWeight: FontWeight.w600,
+                                  color: Color(0xFF2D3748),
+                                  fontFamily: 'Roboto',
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              // Temps
+                              const Icon(
+                                LucideIcons.clock,
+                                size: 12,
+                                color: Color(0xFF4A5568),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${_recipe!['cooking_time'] ?? 0}min',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF2D3748),
+                                  fontFamily: 'Roboto',
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              // Portions
+                              const Icon(
+                                LucideIcons.users,
+                                size: 12,
+                                color: Color(0xFF4A5568),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${_recipe!['servings'] ?? 0}',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF2D3748),
+                                  fontFamily: 'Roboto',
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              // Likes
+                              const Icon(
+                                LucideIcons.heart,
+                                size: 12,
+                                color: Color(0xFF4A5568),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${_recipe!['likes_count'] ?? 0}',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF2D3748),
+                                  fontFamily: 'Roboto',
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              // Commentaires
+                              const Icon(
+                                LucideIcons.messageCircle,
+                                size: 12,
+                                color: Color(0xFF4A5568),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${_recipe!['comments_count'] ?? 0}',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
                                   color: Color(0xFF2D3748),
                                   fontFamily: 'Roboto',
                                 ),
@@ -560,28 +593,6 @@ class _RecipeDetailScreenUnifiedState extends ConsumerState<RecipeDetailScreenUn
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Recipe Stats avec composant unifié
-                UnifiedContentStats(
-                  stats: [
-                    {
-                      'icon': LucideIcons.clock,
-                      'text': '${_recipe!['cooking_time'] ?? 0}min',
-                    },
-                    {
-                      'icon': LucideIcons.users,
-                      'text': '${_recipe!['servings'] ?? 0} pers.',
-                    },
-                    {
-                      'icon': LucideIcons.heart,
-                      'text': '${_recipe!['likes_count'] ?? 0}',
-                    },
-                    {
-                      'icon': LucideIcons.messageCircle,
-                      'text': '${_recipe!['comments_count'] ?? 0}',
-                    },
-                  ],
-                ),
-                const SizedBox(height: 16),
                 
                 // Indicateur hors ligne
                 if (_isOffline) _buildOfflineIndicator(),

@@ -354,32 +354,9 @@ class _LoadingScreenState extends State<LoadingScreen>
 
   /// Détermine si on utilise le diaporama Ken Burns
   bool _isUsingKenBurnsSlideshow() {
-    // Utiliser le cache si déjà calculé
-    if (_useKenBurns != null) return _useKenBurns!;
-    
-    final backgroundType = _config?['background_type'] ?? 'gradient';
-    final imageUrl = _config?['background_image_url'];
-    
-    // Utiliser le diaporama Ken Burns quand background_image_url est null
-    // (condition spécifiée par l'utilisateur)
-    if (imageUrl == null) {
-      print('🎬 [LoadingScreen] background_image_url est null -> Activation du diaporama Ken Burns');
-      _useKenBurns = true;
-      return true;
-    }
-    
-    // Autres conditions de fallback :
-    // 1. background_type = "image" mais URL vide
-    // 2. Durée longue (>= 8 secondes) suggérant un diaporama
-    final isLongDuration = (_config?['duration'] ?? widget.duration) >= 8000;
-    final shouldUseSlideshow = (backgroundType == 'image' && imageUrl.isEmpty) || isLongDuration;
-    
-    if (shouldUseSlideshow) {
-      print('🎬 [LoadingScreen] Conditions de fallback remplies -> Activation du diaporama Ken Burns');
-    }
-    
-    _useKenBurns = shouldUseSlideshow;
-    return shouldUseSlideshow;
+    // Désactiver complètement l'effet Ken Burns (trop violent)
+    _useKenBurns = false;
+    return false;
   }
 
   /// Construit le fond avec animation Ken Burns pour les images
@@ -395,11 +372,11 @@ class _LoadingScreenState extends State<LoadingScreen>
     
     // Vérifier si on doit utiliser le diaporama Ken Burns
     if (_isUsingKenBurnsSlideshow()) {
-      // Utiliser 3 secondes pour une seule image avec effet Ken Burns
-      const slideshowDuration = 3000;
+      // Utiliser 15 secondes (3x5 secondes) pour le diaporama Ken Burns
+      const slideshowDuration = 15000;
       // Ne log qu'une seule fois
       if (_useKenBurns == null) {
-        print('🧡 [LoadingScreen] Activation effet Ken Burns pour ${slideshowDuration}ms (1 image × 3 secondes)');
+        print('🧡 [LoadingScreen] Activation du diaporama Ken Burns pour ${slideshowDuration}ms (3 images × 5 secondes)');
       }
       return const KenBurnsSlideshowWidget(
         totalDuration: Duration(milliseconds: slideshowDuration),
@@ -407,8 +384,8 @@ class _LoadingScreenState extends State<LoadingScreen>
     }
     
     if (backgroundType == 'image' && imageUrl != null && imageUrl.isNotEmpty) {
-      print('🎨 [LoadingScreen] Utilisation image API: $imageUrl');
-      // Utiliser l'image de l'API avec animation Ken Burns simple
+      print('🎨 [LoadingScreen] Utilisation image API avec effet Ken Burns: $imageUrl');
+      // Utiliser l'image de l'API avec animation Ken Burns
       return AnimatedBuilder(
         animation: _kenBurnsController,
         builder: (context, child) {
@@ -425,6 +402,35 @@ class _LoadingScreenState extends State<LoadingScreen>
                 decoration: BoxDecoration(
                   image: DecorationImage(
                     image: ImageCacheService.getCachedImageProvider(imageUrl),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    }
+    
+    // Si background_image_url est null, utiliser l'image locale avec effet Ken Burns
+    if (imageUrl == null) {
+      print('🎨 [LoadingScreen] background_image_url null -> Utilisation de 01.webp avec effet Ken Burns');
+      return AnimatedBuilder(
+        animation: _kenBurnsController,
+        builder: (context, child) {
+          return Transform.scale(
+            scale: _kenBurnsScale.value,
+            child: Transform.translate(
+              offset: Offset(
+                _kenBurnsPan.value.dx * MediaQuery.of(context).size.width * 0.1,
+                _kenBurnsPan.value.dy * MediaQuery.of(context).size.height * 0.1,
+              ),
+              child: Container(
+                width: double.infinity,
+                height: double.infinity,
+                decoration: const BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage('assets/images/01.webp'),
                     fit: BoxFit.cover,
                   ),
                 ),

@@ -37,23 +37,25 @@ class CoverflowCard extends StatelessWidget {
     final dynamicWidth = baseWidth * scale;
     final dynamicHeight = baseHeight * scale;
 
-    return Container(
-      width: dynamicWidth,
-      height: dynamicHeight,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3 * opacity),
-            blurRadius: isActive ? 25 : 15,
-            offset: const Offset(0, 8),
-            spreadRadius: 2,
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Stack(
+    return GestureDetector(
+      onTap: onTap, // Rendre toute la carte cliquable
+      child: Container(
+        width: dynamicWidth,
+        height: dynamicHeight,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3 * opacity),
+              blurRadius: isActive ? 25 : 15,
+              offset: const Offset(0, 8),
+              spreadRadius: 2,
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Stack(
           children: [
             // Image de fond
             Positioned.fill(
@@ -99,11 +101,6 @@ class CoverflowCard extends StatelessWidget {
                     
                     // Informations supplémentaires
                     _buildAdditionalInfo(),
-                    
-                    const SizedBox(height: 16),
-                    
-                    // Bouton d'action
-                    _buildActionButton(),
                   ],
                 ),
               ),
@@ -111,17 +108,17 @@ class CoverflowCard extends StatelessWidget {
           ],
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildBackgroundImage() {
     String imageUrl = '';
     
-    // Pour les vidéos Dinor TV, prioriser les champs spécifiques aux vidéos
+    // Pour les vidéos Dinor TV, prioriser featured_image_url
     if (contentType == 'videos' || contentType == 'video') {
-      imageUrl = item['thumbnail_url']?.toString() ?? 
+      imageUrl = item['featured_image_url']?.toString() ?? 
+                 item['thumbnail_url']?.toString() ?? 
                  item['thumbnailUrl']?.toString() ?? 
-                 item['featured_image_url']?.toString() ?? 
                  item['banner_image_url']?.toString() ?? 
                  item['poster_image_url']?.toString() ?? 
                  item['thumbnail']?.toString() ?? 

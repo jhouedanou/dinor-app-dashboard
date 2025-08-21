@@ -399,52 +399,16 @@ class _TipDetailScreenUnifiedState extends ConsumerState<TipDetailScreenUnified>
                   right: 16,
                   child: Row(
                     children: [
-                      if (_tip!['difficulty'] != null) ...[
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF4D03F),
-                            borderRadius: BorderRadius.circular(25),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Colors.black,
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.signal_cellular_alt,
-                                size: 14,
-                                color: Color(0xFF2D3748),
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                _getDifficultyLabel(_tip!['difficulty']),
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF2D3748),
-                                  fontFamily: 'Roboto',
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                      ],
+                      // Zone astuce avec catégorie, likes et commentaires
                       if (_tip!['category'] != null)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(25),
-                            boxShadow: const [
+                            color: Colors.white.withValues(alpha: 0.95),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
                               BoxShadow(
-                                color: Colors.black,
+                                color: Colors.black.withValues(alpha: 0.2),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -462,8 +426,42 @@ class _TipDetailScreenUnifiedState extends ConsumerState<TipDetailScreenUnified>
                               Text(
                                 _tip!['category']['name'] ?? _getTypeLabel(_tip!['type'] ?? ''),
                                 style: const TextStyle(
-                                  fontSize: 13,
+                                  fontSize: 12,
                                   fontWeight: FontWeight.w600,
+                                  color: Color(0xFF2D3748),
+                                  fontFamily: 'Roboto',
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              // Likes
+                              const Icon(
+                                LucideIcons.heart,
+                                size: 12,
+                                color: Color(0xFF4A5568),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${_tip!['likes_count'] ?? 0}',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF2D3748),
+                                  fontFamily: 'Roboto',
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              // Commentaires
+                              const Icon(
+                                LucideIcons.messageCircle,
+                                size: 12,
+                                color: Color(0xFF4A5568),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${_tip!['comments_count'] ?? 0}',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
                                   color: Color(0xFF2D3748),
                                   fontFamily: 'Roboto',
                                 ),
@@ -486,37 +484,13 @@ class _TipDetailScreenUnifiedState extends ConsumerState<TipDetailScreenUnified>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Tip Stats avec composant unifié
-                UnifiedContentStats(
-                  stats: [
-                    // Seulement afficher la difficulté si elle existe
-                    if (_tip!['difficulty'] != null) {
-                      'icon': LucideIcons.star,
-                      'text': _getDifficultyLabel(_tip!['difficulty']),
-                    },
-                    // Seulement afficher le type si il existe
-                    if (_tip!['type'] != null) {
-                      'icon': LucideIcons.tag,
-                      'text': _getTypeLabel(_tip!['type']),
-                    },
-                    {
-                      'icon': LucideIcons.heart,
-                      'text': '${_tip!['likes_count'] ?? 0}',
-                    },
-                    {
-                      'icon': LucideIcons.messageCircle,
-                      'text': '${_tip!['comments_count'] ?? 0}',
-                    },
-                  ],
-                ),
-                const SizedBox(height: 24),
 
                 // Titre de l'astuce
                 Text(
                   _tip!['title'] ?? 'Sans titre',
                   style: const TextStyle(
                     fontFamily: 'OpenSans',
-                    fontSize: 24,
+                    fontSize: 20,
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF2D3748),
                   ),

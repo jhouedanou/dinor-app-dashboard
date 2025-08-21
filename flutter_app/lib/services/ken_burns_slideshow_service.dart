@@ -69,29 +69,26 @@ class _KenBurnsSlideshowWidgetState extends State<KenBurnsSlideshowWidget>
   
   @override
   Widget build(BuildContext context) {
-    // Affichage simple avec animation Ken Burns sur image unique
-    final currentImagePath = widget.images[0]; // Toujours la première image
-    
-    print('🧡 [KenBurnsSlideshow] 🎭 Affichage image: $currentImagePath');
+    final currentImagePath = widget.images[0]; // Utiliser la première image
+    final animation = _animation; // Utiliser l'animation définie
     
     return Container(
-      key: const ValueKey('ken_burns_container'), // Clé unique
       width: double.infinity,
       height: double.infinity,
       child: AnimatedBuilder(
         animation: _kenBurnsController,
         builder: (context, child) {
           final scale = Tween<double>(
-            begin: _animation.startScale,
-            end: _animation.endScale,
+            begin: animation.startScale,
+            end: animation.endScale,
           ).animate(CurvedAnimation(
             parent: _kenBurnsController,
             curve: Curves.easeInOut,
           )).value;
           
           final offset = Tween<Offset>(
-            begin: _animation.startOffset,
-            end: _animation.endOffset,
+            begin: animation.startOffset,
+            end: animation.endOffset,
           ).animate(CurvedAnimation(
             parent: _kenBurnsController,
             curve: Curves.easeInOut,
