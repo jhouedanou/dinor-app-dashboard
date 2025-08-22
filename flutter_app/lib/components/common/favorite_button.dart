@@ -16,7 +16,7 @@ class FavoriteButton extends ConsumerStatefulWidget {
   final VoidCallback? onAuthRequired;
 
   const FavoriteButton({
-    Key? key,
+    super.key,
     required this.type,
     required this.itemId,
     this.initialFavorited = false,
@@ -26,7 +26,7 @@ class FavoriteButton extends ConsumerStatefulWidget {
     this.variant = 'default',
     this.onFavoriteChanged,
     this.onAuthRequired,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<FavoriteButton> createState() => _FavoriteButtonState();

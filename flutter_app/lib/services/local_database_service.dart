@@ -1,12 +1,11 @@
-/**
- * LOCAL_DATABASE_SERVICE.DART - SERVICE DE BASE DE DONNÉES LOCALE
- * 
- * FONCTIONNALITÉS :
- * - Stockage persistant des likes, favoris, état d'authentification
- * - Cache local des données utilisateur pour performance
- * - Synchronisation avec SharedPreferences et SecureStorage
- * - Gestion des données hors ligne
- */
+/// LOCAL_DATABASE_SERVICE.DART - SERVICE DE BASE DE DONNÉES LOCALE
+/// 
+/// FONCTIONNALITÉS :
+/// - Stockage persistant des likes, favoris, état d'authentification
+/// - Cache local des données utilisateur pour performance
+/// - Synchronisation avec SharedPreferences et SecureStorage
+/// - Gestion des données hors ligne
+library;
 
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -33,7 +32,7 @@ class LocalDatabaseService {
   static const String _cacheTimestampKey = 'cache_timestamp_v2';
 
   // Cache en mémoire pour les performances
-  Map<String, dynamic> _memoryCache = {};
+  final Map<String, dynamic> _memoryCache = {};
   DateTime? _lastCacheUpdate;
 
   // === GESTION DU CACHE ===

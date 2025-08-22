@@ -47,7 +47,7 @@ import '../composables/use_social_share.dart';
 class TipDetailScreen extends ConsumerStatefulWidget {
   final String id;
   
-  const TipDetailScreen({Key? key, required this.id}) : super(key: key);
+  const TipDetailScreen({super.key, required this.id});
 
   @override
   ConsumerState<TipDetailScreen> createState() => _TipDetailScreenState();
@@ -565,7 +565,7 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
           BoxShadow(
             color: Colors.black,
             blurRadius: 8,
-            offset: const Offset(0, 2),
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -658,8 +658,8 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    const Color(0xFF1A202C),
-                    const Color(0xFF2D3748),
+                    Color(0xFF1A202C),
+                    Color(0xFF2D3748),
                   ],
                 ),
               ),
@@ -672,7 +672,7 @@ class _TipDetailScreenState extends ConsumerState<TipDetailScreen> with Automati
                   Container(
                     width: 80,
                     height: 80,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: Colors.red,
                       shape: BoxShape.circle,
                     ),

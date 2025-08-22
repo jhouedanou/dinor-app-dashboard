@@ -1,12 +1,11 @@
-/**
- * LEADERBOARD_SCREEN.DART - ÉCRAN DE CLASSEMENT GÉNÉRAL
- * 
- * FONCTIONNALITÉS :
- * - Classement général des pronostiqueurs
- * - Statistiques utilisateur personnelles
- * - Filtres par période
- * - Actualisation en temps réel
- */
+/// LEADERBOARD_SCREEN.DART - ÉCRAN DE CLASSEMENT GÉNÉRAL
+/// 
+/// FONCTIONNALITÉS :
+/// - Classement général des pronostiqueurs
+/// - Statistiques utilisateur personnelles
+/// - Filtres par période
+/// - Actualisation en temps réel
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -52,7 +51,7 @@ class LeaderboardEntry {
 }
 
 class LeaderboardScreen extends ConsumerStatefulWidget {
-  const LeaderboardScreen({Key? key}) : super(key: key);
+  const LeaderboardScreen({super.key});
 
   @override
   ConsumerState<LeaderboardScreen> createState() => _LeaderboardScreenState();
@@ -101,7 +100,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           final leaderboardData = data['data'] as List;
           setState(() {
             _leaderboard = leaderboardData
-                .where((item) => item is Map<String, dynamic>) // Vérification de type
+                .whereType<Map<String, dynamic>>() // Vérification de type
                 .map((json) => LeaderboardEntry.fromJson(json as Map<String, dynamic>))
                 .toList();
             _isLoading = false;

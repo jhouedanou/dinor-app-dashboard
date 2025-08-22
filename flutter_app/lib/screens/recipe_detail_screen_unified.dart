@@ -24,9 +24,6 @@ import '../components/common/youtube_video_modal.dart';
 
 // Services et composables
 import '../services/offline_service.dart';
-import '../services/image_service.dart';
-import '../services/comments_service.dart';
-import '../composables/use_comments.dart';
 import '../composables/use_auth_handler.dart';
 import '../services/share_service.dart';
 import '../services/likes_service.dart';

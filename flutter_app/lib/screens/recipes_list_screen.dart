@@ -40,7 +40,7 @@ import '../composables/use_auth_handler.dart';
 
 
 class RecipesListScreen extends ConsumerStatefulWidget {
-  const RecipesListScreen({Key? key}) : super(key: key);
+  const RecipesListScreen({super.key});
 
   @override
   ConsumerState<RecipesListScreen> createState() => _RecipesListScreenState();
@@ -49,7 +49,7 @@ class RecipesListScreen extends ConsumerStatefulWidget {
 class _RecipesListScreenState extends ConsumerState<RecipesListScreen> with AutomaticKeepAliveClientMixin {
   // État identique au setup() Vue
   bool _showAuthModal = false;
-  String _authModalMessage = '';
+  final String _authModalMessage = '';
   bool _showFilters = false;
   
   // Données des composables (équivalent useRecipes, useBanners, etc.)

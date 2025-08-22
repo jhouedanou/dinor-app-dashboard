@@ -1,12 +1,11 @@
-/**
- * NBA_CONTENT_DETAIL_SCREEN.DART - ÉCRAN DE DÉTAIL AVEC RECOMMANDATIONS
- * 
- * EXEMPLE D'INTÉGRATION :
- * - Affichage du contenu principal
- * - Section "Contenu similaire" en bas
- * - Tracking automatique des interactions
- * - Navigation fluide vers d'autres contenus
- */
+/// NBA_CONTENT_DETAIL_SCREEN.DART - ÉCRAN DE DÉTAIL AVEC RECOMMANDATIONS
+/// 
+/// EXEMPLE D'INTÉGRATION :
+/// - Affichage du contenu principal
+/// - Section "Contenu similaire" en bas
+/// - Tracking automatique des interactions
+/// - Navigation fluide vers d'autres contenus
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,10 +29,10 @@ class NBAContentDetailScreen extends ConsumerStatefulWidget {
   final NBAContent? content; // Peut être passé directement
 
   const NBAContentDetailScreen({
-    Key? key,
+    super.key,
     required this.contentId,
     this.content,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<NBAContentDetailScreen> createState() => _NBAContentDetailScreenState();
@@ -285,14 +284,14 @@ class _NBAContentDetailScreenState extends ConsumerState<NBAContentDetailScreen>
         color: const Color(0xFFE53E3E),
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Row(
+      child: const Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(LucideIcons.zap, size: 16, color: Colors.white),
-          const SizedBox(width: 6),
+          Icon(LucideIcons.zap, size: 16, color: Colors.white),
+          SizedBox(width: 6),
           Text(
             'Highlight',
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'Roboto',
               fontSize: 12,
               fontWeight: FontWeight.w600,

@@ -52,7 +52,7 @@ class SplashScreenService {
             });
           }
           
-          print('🎨 [SplashScreenService] Configuration récupérée: ${config}');
+          print('🎨 [SplashScreenService] Configuration récupérée: $config');
           return config;
         }
       }

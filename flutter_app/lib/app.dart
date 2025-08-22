@@ -1,20 +1,19 @@
-/**
- * APP.DART - CONVERSION FIDÈLE D'App.vue
- * 
- * FIDÉLITÉ VISUELLE :
- * - LoadingScreen identique : 2500ms, même animation
- * - AppHeader : titre dynamique, boutons favoris/partage identiques
- * - Main content : padding exact (80px header, 80px bottom nav)
- * - Couleurs : #F5F5F5 fond, #FFFFFF contenu
- * - Polices : Roboto pour textes, Open Sans pour titres
- * 
- * FIDÉLITÉ FONCTIONNELLE :
- * - Setup() identique : route watching, header updates
- * - showBottomNav computed : mêmes routes exclues
- * - handleShare, handleBack, handleFavorite : logique identique
- * - Modal d'auth et de partage : états identiques
- * - Router-view équivalent : Navigator classique avec mêmes transitions
- */
+/// APP.DART - CONVERSION FIDÈLE D'App.vue
+/// 
+/// FIDÉLITÉ VISUELLE :
+/// - LoadingScreen identique : 2500ms, même animation
+/// - AppHeader : titre dynamique, boutons favoris/partage identiques
+/// - Main content : padding exact (80px header, 80px bottom nav)
+/// - Couleurs : #F5F5F5 fond, #FFFFFF contenu
+/// - Polices : Roboto pour textes, Open Sans pour titres
+/// 
+/// FIDÉLITÉ FONCTIONNELLE :
+/// - Setup() identique : route watching, header updates
+/// - showBottomNav computed : mêmes routes exclues
+/// - handleShare, handleBack, handleFavorite : logique identique
+/// - Modal d'auth et de partage : états identiques
+/// - Router-view équivalent : Navigator classique avec mêmes transitions
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -40,7 +39,7 @@ import 'services/tutorial_service.dart';
 import 'stores/notifications_store.dart';
 
 class DinorApp extends ConsumerStatefulWidget {
-  const DinorApp({Key? key}) : super(key: key);
+  const DinorApp({super.key});
 
   @override
   ConsumerState<DinorApp> createState() => _DinorAppState();
@@ -371,10 +370,10 @@ class _DinorAppState extends ConsumerState<DinorApp> {
         
         // Scrollbar personnalisée identique
         scrollbarTheme: ScrollbarThemeData(
-          thickness: MaterialStateProperty.all(6),
+          thickness: WidgetStateProperty.all(6),
           radius: const Radius.circular(3),
-          thumbColor: MaterialStateProperty.all(const Color(0xFFE53E3E)),
-          trackColor: MaterialStateProperty.all(const Color(0xFFF7FAFC)),
+          thumbColor: WidgetStateProperty.all(const Color(0xFFE53E3E)),
+          trackColor: WidgetStateProperty.all(const Color(0xFFF7FAFC)),
         ),
       ),
       

@@ -233,7 +233,7 @@ class ContentItemCard extends StatelessWidget {
                              ClipRRect(
                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                  child: _getImageUrl().isNotEmpty
-                   ? Container(
+                   ? SizedBox(
                        width: double.infinity,
                        height: double.infinity,
                        child: ImageService.buildCachedNetworkImage(
@@ -253,7 +253,7 @@ class ContentItemCard extends StatelessWidget {
                          ),
                        ),
                      )
-                   : Container(
+                   : SizedBox(
                        width: double.infinity,
                        height: double.infinity,
                        child: Center(
@@ -334,7 +334,7 @@ class ContentItemCard extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-            child: Container(
+            child: SizedBox(
               width: double.infinity,
               height: double.infinity,
               child: ImageService.buildCachedNetworkImage(

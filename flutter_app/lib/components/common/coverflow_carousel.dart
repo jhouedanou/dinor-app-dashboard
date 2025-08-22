@@ -1,12 +1,11 @@
-/**
- * COVERFLOW_CAROUSEL.DART - Carousel avec effet 3D Coverflow
- * 
- * EFFET COVERFLOW :
- * - Rotation 3D des cartes sur les côtés
- * - Mise en évidence de la carte centrale
- * - Parallaxe et perspective
- * - Animation fluide au scroll
- */
+/// COVERFLOW_CAROUSEL.DART - Carousel avec effet 3D Coverflow
+/// 
+/// EFFET COVERFLOW :
+/// - Rotation 3D des cartes sur les côtés
+/// - Mise en évidence de la carte centrale
+/// - Parallaxe et perspective
+/// - Animation fluide au scroll
+library;
 
 import 'package:flutter/material.dart';
 import 'dart:math' as math;

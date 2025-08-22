@@ -1,12 +1,11 @@
-/**
- * CONTENT_SYNC_SERVICE.DART - SERVICE DE SYNCHRONISATION DU CONTENU
- * 
- * FONCTIONNALITÉS :
- * - Synchronisation automatique des compteurs de likes
- * - Mise à jour en arrière-plan
- * - Gestion intelligente de la bande passante
- * - Retry automatique avec backoff exponentiel
- */
+/// CONTENT_SYNC_SERVICE.DART - SERVICE DE SYNCHRONISATION DU CONTENU
+/// 
+/// FONCTIONNALITÉS :
+/// - Synchronisation automatique des compteurs de likes
+/// - Mise à jour en arrière-plan
+/// - Gestion intelligente de la bande passante
+/// - Retry automatique avec backoff exponentiel
+library;
 
 import 'dart:convert';
 import 'dart:async';
@@ -148,7 +147,7 @@ class ContentSyncService {
       
       await _localDB.saveLikeCounts(likeCounts);
       
-      print('📝 [ContentSync] Métadonnées mises à jour: $type:$itemId (${likesCount} likes, ${commentsCount} comments)');
+      print('📝 [ContentSync] Métadonnées mises à jour: $type:$itemId ($likesCount likes, $commentsCount comments)');
     } catch (e) {
       print('❌ [ContentSync] Erreur mise à jour métadonnées: $e');
     }

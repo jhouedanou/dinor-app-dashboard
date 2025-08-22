@@ -7,11 +7,11 @@ class Accordion extends StatefulWidget {
   final bool initiallyOpen;
 
   const Accordion({
-    Key? key,
+    super.key,
     required this.title,
     required this.child,
     this.initiallyOpen = false,
-  }) : super(key: key);
+  });
 
   @override
   State<Accordion> createState() => _AccordionState();
@@ -97,10 +97,10 @@ class _AccordionState extends State<Accordion> with SingleTickerProviderStateMix
                   AnimatedRotation(
                     turns: _isExpanded ? 0.5 : 0.0,
                     duration: const Duration(milliseconds: 300),
-                    child: Icon(
+                    child: const Icon(
                       LucideIcons.chevronDown,
                       size: 20,
-                      color: const Color(0xFF4A5568),
+                      color: Color(0xFF4A5568),
                     ),
                   ),
                 ],

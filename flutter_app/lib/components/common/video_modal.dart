@@ -1,12 +1,11 @@
-/**
- * VIDEO_MODAL.DART - MODAL DE LECTURE VIDÉO YOUTUBE INTÉGRÉE
- * 
- * FONCTIONNALITÉS :
- * - Lecture YouTube intégrée avec WebView
- * - Modal plein écran avec fermeture
- * - Support des URLs embed et normales
- * - Pas besoin de l'app YouTube externe
- */
+/// VIDEO_MODAL.DART - MODAL DE LECTURE VIDÉO YOUTUBE INTÉGRÉE
+/// 
+/// FONCTIONNALITÉS :
+/// - Lecture YouTube intégrée avec WebView
+/// - Modal plein écran avec fermeture
+/// - Support des URLs embed et normales
+/// - Pas besoin de l'app YouTube externe
+library;
 
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -18,12 +17,12 @@ class VideoModal extends StatefulWidget {
   final VoidCallback? onClose;
 
   const VideoModal({
-    Key? key,
+    super.key,
     required this.isOpen,
     required this.videoUrl,
     required this.title,
     this.onClose,
-  }) : super(key: key);
+  });
 
   @override
   State<VideoModal> createState() => _VideoModalState();

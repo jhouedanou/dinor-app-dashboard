@@ -1,9 +1,8 @@
-/**
- * NAVIGATION_SERVICE.DART - SERVICE DE NAVIGATION AVEC GLOBALKEY
- * 
- * Remplacement de GoRouter par Navigator classique pour éviter les erreurs
- * de contexte modal avec des GlobalKey pour un accès sûr.
- */
+/// NAVIGATION_SERVICE.DART - SERVICE DE NAVIGATION AVEC GLOBALKEY
+/// 
+/// Remplacement de GoRouter par Navigator classique pour éviter les erreurs
+/// de contexte modal avec des GlobalKey pour un accès sûr.
+library;
 
 import 'package:flutter/material.dart';
 import '../screens/working_home_screen.dart';

@@ -1,12 +1,11 @@
-/**
- * TUTORIAL_SERVICE.DART - SERVICE POUR GÉRER LES TUTORIELS
- * 
- * FONCTIONNALITÉS :
- * - Gestion centralisée des tutoriels
- * - Différents types de tutoriels (première utilisation, nouvelles fonctionnalités, etc.)
- * - Conditions d'affichage intelligentes
- * - Persistence des préférences utilisateur
- */
+/// TUTORIAL_SERVICE.DART - SERVICE POUR GÉRER LES TUTORIELS
+/// 
+/// FONCTIONNALITÉS :
+/// - Gestion centralisée des tutoriels
+/// - Différents types de tutoriels (première utilisation, nouvelles fonctionnalités, etc.)
+/// - Conditions d'affichage intelligentes
+/// - Persistence des préférences utilisateur
+library;
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';

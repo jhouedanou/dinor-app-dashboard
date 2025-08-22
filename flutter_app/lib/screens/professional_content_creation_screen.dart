@@ -6,7 +6,7 @@ import '../services/auth_service.dart';
 import '../components/common/auth_modal.dart';
 
 class ProfessionalContentCreationScreen extends ConsumerStatefulWidget {
-  const ProfessionalContentCreationScreen({Key? key}) : super(key: key);
+  const ProfessionalContentCreationScreen({super.key});
 
   @override
   ConsumerState<ProfessionalContentCreationScreen> createState() => _ProfessionalContentCreationScreenState();
@@ -23,11 +23,11 @@ class _ProfessionalContentCreationScreenState extends ConsumerState<Professional
   final _cookingTimeController = TextEditingController();
   final _servingsController = TextEditingController();
   
-  String _selectedContentType = 'recipe';
+  final String _selectedContentType = 'recipe';
   String? _selectedDifficulty;
-  List<Map<String, String>> _ingredients = [];
-  List<String> _steps = [];
-  List<String> _tags = [];
+  final List<Map<String, String>> _ingredients = [];
+  final List<String> _steps = [];
+  final List<String> _tags = [];
   bool _isLoading = false;
   
   Map<String, String> _contentTypes = {};
@@ -462,7 +462,7 @@ class _ProfessionalContentCreationScreenState extends ConsumerState<Professional
               ),
             ),
           );
-        }).toList(),
+        }),
       ],
     );
   }
@@ -518,7 +518,7 @@ class _ProfessionalContentCreationScreenState extends ConsumerState<Professional
               ),
             ),
           );
-        }).toList(),
+        }),
       ],
     );
   }
@@ -549,7 +549,7 @@ class _ProfessionalContentCreationScreenState extends ConsumerState<Professional
                       value: entry.key,
                       child: Text(entry.value),
                     );
-                  }).toList(),
+                  }),
                 ],
                 onChanged: (value) {
                   setState(() {

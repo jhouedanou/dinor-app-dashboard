@@ -1,9 +1,8 @@
-/**
- * MODAL_SERVICE.DART - SERVICE DE MODAL CUSTOM SANS GOROUTER
- * 
- * Système de modal sûr qui utilise GlobalKey et évite les problèmes
- * de contexte avec GoRouter. Remplace showDialog par un système custom.
- */
+/// MODAL_SERVICE.DART - SERVICE DE MODAL CUSTOM SANS GOROUTER
+/// 
+/// Système de modal sûr qui utilise GlobalKey et évite les problèmes
+/// de contexte avec GoRouter. Remplace showDialog par un système custom.
+library;
 
 import 'package:flutter/material.dart';
 import 'navigation_service.dart';

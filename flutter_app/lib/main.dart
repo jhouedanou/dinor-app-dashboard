@@ -1,19 +1,18 @@
-/**
- * MAIN.DART - CONVERSION FIDÈLE DE main.js
- * 
- * FIDÉLITÉ FONCTIONNELLE :
- * - Initialisation identique : Pinia → Provider/Riverpod
- * - Router Vue → GoRouter avec même structure de routes  
- * - Lucide Icons → 80+ icônes Flutter identiques
- * - Service Worker → Simulation équivalente
- * - OneSignal → Push notifications natives
- * - Gestion réseau identique
- * 
- * FIDÉLITÉ VISUELLE :
- * - Polices : Roboto + Open Sans identiques
- * - Configuration : touch-device, offline classes
- * - Initialisation : même séquence de démarrage
- */
+/// MAIN.DART - CONVERSION FIDÈLE DE main.js
+/// 
+/// FIDÉLITÉ FONCTIONNELLE :
+/// - Initialisation identique : Pinia → Provider/Riverpod
+/// - Router Vue → GoRouter avec même structure de routes  
+/// - Lucide Icons → 80+ icônes Flutter identiques
+/// - Service Worker → Simulation équivalente
+/// - OneSignal → Push notifications natives
+/// - Gestion réseau identique
+/// 
+/// FIDÉLITÉ VISUELLE :
+/// - Polices : Roboto + Open Sans identiques
+/// - Configuration : touch-device, offline classes
+/// - Initialisation : même séquence de démarrage
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -72,7 +71,7 @@ void main() async {
   
   // Lancement de l'application principale
   runApp(
-    ProviderScope(
+    const ProviderScope(
       child: DinorApp(),
     ),
   );

@@ -6,9 +6,11 @@ void main() {
 }
 
 class TestKenBurnsApp extends StatelessWidget {
+  const TestKenBurnsApp({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       home: Scaffold(
         body: KenBurnsSlideshowWidget(
           totalDuration: Duration(seconds: 20),

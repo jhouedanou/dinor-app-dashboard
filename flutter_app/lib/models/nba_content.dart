@@ -1,12 +1,11 @@
-/**
- * NBA_CONTENT.DART - MODÈLES DE DONNÉES POUR LE CONTENU NBA
- * 
- * FONCTIONNALITÉS :
- * - Modèles pour différents types de contenu NBA
- * - Système de tags hiérarchisé (principal vs secondaire)
- * - Métadonnées pour l'algorithme de recommandation
- * - Support pour équipes, joueurs, statistiques, matchs
- */
+/// NBA_CONTENT.DART - MODÈLES DE DONNÉES POUR LE CONTENU NBA
+/// 
+/// FONCTIONNALITÉS :
+/// - Modèles pour différents types de contenu NBA
+/// - Système de tags hiérarchisé (principal vs secondaire)
+/// - Métadonnées pour l'algorithme de recommandation
+/// - Support pour équipes, joueurs, statistiques, matchs
+library;
 
 
 
@@ -344,7 +343,7 @@ class NBAContent {
     final seconds = duration!.inSeconds % 60;
     
     if (minutes > 0) {
-      return '${minutes}:${seconds.toString().padLeft(2, '0')}';
+      return '$minutes:${seconds.toString().padLeft(2, '0')}';
     } else {
       return '${seconds}s';
     }

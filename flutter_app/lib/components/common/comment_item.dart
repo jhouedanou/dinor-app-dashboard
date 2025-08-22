@@ -1,13 +1,12 @@
-/**
- * COMMENT_ITEM.DART - COMPOSANT D'AFFICHAGE D'UN COMMENTAIRE
- * 
- * FONCTIONNALITÉS :
- * - Affichage des informations du commentaire (auteur, contenu, date)
- * - Avatar utilisateur avec fallback
- * - Actions contextuelles (supprimer si propriétaire)
- * - Format de date intelligent (relatif)
- * - Design responsive et accessible
- */
+/// COMMENT_ITEM.DART - COMPOSANT D'AFFICHAGE D'UN COMMENTAIRE
+/// 
+/// FONCTIONNALITÉS :
+/// - Affichage des informations du commentaire (auteur, contenu, date)
+/// - Avatar utilisateur avec fallback
+/// - Actions contextuelles (supprimer si propriétaire)
+/// - Format de date intelligent (relatif)
+/// - Design responsive et accessible
+library;
 
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -20,11 +19,11 @@ class CommentItem extends StatelessWidget {
   final bool showActions;
 
   const CommentItem({
-    Key? key,
+    super.key,
     required this.comment,
     this.onDelete,
     this.showActions = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -184,7 +183,7 @@ class CommentItem extends StatelessWidget {
   }
 
   Widget _buildCommentContent() {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       child: Text(
         comment.content,
@@ -337,10 +336,10 @@ class CommentItemCompact extends StatelessWidget {
   final VoidCallback? onTap;
 
   const CommentItemCompact({
-    Key? key,
+    super.key,
     required this.comment,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -356,9 +355,9 @@ class CommentItemCompact extends StatelessWidget {
             Container(
               width: 32,
               height: 32,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFFE53E3E),
+                color: Color(0xFFE53E3E),
               ),
               child: Center(
                 child: Text(

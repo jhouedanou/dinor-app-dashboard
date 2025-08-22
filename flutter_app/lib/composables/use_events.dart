@@ -1,12 +1,11 @@
-/**
- * USE_EVENTS.DART - COMPOSABLE POUR ÉVÉNEMENTS
- * 
- * FIDÉLITÉ VUE :
- * - Même structure que useRecipes, useTips
- * - Même gestion d'état : loading, error, data
- * - Même système de rafraîchissement
- * - Même gestion des paramètres de requête
- */
+/// USE_EVENTS.DART - COMPOSABLE POUR ÉVÉNEMENTS
+/// 
+/// FIDÉLITÉ VUE :
+/// - Même structure que useRecipes, useTips
+/// - Même gestion d'état : loading, error, data
+/// - Même système de rafraîchissement
+/// - Même gestion des paramètres de requête
+library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/api_service.dart';

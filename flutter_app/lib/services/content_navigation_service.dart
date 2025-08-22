@@ -1,9 +1,8 @@
-/**
- * CONTENT_NAVIGATION_SERVICE.DART - SERVICE DE NAVIGATION ENTRE CONTENUS
- * - Récupération des contenus précédent/suivant
- * - Cache des listes pour éviter les requêtes multiples
- * - Support pour tous les types de contenu
- */
+/// CONTENT_NAVIGATION_SERVICE.DART - SERVICE DE NAVIGATION ENTRE CONTENUS
+/// - Récupération des contenus précédent/suivant
+/// - Cache des listes pour éviter les requêtes multiples
+/// - Support pour tous les types de contenu
+library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'api_service.dart';
@@ -12,7 +11,7 @@ class ContentNavigationService {
   final ApiService _apiService;
   
   // Cache des listes de contenu par type
-  Map<String, List<dynamic>> _contentCache = {};
+  final Map<String, List<dynamic>> _contentCache = {};
   
   ContentNavigationService(this._apiService);
 

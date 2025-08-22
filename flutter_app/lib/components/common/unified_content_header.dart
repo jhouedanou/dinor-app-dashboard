@@ -41,7 +41,7 @@ class UnifiedContentHeader extends StatelessWidget {
         // Overlay avec dégradé
         Positioned.fill(
           child: Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,

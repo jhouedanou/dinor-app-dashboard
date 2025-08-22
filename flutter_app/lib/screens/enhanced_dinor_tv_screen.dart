@@ -1,13 +1,12 @@
-/**
- * ENHANCED_DINOR_TV_SCREEN.DART - ÉCRAN DINOR TV AVEC LECTEUR IMMERSIF
- * 
- * FONCTIONNALITÉS :
- * - Liste des vidéos avec aperçu
- * - Bouton pour lancer l'expérience immersive plein écran
- * - Intégration avec le VideoService
- * - Cache et performance optimisés
- * - Navigation fluide vers le lecteur immersif
- */
+/// ENHANCED_DINOR_TV_SCREEN.DART - ÉCRAN DINOR TV AVEC LECTEUR IMMERSIF
+/// 
+/// FONCTIONNALITÉS :
+/// - Liste des vidéos avec aperçu
+/// - Bouton pour lancer l'expérience immersive plein écran
+/// - Intégration avec le VideoService
+/// - Cache et performance optimisés
+/// - Navigation fluide vers le lecteur immersif
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,7 +27,7 @@ import '../components/common/auth_modal.dart';
 import '../components/common/content_gallery_grid.dart';
 
 class EnhancedDinorTVScreen extends ConsumerStatefulWidget {
-  const EnhancedDinorTVScreen({Key? key}) : super(key: key);
+  const EnhancedDinorTVScreen({super.key});
 
   @override
   ConsumerState<EnhancedDinorTVScreen> createState() =>
@@ -345,8 +344,8 @@ class _EnhancedDinorTVScreenState extends ConsumerState<EnhancedDinorTVScreen>
           children: [
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE53E3E),
+              decoration: const BoxDecoration(
+                color: Color(0xFFE53E3E),
                 shape: BoxShape.circle,
               ),
               child: const Icon(

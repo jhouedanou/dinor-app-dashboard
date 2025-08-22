@@ -1,12 +1,11 @@
-/**
- * FAVORITES_SERVICE.DART - SERVICE DE GESTION DES FAVORIS
- * 
- * FONCTIONNALITÉS :
- * - Récupération des favoris avec cache
- * - Ajout/suppression de favoris
- * - Synchronisation avec le serveur
- * - Gestion des états de chargement
- */
+/// FAVORITES_SERVICE.DART - SERVICE DE GESTION DES FAVORIS
+/// 
+/// FONCTIONNALITÉS :
+/// - Récupération des favoris avec cache
+/// - Ajout/suppression de favoris
+/// - Synchronisation avec le serveur
+/// - Gestion des états de chargement
+library;
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -128,7 +127,7 @@ class FavoritesService extends StateNotifier<FavoritesState> {
         final favoritesData = data['data'] ?? [];
         
         final favorites = (favoritesData as List)
-            .where((item) => item is Map<String, dynamic>) // Vérification de type
+            .whereType<Map<String, dynamic>>() // Vérification de type
             .map((json) => Favorite.fromJson(json as Map<String, dynamic>))
             .toList();
 

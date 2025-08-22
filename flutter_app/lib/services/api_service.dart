@@ -1,19 +1,18 @@
-/**
- * API_SERVICE.DART - REPRODUCTION FIDÈLE DU SERVICE VUE/REACT NATIVE
- * 
- * FIDÉLITÉ API :
- * - Même baseURL que React Native
- * - Headers identiques : Bearer token, X-Requested-With
- * - Endpoints identiques : /recipes, /tips, /events, /dinor-tv
- * - Structure de réponse identique : {success, data, meta, message}
- * - Gestion d'erreurs identique : 401, 404, 500
- * - Cache désactivé comme dans Vue (communication directe)
- * 
- * MÉTHODES IDENTIQUES :
- * - getRecipes(), getTips(), getEvents(), getVideos()
- * - toggleLike(), addComment(), toggleFavorite()
- * - Auth : login(), register(), logout(), getProfile()
- */
+/// API_SERVICE.DART - REPRODUCTION FIDÈLE DU SERVICE VUE/REACT NATIVE
+/// 
+/// FIDÉLITÉ API :
+/// - Même baseURL que React Native
+/// - Headers identiques : Bearer token, X-Requested-With
+/// - Endpoints identiques : /recipes, /tips, /events, /dinor-tv
+/// - Structure de réponse identique : {success, data, meta, message}
+/// - Gestion d'erreurs identique : 401, 404, 500
+/// - Cache désactivé comme dans Vue (communication directe)
+/// 
+/// MÉTHODES IDENTIQUES :
+/// - getRecipes(), getTips(), getEvents(), getVideos()
+/// - toggleLike(), addComment(), toggleFavorite()
+/// - Auth : login(), register(), logout(), getProfile()
+library;
 
 import 'dart:convert';
 import 'dart:io';

@@ -3,7 +3,7 @@ import '../../services/navigation_service.dart';
 import '../../styles/shadows.dart';
 
 class SimpleBottomNavigation extends StatefulWidget {
-  const SimpleBottomNavigation({Key? key}) : super(key: key);
+  const SimpleBottomNavigation({super.key});
 
   @override
   State<SimpleBottomNavigation> createState() => _SimpleBottomNavigationState();

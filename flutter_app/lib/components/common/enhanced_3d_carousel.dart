@@ -1,13 +1,12 @@
-/**
- * ENHANCED_3D_CAROUSEL.DART - Carousel 3D avec visibilité améliorée
- * 
- * CARACTÉRISTIQUES :
- * - Visibilité claire de tous les éléments
- * - Effet 3D avec profondeur et perspective
- * - Navigation intuitive avec boutons circulaires
- * - Design moderne inspiré des applications de voyage
- * - Cartes avec overlay text et boutons d'action
- */
+/// ENHANCED_3D_CAROUSEL.DART - Carousel 3D avec visibilité améliorée
+/// 
+/// CARACTÉRISTIQUES :
+/// - Visibilité claire de tous les éléments
+/// - Effet 3D avec profondeur et perspective
+/// - Navigation intuitive avec boutons circulaires
+/// - Design moderne inspiré des applications de voyage
+/// - Cartes avec overlay text et boutons d'action
+library;
 
 import 'package:flutter/material.dart';
 import 'dart:math' as math;

@@ -1,12 +1,11 @@
-/**
- * PREDICTIONS_SERVICE.DART - SERVICE DE GESTION DES PRONOSTICS
- * 
- * FONCTIONNALITÉS :
- * - Récupération des tournois et matchs
- * - Gestion des pronostics utilisateur
- * - Calcul des points et statistiques
- * - Classements et leaderboards
- */
+/// PREDICTIONS_SERVICE.DART - SERVICE DE GESTION DES PRONOSTICS
+/// 
+/// FONCTIONNALITÉS :
+/// - Récupération des tournois et matchs
+/// - Gestion des pronostics utilisateur
+/// - Calcul des points et statistiques
+/// - Classements et leaderboards
+library;
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -248,7 +247,7 @@ class PredictionsService extends StateNotifier<PredictionsState> {
         final tournamentsData = data['data'] ?? [];
 
         final tournaments = (tournamentsData as List)
-            .where((item) => item is Map<String, dynamic>) // Vérification de type
+            .whereType<Map<String, dynamic>>() // Vérification de type
             .map((json) => Tournament.fromJson(json as Map<String, dynamic>))
             .toList();
 
@@ -365,8 +364,8 @@ class PredictionsService extends StateNotifier<PredictionsState> {
       final cachedPredictions = await _localDB.getUserPredictions();
       if (cachedPredictions.isNotEmpty) {
         final predictions = cachedPredictions
-            .where((item) => item is Map<String, dynamic>) // Vérification de type
-            .map((json) => Prediction.fromJson(json as Map<String, dynamic>))
+            .whereType<Map<String, dynamic>>() // Vérification de type
+            .map((json) => Prediction.fromJson(json))
             .toList();
         
         state = state.copyWith(userPredictions: predictions);
@@ -384,7 +383,7 @@ class PredictionsService extends StateNotifier<PredictionsState> {
         final predictionsData = data['data'] ?? [];
 
         final predictions = (predictionsData as List)
-            .where((item) => item is Map<String, dynamic>) // Vérification de type
+            .whereType<Map<String, dynamic>>() // Vérification de type
             .map((json) => Prediction.fromJson(json as Map<String, dynamic>))
             .toList();
 
@@ -506,7 +505,7 @@ class PredictionsService extends StateNotifier<PredictionsState> {
       ];
       
       final validMatches = testData
-          .where((item) => item is Map<String, dynamic>)
+          .whereType<Map<String, dynamic>>()
           .map((json) => Match.fromJson(json as Map<String, dynamic>))
           .toList();
       

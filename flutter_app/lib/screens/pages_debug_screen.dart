@@ -1,11 +1,10 @@
-/**
- * PAGES_DEBUG_SCREEN.DART - ÉCRAN DE DEBUG POUR LES PAGES
- * 
- * FONCTIONNALITÉS :
- * - Affichage des pages récupérées depuis l'API
- * - Boutons de test pour les actions
- * - Debug des erreurs de récupération
- */
+/// PAGES_DEBUG_SCREEN.DART - ÉCRAN DE DEBUG POUR LES PAGES
+/// 
+/// FONCTIONNALITÉS :
+/// - Affichage des pages récupérées depuis l'API
+/// - Boutons de test pour les actions
+/// - Debug des erreurs de récupération
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,7 +12,7 @@ import '../composables/use_pages.dart';
 import '../services/api_service.dart';
 
 class PagesDebugScreen extends ConsumerStatefulWidget {
-  const PagesDebugScreen({Key? key}) : super(key: key);
+  const PagesDebugScreen({super.key});
 
   @override
   ConsumerState<PagesDebugScreen> createState() => _PagesDebugScreenState();
@@ -54,7 +53,7 @@ Status: ${response['success'] ? 'SUCCESS' : 'FAILED'}
 Nombre de pages: ${response['data']?.length ?? 0}
 
 Pages trouvées:
-${response['data']?.map((page) => '- ' + (page['title']?.toString() ?? '') + ' (url=' + (page['url']?.toString() ?? 'null') + ', embed_url=' + (page['embed_url']?.toString() ?? 'null') + ', is_external=' + (page['is_external']?.toString() ?? 'false') + ')').join('\n') ?? 'Aucune page'}
+${response['data']?.map((page) => '- ${page['title']?.toString() ?? ''} (url=${page['url']?.toString() ?? 'null'}, embed_url=${page['embed_url']?.toString() ?? 'null'}, is_external=${page['is_external']?.toString() ?? 'false'})').join('\n') ?? 'Aucune page'}
 ''';
       });
     } catch (e) {
@@ -280,7 +279,7 @@ Vérifiez:
                           );
                         } : null,
                       ),
-                    )).toList(),
+                    )),
                   ],
                 ),
               ),

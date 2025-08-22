@@ -1,12 +1,11 @@
-/**
- * YOUTUBE_VIDEO_MODAL.DART - MODAL VIDÉO YOUTUBE OPTIMISÉE
- * 
- * FONCTIONNALITÉS :
- * - Modal plein écran avec lecteur YouTube natif
- * - Contrôles de lecture optimisés
- * - Support des gestes pour fermer
- * - Performance améliorée vs WebView
- */
+/// YOUTUBE_VIDEO_MODAL.DART - MODAL VIDÉO YOUTUBE OPTIMISÉE
+/// 
+/// FONCTIONNALITÉS :
+/// - Modal plein écran avec lecteur YouTube natif
+/// - Contrôles de lecture optimisés
+/// - Support des gestes pour fermer
+/// - Performance améliorée vs WebView
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,12 +18,12 @@ class YouTubeVideoModal extends StatefulWidget {
   final VoidCallback? onClose;
 
   const YouTubeVideoModal({
-    Key? key,
+    super.key,
     required this.isOpen,
     required this.videoUrl,
     required this.title,
     this.onClose,
-  }) : super(key: key);
+  });
 
   @override
   State<YouTubeVideoModal> createState() => _YouTubeVideoModalState();

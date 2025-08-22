@@ -1,14 +1,13 @@
-/**
- * UNIFIED_LIKE_BUTTON.DART - BOUTON DE LIKE UNIFIÉ AVEC SYNCHRONISATION
- * 
- * FONCTIONNALITÉS :
- * - Gestion unifiée pour tous types de contenu (recipe, tip, event, video)
- * - Mise à jour automatique des compteurs après like/unlike
- * - Synchronisation en temps réel avec le serveur
- * - Animation fluide et feedback visuel
- * - Gestion d'authentification intégrée
- * - Retry automatique en cas d'erreur
- */
+/// UNIFIED_LIKE_BUTTON.DART - BOUTON DE LIKE UNIFIÉ AVEC SYNCHRONISATION
+/// 
+/// FONCTIONNALITÉS :
+/// - Gestion unifiée pour tous types de contenu (recipe, tip, event, video)
+/// - Mise à jour automatique des compteurs après like/unlike
+/// - Synchronisation en temps réel avec le serveur
+/// - Animation fluide et feedback visuel
+/// - Gestion d'authentification intégrée
+/// - Retry automatique en cas d'erreur
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -369,7 +368,7 @@ class UnifiedLikeButton extends ConsumerStatefulWidget {
   final bool autoFetch;
 
   const UnifiedLikeButton({
-    Key? key,
+    super.key,
     required this.type,
     required this.itemId,
     this.initialLiked = false,
@@ -379,7 +378,7 @@ class UnifiedLikeButton extends ConsumerStatefulWidget {
     this.variant = 'standard',
     this.onAuthRequired,
     this.autoFetch = false,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<UnifiedLikeButton> createState() => _UnifiedLikeButtonState();

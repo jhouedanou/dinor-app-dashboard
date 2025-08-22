@@ -5,7 +5,7 @@ import '../components/common/unified_content_list.dart';
 import '../components/common/content_item_card.dart';
 
 class SimpleTipsScreen extends StatefulWidget {
-  const SimpleTipsScreen({Key? key}) : super(key: key);
+  const SimpleTipsScreen({super.key});
 
   @override
   State<SimpleTipsScreen> createState() => _SimpleTipsScreenState();

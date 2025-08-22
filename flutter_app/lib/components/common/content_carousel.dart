@@ -1,14 +1,13 @@
-/**
- * CONTENT_CAROUSEL.DART - CONVERSION FIDÈLE DE ContentCarousel.vue
- * 
- * FIDÉLITÉ VISUELLE :
- * - Section header avec titre Open Sans
- * - Bouton "Voir tout" avec icône chevron
- * - Carousel horizontal avec scroll smooth
- * - Cards de 280px de largeur identiques
- * - Gap de 16px entre les cards
- * - États loading et error identiques
- */
+/// CONTENT_CAROUSEL.DART - CONVERSION FIDÈLE DE ContentCarousel.vue
+/// 
+/// FIDÉLITÉ VISUELLE :
+/// - Section header avec titre Open Sans
+/// - Bouton "Voir tout" avec icône chevron
+/// - Carousel horizontal avec scroll smooth
+/// - Cards de 280px de largeur identiques
+/// - Gap de 16px entre les cards
+/// - États loading et error identiques
+library;
 
 import 'package:flutter/material.dart';
 import '../../services/navigation_service.dart';
@@ -27,7 +26,7 @@ class ContentCarousel extends StatelessWidget {
   final bool darkTheme;
 
   const ContentCarousel({
-    Key? key,
+    super.key,
     required this.title,
     required this.items,
     this.loading = false,
@@ -37,7 +36,7 @@ class ContentCarousel extends StatelessWidget {
     required this.onItemClick,
     required this.itemBuilder,
     this.darkTheme = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

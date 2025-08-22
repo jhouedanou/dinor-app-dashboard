@@ -1,13 +1,12 @@
-/**
- * LOADING_SCREEN.DART - CONVERSION FIDÈLE DE LoadingScreen.vue
- * 
- * FIDÉLITÉ VISUELLE :
- * - Full screen loading identique
- * - Animation 2500ms identique
- * - Logo et texte identiques
- * - Gradient de fond identique
- * - Animation avec bulles et icônes de cuisine
- */
+/// LOADING_SCREEN.DART - CONVERSION FIDÈLE DE LoadingScreen.vue
+/// 
+/// FIDÉLITÉ VISUELLE :
+/// - Full screen loading identique
+/// - Animation 2500ms identique
+/// - Logo et texte identiques
+/// - Gradient de fond identique
+/// - Animation avec bulles et icônes de cuisine
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -23,11 +22,11 @@ class LoadingScreen extends StatefulWidget {
   final VoidCallback? onComplete;
 
   const LoadingScreen({
-    Key? key,
+    super.key,
     required this.visible,
     this.duration = 2500,
     this.onComplete,
-  }) : super(key: key);
+  });
 
   @override
   State<LoadingScreen> createState() => _LoadingScreenState();
@@ -236,7 +235,7 @@ class _LoadingScreenState extends State<LoadingScreen>
       builder: (context, child) {
         return Opacity(
           opacity: _fadeAnimation.value,
-          child: Container(
+          child: SizedBox(
             width: double.infinity,
             height: double.infinity,
             child: Stack(
@@ -259,7 +258,7 @@ class _LoadingScreenState extends State<LoadingScreen>
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         // Logo Dinor SVG inversé (blanc sur fond rouge)
-                        Container(
+                        SizedBox(
                           height: 80,
                           child: SvgPicture.asset(
                             'assets/images/LOGO_DINOR_monochrome.svg',

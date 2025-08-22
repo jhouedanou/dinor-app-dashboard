@@ -1,13 +1,12 @@
-/**
- * LIKE_BUTTON.DART - CONVERSION FIDÈLE DE LikeButton.vue
- * 
- * FIDÉLITÉ FONCTIONNELLE :
- * - Toggle like avec API identique
- * - Animation du coeur identique
- * - Gestion d'authentification identique
- * - Compteur de likes identique
- * - Variants et tailles identiques
- */
+/// LIKE_BUTTON.DART - CONVERSION FIDÈLE DE LikeButton.vue
+/// 
+/// FIDÉLITÉ FONCTIONNELLE :
+/// - Toggle like avec API identique
+/// - Animation du coeur identique
+/// - Gestion d'authentification identique
+/// - Compteur de likes identique
+/// - Variants et tailles identiques
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,7 +25,7 @@ class LikeButton extends ConsumerStatefulWidget {
   final VoidCallback? onAuthRequired;
 
   const LikeButton({
-    Key? key,
+    super.key,
     required this.type,
     required this.itemId,
     this.initialLiked = false,
@@ -35,7 +34,7 @@ class LikeButton extends ConsumerStatefulWidget {
     this.size = 'medium',
     this.variant = 'standard',
     this.onAuthRequired,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<LikeButton> createState() => _LikeButtonState();
@@ -78,10 +77,10 @@ class _LikeButtonState extends ConsumerState<LikeButton> {
         print('✅ [LikeButton] Like toggled successfully');
         // Afficher un feedback visuel
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Like mis à jour'),
-            duration: const Duration(seconds: 1),
-            backgroundColor: const Color(0xFFE53E3E),
+            duration: Duration(seconds: 1),
+            backgroundColor: Color(0xFFE53E3E),
           ),
         );
       } else {
@@ -96,9 +95,9 @@ class _LikeButtonState extends ConsumerState<LikeButton> {
       } else {
         // Afficher un message d'erreur
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Erreur lors de la mise à jour du like'),
-            duration: const Duration(seconds: 2),
+            duration: Duration(seconds: 2),
             backgroundColor: Colors.red,
           ),
         );

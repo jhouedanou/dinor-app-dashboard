@@ -28,7 +28,7 @@ class AppHeader extends ConsumerStatefulWidget {
   final VoidCallback? onAuthRequired;
 
   const AppHeader({
-    Key? key,
+    super.key,
     required this.title,
     this.showFavorite = false,
     this.favoriteType,
@@ -42,7 +42,7 @@ class AppHeader extends ConsumerStatefulWidget {
     this.onShare,
     this.onBack,
     this.onAuthRequired,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<AppHeader> createState() => _AppHeaderState();

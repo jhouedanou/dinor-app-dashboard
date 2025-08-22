@@ -1,13 +1,12 @@
-/**
- * ENHANCED_LIKES_SERVICE.DART - SERVICE DE LIKES AVEC SYNCHRONISATION EN TEMPS RÉEL
- * 
- * FONCTIONNALITÉS :
- * - Récupération des compteurs exacts depuis l'API
- * - Synchronisation automatique des likes
- * - Cache intelligent avec invalidation
- * - Mise à jour en temps réel des compteurs
- * - Gestion des erreurs et retry automatique
- */
+/// ENHANCED_LIKES_SERVICE.DART - SERVICE DE LIKES AVEC SYNCHRONISATION EN TEMPS RÉEL
+/// 
+/// FONCTIONNALITÉS :
+/// - Récupération des compteurs exacts depuis l'API
+/// - Synchronisation automatique des likes
+/// - Cache intelligent avec invalidation
+/// - Mise à jour en temps réel des compteurs
+/// - Gestion des erreurs et retry automatique
+library;
 
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

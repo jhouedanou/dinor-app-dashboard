@@ -10,13 +10,13 @@ class ImageLightbox extends StatefulWidget {
   final VoidCallback onClose;
 
   const ImageLightbox({
-    Key? key,
+    super.key,
     required this.images,
     required this.title,
     required this.initialIndex,
     required this.isOpen,
     required this.onClose,
-  }) : super(key: key);
+  });
 
   @override
   State<ImageLightbox> createState() => _ImageLightboxState();
@@ -51,7 +51,7 @@ class _ImageLightboxState extends State<ImageLightbox> {
 
     return Dialog(
       backgroundColor: Colors.black,
-      child: Container(
+      child: SizedBox(
         width: double.infinity,
         height: double.infinity,
         child: Stack(

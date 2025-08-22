@@ -1,9 +1,8 @@
-/**
- * VIDEO_DATA.DART - MODÈLE DE DONNÉES VIDÉO
- * 
- * Modèle pour représenter les données vidéo de Dinor TV
- * Extrait de tiktok_style_video_screen.dart pour une meilleure modularité
- */
+/// VIDEO_DATA.DART - MODÈLE DE DONNÉES VIDÉO
+/// 
+/// Modèle pour représenter les données vidéo de Dinor TV
+/// Extrait de tiktok_style_video_screen.dart pour une meilleure modularité
+library;
 
 class VideoData {
   final String id;

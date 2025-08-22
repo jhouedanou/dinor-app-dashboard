@@ -1,12 +1,11 @@
-/**
- * SWIPEABLE_NAVIGATION_SERVICE.DART - SERVICE DE NAVIGATION SWIPEABLE
- * 
- * FONCTIONNALITÉS :
- * - Navigation vers les écrans swipeable
- * - Gestion des types de contenu
- * - Préchargement des données
- * - Analytics tracking
- */
+/// SWIPEABLE_NAVIGATION_SERVICE.DART - SERVICE DE NAVIGATION SWIPEABLE
+/// 
+/// FONCTIONNALITÉS :
+/// - Navigation vers les écrans swipeable
+/// - Gestion des types de contenu
+/// - Préchargement des données
+/// - Analytics tracking
+library;
 
 import 'package:flutter/material.dart';
 import '../screens/swipeable_detail_screen.dart';

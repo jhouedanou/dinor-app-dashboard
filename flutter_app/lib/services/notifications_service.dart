@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'api_service.dart';
-import '../composables/use_auth_handler.dart';
 
 class NotificationModel {
   final int id;

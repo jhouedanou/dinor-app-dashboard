@@ -8,7 +8,7 @@ import '../composables/use_auth_handler.dart';
 import '../components/common/auth_modal.dart';
 
 class NotificationsScreen extends ConsumerStatefulWidget {
-  const NotificationsScreen({Key? key}) : super(key: key);
+  const NotificationsScreen({super.key});
 
   @override
   ConsumerState<NotificationsScreen> createState() => _NotificationsScreenState();

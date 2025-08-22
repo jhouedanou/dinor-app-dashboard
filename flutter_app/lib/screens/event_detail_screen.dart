@@ -43,7 +43,7 @@ import '../services/api_service.dart';
 class EventDetailScreen extends ConsumerStatefulWidget {
   final String id;
   
-  const EventDetailScreen({Key? key, required this.id}) : super(key: key);
+  const EventDetailScreen({super.key, required this.id});
 
   @override
   ConsumerState<EventDetailScreen> createState() => _EventDetailScreenState();
@@ -790,19 +790,19 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
+            const Icon(
               Icons.location_on_outlined,
               size: 20,
-              color: const Color(0xFFF4D03F),
+              color: Color(0xFFF4D03F),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'Lieu',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'OpenSans',
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
@@ -826,10 +826,10 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Icon(
+                        const Icon(
                           Icons.map_outlined,
                           size: 16,
-                          color: const Color(0xFF3182CE),
+                          color: Color(0xFF3182CE),
                         ),
                       ],
                     ),
@@ -968,7 +968,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
       print('❌ [EventDetailScreen] Erreur ouverture Apple Maps: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Apple Maps n\'est pas disponible sur cet appareil'),
             backgroundColor: Colors.red,
           ),
@@ -993,7 +993,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Auto
       print('❌ [EventDetailScreen] Erreur ouverture Yandex Maps: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Impossible d\'ouvrir Yandex Maps'),
             backgroundColor: Colors.red,
           ),

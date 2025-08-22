@@ -1,12 +1,11 @@
-/**
- * ANALYTICS_TRACKER.DART - SERVICE DE TRACKING AUTOMATIQUE
- * 
- * FONCTIONNALITÉS :
- * - Tracking automatique du temps passé sur les écrans
- * - Suivi des interactions utilisateur
- * - Métriques d'engagement automatiques
- * - Gestion des sessions utilisateur
- */
+/// ANALYTICS_TRACKER.DART - SERVICE DE TRACKING AUTOMATIQUE
+/// 
+/// FONCTIONNALITÉS :
+/// - Tracking automatique du temps passé sur les écrans
+/// - Suivi des interactions utilisateur
+/// - Métriques d'engagement automatiques
+/// - Gestion des sessions utilisateur
+library;
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -119,7 +118,7 @@ class AnalyticsTracker {
         _screenStartTimes.clear();
         _screenVisitCounts.clear();
         
-        debugPrint('🔄 [Tracker] Session terminée (${duration} minutes)');
+        debugPrint('🔄 [Tracker] Session terminée ($duration minutes)');
       }
     } catch (e) {
       debugPrint('❌ [Tracker] Erreur stopSession: $e');
@@ -245,10 +244,10 @@ class AnalyticsWrapper extends StatefulWidget {
   final String screenName;
   
   const AnalyticsWrapper({
-    Key? key,
+    super.key,
     required this.child,
     required this.screenName,
-  }) : super(key: key);
+  });
   
   @override
   State<AnalyticsWrapper> createState() => _AnalyticsWrapperState();

@@ -1,9 +1,8 @@
-/**
- * TEST_ANALYTICS_INTEGRATION.DART - SCRIPT DE TEST FIREBASE ANALYTICS
- * 
- * Ce script permet de tester l'intégration Firebase Analytics
- * et de vérifier que tous les événements sont correctement trackés.
- */
+/// TEST_ANALYTICS_INTEGRATION.DART - SCRIPT DE TEST FIREBASE ANALYTICS
+/// 
+/// Ce script permet de tester l'intégration Firebase Analytics
+/// et de vérifier que tous les événements sont correctement trackés.
+library;
 
 import 'package:dinor_app/services/analytics_service.dart';
 import 'package:dinor_app/services/analytics_tracker.dart';

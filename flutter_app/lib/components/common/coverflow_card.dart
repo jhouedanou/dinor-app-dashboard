@@ -1,12 +1,11 @@
-/**
- * COVERFLOW_CARD.DART - Carte optimisée pour l'effet coverflow 3D
- * 
- * CARACTÉRISTIQUES :
- * - Taille dynamique basée sur la position
- * - Effet 3D avec rotation et perspective
- * - Design moderne et élégant
- * - Support des images et contenus
- */
+/// COVERFLOW_CARD.DART - Carte optimisée pour l'effet coverflow 3D
+/// 
+/// CARACTÉRISTIQUES :
+/// - Taille dynamique basée sur la position
+/// - Effet 3D avec rotation et perspective
+/// - Design moderne et élégant
+/// - Support des images et contenus
+library;
 
 import 'package:flutter/material.dart';
 import '../../services/image_service.dart';
@@ -32,8 +31,8 @@ class CoverflowCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Calculer la taille dynamique basée sur l'échelle
-    final baseWidth = 320.0; // Augmenté de 280 à 320
-    final baseHeight = 320.0;
+    const baseWidth = 320.0; // Augmenté de 280 à 320
+    const baseHeight = 320.0;
     final dynamicWidth = baseWidth * scale;
     final dynamicHeight = baseHeight * scale;
 

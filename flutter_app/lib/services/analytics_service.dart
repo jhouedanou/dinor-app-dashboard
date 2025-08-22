@@ -1,14 +1,13 @@
-/**
- * ANALYTICS_SERVICE.DART - SERVICE DE SUIVI FIREBASE ANALYTICS
- * 
- * FONCTIONNALITÉS :
- * - Suivi des installations et ouvertures d'app
- * - Événements personnalisés (navigation, interactions)
- * - Propriétés utilisateur (authentification, préférences)
- * - Crash reporting avec Crashlytics
- * - Métriques de performance et engagement
- * - Tracking des installations et statistiques détaillées
- */
+/// ANALYTICS_SERVICE.DART - SERVICE DE SUIVI FIREBASE ANALYTICS
+/// 
+/// FONCTIONNALITÉS :
+/// - Suivi des installations et ouvertures d'app
+/// - Événements personnalisés (navigation, interactions)
+/// - Propriétés utilisateur (authentification, préférences)
+/// - Crash reporting avec Crashlytics
+/// - Métriques de performance et engagement
+/// - Tracking des installations et statistiques détaillées
+library;
 
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -502,7 +501,7 @@ class AnalyticsService {
         'duration_minutes': durationMinutes,
         'timestamp': DateTime.now().millisecondsSinceEpoch,
       });
-      debugPrint('⏰ [Analytics] Session longue: ${durationMinutes} minutes');
+      debugPrint('⏰ [Analytics] Session longue: $durationMinutes minutes');
     } catch (e) {
       debugPrint('❌ [Analytics] Erreur long_session: $e');
     }

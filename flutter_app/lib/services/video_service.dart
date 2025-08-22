@@ -1,13 +1,12 @@
-/**
- * VIDEO_SERVICE.DART - SERVICE DE GESTION DES VIDÉOS
- * 
- * FONCTIONNALITÉS :
- * - Récupération des vidéos depuis l'API Dinor TV
- * - Conversion en modèle VideoData
- * - Cache intelligent des vidéos
- * - Gestion des interactions (likes, vues, partages)
- * - Optimisation pour performance et préchargement
- */
+/// VIDEO_SERVICE.DART - SERVICE DE GESTION DES VIDÉOS
+/// 
+/// FONCTIONNALITÉS :
+/// - Récupération des vidéos depuis l'API Dinor TV
+/// - Conversion en modèle VideoData
+/// - Cache intelligent des vidéos
+/// - Gestion des interactions (likes, vues, partages)
+/// - Optimisation pour performance et préchargement
+library;
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -260,7 +259,7 @@ class VideoService extends StateNotifier<VideoState> {
   Future<List<VideoData>> _loadFromCache() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final cacheKey = 'videos_cache_v1';
+      const cacheKey = 'videos_cache_v1';
       final cachedData = prefs.getString(cacheKey);
       
       if (cachedData != null) {

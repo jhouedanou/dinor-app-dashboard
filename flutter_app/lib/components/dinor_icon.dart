@@ -1,12 +1,11 @@
-/**
- * DINOR_ICON.DART - CONVERSION FIDÈLE DE DinorIcon.vue
- * 
- * REPRODUCTION EXACTE du système d'icônes :
- * - Mapping identique : 80+ icônes Lucide
- * - Fallback emoji identique
- * - Tailles et couleurs identiques
- * - Système de force-emoji identique
- */
+/// DINOR_ICON.DART - CONVERSION FIDÈLE DE DinorIcon.vue
+/// 
+/// REPRODUCTION EXACTE du système d'icônes :
+/// - Mapping identique : 80+ icônes Lucide
+/// - Fallback emoji identique
+/// - Tailles et couleurs identiques
+/// - Système de force-emoji identique
+library;
 
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -18,12 +17,12 @@ class DinorIcon extends StatelessWidget {
   final String? className;
 
   const DinorIcon({
-    Key? key,
+    super.key,
     required this.name,
     this.size = 24,
     this.color,
     this.className,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -30,7 +30,7 @@ import '../components/common/like_button.dart';
 import '../components/common/auth_modal.dart';
 
 class EventsListScreen extends ConsumerStatefulWidget {
-  const EventsListScreen({Key? key}) : super(key: key);
+  const EventsListScreen({super.key});
 
   @override
   ConsumerState<EventsListScreen> createState() => _EventsListScreenState();

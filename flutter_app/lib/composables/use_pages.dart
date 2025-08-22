@@ -1,12 +1,11 @@
-/**
- * USE_PAGES.DART - COMPOSABLE POUR LA GESTION DES PAGES
- * 
- * FONCTIONNALITÉS :
- * - Récupération des pages depuis l'API
- * - Gestion du cache et du state
- * - Méthodes pour afficher les pages comme onglets
- * - Support du mode hors ligne
- */
+/// USE_PAGES.DART - COMPOSABLE POUR LA GESTION DES PAGES
+/// 
+/// FONCTIONNALITÉS :
+/// - Récupération des pages depuis l'API
+/// - Gestion du cache et du state
+/// - Méthodes pour afficher les pages comme onglets
+/// - Support du mode hors ligne
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

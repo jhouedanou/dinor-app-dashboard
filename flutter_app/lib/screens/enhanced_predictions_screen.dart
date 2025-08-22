@@ -1,14 +1,13 @@
-/**
- * ENHANCED_PREDICTIONS_SCREEN.DART - ÉCRAN DE PRONOSTICS COMPLET
- * 
- * FONCTIONNALITÉS (basées sur la PWA) :
- * - Liste des tournois avec statuts
- * - Matchs par tournoi avec équipes et logos
- * - Interface de pronostics en temps réel
- * - Sauvegarde automatique avec feedback visuel
- * - Règles de points (3 points score exact, 1 point bon vainqueur)
- * - Authentification intégrée
- */
+/// ENHANCED_PREDICTIONS_SCREEN.DART - ÉCRAN DE PRONOSTICS COMPLET
+/// 
+/// FONCTIONNALITÉS (basées sur la PWA) :
+/// - Liste des tournois avec statuts
+/// - Matchs par tournoi avec équipes et logos
+/// - Interface de pronostics en temps réel
+/// - Sauvegarde automatique avec feedback visuel
+/// - Règles de points (3 points score exact, 1 point bon vainqueur)
+/// - Authentification intégrée
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,7 +17,7 @@ import '../composables/use_auth_handler.dart';
 import '../components/common/auth_modal.dart';
 
 class EnhancedPredictionsScreen extends ConsumerStatefulWidget {
-  const EnhancedPredictionsScreen({Key? key}) : super(key: key);
+  const EnhancedPredictionsScreen({super.key});
 
   @override
   ConsumerState<EnhancedPredictionsScreen> createState() => _EnhancedPredictionsScreenState();
@@ -27,8 +26,8 @@ class EnhancedPredictionsScreen extends ConsumerStatefulWidget {
 class _EnhancedPredictionsScreenState extends ConsumerState<EnhancedPredictionsScreen> {
   bool _showAuthModal = false;
   Tournament? _selectedTournament;
-  Map<String, Map<String, int>> _predictions = {}; // matchId -> {homeScore, awayScore}
-  Set<String> _savingMatches = {};
+  final Map<String, Map<String, int>> _predictions = {}; // matchId -> {homeScore, awayScore}
+  final Set<String> _savingMatches = {};
 
   @override
   void initState() {
@@ -184,9 +183,9 @@ class _EnhancedPredictionsScreenState extends ConsumerState<EnhancedPredictionsS
   }
 
   Widget _buildHeader() {
-    return Column(
+    return const Column(
       children: [
-        const Text(
+        Text(
           'Pronostics',
           style: TextStyle(
             fontFamily: 'OpenSans',
@@ -195,8 +194,8 @@ class _EnhancedPredictionsScreenState extends ConsumerState<EnhancedPredictionsS
             color: Color(0xFF2D3748),
           ),
         ),
-        const SizedBox(height: 8),
-        const Text(
+        SizedBox(height: 8),
+        Text(
           'Participez aux tournois et gagnez des points en prédisant les résultats !',
           style: TextStyle(
             fontFamily: 'Roboto',
@@ -832,18 +831,18 @@ class _EnhancedPredictionsScreenState extends ConsumerState<EnhancedPredictionsS
   }
 
   Widget _buildEmptyTournaments() {
-    return Center(
+    return const Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: EdgeInsets.all(32),
         child: Column(
           children: [
-            const Icon(
+            Icon(
               LucideIcons.trophy,
               size: 64,
               color: Color(0xFFCBD5E0),
             ),
-            const SizedBox(height: 16),
-            const Text(
+            SizedBox(height: 16),
+            Text(
               'Aucun tournoi disponible',
               style: TextStyle(
                 fontFamily: 'OpenSans',
@@ -852,8 +851,8 @@ class _EnhancedPredictionsScreenState extends ConsumerState<EnhancedPredictionsS
                 color: Color(0xFF2D3748),
               ),
             ),
-            const SizedBox(height: 8),
-            const Text(
+            SizedBox(height: 8),
+            Text(
               'Les nouveaux tournois apparaîtront ici dès qu\'ils seront disponibles.',
               style: TextStyle(
                 fontFamily: 'Roboto',
@@ -869,18 +868,18 @@ class _EnhancedPredictionsScreenState extends ConsumerState<EnhancedPredictionsS
   }
 
   Widget _buildEmptyMatches() {
-    return Center(
+    return const Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: EdgeInsets.all(32),
         child: Column(
           children: [
-            const Icon(
+            Icon(
               LucideIcons.target,
               size: 64,
               color: Color(0xFFCBD5E0),
             ),
-            const SizedBox(height: 16),
-            const Text(
+            SizedBox(height: 16),
+            Text(
               'Aucun match disponible',
               style: TextStyle(
                 fontFamily: 'OpenSans',
@@ -889,8 +888,8 @@ class _EnhancedPredictionsScreenState extends ConsumerState<EnhancedPredictionsS
                 color: Color(0xFF2D3748),
               ),
             ),
-            const SizedBox(height: 8),
-            const Text(
+            SizedBox(height: 8),
+            Text(
               'Les matchs apparaîtront ici dès qu\'ils seront programmés.',
               style: TextStyle(
                 fontFamily: 'Roboto',

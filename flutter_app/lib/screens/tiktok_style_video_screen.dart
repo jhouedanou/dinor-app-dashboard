@@ -1,17 +1,16 @@
-/**
- * TIKTOK_STYLE_VIDEO_SCREEN.DART - INTERFACE VIDÉO PLEIN ÉCRAN TYPE TIKTOK
- * 
- * FONCTIONNALITÉS :
- * - Lecteur vidéo en mode portrait plein écran
- * - Défilement vertical PageView pour navigation entre vidéos
- * - Lecture automatique de la vidéo visible
- * - Pause automatique des vidéos hors écran
- * - Contrôles superposés : play/pause, progression, interactions
- * - Informations du contenu en bas à gauche
- * - Gestes : tap pour pause/lecture, swipe vertical
- * - Optimisation performances avec préchargement
- * - Support formats vidéo courants (MP4, MOV, etc.)
- */
+/// TIKTOK_STYLE_VIDEO_SCREEN.DART - INTERFACE VIDÉO PLEIN ÉCRAN TYPE TIKTOK
+/// 
+/// FONCTIONNALITÉS :
+/// - Lecteur vidéo en mode portrait plein écran
+/// - Défilement vertical PageView pour navigation entre vidéos
+/// - Lecture automatique de la vidéo visible
+/// - Pause automatique des vidéos hors écran
+/// - Contrôles superposés : play/pause, progression, interactions
+/// - Informations du contenu en bas à gauche
+/// - Gestes : tap pour pause/lecture, swipe vertical
+/// - Optimisation performances avec préchargement
+/// - Support formats vidéo courants (MP4, MOV, etc.)
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -138,10 +137,10 @@ class TikTokStyleVideoScreen extends ConsumerStatefulWidget {
   final int initialIndex;
 
   const TikTokStyleVideoScreen({
-    Key? key,
+    super.key,
     required this.videos,
     this.initialIndex = 0,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<TikTokStyleVideoScreen> createState() => _TikTokStyleVideoScreenState();
@@ -324,15 +323,15 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
       child: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           // Gradient de fond très visible
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              const Color(0xFF1a1a2e),  // Bleu foncé
-              const Color(0xFF16213e),  // Bleu marine
-              const Color(0xFF0f3460),  // Bleu profond
+              Color(0xFF1a1a2e),  // Bleu foncé
+              Color(0xFF16213e),  // Bleu marine
+              Color(0xFF0f3460),  // Bleu profond
               Colors.black,
             ],
           ),
@@ -662,7 +661,7 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
                     children: [
                       Container(
                         padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: Colors.black,
                           shape: BoxShape.circle,
                         ),
@@ -696,7 +695,7 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
                 children: [
                   Container(
                     padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: Colors.black,
                       shape: BoxShape.circle,
                     ),

@@ -16,7 +16,7 @@ import '../components/common/content_item_card.dart';
 import 'cache_management_screen.dart';
 
 class WorkingHomeScreen extends StatefulWidget {
-  const WorkingHomeScreen({Key? key}) : super(key: key);
+  const WorkingHomeScreen({super.key});
 
   @override
   State<WorkingHomeScreen> createState() => _WorkingHomeScreenState();
@@ -229,7 +229,7 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
 
   void _showOfflineIndicator() {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
+      const SnackBar(
         content: Row(
           children: [
             Icon(Icons.wifi_off, color: Colors.white, size: 20),
@@ -427,9 +427,9 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
             color: Color(0xFFE53E3E),
           ),
           const SizedBox(height: 8),
-          Text(
+          const Text(
             'Erreur de chargement',
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'OpenSans',
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -459,17 +459,17 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
-      child: Column(
+      child: const Column(
         children: [
-          const Icon(
+          Icon(
             Icons.inbox_outlined,
             size: 32,
             color: Color(0xFFCBD5E0),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             'Aucun contenu disponible',
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'OpenSans',
               fontSize: 14,
               fontWeight: FontWeight.w600,

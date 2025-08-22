@@ -1,13 +1,12 @@
-/**
- * APP_TUTORIAL.DART - TUTORIEL DE PREMIÈRE UTILISATION
- * 
- * FONCTIONNALITÉS :
- * - Tutorial interactif avec overlays
- * - Spotlight sur les éléments importants
- * - Navigation avec boutons suivant/précédent
- * - Sauvegarde de l'état dans SharedPreferences
- * - Design Material moderne
- */
+/// APP_TUTORIAL.DART - TUTORIEL DE PREMIÈRE UTILISATION
+/// 
+/// FONCTIONNALITÉS :
+/// - Tutorial interactif avec overlays
+/// - Spotlight sur les éléments importants
+/// - Navigation avec boutons suivant/précédent
+/// - Sauvegarde de l'état dans SharedPreferences
+/// - Design Material moderne
+library;
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -39,11 +38,11 @@ class AppTutorial extends StatefulWidget {
   final String tutorialKey;
 
   const AppTutorial({
-    Key? key,
+    super.key,
     required this.steps,
     required this.tutorialKey,
     this.onComplete,
-  }) : super(key: key);
+  });
 
   @override
   State<AppTutorial> createState() => _AppTutorialState();

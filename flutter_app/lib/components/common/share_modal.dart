@@ -1,11 +1,10 @@
-/**
- * SHARE_MODAL.DART - CONVERSION FIDÈLE DE ShareModal.vue
- * 
- * FIDÉLITÉ FONCTIONNELLE :
- * - Modal de partage identique
- * - Options de partage identiques
- * - Share API native ou fallback
- */
+/// SHARE_MODAL.DART - CONVERSION FIDÈLE DE ShareModal.vue
+/// 
+/// FIDÉLITÉ FONCTIONNELLE :
+/// - Modal de partage identique
+/// - Options de partage identiques
+/// - Share API native ou fallback
+library;
 
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -19,11 +18,11 @@ class ShareModal extends StatelessWidget {
   final VoidCallback? onClose;
 
   const ShareModal({
-    Key? key,
+    super.key,
     required this.isOpen,
     required this.shareData,
     this.onClose,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

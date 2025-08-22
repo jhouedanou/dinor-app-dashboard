@@ -8,12 +8,12 @@ class Badge extends StatelessWidget {
   final String size; // 'small', 'medium', 'large'
 
   const Badge({
-    Key? key,
+    super.key,
     required this.text,
     required this.icon,
     this.variant = 'primary',
     this.size = 'medium',
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

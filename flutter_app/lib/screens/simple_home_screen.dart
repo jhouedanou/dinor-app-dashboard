@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 class SimpleHomeScreen extends StatelessWidget {
-  const SimpleHomeScreen({Key? key}) : super(key: key);
+  const SimpleHomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      body: const Center(
+    return const Scaffold(
+      backgroundColor: Color(0xFFF5F5F5),
+      body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

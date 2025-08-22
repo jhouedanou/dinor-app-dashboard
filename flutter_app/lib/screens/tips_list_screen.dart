@@ -40,7 +40,7 @@ import '../composables/use_auth_handler.dart';
 import '../composables/use_social_share.dart';
 
 class TipsListScreen extends ConsumerStatefulWidget {
-  const TipsListScreen({Key? key}) : super(key: key);
+  const TipsListScreen({super.key});
 
   @override
   ConsumerState<TipsListScreen> createState() => _TipsListScreenState();
@@ -71,7 +71,7 @@ class _TipsListScreenState extends ConsumerState<TipsListScreen>
   // Filtres et recherche
   String _searchQuery = '';
   String? _selectedCategory;
-  Map<String, dynamic> _selectedFilters = {};
+  final Map<String, dynamic> _selectedFilters = {};
 
   // Filtres additionnels
   final List<Map<String, dynamic>> _additionalFilters = [

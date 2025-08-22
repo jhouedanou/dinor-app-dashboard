@@ -1,12 +1,11 @@
-/**
- * SECTION_HEADER.DART - Composant de titre avec cartouche
- * 
- * INSPIRATION PWA :
- * - Cartouche avec dégradé de couleur
- * - Typographie Open Sans bold
- * - Bouton "Voir tout" avec icône
- * - Style moderne avec ombre et border-radius
- */
+/// SECTION_HEADER.DART - Composant de titre avec cartouche
+/// 
+/// INSPIRATION PWA :
+/// - Cartouche avec dégradé de couleur
+/// - Typographie Open Sans bold
+/// - Bouton "Voir tout" avec icône
+/// - Style moderne avec ombre et border-radius
+library;
 
 import 'package:flutter/material.dart';
 import '../../services/navigation_service.dart';
@@ -20,13 +19,13 @@ class SectionHeader extends StatelessWidget {
   final Color? secondaryColor;
 
   const SectionHeader({
-    Key? key,
+    super.key,
     required this.title,
     required this.viewAllLink,
     this.darkTheme = false,
     this.primaryColor,
     this.secondaryColor,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

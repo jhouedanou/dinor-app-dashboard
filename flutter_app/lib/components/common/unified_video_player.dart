@@ -38,8 +38,8 @@ class UnifiedVideoPlayer extends StatelessWidget {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    const Color(0xFF1A202C),
-                    const Color(0xFF2D3748),
+                    Color(0xFF1A202C),
+                    Color(0xFF2D3748),
                   ],
                 ),
               ),

@@ -1,17 +1,16 @@
-/**
- * AUTH_MODAL.DART - CONVERSION FIDÈLE DE AuthModal.vue
- * 
- * FIDÉLITÉ VISUELLE :
- * - Modal bottom sheet identique
- * - Formulaires login/register identiques
- * - Validation et messages d'erreur identiques
- * - Animation et transitions identiques
- * 
- * FIDÉLITÉ FONCTIONNELLE :
- * - Logique d'authentification identique
- * - Gestion d'état identique
- * - API calls identiques via AuthStore
- */
+/// AUTH_MODAL.DART - CONVERSION FIDÈLE DE AuthModal.vue
+/// 
+/// FIDÉLITÉ VISUELLE :
+/// - Modal bottom sheet identique
+/// - Formulaires login/register identiques
+/// - Validation et messages d'erreur identiques
+/// - Animation et transitions identiques
+/// 
+/// FIDÉLITÉ FONCTIONNELLE :
+/// - Logique d'authentification identique
+/// - Gestion d'état identique
+/// - API calls identiques via AuthStore
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,11 +22,11 @@ class AuthModal extends ConsumerStatefulWidget {
   final VoidCallback? onAuthenticated;
 
   const AuthModal({
-    Key? key,
+    super.key,
     required this.isOpen,
     this.onClose,
     this.onAuthenticated,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<AuthModal> createState() => _AuthModalState();
@@ -382,7 +381,7 @@ class _AuthModalState extends ConsumerState<AuthModal> {
               const SizedBox(height: 8),
 
               // Guest Login
-              Container(
+              SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   onPressed: _isLoading ? null : () {

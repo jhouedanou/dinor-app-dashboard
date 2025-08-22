@@ -1,13 +1,12 @@
-/**
- * YOUTUBE_VIDEO_PLAYER.DART - LECTEUR VIDÉO YOUTUBE NATIF
- * 
- * FONCTIONNALITÉS :
- * - Lecture YouTube native avec youtube_player_flutter
- * - Contrôles intégrés et optimisés
- * - Support des URLs YouTube variées
- * - Performance et stabilité améliorées
- * - Mode plein écran et mini-player
- */
+/// YOUTUBE_VIDEO_PLAYER.DART - LECTEUR VIDÉO YOUTUBE NATIF
+/// 
+/// FONCTIONNALITÉS :
+/// - Lecture YouTube native avec youtube_player_flutter
+/// - Contrôles intégrés et optimisés
+/// - Support des URLs YouTube variées
+/// - Performance et stabilité améliorées
+/// - Mode plein écran et mini-player
+library;
 
 import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
@@ -22,7 +21,7 @@ class YouTubeVideoPlayer extends StatefulWidget {
   final VoidCallback? onPause;
 
   const YouTubeVideoPlayer({
-    Key? key,
+    super.key,
     required this.videoUrl,
     required this.title,
     this.autoPlay = false,
@@ -30,7 +29,7 @@ class YouTubeVideoPlayer extends StatefulWidget {
     this.showControls = true,
     this.onReady,
     this.onPause,
-  }) : super(key: key);
+  });
 
   @override
   State<YouTubeVideoPlayer> createState() => YouTubeVideoPlayerState();

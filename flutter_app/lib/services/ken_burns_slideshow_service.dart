@@ -72,7 +72,7 @@ class _KenBurnsSlideshowWidgetState extends State<KenBurnsSlideshowWidget>
     final currentImagePath = widget.images[0]; // Utiliser la première image
     final animation = _animation; // Utiliser l'animation définie
     
-    return Container(
+    return SizedBox(
       width: double.infinity,
       height: double.infinity,
       child: AnimatedBuilder(

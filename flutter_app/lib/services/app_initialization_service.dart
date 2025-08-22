@@ -1,11 +1,10 @@
-/**
- * APP_INITIALIZATION_SERVICE.DART - SERVICE D'INITIALISATION DE L'APP
- * 
- * FONCTIONNALITÉS :
- * - Chargement automatique des likes au démarrage
- * - Synchronisation avec le serveur
- * - Gestion de l'état d'authentification
- */
+/// APP_INITIALIZATION_SERVICE.DART - SERVICE D'INITIALISATION DE L'APP
+/// 
+/// FONCTIONNALITÉS :
+/// - Chargement automatique des likes au démarrage
+/// - Synchronisation avec le serveur
+/// - Gestion de l'état d'authentification
+library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'likes_service.dart';

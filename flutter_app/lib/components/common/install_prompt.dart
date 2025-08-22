@@ -1,14 +1,13 @@
-/**
- * INSTALL_PROMPT.DART - SIMULATION DE InstallPrompt.vue
- * 
- * En Flutter mobile, l'app est déjà "installée"
- * Mais on garde la cohérence pour le web Flutter
- */
+/// INSTALL_PROMPT.DART - SIMULATION DE InstallPrompt.vue
+/// 
+/// En Flutter mobile, l'app est déjà "installée"
+/// Mais on garde la cohérence pour le web Flutter
+library;
 
 import 'package:flutter/material.dart';
 
 class InstallPrompt extends StatelessWidget {
-  const InstallPrompt({Key? key}) : super(key: key);
+  const InstallPrompt({super.key});
 
   @override
   Widget build(BuildContext context) {

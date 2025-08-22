@@ -16,7 +16,7 @@ import 'professional_content_creation_screen.dart';
 import 'notifications_screen.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  const ProfileScreen({super.key});
 
   @override
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
@@ -24,7 +24,7 @@ class ProfileScreen extends ConsumerStatefulWidget {
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final PageController _pageController = PageController();
-  int _currentPageIndex = 0;
+  final int _currentPageIndex = 0;
   bool _isLoading = true;
   String? _error;
   Map<String, dynamic>? _userProfile;
@@ -499,9 +499,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         width: 1,
                       ),
                     ),
-                    child: Row(
+                    child: const Row(
                       mainAxisSize: MainAxisSize.min,
-                      children: const [
+                      children: [
                         Text(
                           'Voir tout',
                           style: TextStyle(
@@ -624,7 +624,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               topLeft: Radius.circular(12),
               bottomLeft: Radius.circular(12),
             ),
-            child: Container(
+            child: SizedBox(
               width: 80,
               height: 80,
               child: Image.network(
@@ -712,10 +712,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         padding: const EdgeInsets.all(32),
         child: Column(
           children: [
-            Icon(
+            const Icon(
               LucideIcons.heart,
               size: 64,
-              color: const Color(0xFFCBD5E0),
+              color: Color(0xFFCBD5E0),
             ),
             const SizedBox(height: 16),
             Text(
@@ -923,10 +923,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         padding: const EdgeInsets.all(32),
         child: Column(
           children: [
-            Icon(
+            const Icon(
               LucideIcons.target,
               size: 64,
-              color: const Color(0xFFCBD5E0),
+              color: Color(0xFFCBD5E0),
             ),
             const SizedBox(height: 16),
             const Text(

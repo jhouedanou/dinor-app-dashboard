@@ -747,19 +747,19 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
+            const Icon(
               LucideIcons.mapPin,
               size: 20,
-              color: const Color(0xFFF4D03F),
+              color: Color(0xFFF4D03F),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'Lieu',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'OpenSans',
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
@@ -885,7 +885,7 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
       print('❌ [EventDetailUnified] Erreur ouverture Google Maps: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Impossible d\'ouvrir Google Maps'),
             backgroundColor: Colors.red,
           ),
@@ -910,7 +910,7 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
       print('❌ [EventDetailUnified] Erreur ouverture Apple Maps: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Apple Maps n\'est pas disponible sur cet appareil'),
             backgroundColor: Colors.red,
           ),
@@ -935,7 +935,7 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
       print('❌ [EventDetailUnified] Erreur ouverture Yandex Maps: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Impossible d\'ouvrir Yandex Maps'),
             backgroundColor: Colors.red,
           ),
@@ -1460,9 +1460,9 @@ class _EventDetailScreenUnifiedState extends ConsumerState<EventDetailScreenUnif
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'Ouvrir dans :',
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: 'OpenSans',
             fontSize: 14,
             fontWeight: FontWeight.w500,

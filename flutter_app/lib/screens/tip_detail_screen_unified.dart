@@ -27,7 +27,6 @@ import '../services/likes_service.dart';
 import '../services/content_navigation_service.dart';
 import '../composables/use_auth_handler.dart';
 import '../stores/header_state.dart';
-import '../services/navigation_service.dart';
 
 class TipDetailScreenUnified extends ConsumerStatefulWidget {
   final String id;

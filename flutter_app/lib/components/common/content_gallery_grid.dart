@@ -1,13 +1,12 @@
-/**
- * CONTENT_GALLERY_GRID.DART - Nouveau composant en mosaïque pour l'accueil
- * 
- * CARACTÉRISTIQUES :
- * - Layout en grille/mosaïque sans margins
- * - Cards avec images en arrière-plan
- * - Texte blanc avec ombres
- * - Gradient overlay
- * - Responsive avec colonnes adaptatives
- */
+/// CONTENT_GALLERY_GRID.DART - Nouveau composant en mosaïque pour l'accueil
+/// 
+/// CARACTÉRISTIQUES :
+/// - Layout en grille/mosaïque sans margins
+/// - Cards avec images en arrière-plan
+/// - Texte blanc avec ombres
+/// - Gradient overlay
+/// - Responsive avec colonnes adaptatives
+library;
 
 import 'package:flutter/material.dart';
 import '../../services/navigation_service.dart';
@@ -26,7 +25,7 @@ class ContentGalleryGrid extends StatelessWidget {
   final int? maxItems; // Limite pour l'affichage sur accueil
 
   const ContentGalleryGrid({
-    Key? key,
+    super.key,
     required this.title,
     required this.items,
     this.loading = false,
@@ -36,7 +35,7 @@ class ContentGalleryGrid extends StatelessWidget {
     required this.onItemClick,
     this.darkTheme = false,
     this.maxItems,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

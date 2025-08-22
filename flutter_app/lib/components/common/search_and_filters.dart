@@ -15,7 +15,7 @@ class SearchAndFilters extends StatefulWidget {
   final String searchPlaceholder;
 
   const SearchAndFilters({
-    Key? key,
+    super.key,
     required this.searchQuery,
     required this.onSearchQueryChanged,
     required this.selectedCategory,
@@ -27,7 +27,7 @@ class SearchAndFilters extends StatefulWidget {
     required this.resultsCount,
     required this.itemType,
     required this.searchPlaceholder,
-  }) : super(key: key);
+  });
 
   @override
   State<SearchAndFilters> createState() => _SearchAndFiltersState();
@@ -129,9 +129,9 @@ class _SearchAndFiltersState extends State<SearchAndFilters> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'Catégories',
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: 'OpenSans',
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -161,7 +161,7 @@ class _SearchAndFiltersState extends State<SearchAndFilters> {
                     isSelected,
                   ),
                 );
-              }).toList(),
+              }),
             ],
           ),
         ),
@@ -198,9 +198,9 @@ class _SearchAndFiltersState extends State<SearchAndFilters> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'Filtres additionnels',
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: 'OpenSans',
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -262,7 +262,7 @@ class _SearchAndFiltersState extends State<SearchAndFilters> {
                       () => widget.onAdditionalFilterChanged(key, value),
                     ),
                   );
-                }).toList(),
+                }),
               ],
             ),
           ),

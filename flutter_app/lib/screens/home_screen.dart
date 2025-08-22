@@ -50,7 +50,7 @@ import '../composables/use_auth_handler.dart';
 
 
 class HomeScreen extends ConsumerStatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
@@ -706,7 +706,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Image avec overlay - .card-image CSS
-          Container(
+          SizedBox(
             height: 160, // height: 160px
             child: Stack(
               children: [

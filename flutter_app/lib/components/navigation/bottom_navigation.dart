@@ -1,21 +1,20 @@
-/**
- * BOTTOM_NAVIGATION.DART - CONVERSION FIDÈLE DE BottomNavigation.vue
- * 
- * FIDÉLITÉ VISUELLE :
- * - Position : absolute bottom (0, 0, 0) → positioned bottom
- * - Couleur : #F4D03F (fond doré) identique
- * - Hauteur : 80px exacte + safe area insets
- * - 6 onglets : même layout flex space-around
- * - État actif : #FF6B35 (orange) + soulignement 24px
- * - Police : Roboto 12px/500 pour labels
- * - Icônes : 24px Lucide identiques
- * 
- * FIDÉLITÉ FONCTIONNELLE :
- * - isActive() : même logique route matching
- * - handleItemClick() : authentification profil + navigation
- * - AuthModal : même comportement
- * - Menu statique : 6 items identiques (home, recipes, tips, events, dinor-tv, profile)
- */
+/// BOTTOM_NAVIGATION.DART - CONVERSION FIDÈLE DE BottomNavigation.vue
+/// 
+/// FIDÉLITÉ VISUELLE :
+/// - Position : absolute bottom (0, 0, 0) → positioned bottom
+/// - Couleur : #F4D03F (fond doré) identique
+/// - Hauteur : 80px exacte + safe area insets
+/// - 6 onglets : même layout flex space-around
+/// - État actif : #FF6B35 (orange) + soulignement 24px
+/// - Police : Roboto 12px/500 pour labels
+/// - Icônes : 24px Lucide identiques
+/// 
+/// FIDÉLITÉ FONCTIONNELLE :
+/// - isActive() : même logique route matching
+/// - handleItemClick() : authentification profil + navigation
+/// - AuthModal : même comportement
+/// - Menu statique : 6 items identiques (home, recipes, tips, events, dinor-tv, profile)
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -39,7 +38,7 @@ import '../../services/tutorial_service.dart';
 
 
 class BottomNavigation extends ConsumerStatefulWidget {
-  const BottomNavigation({Key? key}) : super(key: key);
+  const BottomNavigation({super.key});
 
   @override
   ConsumerState<BottomNavigation> createState() => _BottomNavigationState();
@@ -47,7 +46,7 @@ class BottomNavigation extends ConsumerStatefulWidget {
 
 class _BottomNavigationState extends ConsumerState<BottomNavigation> {
   bool _showAuthModal = false;
-  String _authModalMessage = '';
+  final String _authModalMessage = '';
   bool _showScrollTooltip = true;
   String _currentRoute = '/';
 
@@ -278,7 +277,7 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
           'action_type': page.isExternal ? 'external_link' : 'web_embed',
           'url': resolvedUrl,
         };
-      }).toList(),
+      }),
     ];
 
     // IMPORTANT: Retourner un Container dimensionné pour bottomNavigationBar
@@ -296,7 +295,7 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
       ),
       child: SafeArea(
         bottom: false, // Désactiver le SafeArea en bas pour coller au bord
-        child: Container(
+        child: SizedBox(
           height: 45, // Hauteur fixe pour coller au bas
           child: Stack(
             children: [
@@ -357,13 +356,13 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.swap_horiz,
                             size: 12,
                             color: Colors.white,
                           ),
-                          const SizedBox(width: 4),
-                          const Text(
+                          SizedBox(width: 4),
+                          Text(
                             'Faites défiler →',
                             style: TextStyle(
                               fontSize: 10,
@@ -371,8 +370,8 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                          const SizedBox(width: 4),
-                          const Icon(
+                          SizedBox(width: 4),
+                          Icon(
                             LucideIcons.x,
                             size: 10,
                             color: Colors.white70,

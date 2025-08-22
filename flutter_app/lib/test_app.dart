@@ -5,6 +5,8 @@ void main() {
 }
 
 class TestApp extends StatelessWidget {
+  const TestApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -19,31 +21,33 @@ class TestApp extends StatelessWidget {
 }
 
 class TestHomePage extends StatelessWidget {
+  const TestHomePage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Test Dinor App'),
+        title: const Text('Test Dinor App'),
         toolbarHeight: 56,
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Icon(
+            const Icon(
               Icons.restaurant,
               size: 100,
               color: Colors.orange,
             ),
-            SizedBox(height: 20),
-            Text(
+            const SizedBox(height: 20),
+            const Text(
               'Dinor App',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Text(
               'Votre chef de poche',
               style: TextStyle(
@@ -51,14 +55,14 @@ class TestHomePage extends StatelessWidget {
                 color: Colors.grey[600],
               ),
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             ElevatedButton(
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Test réussi !')),
+                  const SnackBar(content: Text('Test réussi !')),
                 );
               },
-              child: Text('Tester'),
+              child: const Text('Tester'),
             ),
           ],
         ),

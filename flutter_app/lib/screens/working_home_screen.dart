@@ -16,7 +16,7 @@ import '../components/common/content_item_card.dart';
 import 'cache_management_screen.dart';
 
 class WorkingHomeScreen extends StatefulWidget {
-  const WorkingHomeScreen({Key? key}) : super(key: key);
+  const WorkingHomeScreen({super.key});
 
   @override
   State<WorkingHomeScreen> createState() => _WorkingHomeScreenState();
@@ -245,7 +245,7 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
 
   void _showOfflineIndicator() {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
+      const SnackBar(
         content: Row(
           children: [
             Icon(Icons.wifi_off, color: Colors.white, size: 20),

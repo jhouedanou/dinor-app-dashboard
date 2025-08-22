@@ -3,7 +3,7 @@ import '../services/cache_service.dart';
 import '../services/offline_service.dart';
 
 class CacheManagementScreen extends StatefulWidget {
-  const CacheManagementScreen({Key? key}) : super(key: key);
+  const CacheManagementScreen({super.key});
 
   @override
   State<CacheManagementScreen> createState() => _CacheManagementScreenState();
@@ -134,8 +134,8 @@ class _CacheManagementScreenState extends State<CacheManagementScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Nettoyer'),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Nettoyer'),
           ),
         ],
       ),
@@ -360,7 +360,7 @@ class _CacheManagementScreenState extends State<CacheManagementScreen> {
     return Column(
       children: [
         // Précharger le contenu essentiel
-        Container(
+        SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
             onPressed: _isLoading ? null : _preloadContent,
@@ -380,7 +380,7 @@ class _CacheManagementScreenState extends State<CacheManagementScreen> {
         const SizedBox(height: 12),
         
         // Synchroniser le cache
-        Container(
+        SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
             onPressed: _isLoading ? null : _syncCache,
@@ -399,7 +399,7 @@ class _CacheManagementScreenState extends State<CacheManagementScreen> {
         const SizedBox(height: 12),
         
         // Nettoyer le cache
-        Container(
+        SizedBox(
           width: double.infinity,
           child: OutlinedButton.icon(
             onPressed: _clearCache,

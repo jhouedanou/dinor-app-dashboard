@@ -1,9 +1,8 @@
-/**
- * TEST_SWIPEABLE_NAVIGATION.DART - TEST DE LA NAVIGATION SWIPEABLE
- * 
- * Ce script permet de tester la navigation swipeable
- * et de vérifier que toutes les fonctionnalités fonctionnent correctement.
- */
+/// TEST_SWIPEABLE_NAVIGATION.DART - TEST DE LA NAVIGATION SWIPEABLE
+/// 
+/// Ce script permet de tester la navigation swipeable
+/// et de vérifier que toutes les fonctionnalités fonctionnent correctement.
+library;
 
 import 'package:dinor_app/screens/swipeable_detail_screen.dart';
 import 'package:dinor_app/services/analytics_service.dart';
@@ -33,7 +32,7 @@ class TestSwipeableNavigationApp extends StatelessWidget {
 }
 
 class TestSwipeableNavigationScreen extends ConsumerStatefulWidget {
-  const TestSwipeableNavigationScreen({Key? key}) : super(key: key);
+  const TestSwipeableNavigationScreen({super.key});
 
   @override
   ConsumerState<TestSwipeableNavigationScreen> createState() => _TestSwipeableNavigationScreenState();

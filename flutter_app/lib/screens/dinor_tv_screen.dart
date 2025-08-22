@@ -34,7 +34,7 @@ import '../components/common/content_gallery_grid.dart';
 
 
 class DinorTVScreen extends ConsumerStatefulWidget {
-  const DinorTVScreen({Key? key}) : super(key: key);
+  const DinorTVScreen({super.key});
 
   @override
   ConsumerState<DinorTVScreen> createState() => _DinorTVScreenState();

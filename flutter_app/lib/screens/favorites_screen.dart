@@ -9,7 +9,7 @@ import 'dinor_tv_screen.dart';
 import '../services/navigation_service.dart';
 
 class FavoritesScreen extends ConsumerStatefulWidget {
-  const FavoritesScreen({Key? key}) : super(key: key);
+  const FavoritesScreen({super.key});
 
   @override
   ConsumerState<FavoritesScreen> createState() => _FavoritesScreenState();
@@ -423,7 +423,7 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
                 children: [
                   ClipRRect(
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                    child: Container(
+                    child: SizedBox(
                       width: double.infinity,
                       height: double.infinity,
                       child: Image.network(
@@ -577,10 +577,10 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
         padding: const EdgeInsets.all(32),
         child: Column(
           children: [
-            Icon(
+            const Icon(
               LucideIcons.heart,
               size: 64,
-              color: const Color(0xFFCBD5E0),
+              color: Color(0xFFCBD5E0),
             ),
             const SizedBox(height: 16),
             Text(

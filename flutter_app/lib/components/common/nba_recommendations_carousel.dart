@@ -1,13 +1,12 @@
-/**
- * NBA_RECOMMENDATIONS_CAROUSEL.DART - CARROUSEL DE RECOMMANDATIONS NBA
- * 
- * FONCTIONNALITÉS :
- * - Affichage horizontal avec 3-4 suggestions visibles
- * - Métadonnées : titre, type, équipe, durée
- * - Tracking des interactions pour améliorer l'algorithme
- * - Animation fluide et design moderne
- * - Support de tous les types de contenu NBA
- */
+/// NBA_RECOMMENDATIONS_CAROUSEL.DART - CARROUSEL DE RECOMMANDATIONS NBA
+/// 
+/// FONCTIONNALITÉS :
+/// - Affichage horizontal avec 3-4 suggestions visibles
+/// - Métadonnées : titre, type, équipe, durée
+/// - Tracking des interactions pour améliorer l'algorithme
+/// - Animation fluide et design moderne
+/// - Support de tous les types de contenu NBA
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,12 +24,12 @@ class NBARecommendationsCarousel extends ConsumerStatefulWidget {
   final EdgeInsets? padding;
 
   const NBARecommendationsCarousel({
-    Key? key,
+    super.key,
     required this.currentContent,
     this.onContentTap,
     this.showTitle = true,
     this.padding,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<NBARecommendationsCarousel> createState() => _NBARecommendationsCarouselState();
@@ -612,10 +611,10 @@ class _NBARecommendationsCarouselState extends ConsumerState<NBARecommendationsC
             size: 20,
           ),
           const SizedBox(width: 8),
-          Expanded(
+          const Expanded(
             child: Text(
               'Erreur lors du chargement des recommandations',
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'Roboto',
                 fontSize: 12,
                 color: Color(0xFF4A5568),

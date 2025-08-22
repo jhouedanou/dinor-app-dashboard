@@ -1,10 +1,9 @@
-/**
- * UNIFIED_CONTENT_NAVIGATION.DART - NAVIGATION UNIFIÉE POUR CONTENU
- * - Flèches de navigation précédent/suivant
- * - Compatible avec tous les types de contenu (recettes, astuces, événements)
- * - Position au-dessus de la zone de commentaires
- * - Design cohérent avec les autres composants unifiés
- */
+/// UNIFIED_CONTENT_NAVIGATION.DART - NAVIGATION UNIFIÉE POUR CONTENU
+/// - Flèches de navigation précédent/suivant
+/// - Compatible avec tous les types de contenu (recettes, astuces, événements)
+/// - Position au-dessus de la zone de commentaires
+/// - Design cohérent avec les autres composants unifiés
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -185,10 +184,10 @@ class UnifiedContentNavigation extends ConsumerWidget {
             ),
             
             // Titre du contenu (si disponible)
-            if (title != null && title!.isNotEmpty) ...[
+            if (title != null && title.isNotEmpty) ...[
               const SizedBox(height: 6),
               Text(
-                title!,
+                title,
                 style: TextStyle(
                   fontFamily: 'OpenSans',
                   fontSize: 13,

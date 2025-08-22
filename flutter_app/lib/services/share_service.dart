@@ -171,11 +171,6 @@ class ShareService {
         }
       }
       
-      if (url == null) {
-        print('❌ [ShareService] URL requise pour Facebook');
-        return;
-      }
-      
       final facebookUrl = 'https://www.facebook.com/sharer/sharer.php?u=${Uri.encodeComponent(url)}';
       
       if (await canLaunchUrl(Uri.parse(facebookUrl))) {

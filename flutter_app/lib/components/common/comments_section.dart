@@ -1,14 +1,13 @@
-/**
- * COMMENTS_SECTION.DART - SECTION COMPLÈTE DE GESTION DES COMMENTAIRES
- * 
- * FONCTIONNALITÉS :
- * - Affichage de la liste des commentaires avec pagination
- * - Formulaire d'ajout de commentaire avec validation
- * - Gestion des états de chargement et d'erreur
- * - Authentification requise pour poster
- * - Interface responsive et accessible
- * - Actions contextuelles (supprimer, charger plus)
- */
+/// COMMENTS_SECTION.DART - SECTION COMPLÈTE DE GESTION DES COMMENTAIRES
+/// 
+/// FONCTIONNALITÉS :
+/// - Affichage de la liste des commentaires avec pagination
+/// - Formulaire d'ajout de commentaire avec validation
+/// - Gestion des états de chargement et d'erreur
+/// - Authentification requise pour poster
+/// - Interface responsive et accessible
+/// - Actions contextuelles (supprimer, charger plus)
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,12 +22,12 @@ class CommentsSection extends ConsumerStatefulWidget {
   final VoidCallback? onAuthRequired;
 
   const CommentsSection({
-    Key? key,
+    super.key,
     required this.contentType,
     required this.contentId,
     required this.contentTitle,
     this.onAuthRequired,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<CommentsSection> createState() => _CommentsSectionState();
@@ -182,24 +181,24 @@ class _CommentsSectionState extends ConsumerState<CommentsSection> {
                       Expanded(
                         child: ElevatedButton(
                           onPressed: _checkAuthentication,
-                          child: Text('Vérifier Auth', style: TextStyle(fontSize: 10)),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.orange,
                             foregroundColor: Colors.white,
-                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           ),
+                          child: Text('Vérifier Auth', style: TextStyle(fontSize: 10)),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: ElevatedButton(
                           onPressed: _forceReconnect,
-                          child: Text('Reconnecter', style: TextStyle(fontSize: 10)),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue,
                             foregroundColor: Colors.white,
-                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           ),
+                          child: Text('Reconnecter', style: TextStyle(fontSize: 10)),
                         ),
                       ),
                     ],
@@ -239,9 +238,9 @@ class _CommentsSectionState extends ConsumerState<CommentsSection> {
           color: Color(0xFF4A5568),
         ),
         const SizedBox(width: 8),
-        Text(
+        const Text(
           'Commentaires',
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: 'OpenSans',
             fontSize: 18,
             fontWeight: FontWeight.w600,

@@ -1,14 +1,13 @@
-/**
- * PREDICTIONS_SCREEN.DART - ÉCRAN DE PRONOSTICS COMPLET
- * 
- * FONCTIONNALITÉS :
- * - Liste des tournois avec statuts
- * - Matchs par tournoi avec équipes
- * - Interface de pronostics en temps réel
- * - Sauvegarde automatique avec feedback visuel
- * - Règles de points et statistiques
- * - Authentification intégrée
- */
+/// PREDICTIONS_SCREEN.DART - ÉCRAN DE PRONOSTICS COMPLET
+/// 
+/// FONCTIONNALITÉS :
+/// - Liste des tournois avec statuts
+/// - Matchs par tournoi avec équipes
+/// - Interface de pronostics en temps réel
+/// - Sauvegarde automatique avec feedback visuel
+/// - Règles de points et statistiques
+/// - Authentification intégrée
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,7 +19,7 @@ import '../components/common/auth_modal.dart';
 import '../services/navigation_service.dart';
 
 class PredictionsScreen extends ConsumerStatefulWidget {
-  const PredictionsScreen({Key? key}) : super(key: key);
+  const PredictionsScreen({super.key});
 
   @override
   ConsumerState<PredictionsScreen> createState() => _PredictionsScreenState();
@@ -35,8 +34,8 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen>
   TabController? _tabController;
   
   // Pronostics et état de sauvegarde
-  Map<String, Map<String, int>> _predictions = {}; // matchId -> {homeScore, awayScore}
-  Set<String> _savingMatches = {};
+  final Map<String, Map<String, int>> _predictions = {}; // matchId -> {homeScore, awayScore}
+  final Set<String> _savingMatches = {};
 
   @override
   void initState() {
@@ -1088,18 +1087,18 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen>
   }
 
   Widget _buildEmptyTournaments() {
-    return Center(
+    return const Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: EdgeInsets.all(32),
         child: Column(
           children: [
-            const Icon(
+            Icon(
               LucideIcons.trophy,
               size: 64,
               color: Color(0xFFCBD5E0),
             ),
-            const SizedBox(height: 16),
-            const Text(
+            SizedBox(height: 16),
+            Text(
               'Aucun tournoi disponible',
               style: TextStyle(
                 fontFamily: 'OpenSans',
@@ -1108,8 +1107,8 @@ class _PredictionsScreenState extends ConsumerState<PredictionsScreen>
                 color: Color(0xFF2D3748),
               ),
             ),
-            const SizedBox(height: 8),
-            const Text(
+            SizedBox(height: 8),
+            Text(
               'Les nouveaux tournois apparaîtront ici dès qu\'ils seront disponibles.',
               style: TextStyle(
                 fontFamily: 'Roboto',

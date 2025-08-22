@@ -75,7 +75,7 @@ class CacheService {
       final prefs = await SharedPreferences.getInstance();
       final lastUpdate = prefs.getInt(_lastUpdateKey) ?? 0;
       final now = DateTime.now().millisecondsSinceEpoch;
-      final oneDay = 24 * 60 * 60 * 1000; // 24 heures en millisecondes
+      const oneDay = 24 * 60 * 60 * 1000; // 24 heures en millisecondes
       
       return (now - lastUpdate) < oneDay;
     } catch (e) {
@@ -214,7 +214,7 @@ class CacheService {
     try {
       final cacheDir = await getTemporaryDirectory();
       final imagesDir = Directory('${cacheDir.path}/dinor_images');
-      final imageFile = File('${imagesDir.path}/${type}_${id}.jpg');
+      final imageFile = File('${imagesDir.path}/${type}_$id.jpg');
 
       if (!await imageFile.exists()) {
         final response = await http.get(Uri.parse(imageUrl));
@@ -233,7 +233,7 @@ class CacheService {
     try {
       final cacheDir = await getTemporaryDirectory();
       final imagesDir = Directory('${cacheDir.path}/dinor_images');
-      final imageFile = File('${imagesDir.path}/${type}_${id}.jpg');
+      final imageFile = File('${imagesDir.path}/${type}_$id.jpg');
 
       if (await imageFile.exists()) {
         return imageFile.path;

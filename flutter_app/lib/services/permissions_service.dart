@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'permissions_service_platform.dart';
-import 'dart:io';
 
 class PermissionsService {
   static Future<bool> requestNotificationPermission() async {

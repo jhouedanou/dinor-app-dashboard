@@ -1,14 +1,13 @@
-/**
- * SWIPEABLE_DETAIL_SCREEN.DART - ÉCRAN DE DÉTAIL AVEC NAVIGATION PAR SWIPE
- * 
- * FONCTIONNALITÉS :
- * - Navigation par swipe entre les fiches de détail
- * - Support des recettes, astuces, événements, vidéos
- * - Indicateur de position (dots)
- * - Navigation par boutons
- * - Animations fluides
- * - Analytics tracking
- */
+/// SWIPEABLE_DETAIL_SCREEN.DART - ÉCRAN DE DÉTAIL AVEC NAVIGATION PAR SWIPE
+/// 
+/// FONCTIONNALITÉS :
+/// - Navigation par swipe entre les fiches de détail
+/// - Support des recettes, astuces, événements, vidéos
+/// - Indicateur de position (dots)
+/// - Navigation par boutons
+/// - Animations fluides
+/// - Analytics tracking
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -38,11 +37,11 @@ class SwipeableDetailScreen extends ConsumerStatefulWidget {
   final List<Map<String, dynamic>>? items; // Liste optionnelle d'items pour navigation
   
   const SwipeableDetailScreen({
-    Key? key,
+    super.key,
     required this.initialId,
     required this.initialType,
     this.items,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<SwipeableDetailScreen> createState() => _SwipeableDetailScreenState();
@@ -68,7 +67,7 @@ class _SwipeableDetailScreenState extends ConsumerState<SwipeableDetailScreen>
   late Animation<double> _fadeAnimation;
   
   // Analytics
-  DateTime _screenStartTime = DateTime.now();
+  final DateTime _screenStartTime = DateTime.now();
 
   @override
   void initState() {
@@ -316,7 +315,7 @@ class _SwipeableDetailScreenState extends ConsumerState<SwipeableDetailScreen>
                     borderRadius: BorderRadius.circular(12),
                     color: Colors.black,
                   ),
-                  child: Center(
+                  child: const Center(
                     child: Icon(
                       LucideIcons.play,
                       size: 48,

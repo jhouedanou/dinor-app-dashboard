@@ -76,9 +76,9 @@ class _ImageGalleryCarouselState extends State<ImageGalleryCarousel> {
                 padding: const EdgeInsets.only(bottom: 16),
                 child: Row(
                   children: [
-                    Icon(
+                    const Icon(
                       LucideIcons.image,
-                      color: const Color(0xFFE53E3E),
+                      color: Color(0xFFE53E3E),
                       size: 20,
                     ),
                     const SizedBox(width: 8),

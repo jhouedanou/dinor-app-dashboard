@@ -1,13 +1,12 @@
-/**
- * COMMENTS_SERVICE.DART - SERVICE DE GESTION DES COMMENTAIRES
- * 
- * FONCTIONNALITÉS :
- * - Récupération des commentaires par type de contenu (tips, recipes, events)
- * - Ajout de nouveaux commentaires avec authentification
- * - Mise en cache des commentaires pour performance
- * - Pagination et chargement progressif
- * - Gestion des erreurs et états de chargement
- */
+/// COMMENTS_SERVICE.DART - SERVICE DE GESTION DES COMMENTAIRES
+/// 
+/// FONCTIONNALITÉS :
+/// - Récupération des commentaires par type de contenu (tips, recipes, events)
+/// - Ajout de nouveaux commentaires avec authentification
+/// - Mise en cache des commentaires pour performance
+/// - Pagination et chargement progressif
+/// - Gestion des erreurs et états de chargement
+library;
 
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -158,7 +157,7 @@ class CommentsService extends StateNotifier<Map<String, CommentsState>> {
         final commentsData = result['data'] ?? result['comments'] ?? [];
         
         final comments = (commentsData as List)
-            .where((item) => item is Map<String, dynamic>) // Vérification de type
+            .whereType<Map<String, dynamic>>() // Vérification de type
             .map((json) => Comment.fromJson(json as Map<String, dynamic>))
             .toList();
 
@@ -242,7 +241,7 @@ class CommentsService extends StateNotifier<Map<String, CommentsState>> {
         final commentsData = result['data'] ?? result['comments'] ?? [];
         
         final newComments = (commentsData as List)
-            .where((item) => item is Map<String, dynamic>) // Vérification de type
+            .whereType<Map<String, dynamic>>() // Vérification de type
             .map((json) => Comment.fromJson(json as Map<String, dynamic>))
             .toList();
 

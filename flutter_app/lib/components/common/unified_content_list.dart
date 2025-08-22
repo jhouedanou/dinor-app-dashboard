@@ -45,7 +45,7 @@ class _UnifiedContentListState extends ConsumerState<UnifiedContentList> {
   List<dynamic> _displayedItems = [];
   List<dynamic> _filteredItems = [];
   List<String> _availableTags = [];
-  List<String> _selectedTags = [];
+  final List<String> _selectedTags = [];
   String _searchQuery = '';
   bool _isLoading = true;
   bool _isLoadingMore = false;

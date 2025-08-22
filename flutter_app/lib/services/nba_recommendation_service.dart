@@ -1,14 +1,13 @@
-/**
- * NBA_RECOMMENDATION_SERVICE.DART - SERVICE DE RECOMMANDATION DE CONTENU NBA
- * 
- * FONCTIONNALITÉS :
- * - Algorithme de similarité basé sur les tags (70%)
- * - Pondération selon la popularité (20%) et fraîcheur (10%)
- * - Filtrage intelligent (contenu vu/liké, récence, équilibrage)
- * - Système de fallback pour contenu populaire
- * - Tracking des interactions pour amélioration
- * - Cache des recommandations pour performance
- */
+/// NBA_RECOMMENDATION_SERVICE.DART - SERVICE DE RECOMMANDATION DE CONTENU NBA
+/// 
+/// FONCTIONNALITÉS :
+/// - Algorithme de similarité basé sur les tags (70%)
+/// - Pondération selon la popularité (20%) et fraîcheur (10%)
+/// - Filtrage intelligent (contenu vu/liké, récence, équilibrage)
+/// - Système de fallback pour contenu populaire
+/// - Tracking des interactions pour amélioration
+/// - Cache des recommandations pour performance
+library;
 
 import 'dart:convert';
 import 'dart:math';
@@ -461,7 +460,7 @@ class NBARecommendationService extends StateNotifier<RecommendationState> {
   Future<void> _markContentAsViewed(String contentId) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final viewedKey = 'viewed_content_v1';
+      const viewedKey = 'viewed_content_v1';
       final viewed = prefs.getStringList(viewedKey) ?? [];
       
       if (!viewed.contains(contentId)) {

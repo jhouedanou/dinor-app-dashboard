@@ -24,7 +24,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../services/api_service.dart';
 
 class PagesListScreen extends ConsumerStatefulWidget {
-  const PagesListScreen({Key? key}) : super(key: key);
+  const PagesListScreen({super.key});
 
   @override
   ConsumerState<PagesListScreen> createState() => _PagesListScreenState();

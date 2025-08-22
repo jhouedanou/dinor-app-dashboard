@@ -50,7 +50,7 @@ import '../composables/use_social_share.dart';
 class RecipeDetailScreen extends ConsumerStatefulWidget {
   final String id;
   
-  const RecipeDetailScreen({Key? key, required this.id}) : super(key: key);
+  const RecipeDetailScreen({super.key, required this.id});
 
   @override
   ConsumerState<RecipeDetailScreen> createState() => _RecipeDetailScreenState();
@@ -59,7 +59,7 @@ class RecipeDetailScreen extends ConsumerStatefulWidget {
 class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with AutomaticKeepAliveClientMixin {
   // État identique au setup() Vue
   bool _showAuthModal = false;
-  bool _showShareModal = false;
+  final bool _showShareModal = false;
   bool _showLightbox = false;
   int _lightboxIndex = 0;
   
@@ -184,7 +184,7 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> with Au
 
   void _showOfflineIndicator() {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
+      const SnackBar(
         content: Row(
           children: [
             Icon(Icons.wifi_off, color: Colors.white, size: 20),

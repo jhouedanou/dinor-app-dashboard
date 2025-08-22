@@ -1,11 +1,10 @@
-/**
- * TOURNAMENT_MODALS.DART - MODALES POUR LES TOURNOIS ET CLASSEMENTS
- * 
- * FONCTIONNALITÉS :
- * - Modal pour afficher les matches d'un tournoi
- * - Modal pour faire des prédictions
- * - Modal pour afficher les classements par tournoi avec accordéons
- */
+/// TOURNAMENT_MODALS.DART - MODALES POUR LES TOURNOIS ET CLASSEMENTS
+/// 
+/// FONCTIONNALITÉS :
+/// - Modal pour afficher les matches d'un tournoi
+/// - Modal pour faire des prédictions
+/// - Modal pour afficher les classements par tournoi avec accordéons
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -127,25 +126,25 @@ class _TournamentMatchesModalState extends ConsumerState<TournamentMatchesModal>
   }
 
   Widget _buildEmptyMatches() {
-    return Center(
+    return const Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
+          Icon(
             LucideIcons.calendar,
             size: 64,
             color: Colors.grey,
           ),
-          const SizedBox(height: 16),
-          const Text(
+          SizedBox(height: 16),
+          Text(
             'Aucun match disponible',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 8),
-          const Text(
+          SizedBox(height: 8),
+          Text(
             'Les matches apparaîtront bientôt',
             style: TextStyle(color: Colors.grey),
           ),

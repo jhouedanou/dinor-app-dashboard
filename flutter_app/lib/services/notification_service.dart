@@ -29,7 +29,7 @@ class NotificationService {
       _setupEventListeners();
       
       // Attendre un peu pour que l'inscription se fasse
-      await Future.delayed(Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 2));
       
       // Récupérer et afficher l'ID utilisateur
       final userId = OneSignal.User.getOnesignalId();
@@ -41,7 +41,7 @@ class NotificationService {
       final subscriptionOptedIn = OneSignal.User.pushSubscription.optedIn;
       debugPrint('📱 [NotificationService] Subscription OptedIn: $subscriptionOptedIn');
       
-      if (userId == null || subscriptionId == null) {
+      if (subscriptionId == null) {
         debugPrint('⚠️ [NotificationService] PROBLÈME: User ID ou Subscription ID manquant');
         debugPrint('⚠️ [NotificationService] Tentative de forcer l\'inscription...');
         
@@ -49,7 +49,7 @@ class NotificationService {
         await OneSignal.User.pushSubscription.optIn();
         debugPrint('🔄 [NotificationService] Opt-in forcé, attente 2 secondes...');
         
-        await Future.delayed(Duration(seconds: 2));
+        await Future.delayed(const Duration(seconds: 2));
         final newUserId = OneSignal.User.getOnesignalId();
         final newSubscriptionId = OneSignal.User.pushSubscription.id;
         debugPrint('🆔 [NotificationService] Nouveau User ID: $newUserId');
@@ -115,7 +115,7 @@ class NotificationService {
         debugPrint('👆 [NotificationService] =======================================');
         
         // Attendre un petit délai pour s'assurer que l'app est prête
-        Future.delayed(Duration(milliseconds: 500), () {
+        Future.delayed(const Duration(milliseconds: 500), () {
           _handleNotificationClick(event);
         });
       });
@@ -241,7 +241,7 @@ class NotificationService {
       debugPrint('⏳ [NotificationService] Tentative de retry dans 1 seconde...');
       
       // Retry après un délai
-      Future.delayed(Duration(seconds: 1), () {
+      Future.delayed(const Duration(seconds: 1), () {
         if (NavigationService.navigatorKey.currentState != null) {
           debugPrint('✅ [NotificationService] NavigatorKey disponible après retry');
           _performNavigation(contentType, contentId);

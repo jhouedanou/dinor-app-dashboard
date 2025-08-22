@@ -1,13 +1,12 @@
-/**
- * ENHANCED_LIKE_BUTTON.DART - BOUTON DE LIKE AVEC SYNCHRONISATION EN TEMPS RÉEL
- * 
- * FONCTIONNALITÉS :
- * - Compteurs de likes exacts synchronisés avec l'API
- * - Animation smooth lors des interactions
- * - Gestion d'authentification automatique
- * - Mise à jour automatique des compteurs
- * - Retry automatique en cas d'erreur
- */
+/// ENHANCED_LIKE_BUTTON.DART - BOUTON DE LIKE AVEC SYNCHRONISATION EN TEMPS RÉEL
+/// 
+/// FONCTIONNALITÉS :
+/// - Compteurs de likes exacts synchronisés avec l'API
+/// - Animation smooth lors des interactions
+/// - Gestion d'authentification automatique
+/// - Mise à jour automatique des compteurs
+/// - Retry automatique en cas d'erreur
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,7 +26,7 @@ class EnhancedLikeButton extends ConsumerStatefulWidget {
   final bool autoFetch; // Récupérer automatiquement les compteurs exacts
 
   const EnhancedLikeButton({
-    Key? key,
+    super.key,
     required this.type,
     required this.itemId,
     this.initialLiked = false,
@@ -37,7 +36,7 @@ class EnhancedLikeButton extends ConsumerStatefulWidget {
     this.variant = 'standard',
     this.onAuthRequired,
     this.autoFetch = true,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<EnhancedLikeButton> createState() => _EnhancedLikeButtonState();

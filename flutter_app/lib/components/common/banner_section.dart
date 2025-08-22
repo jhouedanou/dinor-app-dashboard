@@ -1,12 +1,11 @@
-/**
- * BANNER_SECTION.DART - CONVERSION FIDÈLE DE BannerSection.vue
- * 
- * FIDÉLITÉ VISUELLE :
- * - Bannières avec gradients identiques
- * - Overlay text avec contraste parfait
- * - Boutons hero avec styles identiques
- * - Animation et transitions identiques
- */
+/// BANNER_SECTION.DART - CONVERSION FIDÈLE DE BannerSection.vue
+/// 
+/// FIDÉLITÉ VISUELLE :
+/// - Bannières avec gradients identiques
+/// - Overlay text avec contraste parfait
+/// - Boutons hero avec styles identiques
+/// - Animation et transitions identiques
+library;
 
 import 'package:flutter/material.dart';
 
@@ -20,12 +19,12 @@ class BannerSection extends StatelessWidget {
   final double? height;
 
   const BannerSection({
-    Key? key,
+    super.key,
     required this.type,
     required this.section,
     required this.banners,
     this.height,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +32,7 @@ class BannerSection extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    return Container(
+    return SizedBox(
       height: height ?? 200,
       child: PageView.builder(
         itemCount: banners.length,

@@ -1,12 +1,11 @@
-/**
- * HOME_VIDEO_MODAL.DART - MODAL VIDÉO POUR LA PAGE D'ACCUEIL
- * 
- * FONCTIONNALITÉS :
- * - Modal optimisé pour les vidéos Dinor TV de la page d'accueil
- * - Interface simplifiée et élégante
- * - Fermeture automatique de la vidéo
- * - Design cohérent avec l'application
- */
+/// HOME_VIDEO_MODAL.DART - MODAL VIDÉO POUR LA PAGE D'ACCUEIL
+/// 
+/// FONCTIONNALITÉS :
+/// - Modal optimisé pour les vidéos Dinor TV de la page d'accueil
+/// - Interface simplifiée et élégante
+/// - Fermeture automatique de la vidéo
+/// - Design cohérent avec l'application
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -20,13 +19,13 @@ class HomeVideoModal extends StatefulWidget {
   final VoidCallback? onClose;
 
   const HomeVideoModal({
-    Key? key,
+    super.key,
     required this.isOpen,
     required this.videoUrl,
     required this.title,
     this.description,
     this.onClose,
-  }) : super(key: key);
+  });
 
   @override
   State<HomeVideoModal> createState() => _HomeVideoModalState();
@@ -200,9 +199,9 @@ class _HomeVideoModalState extends State<HomeVideoModal>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'Dinor TV',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Color(0xFFE53E3E),
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
