@@ -46,14 +46,26 @@ class ContentItemCard extends StatelessWidget {
                       imageUrl: _getImageUrl(),
                       contentType: contentType,
                       fit: BoxFit.cover,
+                      errorWidget: Container(
+                        color: const Color(0xFFF7FAFC),
+                        child: Center(
+                          child: Image.asset(
+                            'assets/icons/app_icon.png',
+                            width: 80,
+                            height: 80,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
                     )
                   : Container(
                       color: const Color(0xFFF7FAFC),
                       child: Center(
-                        child: Icon(
-                          _getTypeIcon(),
-                          size: 64,
-                          color: const Color(0xFFCBD5E0),
+                        child: Image.asset(
+                          'assets/icons/app_icon.png',
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.contain,
                         ),
                       ),
                     ),
@@ -228,16 +240,28 @@ class ContentItemCard extends StatelessWidget {
                          imageUrl: _getImageUrl(),
                          contentType: contentType,
                          fit: BoxFit.contain,
+                         errorWidget: Container(
+                           color: const Color(0xFFF7FAFC),
+                           child: Center(
+                             child: Image.asset(
+                               'assets/icons/app_icon.png',
+                               width: 40,
+                               height: 40,
+                               fit: BoxFit.contain,
+                             ),
+                           ),
+                         ),
                        ),
                      )
                    : Container(
                        width: double.infinity,
                        height: double.infinity,
                        child: Center(
-                         child: Icon(
-                           _getTypeIcon(),
-                           size: 32,
-                           color: const Color(0xFFCBD5E0),
+                         child: Image.asset(
+                           'assets/icons/app_icon.png',
+                           width: 40,
+                           height: 40,
+                           fit: BoxFit.contain,
                          ),
                        ),
                      ),
@@ -584,10 +608,15 @@ class ContentItemCard extends StatelessWidget {
   }
 
   String _getImageUrl() {
-    return item['featured_image_url']?.toString() ?? 
-           item['image']?.toString() ?? 
-           item['thumbnail']?.toString() ?? 
-           '';
+    final url = item['featured_image_url']?.toString() ?? 
+                item['image']?.toString() ?? 
+                item['thumbnail']?.toString() ?? 
+                '';
+    // Retourner une chaîne vide si l'URL n'est pas valide
+    if (url.isEmpty || url == 'null' || url == 'undefined') {
+      return '';
+    }
+    return url;
   }
 
   List<String> _getTags() {

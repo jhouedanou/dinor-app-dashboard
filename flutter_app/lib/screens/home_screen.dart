@@ -708,17 +708,44 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
           // Image avec overlay - .card-image CSS
           Container(
             height: 160, // height: 160px
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-              image: DecorationImage(
-                image: CachedNetworkImageProvider(
-                  ImageService.getRecipeImageUrl(item)
-                ),
-                fit: BoxFit.cover,
-              ),
-            ),
             child: Stack(
               children: [
+                // Image de fond
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                  child: _hasValidRecipeImage(item)
+                    ? CachedNetworkImage(
+                        imageUrl: ImageService.getRecipeImageUrl(item),
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                        errorWidget: (context, url, error) => Container(
+                          color: const Color(0xFFF7FAFC),
+                          child: Center(
+                            child: Image.asset(
+                              'assets/icons/app_icon.png',
+                              width: 80,
+                              height: 80,
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                        ),
+                      )
+                    : Container(
+                        color: const Color(0xFFF7FAFC),
+                        width: double.infinity,
+                        height: double.infinity,
+                        child: Center(
+                          child: Image.asset(
+                            'assets/icons/app_icon.png',
+                            width: 80,
+                            height: 80,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+                ),
+                
                 // Overlay avec badges - .card-overlay CSS
                 Positioned(
                   top: 8,
@@ -1234,5 +1261,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
       default:
         return const Color(0xFF4CAF50);
     }
+  }
+
+  // Fonction pour vérifier si l'item a une image valide
+  bool _hasValidRecipeImage(Map<String, dynamic> item) {
+    final imageUrl = item['featured_image_url']?.toString() ?? 
+                    item['image']?.toString() ?? 
+                    item['thumbnail']?.toString() ?? 
+                    '';
+    return imageUrl.isNotEmpty && imageUrl != 'null' && imageUrl != 'undefined';
   }
 }

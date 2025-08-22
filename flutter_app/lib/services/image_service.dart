@@ -170,57 +170,43 @@ class ImageService {
   /// Widget de placeholder par défaut
   static Widget _buildDefaultPlaceholder() {
     return Container(
-      color: const Color(0xFFF4D03F),
-      child: const Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2D3748)),
-        ),
+      color: const Color(0xFFF7FAFC),
+      child: Stack(
+        children: [
+          // Logo Dinor en arrière-plan
+          Center(
+            child: Opacity(
+              opacity: 0.5,
+              child: Image.asset(
+                'assets/icons/app_icon.png',
+                width: 60,
+                height: 60,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+          // Indicateur de chargement par-dessus
+          const Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFE53E3E)),
+            ),
+          ),
+        ],
       ),
     );
   }
 
   /// Widget d'erreur par défaut selon le type de contenu
   static Widget _buildDefaultErrorWidget(String contentType) {
-    IconData icon;
-    Color color;
-    
-    switch (contentType) {
-      case 'recipe':
-        icon = Icons.restaurant;
-        color = const Color(0xFFF4D03F);
-        break;
-      case 'tip':
-        icon = Icons.lightbulb;
-        color = const Color(0xFFF4D03F);
-        break;
-      case 'event':
-        icon = Icons.event;
-        color = const Color(0xFFF4D03F);
-        break;
-      case 'video':
-      case 'dinor_tv':
-        icon = Icons.play_circle;
-        color = const Color(0xFFF4D03F);
-        break;
-      case 'banner':
-        icon = Icons.image;
-        color = const Color(0xFFF4D03F);
-        break;
-      case 'user':
-        icon = Icons.person;
-        color = const Color(0xFFF4D03F);
-        break;
-      default:
-        icon = Icons.image;
-        color = const Color(0xFFF4D03F);
-    }
-    
     return Container(
-      color: color,
-      child: Icon(
-        icon,
-        size: 48,
-        color: const Color(0xFF2D3748),
+      color: const Color(0xFFF7FAFC), // Fond gris clair
+      child: Center(
+        child: Image.asset(
+          'assets/icons/app_icon.png',
+          width: 60,
+          height: 60,
+          fit: BoxFit.contain,
+        ),
       ),
     );
   }

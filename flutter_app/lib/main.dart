@@ -20,6 +20,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 // Test app simple (désactivé)
 // import 'test_app.dart';
@@ -40,7 +41,9 @@ void main() async {
   
   // Initialisation Firebase
   try {
-    await Firebase.initializeApp();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
     await AnalyticsService.initialize();
     print('🔥 [Firebase] Initialisé avec succès');
   } catch (e) {

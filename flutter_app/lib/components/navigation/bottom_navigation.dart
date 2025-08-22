@@ -29,6 +29,9 @@ import 'package:url_launcher/url_launcher.dart';
 import '../common/auth_modal.dart';
 import '../dinor_icon.dart';
 
+// Screens
+import '../../screens/menu_screen.dart';
+
 // Composables et stores
 import '../../composables/use_auth_handler.dart';
 import '../../composables/use_pages.dart';
@@ -139,6 +142,18 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
   // REPRODUCTION EXACTE de handleItemClick() Vue
   void _handleItemClick(Map<String, dynamic> item) {
     print('🔘 [BottomNav] Clic sur item: ${item['name']} -> ${item['path']}');
+
+    // Gestion spéciale pour l'item Menu
+    if (item['label']?.toString().toLowerCase() == 'menu' || 
+        item['name']?.toString().toLowerCase() == 'menu') {
+      print('📋 [BottomNav] Navigation vers Menu Screen');
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => const MenuScreen(),
+        ),
+      );
+      return;
+    }
 
     switch (item['action_type']) {
       case 'route':
@@ -267,9 +282,8 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
     ];
 
     // IMPORTANT: Retourner un Container dimensionné pour bottomNavigationBar
-    return Container
-      (
-      height: 40 + MediaQuery.of(context).padding.bottom, // Hauteur réduite pour un design plus compact
+    return Container(
+      height: 45 + MediaQuery.of(context).padding.bottom, // Hauteur augmentée à 45px pour les icônes plus grandes
       decoration: const BoxDecoration(
         color: Color(0xFFF4D03F), // Fond jaune restauré
         border: Border(
@@ -281,8 +295,9 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
         boxShadow: AppShadows.softTop,
       ),
       child: SafeArea(
-        child: SizedBox(
-          height: 26, // Cohérent avec la nouvelle hauteur du container
+        bottom: false, // Désactiver le SafeArea en bas pour coller au bord
+        child: Container(
+          height: 45, // Hauteur fixe pour coller au bas
           child: Stack(
             children: [
               // Navigation avec largeurs uniformes et centrage sur tablettes
@@ -415,8 +430,9 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
         _handleItemClick(item);
       },
       child: Container(
+        height: double.infinity, // Prendre toute la hauteur
         padding: const EdgeInsets.symmetric(
-          vertical: 8, // Augmenté de 4 à 8 pour plus d'espace en haut
+          vertical: 2, // Petit padding pour les icônes plus grandes
           horizontal: 4,
         ),
         // Style allégé: pas de fond ni de contour pour l'actif, seulement icône/texte orange
@@ -426,13 +442,14 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.max,
           children: [
             // Icône - taille uniforme
             Container(
-              margin: const EdgeInsets.only(bottom: 1), // Réduit de 2 à 1 pour moins d'espace en bas
+              margin: const EdgeInsets.only(bottom: 1), // Petite marge pour séparer icône et texte
               child: DinorIcon(
                 name: item['icon']?.toString() ?? 'home',
-                size: 22, // Taille uniforme pour tous
+                size: 20, // Taille agrandie pour hauteur 45px
                 color: isActive
                     ? const Color(0xFFFF6B35)
                     : const Color.fromRGBO(0, 0, 0, 0.7),
@@ -444,7 +461,7 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
               item['label']?.toString() ?? '',
               style: TextStyle(
                 fontFamily: 'Roboto',
-                fontSize: 11, // Taille uniforme pour tous
+                fontSize: 10, // Taille agrandie pour hauteur 45px
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
                 color: isActive
                     ? const Color(0xFFFF6B35)
@@ -459,7 +476,7 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
             // Soulignement bas pour l'item actif
             if (isActive)
               Container(
-                margin: const EdgeInsets.only(top: 3), // Réduit de 6 à 3
+                margin: EdgeInsets.zero, // Suppression totale des marges
                 width: 24, // Largeur uniforme pour tous
                 height: 2,
                 decoration: BoxDecoration(
@@ -472,5 +489,6 @@ class _BottomNavigationState extends ConsumerState<BottomNavigation> {
       ),
     );
   }
+
 }
 
