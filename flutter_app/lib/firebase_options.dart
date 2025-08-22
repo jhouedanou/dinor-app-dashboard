@@ -53,7 +53,7 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCq37nk-Cjt0r3n-QDqZ6R2rB0JOSJQtfM',
+    apiKey: 'YOUR_FIREBASE_API_KEY_HERE',
     appId: '1:225643560458:android:184dbda2374aa43e5e29f3',
     messagingSenderId: '225643560458',
     projectId: 'dinor-app-2',

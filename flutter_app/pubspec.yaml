@@ -1,7 +1,7 @@
 name: dinor_app
 description: Dinor App - Votre chef de poche - Application culinaire mobile
 publish_to: 'none'
-version: 3.0.0+30
+version: 3.1.0+31
 
 environment:
   sdk: '>=3.2.0 <4.0.0'
