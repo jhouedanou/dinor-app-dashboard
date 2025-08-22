@@ -19,14 +19,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:async';
+import 'dart:ui';
 
 import '../services/navigation_service.dart';
-import '../components/common/like_button.dart';
 import '../components/common/youtube_video_player.dart';
 import '../components/common/unified_comments_section.dart';
-import '../services/likes_service.dart';
-import '../composables/use_auth_handler.dart';
-import '../components/common/auth_modal.dart';
+import '../services/comments_service.dart';
 
 // Modèle pour les données vidéo
 class VideoData {
@@ -153,7 +151,6 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
     with TickerProviderStateMixin {
   late PageController _pageController;
   int _currentIndex = 0;
-  bool _showAuthModal = false;
   
   // Animation des contrôles
   late AnimationController _controlsAnimationController;
@@ -163,6 +160,9 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
   
   // Gestion des lecteurs YouTube
   final Map<int, GlobalKey<YouTubeVideoPlayerState>> _playerKeys = {};
+  
+  // Cache des couleurs extraites par vidéo
+  final Map<String, List<Color>> _extractedColors = {};
 
   @override
   void initState() {
@@ -274,88 +274,6 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
     );
   }
 
-  // Gérer l'action de like
-  Future<void> _handleLikeAction(VideoData video, WidgetRef ref) async {
-    final authState = ref.read(useAuthHandlerProvider);
-    
-    print('🎯 [TikTokVideo] Tentative de like pour vidéo: ID=${video.id}, Auth=${authState.isAuthenticated}');
-    
-    if (!authState.isAuthenticated) {
-      print('⚠️ [TikTokVideo] Utilisateur non authentifié, ouverture modal auth');
-      setState(() => _showAuthModal = true);
-      return;
-    }
-
-    try {
-      print('🔄 [TikTokVideo] Envoi requête like: type=video, id=${video.id}');
-      
-      // Utiliser 'video' qui est le type de contenu reconnu par l'API
-      final result = await ref.read(likesProvider.notifier).toggleLike('video', video.id);
-      
-      if (result) {
-        print('✅ [TikTokVideo] Like toggleé avec succès');
-        
-        // Afficher un feedback visuel seulement si le widget est encore monté
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  const Icon(Icons.favorite, color: Colors.white, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    ref.read(likesProvider.notifier).isLiked('video', video.id) 
-                      ? '❤️ Ajouté aux favoris' 
-                      : '💔 Retiré des favoris',
-                    style: const TextStyle(fontWeight: FontWeight.w500),
-                  ),
-                ],
-              ),
-              backgroundColor: const Color(0xFFE53E3E),
-              duration: const Duration(seconds: 2),
-              behavior: SnackBarBehavior.floating,
-              margin: const EdgeInsets.all(16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-          );
-        }
-      } else {
-        print('❌ [TikTokVideo] Échec du like');
-        if (mounted) {
-          _showErrorSnackBar('Impossible de mettre à jour le like');
-        }
-      }
-    } catch (error) {
-      print('❌ [TikTokVideo] Exception lors du like: $error');
-      if (mounted) {
-        _showErrorSnackBar('Erreur de connexion: ${error.toString()}');
-      }
-    }
-  }
-  
-  void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.error_outline, color: Colors.white, size: 20),
-            const SizedBox(width: 8),
-            Expanded(child: Text(message)),
-          ],
-        ),
-        backgroundColor: Colors.red[600],
-        duration: const Duration(seconds: 4),
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        action: SnackBarAction(
-          label: 'Réessayer',
-          textColor: Colors.white,
-          onPressed: () => _handleLikeAction(widget.videos[_currentIndex], ref),
-        ),
-      ),
-    );
-  }
 
   // Naviguer vers les commentaires
   void _openComments() {
@@ -387,25 +305,12 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
 
           // Interface superposée
           _buildOverlayInterface(),
-
-          // Modal d'authentification
-          if (_showAuthModal)
-            Positioned.fill(
-              child: Container(
-                color: Colors.black54,
-                child: AuthModal(
-                  isOpen: _showAuthModal,
-                  onClose: () => setState(() => _showAuthModal = false),
-                  onAuthenticated: () => setState(() => _showAuthModal = false),
-                ),
-              ),
-            ),
         ],
       ),
     );
   }
 
-  // Page vidéo individuelle
+  // Page vidéo NOUVELLE avec design révolutionnaire
   Widget _buildVideoPage(int index) {
     final video = widget.videos[index];
     
@@ -419,44 +324,250 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
       child: Container(
         width: double.infinity,
         height: double.infinity,
-        color: Colors.black,
+        decoration: BoxDecoration(
+          // Gradient de fond très visible
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              const Color(0xFF1a1a2e),  // Bleu foncé
+              const Color(0xFF16213e),  // Bleu marine
+              const Color(0xFF0f3460),  // Bleu profond
+              Colors.black,
+            ],
+          ),
+        ),
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // Lecteur YouTube
-            if (video.videoUrl.isNotEmpty)
-              Center(
-                child: AspectRatio(
-                  aspectRatio: 9 / 16, // Format portrait pour TikTok
-                  child: YouTubeVideoPlayer(
-                    key: _playerKeys[index],
-                    videoUrl: video.videoUrl,
-                    title: '', // Pas de titre sur le player
-                    autoPlay: index == _currentIndex, // Auto-play seulement pour la vidéo courante
-                    showControls: true,
-                    onReady: () {
-                      print('✅ [TikTokVideo] Player $index ready: ${video.title}');
-                    },
-                    onPause: () {
-                      print('⏸️ [TikTokVideo] Player $index paused');
-                    },
-                  ),
-                ),
-              )
-            else if (video.thumbnailUrl != null)
-              // Thumbnail si pas d'URL vidéo
-              Image.network(
-                video.thumbnailUrl!,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => _buildVideoPlaceholder(),
-              )
-            else
-              _buildVideoPlaceholder(),
+            // Image de fond avec effet dramatique
+            _buildDramaticBackground(video),
+            
+            // Effet de particules animé (simulation)
+            _buildAnimatedOverlay(),
+            
+            // Lecteur vidéo au centre avec effet WOW
+            _buildCenteredVideoPlayer(video, index),
           ],
         ),
       ),
     );
   }
+
+  // Image de fond avec effet dramatique
+  Widget _buildDramaticBackground(VideoData video) {
+    if (video.thumbnailUrl == null || video.thumbnailUrl!.isEmpty) {
+      return Container();
+    }
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        // Image de fond
+        Image.network(
+          video.thumbnailUrl!,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => Container(),
+        ),
+        
+        // Triple effet blur très visible
+        BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
+          child: Container(
+            color: Colors.black.withValues(alpha: 0.6),
+          ),
+        ),
+        
+        // Gradient overlay dramatique
+        Container(
+          decoration: BoxDecoration(
+            gradient: RadialGradient(
+              center: Alignment.center,
+              radius: 1.2,
+              colors: [
+                Colors.transparent,
+                Colors.black.withValues(alpha: 0.3),
+                Colors.black.withValues(alpha: 0.7),
+                Colors.black.withValues(alpha: 0.9),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Effet d'overlay animé
+  Widget _buildAnimatedOverlay() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF4facfe).withValues(alpha: 0.1),
+            Colors.transparent,
+            const Color(0xFFe100ff).withValues(alpha: 0.1),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Extracteur de couleurs simple basé sur l'URL de l'image
+  List<Color> _getColorsFromImage(VideoData video) {
+    final videoId = video.id;
+    
+    // Si on a déjà extrait les couleurs pour cette vidéo
+    if (_extractedColors.containsKey(videoId)) {
+      return _extractedColors[videoId]!;
+    }
+    
+    // Couleurs par défaut basées sur l'ID de la vidéo pour la cohérence
+    final hash = videoId.hashCode;
+    final colors = [
+      // Première couleur : teintes chaudes/froides basées sur le hash
+      Color.fromARGB(
+        153, // Alpha fixe (0.6)
+        100 + (hash % 156), // Rouge variable
+        150 + ((hash >> 8) % 106), // Vert variable  
+        200 + ((hash >> 16) % 56), // Bleu variable
+      ),
+      // Deuxième couleur : complémentaire
+      Color.fromARGB(
+        153, // Alpha fixe (0.6)
+        200 + ((hash >> 4) % 56), // Rouge variable
+        100 + ((hash >> 12) % 156), // Vert variable
+        150 + ((hash >> 20) % 106), // Bleu variable
+      ),
+    ];
+    
+    // Cache pour éviter de recalculer
+    _extractedColors[videoId] = colors;
+    return colors;
+  }
+
+  // Détecter le ratio optimal pour la vidéo
+  double _getOptimalAspectRatio(VideoData video) {
+    // Pour les vidéos YouTube, le ratio standard est 16:9
+    // Pour les vidéos courtes/TikTok, on garde 9:16
+    // On peut détecter via l'URL ou utiliser des heuristiques
+    
+    if (video.videoUrl.contains('youtube.com') || video.videoUrl.contains('youtu.be')) {
+      // Vidéos YouTube classiques = 16:9 (paysage)
+      return 16 / 9;
+    }
+    
+    // Si la durée est courte (< 60s), probablement du contenu vertical
+    if (video.duration != null && video.duration!.inSeconds < 60) {
+      return 9 / 16; // Portrait pour contenus courts
+    }
+    
+    // Par défaut, utiliser le ratio YouTube standard
+    return 16 / 9;
+  }
+
+  // Lecteur vidéo centré avec ratio adaptatif
+  Widget _buildCenteredVideoPlayer(VideoData video, int index) {
+    final colors = _getColorsFromImage(video);
+    final aspectRatio = _getOptimalAspectRatio(video);
+    final isPortrait = aspectRatio < 1;
+    
+    // Ajuster les marges selon l'orientation
+    final margin = isPortrait 
+        ? const EdgeInsets.symmetric(horizontal: 30, vertical: 40)  // Plus d'espace vertical pour portrait
+        : const EdgeInsets.symmetric(horizontal: 20, vertical: 60); // Plus d'espace horizontal pour paysage
+    
+    return Center(
+      child: Container(
+        margin: margin,
+        constraints: BoxConstraints(
+          // Limiter les dimensions pour éviter que la vidéo soit trop grande
+          maxWidth: MediaQuery.of(context).size.width - 40,
+          maxHeight: MediaQuery.of(context).size.height * (isPortrait ? 0.8 : 0.6),
+        ),
+        child: AspectRatio(
+          aspectRatio: aspectRatio,
+          child: Stack(
+            children: [
+              // Container pour les shadows uniquement
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(isPortrait ? 30 : 20),
+                    // SHADOWS avec couleurs extraites de l'image
+                    boxShadow: [
+                      // Shadow principale avec première couleur extraite
+                      BoxShadow(
+                        color: colors[0],
+                        blurRadius: isPortrait ? 50 : 40,
+                        offset: Offset(isPortrait ? -15 : -10, isPortrait ? -15 : -10),
+                        spreadRadius: isPortrait ? 10 : 8,
+                      ),
+                      // Shadow secondaire avec deuxième couleur extraite
+                      BoxShadow(
+                        color: colors[1],
+                        blurRadius: isPortrait ? 50 : 40,
+                        offset: Offset(isPortrait ? 15 : 10, isPortrait ? 15 : 10),
+                        spreadRadius: isPortrait ? 10 : 8,
+                      ),
+                      // Shadow noire pour la profondeur
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.8),
+                        blurRadius: isPortrait ? 40 : 30,
+                        offset: Offset(0, isPortrait ? 20 : 15),
+                        spreadRadius: isPortrait ? 8 : 6,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // Container de la vidéo SANS shadows (bordure limitée aux dimensions de la vidéo)
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(isPortrait ? 30 : 20),
+                  // Border limitée aux dimensions exactes de la vidéo
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.4),
+                    width: 2,
+                  ),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(isPortrait ? 28 : 18),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.grey[900]!,
+                          Colors.black,
+                        ],
+                      ),
+                    ),
+                    child: video.videoUrl.isNotEmpty
+                        ? YouTubeVideoPlayer(
+                            key: _playerKeys[index],
+                            videoUrl: video.videoUrl,
+                            title: '',
+                            autoPlay: index == _currentIndex,
+                            showControls: true,
+                            onReady: () {
+                              print('✅ [TikTokVideo] Player $index ready: ${video.title}');
+                            },
+                            onPause: () {
+                              print('⏸️ [TikTokVideo] Player $index paused');
+                            },
+                          )
+                        : _buildVideoPlaceholder(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
 
   // Placeholder pour vidéo
   Widget _buildVideoPlaceholder() {
@@ -537,74 +648,42 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
       builder: (context, ref, _) {
         return Column(
           children: [
-            // Like avec état reactif
-            _buildActionButton(
-              child: Consumer(
-                builder: (context, ref, _) {
-                  final isLiked = ref.watch(likesProvider.notifier).isLiked('video', video.id);
-                  final likeCount = ref.watch(likesProvider.notifier).getLikeCount('video', video.id);
-                  
-                  return GestureDetector(
-                    onTap: () => _handleLikeAction(video, ref),
-                    child: Column(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: isLiked ? const Color(0xFFE53E3E) : Colors.black,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            isLiked ? Icons.favorite : Icons.favorite_border,
-                            color: Colors.white,
-                            size: 24,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${likeCount > 0 ? likeCount : video.likesCount}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-            
-            const SizedBox(height: 24),
-
-            // Commentaires
+            // Commentaires avec nombre dynamique
             _buildActionButton(
               onTap: _openComments,
-              child: Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.black,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      LucideIcons.messageCircle,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${video.commentsCount}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
+              child: Consumer(
+                builder: (context, ref, _) {
+                  final commentsState = ref.watch(commentsProvider('dinor_tv_${video.id}'));
+                  final actualCount = commentsState.comments.isNotEmpty 
+                      ? commentsState.comments.length 
+                      : video.commentsCount;
+                  
+                  return Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.black,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          LucideIcons.messageCircle,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '$actualCount',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
             ),
 
@@ -717,22 +796,6 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
             overflow: TextOverflow.ellipsis,
           ),
 
-        const SizedBox(height: 8),
-
-        // Stats
-        Row(
-          children: [
-            const Icon(LucideIcons.eye, size: 16, color: Colors.white70),
-            const SizedBox(width: 4),
-            Text(
-              '${video.views} vues',
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
       ],
     );
   }
@@ -778,20 +841,29 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
                       ),
                     ),
                     const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF4D03F),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        '${video.commentsCount}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF2D3748),
-                        ),
-                      ),
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final commentsState = ref.watch(commentsProvider('dinor_tv_${video.id}'));
+                        final actualCount = commentsState.comments.isNotEmpty 
+                            ? commentsState.comments.length 
+                            : video.commentsCount;
+                            
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF4D03F),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '$actualCount',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF2D3748),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(width: 8),
                     IconButton(
@@ -811,7 +883,7 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
               // Section commentaires unifiée
               Expanded(
                 child: UnifiedCommentsSection(
-                  contentType: 'video',
+                  contentType: 'dinor_tv',
                   contentId: video.id,
                   contentTitle: video.title,
                 ),

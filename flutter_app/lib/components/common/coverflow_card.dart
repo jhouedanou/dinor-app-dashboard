@@ -149,22 +149,36 @@ class CoverflowCard extends StatelessWidget {
 
   Widget _buildPlaceholderImage() {
     return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.blue.shade300,
-            Colors.purple.shade300,
-            Colors.orange.shade300,
-          ],
-        ),
-      ),
+      color: Colors.white,
       child: Center(
-        child: Icon(
-          _getTypeIcon(),
-          size: 48 * scale, // Taille adaptative
-          color: Colors.white.withValues(alpha: 0.8),
+        child: Image.asset(
+          'assets/icons/app_icon.png',
+          width: 120 * scale,
+          height: 120 * scale,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) {
+            // Fallback vers l'ancienne version avec icône si le logo ne charge pas
+            return Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.blue.shade300,
+                    Colors.purple.shade300,
+                    Colors.orange.shade300,
+                  ],
+                ),
+              ),
+              child: Center(
+                child: Icon(
+                  _getTypeIcon(),
+                  size: 48 * scale,
+                  color: Colors.white.withValues(alpha: 0.8),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -300,36 +314,4 @@ class CoverflowCard extends StatelessWidget {
     }
   }
 
-  Widget _buildActionButton() {
-    return Container(
-      width: double.infinity,
-      height: 36 * scale, // Hauteur adaptative
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18 * scale),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.3),
-          width: 1,
-        ),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(18 * scale),
-          onTap: onTap,
-          child: Center(
-            child: Text(
-              'Voir plus',
-              style: TextStyle(
-                fontFamily: 'OpenSans',
-                fontSize: 12 * scale,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }

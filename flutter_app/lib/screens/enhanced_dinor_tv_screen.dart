@@ -162,77 +162,11 @@ class _EnhancedDinorTVScreenState extends ConsumerState<EnhancedDinorTVScreen>
       children: [
         Scaffold(
           backgroundColor: Colors.black,
-          body: Column(
-            children: [
-              // Header pareil que sur les pages recettes, astuces et events
-              Container(
-                padding: const EdgeInsets.only(
-                  left: 20,
-                  right: 20,
-                  bottom: 20,
-                ),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFFE53E3E), Color(0xFFD53F8C)],
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFE53E3E).withValues(alpha: 0.3),
-                      blurRadius: 15,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        IconButton(
-                          icon:
-                              const Icon(Icons.arrow_back, color: Colors.white),
-                          onPressed: () => NavigationService.pop(),
-                        ),
-                        const SizedBox(width: 8),
-                        const Expanded(
-                          child: Text(
-                            'Dinor TV',
-                            style: TextStyle(
-                              fontFamily: 'OpenSans',
-                              fontSize: 28,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                        if (videos.isNotEmpty)
-                          IconButton(
-                            onPressed: () => _openImmersivePlayer(),
-                            icon: const Icon(LucideIcons.maximize,
-                                color: Colors.white),
-                            tooltip: 'Mode Immersif',
-                          ),
-                        IconButton(
-                          onPressed: _handleRefresh,
-                          icon: const Icon(LucideIcons.refreshCw,
-                              color: Colors.white),
-                          tooltip: 'Actualiser',
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                  ],
-                ),
-              ),
-              // Body
-              Expanded(
-                child: RefreshIndicator(
-                  onRefresh: _handleRefresh,
-                  child: _buildBody(videos, isLoading, error),
-                ),
-              ),
-            ],
+          body: SafeArea(
+            child: RefreshIndicator(
+              onRefresh: _handleRefresh,
+              child: _buildBody(videos, isLoading, error),
+            ),
           ),
 
           // Bouton flottant pour lancer l'expérience immersive

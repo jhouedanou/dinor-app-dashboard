@@ -229,31 +229,44 @@ class _YouTubeVideoModalState extends State<YouTubeVideoModal>
   }
 
   Widget _buildVideoPlayer() {
+    final screenSize = MediaQuery.of(context).size;
+    final maxHeight = screenSize.height * 0.7;
+    
     return Container(
       constraints: BoxConstraints(
-        maxWidth: MediaQuery.of(context).size.width - 32,
-        maxHeight: MediaQuery.of(context).size.height * 0.7,
+        maxWidth: screenSize.width - 32,
+        maxHeight: maxHeight,
       ),
-      child: Center(
-        child: ClipRRect(
-          borderRadius: const BorderRadius.only(
-            bottomLeft: Radius.circular(16),
-            bottomRight: Radius.circular(16),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Flexible(
+            child: Center(
+              child: AspectRatio(
+                aspectRatio: 16 / 9, // Ratio standard YouTube
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(16),
+                    bottomRight: Radius.circular(16),
+                  ),
+                  child: YouTubeVideoPlayer(
+                    key: _playerKey,
+                    videoUrl: widget.videoUrl,
+                    title: '', // Pas besoin du titre ici, il est dans le header
+                    autoPlay: true,
+                    showControls: true,
+                    onReady: () {
+                      print('✅ [YouTubeVideoModal] Player ready dans la modal');
+                    },
+                    onPause: () {
+                      print('⏸️ [YouTubeVideoModal] Vidéo mise en pause par le player');
+                    },
+                  ),
+                ),
+              ),
+            ),
           ),
-          child: YouTubeVideoPlayer(
-            key: _playerKey,
-            videoUrl: widget.videoUrl,
-            title: '', // Pas besoin du titre ici, il est dans le header
-            autoPlay: true,
-            showControls: true,
-            onReady: () {
-              print('✅ [YouTubeVideoModal] Player ready dans la modal');
-            },
-            onPause: () {
-              print('⏸️ [YouTubeVideoModal] Vidéo mise en pause par le player');
-            },
-          ),
-        ),
+        ],
       ),
     );
   }

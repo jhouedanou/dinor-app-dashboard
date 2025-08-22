@@ -33,6 +33,8 @@ class UnifiedContentHeader extends StatelessWidget {
             imageUrl: imageUrl,
             contentType: contentType,
             fit: fit,
+            width: double.infinity,
+            height: height,
           ),
         ),
         

@@ -121,7 +121,7 @@ class ImageService {
       width: width,
       height: height,
       errorBuilder: (context, error, stackTrace) {
-        return errorWidget ?? _buildDefaultErrorWidget(contentType);
+        return errorWidget ?? _buildDefaultErrorWidget(contentType, width: width, height: height);
       },
     );
 
@@ -153,8 +153,8 @@ class ImageService {
       fit: fit,
       width: width,
       height: height,
-      placeholder: (context, url) => placeholder ?? _buildDefaultPlaceholder(),
-      errorWidget: (context, url, error) => errorWidget ?? _buildDefaultErrorWidget(contentType),
+      placeholder: (context, url) => placeholder ?? _buildDefaultPlaceholder(width: width, height: height),
+      errorWidget: (context, url, error) => errorWidget ?? _buildDefaultErrorWidget(contentType, width: width, height: height),
     );
 
     if (borderRadius != null) {
@@ -168,7 +168,15 @@ class ImageService {
   }
 
   /// Widget de placeholder par défaut
-  static Widget _buildDefaultPlaceholder() {
+  static Widget _buildDefaultPlaceholder({double? width, double? height}) {
+    // Calculer la taille de l'icône en fonction des dimensions du conteneur
+    double iconSize = 60;
+    if (height != null && height > 200) {
+      iconSize = 120; // Plus grande icône pour les en-têtes
+    } else if (height != null && height > 100) {
+      iconSize = 80; // Taille intermédiaire
+    }
+    
     return Container(
       color: const Color(0xFFF7FAFC),
       child: Stack(
@@ -179,8 +187,8 @@ class ImageService {
               opacity: 0.5,
               child: Image.asset(
                 'assets/icons/app_icon.png',
-                width: 60,
-                height: 60,
+                width: iconSize,
+                height: iconSize,
                 fit: BoxFit.contain,
               ),
             ),
@@ -197,14 +205,22 @@ class ImageService {
   }
 
   /// Widget d'erreur par défaut selon le type de contenu
-  static Widget _buildDefaultErrorWidget(String contentType) {
+  static Widget _buildDefaultErrorWidget(String contentType, {double? width, double? height}) {
+    // Calculer la taille de l'icône en fonction des dimensions du conteneur
+    double iconSize = 60;
+    if (height != null && height > 200) {
+      iconSize = 120; // Plus grande icône pour les en-têtes
+    } else if (height != null && height > 100) {
+      iconSize = 80; // Taille intermédiaire
+    }
+    
     return Container(
       color: const Color(0xFFF7FAFC), // Fond gris clair
       child: Center(
         child: Image.asset(
           'assets/icons/app_icon.png',
-          width: 60,
-          height: 60,
+          width: iconSize,
+          height: iconSize,
           fit: BoxFit.contain,
         ),
       ),

@@ -260,9 +260,19 @@ class _VideoModalState extends State<VideoModal> {
 
     return Stack(
       children: [
-        // WebView centrée
+        // WebView centrée avec aspect ratio
         Center(
-          child: WebViewWidget(controller: _controller),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Flexible(
+                child: AspectRatio(
+                  aspectRatio: 16 / 9, // Ratio standard YouTube
+                  child: WebViewWidget(controller: _controller),
+                ),
+              ),
+            ],
+          ),
         ),
         
         // Indicateur de chargement
