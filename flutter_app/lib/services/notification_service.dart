@@ -22,12 +22,12 @@ class NotificationService {
       OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
       OneSignal.initialize(_appId);
       
-      // Demande de permission
-      await requestPermission();
-      
       // Configuration des événements
       _setupEventListeners();
-      
+
+      final initialPermission = OneSignal.Notifications.permission;
+      debugPrint('📱 [NotificationService] État permission initial: $initialPermission');
+
       // Attendre un peu pour que l'inscription se fasse
       await Future.delayed(const Duration(seconds: 2));
       

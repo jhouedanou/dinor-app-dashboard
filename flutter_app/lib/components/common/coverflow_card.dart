@@ -7,6 +7,7 @@
 /// - Support des images et contenus
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../services/image_service.dart';
 
@@ -35,6 +36,22 @@ class CoverflowCard extends StatelessWidget {
     const baseHeight = 320.0;
     final dynamicWidth = baseWidth * scale;
     final dynamicHeight = baseHeight * scale;
+    final themePlatform = Theme.of(context).platform;
+    final isIOS = themePlatform == TargetPlatform.iOS;
+    final shadowOpacityBase = isIOS ? 0.18 : 0.3;
+    final overlayStops = isIOS
+        ? <Color>[
+            Colors.transparent,
+            Colors.black.withOpacity(0.12),
+            Colors.black.withOpacity(0.28),
+            Colors.black.withOpacity(0.38),
+          ]
+        : <Color>[
+            Colors.transparent,
+            Colors.black.withOpacity(0.2),
+            Colors.black.withOpacity(0.6),
+            Colors.black.withOpacity(0.8),
+          ];
 
     return GestureDetector(
       onTap: onTap, // Rendre toute la carte cliquable
@@ -45,7 +62,7 @@ class CoverflowCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3 * opacity),
+              color: Colors.black.withOpacity(shadowOpacityBase * opacity),
               blurRadius: isActive ? 25 : 15,
               offset: const Offset(0, 8),
               spreadRadius: 2,
@@ -68,12 +85,7 @@ class CoverflowCard extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: 0.2),
-                      Colors.black.withValues(alpha: 0.6),
-                      Colors.black.withValues(alpha: 0.8),
-                    ],
+                    colors: overlayStops,
                     stops: const [0.0, 0.4, 0.7, 1.0],
                   ),
                 ),
@@ -109,6 +121,8 @@ class CoverflowCard extends StatelessWidget {
       ),
     ));
   }
+
+  bool get _isIOS => defaultTargetPlatform == TargetPlatform.iOS;
 
   Widget _buildBackgroundImage() {
     String imageUrl = '';
@@ -173,7 +187,7 @@ class CoverflowCard extends StatelessWidget {
                 child: Icon(
                   _getTypeIcon(),
                   size: 48 * scale,
-                  color: Colors.white.withValues(alpha: 0.8),
+                  color: Colors.white.withOpacity(0.8),
                 ),
               ),
             );
@@ -214,7 +228,7 @@ class CoverflowCard extends StatelessWidget {
           Shadow(
             offset: const Offset(0, 2),
             blurRadius: 4,
-            color: Colors.black.withValues(alpha: 0.8),
+            color: Colors.black.withOpacity(_isIOS ? 0.45 : 0.75),
           ),
         ],
       ),
@@ -229,10 +243,10 @@ class CoverflowCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12 * scale, vertical: 6 * scale),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
+        color: Colors.white.withOpacity(_isIOS ? 0.15 : 0.2),
         borderRadius: BorderRadius.circular(20 * scale),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.3),
+          color: Colors.white.withOpacity(_isIOS ? 0.22 : 0.32),
           width: 1,
         ),
       ),
@@ -283,13 +297,13 @@ class CoverflowCard extends StatelessWidget {
         Icon(
           icon,
           size: 14 * scale,
-          color: Colors.white.withValues(alpha: 0.9),
+          color: Colors.white.withOpacity(_isIOS ? 0.78 : 0.9),
         ),
         SizedBox(width: 4 * scale),
         Text(
           text,
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.9),
+            color: Colors.white.withOpacity(_isIOS ? 0.78 : 0.9),
             fontSize: 12 * scale,
             fontWeight: FontWeight.w500,
           ),

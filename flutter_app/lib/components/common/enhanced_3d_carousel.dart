@@ -184,10 +184,14 @@ class _Enhanced3DCarouselState extends State<Enhanced3DCarousel>
     double offset = _currentPage - index;
     double absOffset = offset.abs();
     
+    final themePlatform = Theme.of(context).platform;
+    final isIOS = themePlatform == TargetPlatform.iOS;
+
     if (widget.flatLayout) {
       // Layout plat comme dans les images
       double scale = (1 - (absOffset * 0.1)).clamp(0.9, 1.0); // Échelle minimale
       double opacity = (1 - (absOffset * 0.3)).clamp(0.7, 1.0); // Opacité douce
+      final shadowOpacity = isIOS ? 0.1 : 0.15;
       
       return AnimatedBuilder(
         animation: _pageController,
@@ -204,7 +208,7 @@ class _Enhanced3DCarouselState extends State<Enhanced3DCarousel>
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.15),
+                      color: Colors.black.withOpacity(shadowOpacity),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                       spreadRadius: 1,
@@ -260,7 +264,7 @@ class _Enhanced3DCarouselState extends State<Enhanced3DCarousel>
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.25 * opacity),
+                    color: Colors.black.withOpacity((isIOS ? 0.18 : 0.25) * opacity),
                     blurRadius: 20 + (15 * absOffset),
                     offset: Offset(
                       10 * offset.sign * absOffset,
@@ -338,8 +342,8 @@ class _Enhanced3DCarouselState extends State<Enhanced3DCarousel>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Colors.white.withValues(alpha: 0.95),
-            Colors.white.withValues(alpha: 0.85),
+            Colors.white.withOpacity(isIOS ? 0.92 : 0.95),
+            Colors.white.withOpacity(isIOS ? 0.82 : 0.85),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -347,7 +351,7 @@ class _Enhanced3DCarouselState extends State<Enhanced3DCarousel>
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
+            color: Colors.black.withOpacity(isIOS ? 0.12 : 0.15),
             blurRadius: 15,
             offset: const Offset(0, 6),
             spreadRadius: 2,
@@ -373,6 +377,7 @@ class _Enhanced3DCarouselState extends State<Enhanced3DCarousel>
 
   // Indicateurs de progression améliorés
   Widget _buildProgressIndicators() {
+    final isIOS = Theme.of(context).platform == TargetPlatform.iOS;
     return Container(
       margin: const EdgeInsets.only(top: 16),
       child: Row(
@@ -388,20 +393,25 @@ class _Enhanced3DCarouselState extends State<Enhanced3DCarousel>
               gradient: isActive 
                 ? LinearGradient(
                     colors: [
-                      widget.darkTheme ? Colors.white : Colors.red.shade500,
-                      widget.darkTheme ? Colors.grey.shade300 : Colors.red.shade700,
+                      (widget.darkTheme ? Colors.white : Colors.red.shade500)
+                          .withOpacity(isIOS ? 0.9 : 1.0),
+                      (widget.darkTheme ? Colors.grey.shade300 : Colors.red.shade700)
+                          .withOpacity(isIOS ? 0.9 : 1.0),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   )
                 : null,
               color: !isActive 
-                ? (widget.darkTheme ? Colors.white.withValues(alpha: 0.3) : Colors.grey.shade400)
+                ? (widget.darkTheme
+                    ? Colors.white.withOpacity(isIOS ? 0.22 : 0.3)
+                    : Colors.grey.shade400)
                 : null,
               borderRadius: BorderRadius.circular(7),
               boxShadow: isActive ? [
                 BoxShadow(
-                  color: (widget.darkTheme ? Colors.white : Colors.red.shade500).withValues(alpha: 0.4),
+                  color: (widget.darkTheme ? Colors.white : Colors.red.shade500)
+                      .withOpacity(isIOS ? 0.32 : 0.4),
                   blurRadius: 10,
                   offset: const Offset(0, 3),
                 ),

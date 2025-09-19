@@ -35,17 +35,19 @@ Route::prefix('analytics')->group(function () {
 });
 
 // Routes Firebase Analytics v1
-Route::prefix('v1/analytics')->group(function () {
-    Route::get('/', [AnalyticsController::class, 'index']);
-    Route::get('/app-statistics', [AnalyticsController::class, 'appStatistics']);
-    Route::get('/content-statistics', [AnalyticsController::class, 'contentStatistics']);
-    Route::get('/engagement', [AnalyticsController::class, 'engagementMetrics']);
-    Route::get('/realtime', [AnalyticsController::class, 'realTimeMetrics']);
-    Route::get('/platforms', [AnalyticsController::class, 'platformStatistics']);
-    Route::get('/geographic', [AnalyticsController::class, 'geographicStatistics']);
-    Route::post('/clear-cache', [AnalyticsController::class, 'clearCache']);
-    Route::get('/export', [AnalyticsController::class, 'export']);
-    Route::get('/info', [AnalyticsController::class, 'info']);
+Route::prefix('v1/analytics')->name('api.v1.analytics.')->group(function () {
+    Route::get('/', [AnalyticsController::class, 'index'])->name('index');
+    Route::get('/app-statistics', [AnalyticsController::class, 'appStatistics'])->name('app-statistics');
+    Route::get('/content-statistics', [AnalyticsController::class, 'contentStatistics'])->name('content-statistics');
+    Route::get('/engagement', [AnalyticsController::class, 'engagementMetrics'])->name('engagement');
+    Route::get('/realtime', [AnalyticsController::class, 'realTimeMetrics'])->name('realtime');
+    Route::get('/platforms', [AnalyticsController::class, 'platformStatistics'])->name('platforms');
+    Route::get('/geographic', [AnalyticsController::class, 'geographicStatistics'])->name('geographic');
+    Route::get('/popular-content', [AnalyticsController::class, 'popularContent'])->name('popular-content');
+    Route::get('/favorites-statistics', [AnalyticsController::class, 'favoritesStatistics'])->name('favorites-statistics');
+    Route::post('/clear-cache', [AnalyticsController::class, 'clearCache'])->name('clear-cache');
+    Route::get('/export', [AnalyticsController::class, 'export'])->name('export');
+    Route::get('/info', [AnalyticsController::class, 'info'])->name('info');
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {

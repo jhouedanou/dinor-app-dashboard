@@ -484,6 +484,209 @@ class AnalyticsController extends Controller
     }
 
     /**
+     * Récupérer les contenus populaires basés sur les favoris
+     */
+    public function popularContent(Request $request): JsonResponse
+    {
+        try {
+            $limit = $request->input('limit', 10);
+            $period = $request->input('period', '30d'); // 7d, 30d, all
+            $contentType = $request->input('type'); // recipe, tip, event, dinor_tv (optionnel)
+            
+            $query = \App\Models\UserFavorite::selectRaw('
+                favoritable_type,
+                favoritable_id,
+                COUNT(*) as favorites_count
+            ')
+            ->with(['favoritable'])
+            ->groupBy('favoritable_type', 'favoritable_id')
+            ->orderBy('favorites_count', 'desc')
+            ->limit($limit);
+
+            // Filtrer par période si spécifié
+            if ($period !== 'all') {
+                $startDate = $this->getStartDate($period);
+                $query->where('created_at', '>=', $startDate);
+            }
+
+            // Filtrer par type de contenu si spécifié
+            if ($contentType) {
+                $modelMap = [
+                    'recipe' => 'App\\Models\\Recipe',
+                    'tip' => 'App\\Models\\Tip',
+                    'event' => 'App\\Models\\Event',
+                    'dinor_tv' => 'App\\Models\\DinorTv'
+                ];
+                
+                if (isset($modelMap[$contentType])) {
+                    $query->where('favoritable_type', $modelMap[$contentType]);
+                }
+            }
+
+            $popularContent = $query->get();
+
+            // Enrichir les données avec les informations du contenu
+            $enrichedContent = $popularContent->map(function ($favorite) {
+                $content = $favorite->favoritable;
+                if (!$content) return null;
+
+                return [
+                    'id' => $favorite->favoritable_id,
+                    'type' => $this->getContentType($favorite->favoritable_type),
+                    'title' => $content->title ?? $content->name ?? 'Sans titre',
+                    'favorites_count' => $favorite->favorites_count,
+                    'image' => $content->image ?? $content->thumbnail ?? null,
+                    'url' => $this->getContentUrl($favorite->favoritable_type, $favorite->favoritable_id),
+                    'created_at' => $content->created_at ?? null,
+                    'category' => $content->category->name ?? null,
+                ];
+            })->filter()->values();
+
+            return response()->json([
+                'success' => true,
+                'data' => $enrichedContent,
+                'meta' => [
+                    'total' => $enrichedContent->count(),
+                    'limit' => $limit,
+                    'period' => $period,
+                    'content_type' => $contentType
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Erreur lors de la récupération des contenus populaires',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Statistiques détaillées des favoris
+     */
+    public function favoritesStatistics(Request $request): JsonResponse
+    {
+        try {
+            $period = $request->input('period', '30d');
+            $startDate = $period !== 'all' ? $this->getStartDate($period) : null;
+
+            $query = \App\Models\UserFavorite::query();
+            if ($startDate) {
+                $query->where('created_at', '>=', $startDate);
+            }
+
+            // Statistiques générales
+            $totalFavorites = $query->count();
+            $uniqueUsers = $query->distinct('user_id')->count('user_id');
+            
+            // Répartition par type de contenu
+            $favoritesByType = \App\Models\UserFavorite::selectRaw('
+                favoritable_type,
+                COUNT(*) as count
+            ')
+            ->when($startDate, function($query) use ($startDate) {
+                return $query->where('created_at', '>=', $startDate);
+            })
+            ->groupBy('favoritable_type')
+            ->orderBy('count', 'desc')
+            ->get()
+            ->map(function($item) {
+                return [
+                    'type' => $this->getContentType($item->favoritable_type),
+                    'count' => $item->count
+                ];
+            });
+
+            // Évolution temporelle (par jour)
+            $dailyFavorites = \App\Models\UserFavorite::selectRaw('
+                DATE(created_at) as date,
+                COUNT(*) as favorites
+            ')
+            ->when($startDate, function($query) use ($startDate) {
+                return $query->where('created_at', '>=', $startDate);
+            })
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+            // Top utilisateurs actifs (qui ajoutent le plus de favoris)
+            $topUsers = \App\Models\UserFavorite::selectRaw('
+                user_id,
+                COUNT(*) as favorites_count
+            ')
+            ->with('user:id,name,email')
+            ->when($startDate, function($query) use ($startDate) {
+                return $query->where('created_at', '>=', $startDate);
+            })
+            ->groupBy('user_id')
+            ->orderBy('favorites_count', 'desc')
+            ->limit(10)
+            ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'overview' => [
+                        'total_favorites' => $totalFavorites,
+                        'unique_users' => $uniqueUsers,
+                        'avg_favorites_per_user' => $uniqueUsers > 0 ? round($totalFavorites / $uniqueUsers, 2) : 0
+                    ],
+                    'by_type' => $favoritesByType,
+                    'daily_trend' => $dailyFavorites,
+                    'top_users' => $topUsers->map(function($item) {
+                        return [
+                            'user_id' => $item->user_id,
+                            'user_name' => $item->user->name ?? 'Utilisateur supprimé',
+                            'favorites_count' => $item->favorites_count
+                        ];
+                    })
+                ],
+                'period' => $period
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Erreur lors de la récupération des statistiques de favoris',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Convertir le type de modèle en type lisible
+     */
+    private function getContentType($modelType): string
+    {
+        $typeMap = [
+            'App\\Models\\Recipe' => 'recipe',
+            'App\\Models\\Tip' => 'tip',
+            'App\\Models\\Event' => 'event',
+            'App\\Models\\DinorTv' => 'dinor_tv'
+        ];
+
+        return $typeMap[$modelType] ?? 'unknown';
+    }
+
+    /**
+     * Générer l'URL du contenu
+     */
+    private function getContentUrl($modelType, $id): string
+    {
+        $baseUrl = config('app.url');
+        $typeMap = [
+            'App\\Models\\Recipe' => 'recipes',
+            'App\\Models\\Tip' => 'tips',
+            'App\\Models\\Event' => 'events',
+            'App\\Models\\DinorTv' => 'dinor-tv'
+        ];
+
+        $path = $typeMap[$modelType] ?? 'content';
+        return "{$baseUrl}/{$path}/{$id}";
+    }
+
+    /**
      * Informations sur l'API Analytics
      */
     public function info(): JsonResponse
@@ -501,6 +704,8 @@ class AnalyticsController extends Controller
                     'GET /api/v1/analytics/realtime' => 'Données temps réel',
                     'GET /api/v1/analytics/platforms' => 'Statistiques par plateforme',
                     'GET /api/v1/analytics/geographic' => 'Statistiques géographiques',
+                    'GET /api/v1/analytics/popular-content' => 'Contenus populaires (favoris)',
+                    'GET /api/v1/analytics/favorites-statistics' => 'Statistiques des favoris',
                     'POST /api/v1/analytics/clear-cache' => 'Vider le cache',
                     'GET /api/v1/analytics/export' => 'Exporter les données CSV',
                     'POST /api/analytics/event' => 'Enregistrer un événement'

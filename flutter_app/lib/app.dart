@@ -37,6 +37,7 @@ import 'components/common/install_prompt.dart';
 import 'components/common/app_tutorial.dart';
 import 'services/tutorial_service.dart';
 import 'stores/notifications_store.dart';
+import 'services/permissions_service.dart';
 
 class DinorApp extends ConsumerStatefulWidget {
   const DinorApp({super.key});
@@ -140,7 +141,12 @@ class _DinorAppState extends ConsumerState<DinorApp> {
         try {
           ref.read(notificationsSummaryProvider.notifier).refresh();
         } catch (_) {}
-        
+
+        Future.microtask(() async {
+          if (!mounted) return;
+          await PermissionsService.ensureInitialPermissionRequest(context);
+        });
+
         // Afficher le tutoriel si nécessaire après un petit délai
         Future.delayed(const Duration(milliseconds: 1000), () {
           if (mounted) {

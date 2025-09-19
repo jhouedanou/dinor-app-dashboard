@@ -4,9 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'permissions_service_platform.dart';
 
 class PermissionsService {
+  static const _notificationPromptKey = 'notifications_permission_prompt_shown_v1';
+
   static Future<bool> requestNotificationPermission() async {
     try {
       final platformDesc = PlatformPermissionsService.platformDescription;
@@ -131,6 +134,37 @@ class PermissionsService {
 
   static Future<bool> canShowNotifications() async {
     return await checkNotificationPermission();
+  }
+
+  static Future<void> ensureInitialPermissionRequest(BuildContext context) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final alreadyPrompted = prefs.getBool(_notificationPromptKey) ?? false;
+
+      final hasPermission = await checkNotificationPermission();
+      if (hasPermission) {
+        if (!alreadyPrompted) {
+          await prefs.setBool(_notificationPromptKey, true);
+        }
+        return;
+      }
+
+      if (alreadyPrompted) {
+        return;
+      }
+
+      // Laisser le temps à l'UI de se stabiliser avant d'afficher la demande iOS
+      await Future.delayed(const Duration(milliseconds: 600));
+
+      final granted = await requestNotificationPermission();
+      await prefs.setBool(_notificationPromptKey, true);
+
+      if (!granted && context.mounted) {
+        await _showPermissionDeniedDialog(context);
+      }
+    } catch (e) {
+      debugPrint('❌ [PermissionsService] Erreur ensureInitialPermissionRequest: $e');
+    }
   }
 
   static Future<void> showPermissionDialog(BuildContext context) async {

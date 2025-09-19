@@ -24,6 +24,7 @@ class Dashboard extends BaseDashboard
     {
         return [
             \App\Filament\Widgets\FirebaseStatsOverview::class,
+            \App\Filament\Widgets\PopularContentWidget::class,
             \App\Filament\Widgets\FirebaseAnalyticsWidget::class,
         ];
     }
