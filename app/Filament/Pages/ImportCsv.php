@@ -249,12 +249,16 @@ class ImportCsv extends Page implements HasForms
 
     private function importRecipe(array $record): void
     {
+        $ingredients = $this->parseIngredientsColumns($record);
+        $instructions = $this->parseInstructionColumns($record);
+        $tags = $this->parseTagsColumns($record);
+
         $recipe = Recipe::create([
             'title' => $record['title'],
             'description' => $record['description'],
             'short_description' => $record['short_description'] ?? '',
-            'ingredients' => json_decode($record['ingredients'] ?? '[]', true),
-            'instructions' => json_decode($record['instructions'] ?? '[]', true),
+            'ingredients' => $ingredients,
+            'instructions' => $instructions,
             'preparation_time' => (int)($record['preparation_time'] ?? 0),
             'cooking_time' => (int)($record['cooking_time'] ?? 0),
             'servings' => (int)($record['servings'] ?? 1),
@@ -262,7 +266,7 @@ class ImportCsv extends Page implements HasForms
             'meal_type' => $record['meal_type'] ?? 'lunch',
             'diet_type' => $record['diet_type'] ?? 'none',
             'category_id' => $this->findOrCreateCategory($record['category'] ?? 'Général'),
-            'tags' => json_decode($record['tags'] ?? '[]', true),
+            'tags' => $tags,
             'is_featured' => (bool)($record['is_featured'] ?? false),
             'is_published' => (bool)($record['is_published'] ?? true),
             'slug' => \Str::slug($record['title']),
@@ -287,7 +291,7 @@ class ImportCsv extends Page implements HasForms
             'currency' => $record['currency'] ?? 'XOF',
             'is_free' => (bool)($record['is_free'] ?? true),
             'max_participants' => (int)($record['max_participants'] ?? 100),
-            'tags' => json_decode($record['tags'] ?? '[]', true),
+            'tags' => $this->parseTagsColumns($record),
             'is_featured' => (bool)($record['is_featured'] ?? false),
             'is_published' => (bool)($record['is_published'] ?? true),
             'status' => $record['status'] ?? 'active',
@@ -301,7 +305,7 @@ class ImportCsv extends Page implements HasForms
             'title' => $record['title'],
             'content' => $record['content'],
             'category_id' => $this->findOrCreateCategory($record['category'] ?? 'Général'),
-            'tags' => json_decode($record['tags'] ?? '[]', true),
+            'tags' => $this->parseTagsColumns($record),
             'is_featured' => (bool)($record['is_featured'] ?? false),
             'is_published' => (bool)($record['is_published'] ?? true),
             'difficulty_level' => $record['difficulty_level'] ?? 'beginner',
@@ -571,6 +575,146 @@ class ImportCsv extends Page implements HasForms
         ]);
     }
 
+    private function parseTagsColumns(array $record): array
+    {
+        $tags = [];
+        $index = 1;
+        $foundColumns = false;
+
+        while (array_key_exists("tag_{$index}", $record)) {
+            $foundColumns = true;
+            $value = trim((string)($record["tag_{$index}"] ?? ''));
+            if ($value !== '') {
+                $tags[] = $value;
+            }
+            $index++;
+        }
+
+        if ($foundColumns) {
+            return $tags;
+        }
+
+        if (!empty($record['tags'])) {
+            $rawTags = $record['tags'];
+            $decoded = json_decode($rawTags, true);
+            if (is_array($decoded)) {
+                return array_values(array_filter($decoded, fn ($tag) => trim((string) $tag) !== ''));
+            }
+
+            $fallback = array_filter(array_map('trim', preg_split('/[;,|]/', (string) $rawTags)));
+            return array_values($fallback);
+        }
+
+        return [];
+    }
+
+    private function parseInstructionColumns(array $record): array
+    {
+        $instructions = [];
+        $index = 1;
+        $foundColumns = false;
+
+        while (array_key_exists("instruction_{$index}", $record) || array_key_exists("step_{$index}", $record)) {
+            $foundColumns = true;
+            $value = trim((string)($record["instruction_{$index}"] ?? $record["step_{$index}"] ?? ''));
+
+            if ($value !== '') {
+                $instructions[] = ['step' => $value];
+            }
+
+            $index++;
+        }
+
+        if ($foundColumns) {
+            return $instructions;
+        }
+
+        if (!empty($record['instructions'])) {
+            $raw = $record['instructions'];
+            $decoded = json_decode($raw, true);
+            if (is_array($decoded)) {
+                return $decoded;
+            }
+
+            $lines = array_filter(array_map('trim', preg_split('/\r\n|\r|\n/', (string) $raw)));
+            return array_map(fn ($line) => ['step' => $line], $lines);
+        }
+
+        return [];
+    }
+
+    private function parseIngredientsColumns(array $record): array
+    {
+        $ingredients = [];
+        $index = 1;
+        $foundColumns = false;
+
+        while ($this->hasIngredientColumn($record, $index)) {
+            $foundColumns = true;
+
+            $nameKey = "ingredient_{$index}_name";
+            $quantityKey = "ingredient_{$index}_quantity";
+            $unitKey = "ingredient_{$index}_unit";
+            $brandKey = "ingredient_{$index}_brand";
+            $idKey = "ingredient_{$index}_id";
+
+            $name = trim((string)($record[$nameKey] ?? ''));
+            $quantity = trim((string)($record[$quantityKey] ?? ''));
+            $unit = trim((string)($record[$unitKey] ?? ''));
+            $brand = trim((string)($record[$brandKey] ?? ''));
+            $ingredientId = $record[$idKey] ?? null;
+            if ($ingredientId === '') {
+                $ingredientId = null;
+            }
+
+            if ($ingredientId === null && $name !== '') {
+                $candidate = Ingredient::where('name', $name)->first();
+                if ($candidate) {
+                    $ingredientId = $candidate->id;
+                    $unit = $unit ?: ($candidate->unit ?? '');
+                    $brand = $brand ?: ($candidate->recommended_brand ?? '');
+                }
+            }
+
+            if ($ingredientId === null && $name === '' && $quantity === '') {
+                $index++;
+                continue;
+            }
+
+            $ingredients[] = [
+                'ingredient_id' => $ingredientId,
+                'name' => $name,
+                'quantity' => $quantity !== '' ? $quantity : null,
+                'unit' => $unit !== '' ? $unit : null,
+                'recommended_brand' => $brand !== '' ? $brand : null,
+            ];
+
+            $index++;
+        }
+
+        if ($foundColumns) {
+            return $ingredients;
+        }
+
+        if (!empty($record['ingredients'])) {
+            $decoded = json_decode($record['ingredients'], true);
+            if (is_array($decoded)) {
+                return $decoded;
+            }
+        }
+
+        return [];
+    }
+
+    private function hasIngredientColumn(array $record, int $index): bool
+    {
+        return array_key_exists("ingredient_{$index}_name", $record)
+            || array_key_exists("ingredient_{$index}_quantity", $record)
+            || array_key_exists("ingredient_{$index}_unit", $record)
+            || array_key_exists("ingredient_{$index}_brand", $record)
+            || array_key_exists("ingredient_{$index}_id", $record);
+    }
+
     private function getContentTypeName(string $type): string
     {
         return match($type) {
@@ -602,11 +746,19 @@ class ImportCsv extends Page implements HasForms
             return '';
         }
         
+        $rows = $examples[$type];
+        $escapedRows = array_map(function (array $row) {
+            return array_map(function ($value) {
+                $value = (string) $value;
+                return str_replace('"', '""', $value);
+            }, $row);
+        }, $rows);
+
         $csvContent = '';
-        foreach ($examples[$type] as $row) {
+        foreach ($escapedRows as $row) {
             $csvContent .= '"' . implode('","', $row) . '"' . "\n";
         }
-        
+
         return $csvContent;
     }
 
@@ -626,16 +778,62 @@ class ImportCsv extends Page implements HasForms
     {
         return [
             'recipes' => [
-                ['title', 'description', 'short_description', 'ingredients', 'instructions', 'preparation_time', 'cooking_time', 'servings', 'difficulty', 'meal_type', 'diet_type', 'category', 'tags', 'is_featured', 'is_published'],
-                ['Riz au Gras', 'Délicieux riz au gras traditionnel', 'Riz préparé avec de la sauce tomate', '[{"quantity":"2","unit":"tasses","name":"Riz jasmin"}]', '[{"step":"Faire revenir les oignons","description":"Coupez et faites revenir 2 oignons"}]', '30', '60', '4', 'medium', 'lunch', 'none', 'Plats principaux', '["riz","traditionnel"]', 'true', 'true']
+                [
+                    'title',
+                    'description',
+                    'short_description',
+                    'ingredient_1_name',
+                    'ingredient_1_quantity',
+                    'ingredient_1_unit',
+                    'ingredient_2_name',
+                    'ingredient_2_quantity',
+                    'ingredient_2_unit',
+                    'instruction_1',
+                    'instruction_2',
+                    'preparation_time',
+                    'cooking_time',
+                    'servings',
+                    'difficulty',
+                    'meal_type',
+                    'diet_type',
+                    'category',
+                    'tag_1',
+                    'tag_2',
+                    'is_featured',
+                    'is_published'
+                ],
+                [
+                    'Riz au Gras',
+                    'Délicieux riz au gras traditionnel',
+                    'Riz préparé avec de la sauce tomate',
+                    'Riz jasmin',
+                    '2',
+                    'tasses',
+                    'Viande de bœuf',
+                    '300',
+                    'g',
+                    'Faire revenir les oignons émincés dans l’huile',
+                    'Ajouter le riz et laisser cuire 25 minutes à feu doux',
+                    '30',
+                    '60',
+                    '4',
+                    'medium',
+                    'lunch',
+                    'none',
+                    'Plats principaux',
+                    'riz',
+                    'traditionnel',
+                    'true',
+                    'true'
+                ]
             ],
             'events' => [
-                ['title', 'description', 'content', 'short_description', 'start_date', 'end_date', 'location', 'address', 'city', 'country', 'category', 'price', 'currency', 'is_free', 'max_participants', 'tags', 'is_featured', 'is_published', 'status'],
-                ['Atelier Cuisine', 'Atelier de cuisine ivoirienne', '<p>Apprenez à cuisiner</p>', 'Cours de cuisine', '2025-08-01 14:00:00', '2025-08-01 17:00:00', 'Centre culturel', 'Rue de la Culture', 'Abidjan', 'Côte d\'Ivoire', 'Ateliers', '15000', 'XOF', 'false', '20', '["atelier","cuisine"]', 'true', 'true', 'active']
+                ['title', 'description', 'content', 'short_description', 'start_date', 'end_date', 'location', 'address', 'city', 'country', 'category', 'price', 'currency', 'is_free', 'max_participants', 'tag_1', 'tag_2', 'is_featured', 'is_published', 'status'],
+                ['Atelier Cuisine', 'Atelier de cuisine ivoirienne', '<p>Apprenez à cuisiner</p>', 'Cours de cuisine', '2025-08-01 14:00:00', '2025-08-01 17:00:00', 'Centre culturel', 'Rue de la Culture', 'Abidjan', 'Côte d\'Ivoire', 'Ateliers', '15000', 'XOF', 'false', '20', 'atelier', 'cuisine', 'true', 'true', 'active']
             ],
             'tips' => [
-                ['title', 'content', 'category', 'tags', 'is_featured', 'is_published', 'difficulty_level', 'estimated_time'],
-                ['Bien choisir ses épices', 'Pour bien choisir vos épices...', 'Conseils', '["épices","conseils"]', 'true', 'true', 'beginner', '5']
+                ['title', 'content', 'category', 'tag_1', 'tag_2', 'is_featured', 'is_published', 'difficulty_level', 'estimated_time'],
+                ['Bien choisir ses épices', 'Pour bien choisir vos épices...', 'Conseils', 'épices', 'conseils', 'true', 'true', 'beginner', '5']
             ],
             'dinor_tv' => [
                 ['title', 'description', 'video_url', 'is_featured', 'is_published'],
@@ -690,14 +888,5 @@ class ImportCsv extends Page implements HasForms
                 ['Chef Marie', 'chef.marie@dinor.app', 'password123', 'chef', 'true']
             ]
         ];
-
-        $csvContent = '';
-        foreach ($examples[$type] as $row) {
-            $csvContent .= '"' . implode('","', $row) . '"' . "\n";
-        }
-
-        return response($csvContent)
-            ->header('Content-Type', 'text/csv')
-            ->header('Content-Disposition', 'attachment; filename="exemple_' . $type . '.csv"');
     }
 }

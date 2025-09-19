@@ -96,8 +96,8 @@ resources/views/filament/pages/
 
 #### Recettes
 ```csv
-"title","description","ingredients","difficulty","category"
-"Riz au Gras","Plat traditionnel","[{\"quantity\":\"2\",\"unit\":\"tasses\"}]","medium","Plats principaux"
+"title","description","ingredient_1_name","ingredient_1_quantity","ingredient_1_unit","instruction_1","instruction_2","category"
+"Riz au Gras","Plat traditionnel","Riz jasmin","2","tasses","Faire revenir les oignons","Ajouter le riz et cuire 25 minutes","Plats principaux"
 ```
 
 #### Équipes

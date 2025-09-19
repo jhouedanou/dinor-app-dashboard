@@ -1,5 +1,3 @@
-title,description,content,category,is_published,is_featured
-"Comment bien nettoyer le poisson","Technique pour nettoyer efficacement le poisson","Étapes pour nettoyer le poisson:\n1. Rincer à l'eau froide\n2. Écailler avec un couteau\n3. Retirer les viscères\n4. Rincer à nouveau\n5. Sécher avec du papier absorbant","Préparation",true,true
-"Conservation des épices","Garder vos épices fraîches plus longtemps","Pour conserver vos épices:\n- Stockez dans des contenants hermétiques\n- Évitez la lumière directe\n- Étiquetez avec la date d'achat\n- Remplacez tous les 2 ans","Conservation",true,false
-"Cuisson parfaite du riz","Réussir son riz à tous les coups","Technique pour un riz parfait:\n1. Mesurer: 1 volume de riz pour 1,5 volume d'eau\n2. Rincer le riz jusqu'à eau claire\n3. Porter à ébullition puis réduire le feu\n4. Couvrir et laisser mijoter 18 minutes\n5. Laisser reposer 5 minutes","Cuisson",true,true
-"Choisir ses légumes au marché","Reconnaître des légumes frais et de qualité","Conseils pour bien choisir:\n- Légumes fermes au toucher\n- Couleurs vives et uniformes\n- Absence de taches brunes\n- Feuilles vertes et croquantes\n- Acheter selon la saison","Achat",true,false
+"title","content","category","tag_1","tag_2","is_featured","is_published","difficulty_level","estimated_time"
+"Recycler l'huile de friture","Filtrez l'huile encore chaude avec une passoire fine et conservez-la dans un récipient hermétique.","Écologie","huile","astuce","true","true","beginner","3"
+"Cuisson parfaite du poisson","Séchez bien le poisson avant de le saisir pour éviter qu'il n'accroche à la poêle.","Techniques","poisson","grillade","false","true","beginner","4"
