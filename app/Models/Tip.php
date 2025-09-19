@@ -7,6 +7,7 @@ use App\Traits\Commentable;
 use App\Traits\Favoritable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 class Tip extends Model
 {
     use HasFactory, Likeable, Commentable, Favoritable;
@@ -154,5 +155,43 @@ class Tip extends Model
     public function approvedComments()
     {
         return $this->morphMany(Comment::class, 'commentable')->approved();
+    }
+
+    /**
+     * Générer automatiquement le slug si pas fourni
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($tip) {
+            if (empty($tip->slug)) {
+                $tip->slug = Str::slug($tip->title);
+                
+                // Vérifier l'unicité du slug
+                $originalSlug = $tip->slug;
+                $counter = 1;
+                
+                while (static::where('slug', $tip->slug)->exists()) {
+                    $tip->slug = $originalSlug . '-' . $counter;
+                    $counter++;
+                }
+            }
+        });
+
+        static::updating(function ($tip) {
+            if (empty($tip->slug)) {
+                $tip->slug = Str::slug($tip->title);
+                
+                // Vérifier l'unicité du slug (exclure l'enregistrement actuel)
+                $originalSlug = $tip->slug;
+                $counter = 1;
+                
+                while (static::where('slug', $tip->slug)->where('id', '!=', $tip->id)->exists()) {
+                    $tip->slug = $originalSlug . '-' . $counter;
+                    $counter++;
+                }
+            }
+        });
     }
 } 

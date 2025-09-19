@@ -316,38 +316,100 @@ class CsvImport extends Page
 
     protected function importEvent(array $row, ?array $headers): void
     {
-        $data = $headers ? array_combine($headers, $row) : [
-            'title' => $row[0] ?? '',
-            'description' => $row[1] ?? '',
-            'content' => $row[2] ?? '',
-            'start_datetime' => $row[3] ?? now(),
-            'end_datetime' => $row[4] ?? now()->addHours(2),
-            'location' => $row[5] ?? '',
-            'category' => $row[6] ?? null,
-            'is_published' => $row[7] ?? true,
-            'is_featured' => $row[8] ?? false,
-        ];
+        if ($headers) {
+            $data = array_combine($headers, $row);
+            
+            // Ignorer les lignes sans titre valide
+            if (empty($data['title']) && empty($data['name'])) {
+                return;
+            }
+        } else {
+            $data = [
+                'title' => $row[0] ?? '',
+                'description' => $row[1] ?? '',
+                'content' => $row[2] ?? '',
+                'start_datetime' => $row[3] ?? now(),
+                'end_datetime' => $row[4] ?? now()->addHours(2),
+                'location' => $row[5] ?? '',
+                'category' => $row[6] ?? null,
+                'is_published' => $row[7] ?? true,
+                'is_featured' => $row[8] ?? false,
+            ];
+        }
 
+        // Validation des données essentielles
+        $title = $data['title'] ?? $data['name'] ?? '';
+        if (empty($title)) {
+            throw new \Exception('Le titre de l\'événement est requis');
+        }
+
+        // Traitement de la catégorie
         $categoryId = null;
-        if (!empty($data['category'])) {
-            $category = EventCategory::firstOrCreate(
-                ['name' => $data['category']],
+        $categoryField = $data['category'] ?? $data['event_category'] ?? null;
+        if (!empty($categoryField)) {
+            // Mapping des catégories courantes
+            $categoryMappings = [
+                'Gastronomie' => 'Festivals culinaires',
+                'Éducation' => 'Formations professionnelles',
+                'Commerce' => 'Marchés et foires',
+            ];
+            
+            $categoryName = $categoryMappings[$categoryField] ?? $categoryField;
+            
+            $category = Category::firstOrCreate(
+                ['name' => $categoryName, 'type' => 'event'],
                 ['description' => 'Catégorie créée automatiquement']
             );
             $categoryId = $category->id;
         }
 
+        // Traitement des dates
+        $startDate = $this->parseDate($data['start_date'] ?? $data['date'] ?? null);
+        $endDate = $this->parseDate($data['end_date'] ?? null);
+        $startTime = $this->parseTimeFormat($data['start_time'] ?? null);
+        $endTime = $this->parseTimeFormat($data['end_time'] ?? null);
+        
+        // Si pas de date de fin, utiliser la date de début
+        if ($endDate === null && $startDate !== null) {
+            $endDate = $startDate;
+        }
+
         Event::create([
-            'title' => $data['title'],
-            'description' => $data['description'],
-            'content' => $data['content'],
-            'start_datetime' => $data['start_datetime'],
-            'end_datetime' => $data['end_datetime'],
-            'location' => $data['location'],
-            'event_category_id' => $categoryId,
-            'is_published' => filter_var($data['is_published'], FILTER_VALIDATE_BOOLEAN),
-            'is_featured' => filter_var($data['is_featured'], FILTER_VALIDATE_BOOLEAN),
-            'status' => 'active',
+            'title' => $title,
+            'description' => $data['description'] ?? $data['summary'] ?? '',
+            'content' => $data['content'] ?? $data['details'] ?? '',
+            'start_date' => $startDate ?? now()->toDateString(),
+            'end_date' => $endDate ?? now()->toDateString(),
+            'start_time' => $startTime,
+            'end_time' => $endTime,
+            'timezone' => $data['timezone'] ?? 'Europe/Paris',
+            'is_all_day' => filter_var($data['is_all_day'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            'location' => $data['location'] ?? $data['venue'] ?? '',
+            'category_id' => $categoryId,
+            'is_published' => filter_var($data['is_published'] ?? true, FILTER_VALIDATE_BOOLEAN),
+            'is_featured' => filter_var($data['is_featured'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            'status' => $data['status'] ?? 'active',
+            'event_type' => $data['event_type'] ?? 'other',
+            'event_format' => $data['event_format'] ?? 'in_person',
+            'age_restriction' => $data['age_restriction'] ?? 'all_ages',
+            'is_online' => filter_var($data['is_online'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            'requires_registration' => filter_var($data['requires_registration'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            'requires_approval' => filter_var($data['requires_approval'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            'is_free' => filter_var($data['is_free'] ?? true, FILTER_VALIDATE_BOOLEAN),
+            'price' => floatval($data['price'] ?? 0),
+            'currency' => $data['currency'] ?? 'EUR',
+            'wheelchair_accessible' => filter_var($data['wheelchair_accessible'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            'weather_dependent' => filter_var($data['weather_dependent'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            'allow_reviews' => filter_var($data['allow_reviews'] ?? true, FILTER_VALIDATE_BOOLEAN),
+            'current_participants' => intval($data['current_participants'] ?? 0),
+            'waiting_list_count' => intval($data['waiting_list_count'] ?? 0),
+            'views_count' => 0,
+            'likes_count' => 0,
+            'shares_count' => 0,
+            'favorites_count' => 0,
+            'rating_average' => 0,
+            'rating_count' => 0,
+            'comments_count' => 0,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -469,6 +531,119 @@ class CsvImport extends Page
             return (int)$timeString;
         }
         
+        return null;
+    }
+
+    /**
+     * Parser les dates en différents formats
+     */
+    protected function parseDateTime($dateString): ?\DateTime
+    {
+        if (empty($dateString)) {
+            return null;
+        }
+
+        try {
+            // Essayer différents formats de date
+            $formats = [
+                'Y-m-d H:i:s',      // 2023-12-25 14:30:00
+                'Y-m-d H:i',        // 2023-12-25 14:30
+                'Y-m-d',            // 2023-12-25
+                'd/m/Y H:i:s',      // 25/12/2023 14:30:00
+                'd/m/Y H:i',        // 25/12/2023 14:30
+                'd/m/Y',            // 25/12/2023
+                'm/d/Y H:i:s',      // 12/25/2023 14:30:00
+                'm/d/Y H:i',        // 12/25/2023 14:30
+                'm/d/Y',            // 12/25/2023
+            ];
+
+            foreach ($formats as $format) {
+                $date = \DateTime::createFromFormat($format, trim($dateString));
+                if ($date !== false) {
+                    return $date;
+                }
+            }
+
+            // Essayer avec strtotime comme dernier recours
+            $timestamp = strtotime($dateString);
+            if ($timestamp !== false) {
+                return new \DateTime('@' . $timestamp);
+            }
+
+        } catch (\Exception $e) {
+            // Ignorer les erreurs de parsing
+        }
+
+        return null;
+    }
+
+    /**
+     * Parser les dates (sans heure)
+     */
+    protected function parseDate($dateString): ?string
+    {
+        if (empty($dateString)) {
+            return null;
+        }
+
+        try {
+            $formats = [
+                'Y-m-d',            // 2023-12-25
+                'd/m/Y',            // 25/12/2023
+                'm/d/Y',            // 12/25/2023
+                'd-m-Y',            // 25-12-2023
+                'Y/m/d',            // 2023/12/25
+            ];
+
+            foreach ($formats as $format) {
+                $date = \DateTime::createFromFormat($format, trim($dateString));
+                if ($date !== false) {
+                    return $date->format('Y-m-d');
+                }
+            }
+
+            // Essayer avec strtotime
+            $timestamp = strtotime($dateString);
+            if ($timestamp !== false) {
+                return date('Y-m-d', $timestamp);
+            }
+
+        } catch (\Exception $e) {
+            // Ignorer les erreurs
+        }
+
+        return null;
+    }
+
+    /**
+     * Parser les heures (format time)
+     */
+    protected function parseTimeFormat($timeString): ?string
+    {
+        if (empty($timeString)) {
+            return null;
+        }
+
+        try {
+            $formats = [
+                'H:i:s',    // 14:30:00
+                'H:i',      // 14:30
+                'G:i',      // 8:30
+                'g:i A',    // 2:30 PM
+                'g:i a',    // 2:30 pm
+            ];
+
+            foreach ($formats as $format) {
+                $time = \DateTime::createFromFormat($format, trim($timeString));
+                if ($time !== false) {
+                    return $time->format('H:i:s');
+                }
+            }
+
+        } catch (\Exception $e) {
+            // Ignorer les erreurs
+        }
+
         return null;
     }
 }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class EventCategory extends Model
 {
@@ -38,5 +39,43 @@ class EventCategory extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    /**
+     * Générer automatiquement le slug si pas fourni
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($eventCategory) {
+            if (empty($eventCategory->slug)) {
+                $eventCategory->slug = Str::slug($eventCategory->name);
+                
+                // Vérifier l'unicité du slug
+                $originalSlug = $eventCategory->slug;
+                $counter = 1;
+                
+                while (static::where('slug', $eventCategory->slug)->exists()) {
+                    $eventCategory->slug = $originalSlug . '-' . $counter;
+                    $counter++;
+                }
+            }
+        });
+
+        static::updating(function ($eventCategory) {
+            if (empty($eventCategory->slug)) {
+                $eventCategory->slug = Str::slug($eventCategory->name);
+                
+                // Vérifier l'unicité du slug (exclure l'enregistrement actuel)
+                $originalSlug = $eventCategory->slug;
+                $counter = 1;
+                
+                while (static::where('slug', $eventCategory->slug)->where('id', '!=', $eventCategory->id)->exists()) {
+                    $eventCategory->slug = $originalSlug . '-' . $counter;
+                    $counter++;
+                }
+            }
+        });
     }
 } 
