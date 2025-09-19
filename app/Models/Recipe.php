@@ -8,6 +8,7 @@ use App\Traits\Favoritable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Str;
 
 class Recipe extends Model
 {
@@ -301,5 +302,43 @@ class Recipe extends Model
     public function toggleLike($userId = null, $ipAddress = null, $userAgent = null)
     {
         return Like::toggle($this, $userId, $ipAddress, $userAgent);
+    }
+
+    /**
+     * Générer automatiquement le slug si pas fourni
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($recipe) {
+            if (empty($recipe->slug)) {
+                $recipe->slug = Str::slug($recipe->title);
+                
+                // Vérifier l'unicité du slug
+                $originalSlug = $recipe->slug;
+                $counter = 1;
+                
+                while (static::where('slug', $recipe->slug)->exists()) {
+                    $recipe->slug = $originalSlug . '-' . $counter;
+                    $counter++;
+                }
+            }
+        });
+
+        static::updating(function ($recipe) {
+            if (empty($recipe->slug)) {
+                $recipe->slug = Str::slug($recipe->title);
+                
+                // Vérifier l'unicité du slug (exclure l'enregistrement actuel)
+                $originalSlug = $recipe->slug;
+                $counter = 1;
+                
+                while (static::where('slug', $recipe->slug)->where('id', '!=', $recipe->id)->exists()) {
+                    $recipe->slug = $originalSlug . '-' . $counter;
+                    $counter++;
+                }
+            }
+        });
     }
 } 

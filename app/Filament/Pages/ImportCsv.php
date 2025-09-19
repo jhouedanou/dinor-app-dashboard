@@ -30,6 +30,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
 use League\Csv\Reader;
+use Illuminate\Support\Str;
 
 class ImportCsv extends Page implements HasForms
 {
@@ -265,7 +266,7 @@ class ImportCsv extends Page implements HasForms
             'difficulty' => $record['difficulty'] ?? 'medium',
             'meal_type' => $record['meal_type'] ?? 'lunch',
             'diet_type' => $record['diet_type'] ?? 'none',
-            'category_id' => $this->findOrCreateCategory($record['category'] ?? 'Général'),
+            'category_id' => $this->findOrCreateCategory($record['category'] ?? 'Général', 'recipe'),
             'tags' => $tags,
             'is_featured' => (bool)($record['is_featured'] ?? false),
             'is_published' => (bool)($record['is_published'] ?? true),
@@ -277,7 +278,7 @@ class ImportCsv extends Page implements HasForms
     {
         Event::create([
             'title' => $record['title'],
-            'description' => $record['description'],
+            'description' => $record['description'] ?? '',
             'content' => $record['content'] ?? '',
             'short_description' => $record['short_description'] ?? '',
             'start_date' => $record['start_date'],
@@ -286,7 +287,7 @@ class ImportCsv extends Page implements HasForms
             'address' => $record['address'] ?? '',
             'city' => $record['city'] ?? '',
             'country' => $record['country'] ?? 'Côte d\'Ivoire',
-            'category_id' => $this->findOrCreateCategory($record['category'] ?? 'Général'),
+            'category_id' => $this->findOrCreateCategory($record['category'] ?? 'Général', 'event'),
             'price' => $record['price'] ?? '0.00',
             'currency' => $record['currency'] ?? 'XOF',
             'is_free' => (bool)($record['is_free'] ?? true),
@@ -303,8 +304,8 @@ class ImportCsv extends Page implements HasForms
     {
         Tip::create([
             'title' => $record['title'],
-            'content' => $record['content'],
-            'category_id' => $this->findOrCreateCategory($record['category'] ?? 'Général'),
+            'content' => $record['content'] ?? '',
+            'category_id' => $this->findOrCreateCategory($record['category'] ?? 'Général', 'tip'),
             'tags' => $this->parseTagsColumns($record),
             'is_featured' => (bool)($record['is_featured'] ?? false),
             'is_published' => (bool)($record['is_published'] ?? true),
@@ -338,21 +339,31 @@ class ImportCsv extends Page implements HasForms
         ]);
     }
 
-    private function findOrCreateCategory(string $categoryName): int
+    private function findOrCreateCategory(string $categoryName, string $type = 'general'): int
     {
-        $category = Category::where('name', $categoryName)->first();
-        
-        if (!$category) {
-            $category = Category::create([
-                'name' => $categoryName,
-                'slug' => \Str::slug($categoryName),
-                'description' => "Catégorie créée automatiquement lors de l'import",
-                'color' => '#FF6B6B',
-                'icon' => 'heroicon-o-tag',
-                'is_active' => true,
-                'type' => 'general',
-            ]);
+        $slug = Str::slug($categoryName);
+        if ($slug === '') {
+            $slug = Str::random(8);
         }
+
+        $category = Category::where('name', $categoryName)->first();
+
+        if (!$category) {
+            $category = new Category();
+        }
+
+        $category->name = $categoryName;
+        $category->slug = $category->slug ?: $slug;
+        if ($category->slug === '') {
+            $category->slug = $slug;
+        }
+        $category->description = $category->description ?: "Catégorie créée automatiquement lors de l'import";
+        $category->color = $category->color ?: '#FF6B6B';
+        $category->icon = $category->icon ?: 'heroicon-o-tag';
+        $category->is_active = $category->is_active ?? true;
+        $category->type = $category->type ?: $type;
+
+        $category->save();
 
         return $category->id;
     }

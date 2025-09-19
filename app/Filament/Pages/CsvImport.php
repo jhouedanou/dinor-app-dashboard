@@ -136,6 +136,11 @@ class CsvImport extends Page
 
         foreach ($csv as $index => $row) {
             try {
+                // Ignorer les lignes vides
+                if (empty(array_filter($row))) {
+                    continue;
+                }
+                
                 switch ($data['content_type']) {
                     case 'recipes':
                         $this->importRecipe($row, $headers ?? null);
@@ -172,18 +177,48 @@ class CsvImport extends Page
 
     protected function importRecipe(array $row, ?array $headers): void
     {
-        $data = $headers ? array_combine($headers, $row) : [
-            'title' => $row[0] ?? '',
-            'description' => $row[1] ?? '',
-            'content' => $row[2] ?? '',
-            'difficulty' => $row[3] ?? 'easy',
-            'preparation_time' => $row[4] ?? null,
-            'cooking_time' => $row[5] ?? null,
-            'servings' => $row[6] ?? null,
-            'category' => $row[7] ?? null,
-            'is_published' => $row[8] ?? true,
-            'is_featured' => $row[9] ?? false,
-        ];
+        if ($headers) {
+            $data = array_combine($headers, $row);
+            
+            // Détecter automatiquement le format basé sur les colonnes disponibles
+            if (isset($data['Recipe Name']) && !empty($data['Recipe Name'])) {
+                // Format nouveau avec "Recipe Name", "Ingredients", etc.
+                $data = [
+                    'title' => $data['Recipe Name'] ?? '',
+                    'description' => ($data['Cuisine'] ?? '') . ' - ' . (substr($data['Instructions'] ?? '', 0, 100)),
+                    'ingredients' => $data['Ingredients'] ?? '',
+                    'instructions' => $data['Instructions'] ?? '',
+                    'difficulty' => 'medium', // Par défaut
+                    'preparation_time' => $this->parseTime($data['Prep Time'] ?? null),
+                    'cooking_time' => $this->parseTime($data['Cook Time'] ?? null),
+                    'servings' => (int)($data['Servings'] ?? 4),
+                    'category' => $data['Cuisine'] ?? 'Plats Traditionnels',
+                    'is_published' => true,
+                    'is_featured' => false,
+                ];
+            } elseif (!empty($data['title'])) {
+                // Format classique avec "title", "description", etc.
+                // Data est déjà correct, on ne change rien
+            } else {
+                // Ligne sans titre valide, ignorer silencieusement
+                return;
+            }
+        } else {
+            $data = [
+                'title' => $row[0] ?? '',
+                'description' => $row[1] ?? '',
+                'content' => $row[2] ?? '',
+                'ingredients' => $row[3] ?? '',
+                'instructions' => $row[4] ?? '',
+                'difficulty' => $row[5] ?? 'easy',
+                'preparation_time' => $row[6] ?? null,
+                'cooking_time' => $row[7] ?? null,
+                'servings' => $row[8] ?? null,
+                'category' => $row[9] ?? null,
+                'is_published' => $row[10] ?? true,
+                'is_featured' => $row[11] ?? false,
+            ];
+        }
 
         // Traiter la catégorie
         $categoryId = null;
@@ -195,10 +230,41 @@ class CsvImport extends Page
             $categoryId = $category->id;
         }
 
+        // Validation des données
+        if (empty($data['title'])) {
+            throw new \Exception('Le titre de la recette est requis');
+        }
+
+        // Traitement des ingredients et instructions (conversion en tableau si nécessaire)
+        $ingredients = [];
+        if (!empty($data['ingredients'])) {
+            if (is_string($data['ingredients'])) {
+                // Si c'est une chaîne, diviser par des virgules ou des retours à la ligne
+                $ingredients = array_filter(array_map('trim', 
+                    preg_split('/[,\n\r]+/', $data['ingredients'])
+                ));
+            } else {
+                $ingredients = is_array($data['ingredients']) ? $data['ingredients'] : [];
+            }
+        }
+
+        $instructions = [];
+        if (!empty($data['instructions'])) {
+            if (is_string($data['instructions'])) {
+                // Si c'est une chaîne, diviser par des points ou des retours à la ligne
+                $instructions = array_filter(array_map('trim', 
+                    preg_split('/[.\n\r]+/', $data['instructions'])
+                ));
+            } else {
+                $instructions = is_array($data['instructions']) ? $data['instructions'] : [];
+            }
+        }
+
         Recipe::create([
             'title' => $data['title'],
-            'description' => $data['description'],
-            'content' => $data['content'],
+            'description' => $data['description'] ?: '',
+            'ingredients' => $ingredients, // Tableau d'ingrédients
+            'instructions' => $instructions, // Tableau d'instructions
             'difficulty' => $data['difficulty'],
             'preparation_time' => $data['preparation_time'] ? (int)$data['preparation_time'] : null,
             'cooking_time' => $data['cooking_time'] ? (int)$data['cooking_time'] : null,
@@ -231,10 +297,15 @@ class CsvImport extends Page
             $categoryId = $category->id;
         }
 
+        // Validation des données
+        if (empty($data['title'])) {
+            throw new \Exception('Le titre du conseil est requis');
+        }
+
         Tip::create([
             'title' => $data['title'],
-            'description' => $data['description'],
-            'content' => $data['content'],
+            'description' => $data['description'] ?: '',
+            'content' => $data['content'] ?? '',
             'category_id' => $categoryId,
             'is_published' => filter_var($data['is_published'], FILTER_VALIDATE_BOOLEAN),
             'is_featured' => filter_var($data['is_featured'], FILTER_VALIDATE_BOOLEAN),
@@ -315,9 +386,14 @@ class CsvImport extends Page
             'type' => $row[2] ?? 'recipe',
         ];
 
+        // Validation des données
+        if (empty($data['name'])) {
+            throw new \Exception('Le nom de la catégorie est requis');
+        }
+
         Category::create([
             'name' => $data['name'],
-            'description' => $data['description'],
+            'description' => $data['description'] ?: 'Catégorie créée automatiquement',
             'type' => $data['type'],
             'created_at' => now(),
             'updated_at' => now(),
@@ -359,5 +435,40 @@ class CsvImport extends Page
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+    }
+
+    /**
+     * Parser les temps comme "40 min", "1h", "1h40" en minutes
+     */
+    protected function parseTime($timeString): ?int
+    {
+        if (empty($timeString)) {
+            return null;
+        }
+
+        $timeString = strtolower(trim($timeString));
+        
+        // Patterns pour différents formats
+        if (preg_match('/(\d+)\s*h\s*(\d+)/', $timeString, $matches)) {
+            // Format "1h40"
+            return (int)$matches[1] * 60 + (int)$matches[2];
+        }
+        
+        if (preg_match('/(\d+)\s*h/', $timeString, $matches)) {
+            // Format "1h"
+            return (int)$matches[1] * 60;
+        }
+        
+        if (preg_match('/(\d+)\s*min/', $timeString, $matches)) {
+            // Format "40 min"
+            return (int)$matches[1];
+        }
+        
+        // Si c'est juste un nombre, considérer comme des minutes
+        if (is_numeric($timeString)) {
+            return (int)$timeString;
+        }
+        
+        return null;
     }
 }
