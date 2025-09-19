@@ -21,9 +21,6 @@ yarn-error.log*
 
 # Laravel
 /vendor/
-.env.example
-.env.local
-.env.testing
 
 # IDE
 .vscode/
