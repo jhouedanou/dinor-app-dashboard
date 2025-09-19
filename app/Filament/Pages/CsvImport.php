@@ -125,7 +125,22 @@ class CsvImport extends Page
             throw new \Exception('Fichier CSV non trouvé');
         }
 
-        $csv = array_map('str_getcsv', file($filePath));
+        // Lecture du fichier avec encodage UTF-8 forcé
+        $csvContent = file_get_contents($filePath);
+        if ($csvContent === false) {
+            throw new \Exception('Impossible de lire le fichier CSV');
+        }
+        
+        // Forcer l'encodage UTF-8
+        $csvContent = mb_convert_encoding($csvContent, 'UTF-8', 'auto');
+        
+        // Convertir en tableau
+        $lines = explode("\n", $csvContent);
+        $csv = array_map(function($line) use ($data) {
+            return str_getcsv(trim($line), $data['delimiter'] ?? ',');
+        }, array_filter($lines, function($line) {
+            return !empty(trim($line));
+        }));
         
         if ($data['has_header']) {
             $headers = array_shift($csv);
