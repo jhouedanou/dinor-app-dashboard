@@ -373,21 +373,21 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
         BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
           child: Container(
-            color: Colors.black.withValues(alpha: 0.6),
+            color: Colors.black,
           ),
         ),
         
         // Gradient overlay dramatique
         Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: RadialGradient(
               center: Alignment.center,
               radius: 1.2,
               colors: [
                 Colors.transparent,
-                Colors.black.withValues(alpha: 0.3),
-                Colors.black.withValues(alpha: 0.7),
-                Colors.black.withValues(alpha: 0.9),
+                Colors.black,
+                Colors.black,
+                Colors.black,
               ],
             ),
           ),
@@ -399,14 +399,14 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
   // Effet d'overlay animé
   Widget _buildAnimatedOverlay() {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF4facfe).withValues(alpha: 0.1),
+            Color(0xFF4facfe),
             Colors.transparent,
-            const Color(0xFFe100ff).withValues(alpha: 0.1),
+            Color(0xFFe100ff),
           ],
         ),
       ),
@@ -512,7 +512,7 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
                       ),
                       // Shadow noire pour la profondeur
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.8),
+                        color: Colors.black,
                         blurRadius: isPortrait ? 40 : 30,
                         offset: Offset(0, isPortrait ? 20 : 15),
                         spreadRadius: isPortrait ? 8 : 6,
@@ -527,7 +527,7 @@ class _TikTokStyleVideoScreenState extends ConsumerState<TikTokStyleVideoScreen>
                   borderRadius: BorderRadius.circular(isPortrait ? 30 : 20),
                   // Border limitée aux dimensions exactes de la vidéo
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.4),
+                    color: Colors.white,
                     width: 2,
                   ),
                 ),

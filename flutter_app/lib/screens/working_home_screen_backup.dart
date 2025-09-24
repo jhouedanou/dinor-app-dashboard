@@ -417,7 +417,7 @@ class _WorkingHomeScreenState extends State<WorkingHomeScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE53E3E).withValues(alpha: 0.3)),
+        border: Border.all(color: const Color(0xFFE53E3E)),
       ),
       child: Column(
         children: [

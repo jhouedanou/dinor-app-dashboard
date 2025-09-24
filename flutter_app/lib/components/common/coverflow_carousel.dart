@@ -196,7 +196,7 @@ class _CoverflowCarouselState extends State<CoverflowCarousel> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3 * opacity),
+                    color: Colors.black,
                     blurRadius: 15 + (10 * absOffset),
                     offset: Offset(8 * offset.sign * absOffset, 8 + (8 * absOffset)),
                     spreadRadius: 2,
@@ -233,17 +233,17 @@ class _CoverflowCarouselState extends State<CoverflowCarousel> {
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.white.withValues(alpha: 0.9), Colors.white.withValues(alpha: 0.8)],
+                gradient: const LinearGradient(
+                  colors: [Colors.white, Colors.white],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(25),
-                boxShadow: [
+                boxShadow: const [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
+                    color: Colors.black,
                     blurRadius: 12,
-                    offset: const Offset(0, 4),
+                    offset: Offset(0, 4),
                     spreadRadius: 1,
                   ),
                 ],
@@ -273,15 +273,15 @@ class _CoverflowCarouselState extends State<CoverflowCarousel> {
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.white.withValues(alpha: 0.9), Colors.white.withValues(alpha: 0.8)],
+                gradient: const LinearGradient(
+                  colors: [Colors.white, Colors.white],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(25),
-                boxShadow: [
+                boxShadow: const [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
+                    color: Colors.black,
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                     spreadRadius: 1,
@@ -328,12 +328,12 @@ class _CoverflowCarouselState extends State<CoverflowCarousel> {
                   )
                 : null,
               color: !isActive 
-                ? (widget.darkTheme ? Colors.white.withValues(alpha: 0.4) : Colors.grey.shade400)
+                ? (widget.darkTheme ? Colors.white : Colors.grey.shade400)
                 : null,
               borderRadius: BorderRadius.circular(6),
               boxShadow: isActive ? [
                 BoxShadow(
-                  color: (widget.darkTheme ? Colors.white : Colors.blue.shade600).withValues(alpha: 0.3),
+                  color: (widget.darkTheme ? Colors.white : Colors.blue.shade600),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),

@@ -67,11 +67,11 @@ class _SimpleDinorTVScreenState extends State<SimpleDinorTVScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          boxShadow: [
+          boxShadow: const [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: Colors.black,
               blurRadius: 8,
-              offset: const Offset(0, 2),
+              offset: Offset(0, 2),
             ),
           ],
         ),
@@ -105,9 +105,9 @@ class _SimpleDinorTVScreenState extends State<SimpleDinorTVScreen> {
                 // Bouton play overlay
                 Positioned.fill(
                   child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                    decoration: const BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
                     ),
                     child: const Center(
                       child: Icon(
@@ -125,7 +125,7 @@ class _SimpleDinorTVScreenState extends State<SimpleDinorTVScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.7),
+                      color: Colors.black,
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
@@ -192,7 +192,7 @@ class _SimpleDinorTVScreenState extends State<SimpleDinorTVScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF3182CE).withValues(alpha: 0.1),
+                          color: const Color(0xFF3182CE),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: const Text(

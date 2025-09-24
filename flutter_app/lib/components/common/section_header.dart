@@ -58,11 +58,11 @@ class SectionHeader extends StatelessWidget {
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: (primaryColor ?? defaultPrimary).withValues(alpha: 0.2),
+                color: (primaryColor ?? defaultPrimary),
               ),
-              boxShadow: [
+              boxShadow: const [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: Colors.black,
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),

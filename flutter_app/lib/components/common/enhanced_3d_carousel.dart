@@ -336,6 +336,7 @@ class _Enhanced3DCarouselState extends State<Enhanced3DCarousel>
     required IconData icon,
     required VoidCallback? onPressed,
   }) {
+    final isIOS = Theme.of(context).platform == TargetPlatform.iOS;
     return Container(
       width: 56,
       height: 56,

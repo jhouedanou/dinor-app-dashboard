@@ -103,9 +103,9 @@ class UnifiedContentStats extends StatelessWidget {
         color: backgroundColor,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
+            color: Colors.black,
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
