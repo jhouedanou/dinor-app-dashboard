@@ -159,7 +159,7 @@ class _AppHeaderState extends ConsumerState<AppHeader> with RouteAware {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      height: 72,
+      //height: 72,
       margin: const EdgeInsets.only(bottom: 16),
       decoration: const BoxDecoration(
         color: Color(0xFFE53E3E), // Fond rouge identique
