@@ -73,7 +73,7 @@
         <p>Nous pouvons mettre à jour ces conditions pour refléter l'évolution des services ou de la réglementation. Toute modification significative sera communiquée aux utilisateurs autorisés.</p>
 
         <h2>11. Droit Applicable</h2>
-        <p>Les présentes conditions sont soumises au droit français. Tout litige relatif à leur interprétation ou leur exécution relève de la compétence des tribunaux français.</p>
+        <p>Les présentes conditions sont régies par le droit ivoirien, notamment les dispositions du Code civil, du Code du numérique et de toute réglementation applicable aux services numériques en Côte d'Ivoire. Tout litige relatif à leur interprétation ou leur exécution relève de la compétence exclusive des juridictions ivoiriennes.</p>
 
         <p>Pour toute question, contactez-nous à <a href="mailto:jeanluc@bigfiveabidjan.com">jeanluc@bigfiveabidjan.com</a>.</p>
     </main>
