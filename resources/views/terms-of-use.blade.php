@@ -36,7 +36,7 @@
         <ul>
             <li>L'accès est soumis à l'utilisation d'identifiants individuels fournis par l'équipe Dinor.</li>
             <li>Chaque utilisateur s'engage à maintenir la confidentialité de ses identifiants.</li>
-            <li>Tout accès non autorisé doit être signalé immédiatement à <a href="mailto:hello@example.com">hello@example.com</a>.</li>
+            <li>Tout accès non autorisé doit être signalé immédiatement à <a href="mailto:jeanluc@bigfiveabidjan.com">jeanluc@bigfiveabidjan.com</a>.</li>
         </ul>
 
         <h2>3. Obligations des Utilisateurs</h2>
@@ -75,7 +75,7 @@
         <h2>11. Droit Applicable</h2>
         <p>Les présentes conditions sont soumises au droit français. Tout litige relatif à leur interprétation ou leur exécution relève de la compétence des tribunaux français.</p>
 
-        <p>Pour toute question, contactez-nous à <a href="mailto:hello@example.com">hello@example.com</a>.</p>
+        <p>Pour toute question, contactez-nous à <a href="mailto:jeanluc@bigfiveabidjan.com">jeanluc@bigfiveabidjan.com</a>.</p>
     </main>
 </body>
 </html>

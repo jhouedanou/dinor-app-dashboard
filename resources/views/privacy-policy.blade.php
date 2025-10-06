@@ -30,7 +30,7 @@
         <p>Cette politique de confidentialité décrit comment « {{ config('app.name') }} » collecte, utilise et protège les données personnelles collectées via notre tableau de bord et nos applications mobiles associées.</p>
 
         <h2>1. Responsable du Traitement</h2>
-        <p>Le responsable du traitement est l'équipe Dinor. Pour toute question concernant cette politique, vous pouvez nous contacter à l'adresse suivante : <a href="mailto:hello@example.com">hello@example.com</a>.</p>
+        <p>Le responsable du traitement est l'équipe Dinor. Pour toute question concernant cette politique, vous pouvez nous contacter à l'adresse suivante : <a href="mailto:jeanluc@bigfiveabidjan.com">jeanluc@bigfiveabidjan.com</a>.</p>
 
         <h2>2. Données Collectées</h2>
         <p>Nous collectons des informations liées à l'utilisation de la plateforme, notamment :</p>
@@ -66,7 +66,7 @@
             <li>Droit à la portabilité des données dans la mesure applicable.</li>
             <li>Droit d'introduire une réclamation auprès de la CNIL.</li>
         </ul>
-        <p>Pour exercer vos droits, veuillez nous contacter à <a href="mailto:hello@example.com">hello@example.com</a>.</p>
+        <p>Pour exercer vos droits, veuillez nous contacter à <a href="mailto:jeanluc@bigfiveabidjan.com">jeanluc@bigfiveabidjan.com</a>.</p>
 
         <h2>8. Sécurité</h2>
         <p>Nous mettons en œuvre des mesures techniques et organisationnelles appropriées pour protéger vos données contre la perte, l'accès non autorisé ou la divulgation. Cela inclut des contrôles d'accès, le chiffrement et des audits réguliers.</p>
