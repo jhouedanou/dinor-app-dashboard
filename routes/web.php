@@ -19,6 +19,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::view('/privacy-policy', 'privacy-policy')->name('privacy-policy');
+Route::view('/terms-of-use', 'terms-of-use')->name('terms-of-use');
+
 Route::get('/dashboard', function () {
     return redirect('/admin');
 })->name('dashboard');
