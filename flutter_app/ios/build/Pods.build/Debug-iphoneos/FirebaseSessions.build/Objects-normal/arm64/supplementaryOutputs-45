@@ -1,0 +1,18 @@
+"/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseSessions/FirebaseSessions/Sources/Settings/SettingsDownloadClient.swift":
+  diagnostics: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SettingsDownloadClient.dia"
+  object: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SettingsDownloadClient.o"
+  dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SettingsDownloadClient.d"
+  const-values: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SettingsDownloadClient.swiftconstvalues"
+  swift-dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SettingsDownloadClient.swiftdeps"
+"/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseSessions/FirebaseSessions/Sources/SessionStartEvent.swift":
+  object: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SessionStartEvent.o"
+  swift-dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SessionStartEvent.swiftdeps"
+  dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SessionStartEvent.d"
+  const-values: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SessionStartEvent.swiftconstvalues"
+  diagnostics: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SessionStartEvent.dia"
+"/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseSessions/FirebaseSessions/Sources/Settings/SettingsCacheClient.swift":
+  diagnostics: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SettingsCacheClient.dia"
+  const-values: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SettingsCacheClient.swiftconstvalues"
+  object: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SettingsCacheClient.o"
+  swift-dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SettingsCacheClient.swiftdeps"
+  dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SettingsCacheClient.d"

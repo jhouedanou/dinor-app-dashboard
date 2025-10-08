@@ -1,0 +1,23 @@
+{
+  'version': 0,
+  'use-external-names': 'false',
+  'case-sensitive': 'false',
+  'roots': [{
+    'type': 'directory',
+    'name': "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/build/ios/Debug-iphoneos/flutter_facebook_auth/flutter_facebook_auth.framework/Modules"
+    'contents': [{
+      'type': 'file',
+      'name': "module.modulemap",
+      'external-contents': "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_facebook_auth.build/unextended-module.modulemap",
+    }]
+    },
+    {
+    'type': 'directory',
+    'name': "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/build/ios/Debug-iphoneos/flutter_facebook_auth/flutter_facebook_auth.framework/Headers"
+    'contents': [{
+      'type': 'file',
+      'name': "flutter_facebook_auth-Swift.h",
+      'external-contents': "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_facebook_auth.build/unextended-interface-header.h",
+    }]
+    }]
+}

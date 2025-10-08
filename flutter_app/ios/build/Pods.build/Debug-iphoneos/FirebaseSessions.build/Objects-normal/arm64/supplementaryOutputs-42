@@ -1,0 +1,18 @@
+"/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseSessions/FirebaseSessions/Sources/SessionCoordinator.swift":
+  const-values: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SessionCoordinator.swiftconstvalues"
+  object: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SessionCoordinator.o"
+  swift-dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SessionCoordinator.swiftdeps"
+  dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SessionCoordinator.d"
+  diagnostics: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SessionCoordinator.dia"
+"/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseSessions/FirebaseSessions/Sources/Settings/SDKDefaultSettings.swift":
+  object: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SDKDefaultSettings.o"
+  dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SDKDefaultSettings.d"
+  diagnostics: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SDKDefaultSettings.dia"
+  swift-dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SDKDefaultSettings.swiftdeps"
+  const-values: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SDKDefaultSettings.swiftconstvalues"
+"/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseSessions/FirebaseSessions/Sources/Settings/RemoteSettings.swift":
+  const-values: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/RemoteSettings.swiftconstvalues"
+  dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/RemoteSettings.d"
+  diagnostics: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/RemoteSettings.dia"
+  object: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/RemoteSettings.o"
+  swift-dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/RemoteSettings.swiftdeps"

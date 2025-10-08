@@ -1,0 +1,38 @@
+{
+  "" : {
+    "diagnostics" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseCrashlytics.build/Objects-normal/arm64/FirebaseCrashlytics-master.dia",
+    "emit-module-dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseCrashlytics.build/Objects-normal/arm64/FirebaseCrashlytics-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseCrashlytics.build/Objects-normal/arm64/FirebaseCrashlytics-master-emit-module.dia",
+    "swift-dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseCrashlytics.build/Objects-normal/arm64/FirebaseCrashlytics-master.swiftdeps"
+  },
+  "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Rollouts/CrashlyticsRemoteConfigManager.swift" : {
+    "const-values" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseCrashlytics.build/Objects-normal/arm64/CrashlyticsRemoteConfigManager.swiftconstvalues",
+    "dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseCrashlytics.build/Objects-normal/arm64/CrashlyticsRemoteConfigManager.d",
+    "diagnostics" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseCrashlytics.build/Objects-normal/arm64/CrashlyticsRemoteConfigManager.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphoneos/FirebaseCrashlytics.build/Objects-normal/arm64/CrashlyticsRemoteConfigManager.o",
+    "llvm-bc" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseCrashlytics.build/Objects-normal/arm64/CrashlyticsRemoteConfigManager.bc",
+    "object" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseCrashlytics.build/Objects-normal/arm64/CrashlyticsRemoteConfigManager.o",
+    "swift-dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseCrashlytics.build/Objects-normal/arm64/CrashlyticsRemoteConfigManager.swiftdeps",
+    "swiftmodule" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseCrashlytics.build/Objects-normal/arm64/CrashlyticsRemoteConfigManager~partial.swiftmodule"
+  },
+  "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Rollouts/EncodedRolloutAssignment.swift" : {
+    "const-values" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseCrashlytics.build/Objects-normal/arm64/EncodedRolloutAssignment.swiftconstvalues",
+    "dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseCrashlytics.build/Objects-normal/arm64/EncodedRolloutAssignment.d",
+    "diagnostics" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseCrashlytics.build/Objects-normal/arm64/EncodedRolloutAssignment.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphoneos/FirebaseCrashlytics.build/Objects-normal/arm64/EncodedRolloutAssignment.o",
+    "llvm-bc" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseCrashlytics.build/Objects-normal/arm64/EncodedRolloutAssignment.bc",
+    "object" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseCrashlytics.build/Objects-normal/arm64/EncodedRolloutAssignment.o",
+    "swift-dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseCrashlytics.build/Objects-normal/arm64/EncodedRolloutAssignment.swiftdeps",
+    "swiftmodule" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseCrashlytics.build/Objects-normal/arm64/EncodedRolloutAssignment~partial.swiftmodule"
+  },
+  "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Rollouts/StringToHexConverter.swift" : {
+    "const-values" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseCrashlytics.build/Objects-normal/arm64/StringToHexConverter.swiftconstvalues",
+    "dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseCrashlytics.build/Objects-normal/arm64/StringToHexConverter.d",
+    "diagnostics" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseCrashlytics.build/Objects-normal/arm64/StringToHexConverter.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphoneos/FirebaseCrashlytics.build/Objects-normal/arm64/StringToHexConverter.o",
+    "llvm-bc" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseCrashlytics.build/Objects-normal/arm64/StringToHexConverter.bc",
+    "object" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseCrashlytics.build/Objects-normal/arm64/StringToHexConverter.o",
+    "swift-dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseCrashlytics.build/Objects-normal/arm64/StringToHexConverter.swiftdeps",
+    "swiftmodule" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseCrashlytics.build/Objects-normal/arm64/StringToHexConverter~partial.swiftmodule"
+  }
+}

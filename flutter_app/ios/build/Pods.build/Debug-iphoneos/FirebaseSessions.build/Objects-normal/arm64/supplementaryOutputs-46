@@ -1,0 +1,18 @@
+"/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseSessions/FirebaseSessions/Sources/Settings/SettingsProvider.swift":
+  object: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SettingsProvider.o"
+  swift-dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SettingsProvider.swiftdeps"
+  dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SettingsProvider.d"
+  const-values: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SettingsProvider.swiftconstvalues"
+  diagnostics: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SettingsProvider.dia"
+"/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseSessions/FirebaseSessions/Sources/Time.swift":
+  const-values: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/Time.swiftconstvalues"
+  diagnostics: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/Time.dia"
+  object: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/Time.o"
+  dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/Time.d"
+  swift-dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/Time.swiftdeps"
+"/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseSessions/FirebaseSessions/Sources/Settings/SettingsProtocol.swift":
+  swift-dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SettingsProtocol.swiftdeps"
+  diagnostics: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SettingsProtocol.dia"
+  dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SettingsProtocol.d"
+  object: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SettingsProtocol.o"
+  const-values: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseSessions.build/Objects-normal/arm64/SettingsProtocol.swiftconstvalues"

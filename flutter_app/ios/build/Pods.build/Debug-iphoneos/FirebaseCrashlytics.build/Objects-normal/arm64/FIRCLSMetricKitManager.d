@@ -1,0 +1,31 @@
+dependencies: \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseCrashlytics.build/module.modulemap \
+  /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/include/Darwin.modulemap \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Controllers/FIRCLSMetricKitManager.m \
+  /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks/Foundation.framework/Modules/module.modulemap \
+  /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/include/TargetConditionals.modulemap \
+  /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/include/DarwinBasic.modulemap \
+  /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/include/DarwinFoundation.modulemap \
+  /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/include/os_availability.modulemap \
+  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/16/include/module.modulemap \
+  /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/include/c_standard_library.modulemap \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Controllers/FIRCLSMetricKitManager.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Helpers/FIRCLSDefines.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks/MetricKit.framework/Modules/module.modulemap \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Controllers/FIRCLSExistingReportManager.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Models/FIRCLSFileManager.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/PromisesObjC.build/module.modulemap \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/PromisesObjC/Sources/FBLPromises/include/FBLPromises.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Controllers/FIRCLSManagerData.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Handlers/FIRCLSMachException.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Helpers/FIRCLSFeatures.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Handlers/FIRCLSSignal.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Helpers/FIRCLSFile.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Helpers/FIRCLSCallStackTree.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Helpers/FIRCLSLogger.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Models/FIRCLSExecutionIdentifierModel.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Models/FIRCLSInternalReport.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Public/FirebaseCrashlytics/FIRCrashlytics.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Public/FirebaseCrashlytics/FIRCrashlyticsReport.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Public/FirebaseCrashlytics/FIRExceptionModel.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Public/FirebaseCrashlytics/FIRStackFrame.h

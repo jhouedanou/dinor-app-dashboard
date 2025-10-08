@@ -1,0 +1,23 @@
+{
+  'version': 0,
+  'use-external-names': 'false',
+  'case-sensitive': 'false',
+  'roots': [{
+    'type': 'directory',
+    'name': "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Debug-iphoneos/flutter_inappwebview_ios/flutter_inappwebview_ios.framework/Modules"
+    'contents': [{
+      'type': 'file',
+      'name': "module.modulemap",
+      'external-contents': "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_inappwebview_ios.build/unextended-module.modulemap",
+    }]
+    },
+    {
+    'type': 'directory',
+    'name': "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Debug-iphoneos/flutter_inappwebview_ios/flutter_inappwebview_ios.framework/Headers"
+    'contents': [{
+      'type': 'file',
+      'name': "flutter_inappwebview_ios-Swift.h",
+      'external-contents': "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_inappwebview_ios.build/unextended-interface-header.h",
+    }]
+    }]
+}

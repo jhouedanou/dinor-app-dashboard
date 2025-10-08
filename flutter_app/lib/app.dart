@@ -298,15 +298,16 @@ class _DinorAppState extends ConsumerState<DinorApp> {
 
   // IDENTIQUE à handleAuthRequired() Vue
   void _handleAuthRequired() {
-    setState(() {
+   /*setState(() {
       _showAuthModal = true;
     });
-    _displayAuthModal();
+    _displayAuthModal();*/
   }
 
   void _displayAuthModal() {
+    //ModalService.showAuthModal();
     // Utiliser le nouveau système de modal sûr
-    ModalService.showAuthModal(
+    /*ModalService.showAuthModal(
       onClose: () {
         setState(() => _showAuthModal = false);
       },
@@ -315,7 +316,7 @@ class _DinorAppState extends ConsumerState<DinorApp> {
         // Rediriger vers le profil après authentification réussie
         NavigationService.pushReplacementNamed('/profile');
       },
-    );
+    );*/
   }
 
   // COMPUTED équivalent à showBottomNav Vue
@@ -405,7 +406,7 @@ class _DinorAppState extends ConsumerState<DinorApp> {
                 body: Column(
                   children: [
                     // En-tête de l'application - AppHeader
-                    AppHeader(
+                    /*AppHeader(
                       title: _currentPageTitle,
                       showFavorite: _showFavoriteButton,
                       favoriteType: _favoriteType,
@@ -417,7 +418,7 @@ class _DinorAppState extends ConsumerState<DinorApp> {
                       onShare: _handleShare,
                       onBack: _handleBack,
                       onAuthRequired: _handleAuthRequired,
-                    ),
+                    ),*/
                     
                     // Main Content - classe CSS identique
                     Expanded(

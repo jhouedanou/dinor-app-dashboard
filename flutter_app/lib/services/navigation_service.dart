@@ -4,6 +4,7 @@
 /// de contexte modal avec des GlobalKey pour un accès sûr.
 library;
 
+import 'package:dinor_app/auth/login_view.dart';
 import 'package:flutter/material.dart';
 import '../screens/working_home_screen.dart';
 import '../screens/simple_recipes_screen.dart';
@@ -51,6 +52,7 @@ class NavigationService {
   static const String leaderboard = '/leaderboard';
   static const String notifications = '/notifications';
   static const String webEmbed = '/web-embed';
+  static const String login = '/login';
   
   // Route actuelle
   static String _currentRoute = home;
@@ -361,6 +363,13 @@ class NavigationService {
           builder: (_) => const TermsOfServiceScreen(),
           settings: settings,
         );
+
+      case login:
+        return MaterialPageRoute(
+          builder: (_) => const LoginView(),
+          settings: settings,
+        );
+        
         
       case privacy:
         return MaterialPageRoute(

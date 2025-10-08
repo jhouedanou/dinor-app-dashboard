@@ -1,0 +1,28 @@
+{
+  "" : {
+    "diagnostics" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_secure_storage.build/Objects-normal/arm64/flutter_secure_storage-master.dia",
+    "emit-module-dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_secure_storage.build/Objects-normal/arm64/flutter_secure_storage-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_secure_storage.build/Objects-normal/arm64/flutter_secure_storage-master-emit-module.dia",
+    "swift-dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_secure_storage.build/Objects-normal/arm64/flutter_secure_storage-master.swiftdeps"
+  },
+  "/Users/isaac/.pub-cache/hosted/pub.dev/flutter_secure_storage-9.2.4/ios/Classes/FlutterSecureStorage.swift" : {
+    "const-values" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_secure_storage.build/Objects-normal/arm64/FlutterSecureStorage.swiftconstvalues",
+    "dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_secure_storage.build/Objects-normal/arm64/FlutterSecureStorage.d",
+    "diagnostics" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_secure_storage.build/Objects-normal/arm64/FlutterSecureStorage.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphoneos/flutter_secure_storage.build/Objects-normal/arm64/FlutterSecureStorage.o",
+    "llvm-bc" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_secure_storage.build/Objects-normal/arm64/FlutterSecureStorage.bc",
+    "object" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_secure_storage.build/Objects-normal/arm64/FlutterSecureStorage.o",
+    "swift-dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_secure_storage.build/Objects-normal/arm64/FlutterSecureStorage.swiftdeps",
+    "swiftmodule" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_secure_storage.build/Objects-normal/arm64/FlutterSecureStorage~partial.swiftmodule"
+  },
+  "/Users/isaac/.pub-cache/hosted/pub.dev/flutter_secure_storage-9.2.4/ios/Classes/SwiftFlutterSecureStoragePlugin.swift" : {
+    "const-values" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_secure_storage.build/Objects-normal/arm64/SwiftFlutterSecureStoragePlugin.swiftconstvalues",
+    "dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_secure_storage.build/Objects-normal/arm64/SwiftFlutterSecureStoragePlugin.d",
+    "diagnostics" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_secure_storage.build/Objects-normal/arm64/SwiftFlutterSecureStoragePlugin.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphoneos/flutter_secure_storage.build/Objects-normal/arm64/SwiftFlutterSecureStoragePlugin.o",
+    "llvm-bc" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_secure_storage.build/Objects-normal/arm64/SwiftFlutterSecureStoragePlugin.bc",
+    "object" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_secure_storage.build/Objects-normal/arm64/SwiftFlutterSecureStoragePlugin.o",
+    "swift-dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_secure_storage.build/Objects-normal/arm64/SwiftFlutterSecureStoragePlugin.swiftdeps",
+    "swiftmodule" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_secure_storage.build/Objects-normal/arm64/SwiftFlutterSecureStoragePlugin~partial.swiftmodule"
+  }
+}

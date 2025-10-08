@@ -1,0 +1,38 @@
+{
+  "" : {
+    "diagnostics" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/firebase_analytics.build/Objects-normal/arm64/firebase_analytics-master.dia",
+    "emit-module-dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/firebase_analytics.build/Objects-normal/arm64/firebase_analytics-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/firebase_analytics.build/Objects-normal/arm64/firebase_analytics-master-emit-module.dia",
+    "swift-dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/firebase_analytics.build/Objects-normal/arm64/firebase_analytics-master.swiftdeps"
+  },
+  "/Users/isaac/.pub-cache/hosted/pub.dev/firebase_analytics-11.6.0/ios/firebase_analytics/Sources/firebase_analytics/Constants.swift" : {
+    "const-values" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/firebase_analytics.build/Objects-normal/arm64/Constants.swiftconstvalues",
+    "dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/firebase_analytics.build/Objects-normal/arm64/Constants.d",
+    "diagnostics" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/firebase_analytics.build/Objects-normal/arm64/Constants.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphoneos/firebase_analytics.build/Objects-normal/arm64/Constants.o",
+    "llvm-bc" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/firebase_analytics.build/Objects-normal/arm64/Constants.bc",
+    "object" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/firebase_analytics.build/Objects-normal/arm64/Constants.o",
+    "swift-dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/firebase_analytics.build/Objects-normal/arm64/Constants.swiftdeps",
+    "swiftmodule" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/firebase_analytics.build/Objects-normal/arm64/Constants~partial.swiftmodule"
+  },
+  "/Users/isaac/.pub-cache/hosted/pub.dev/firebase_analytics-11.6.0/ios/firebase_analytics/Sources/firebase_analytics/FirebaseAnalyticsMessages.g.swift" : {
+    "const-values" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/firebase_analytics.build/Objects-normal/arm64/FirebaseAnalyticsMessages.g.swiftconstvalues",
+    "dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/firebase_analytics.build/Objects-normal/arm64/FirebaseAnalyticsMessages.g.d",
+    "diagnostics" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/firebase_analytics.build/Objects-normal/arm64/FirebaseAnalyticsMessages.g.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphoneos/firebase_analytics.build/Objects-normal/arm64/FirebaseAnalyticsMessages.g.o",
+    "llvm-bc" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/firebase_analytics.build/Objects-normal/arm64/FirebaseAnalyticsMessages.g.bc",
+    "object" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/firebase_analytics.build/Objects-normal/arm64/FirebaseAnalyticsMessages.g.o",
+    "swift-dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/firebase_analytics.build/Objects-normal/arm64/FirebaseAnalyticsMessages.g.swiftdeps",
+    "swiftmodule" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/firebase_analytics.build/Objects-normal/arm64/FirebaseAnalyticsMessages.g~partial.swiftmodule"
+  },
+  "/Users/isaac/.pub-cache/hosted/pub.dev/firebase_analytics-11.6.0/ios/firebase_analytics/Sources/firebase_analytics/FirebaseAnalyticsPlugin.swift" : {
+    "const-values" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/firebase_analytics.build/Objects-normal/arm64/FirebaseAnalyticsPlugin.swiftconstvalues",
+    "dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/firebase_analytics.build/Objects-normal/arm64/FirebaseAnalyticsPlugin.d",
+    "diagnostics" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/firebase_analytics.build/Objects-normal/arm64/FirebaseAnalyticsPlugin.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphoneos/firebase_analytics.build/Objects-normal/arm64/FirebaseAnalyticsPlugin.o",
+    "llvm-bc" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/firebase_analytics.build/Objects-normal/arm64/FirebaseAnalyticsPlugin.bc",
+    "object" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/firebase_analytics.build/Objects-normal/arm64/FirebaseAnalyticsPlugin.o",
+    "swift-dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/firebase_analytics.build/Objects-normal/arm64/FirebaseAnalyticsPlugin.swiftdeps",
+    "swiftmodule" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/firebase_analytics.build/Objects-normal/arm64/FirebaseAnalyticsPlugin~partial.swiftmodule"
+  }
+}

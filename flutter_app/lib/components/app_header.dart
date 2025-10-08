@@ -1,10 +1,10 @@
 import 'dart:async';
+import 'package:dinor_app/router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../services/share_service.dart';
 import '../styles/shadows.dart';
-import '../styles/text_styles.dart';
 import '../stores/header_state.dart';
 import '../stores/notifications_store.dart';
 import '../services/navigation_service.dart';
@@ -330,7 +330,10 @@ class _AppHeaderState extends ConsumerState<AppHeader> with RouteAware {
                     // Bouton profil
                     if (widget.showProfile)
                       IconButton(
-                        onPressed: () => _handleProfileTap(context, ref),
+                        onPressed: (){
+                          print('Changement de route ...');
+                          NavigationService.pushNamed('/login');
+                        },//_handleProfileTap(context, ref),
                         icon: const Icon(
                           Icons.person_outline,
                           color: Colors.white,

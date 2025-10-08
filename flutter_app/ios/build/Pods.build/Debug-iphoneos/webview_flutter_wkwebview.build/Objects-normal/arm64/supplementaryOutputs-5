@@ -1,0 +1,30 @@
+"/Users/isaac/.pub-cache/hosted/pub.dev/webview_flutter_wkwebview-3.22.0/darwin/webview_flutter_wkwebview/Sources/webview_flutter_wkwebview/SecWrappers.swift":
+  swift-dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/webview_flutter_wkwebview.build/Objects-normal/arm64/SecWrappers.swiftdeps"
+  diagnostics: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/webview_flutter_wkwebview.build/Objects-normal/arm64/SecWrappers.dia"
+  dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/webview_flutter_wkwebview.build/Objects-normal/arm64/SecWrappers.d"
+  object: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/webview_flutter_wkwebview.build/Objects-normal/arm64/SecWrappers.o"
+  const-values: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/webview_flutter_wkwebview.build/Objects-normal/arm64/SecWrappers.swiftconstvalues"
+"/Users/isaac/.pub-cache/hosted/pub.dev/webview_flutter_wkwebview-3.22.0/darwin/webview_flutter_wkwebview/Sources/webview_flutter_wkwebview/SecTrustProxyAPIDelegate.swift":
+  const-values: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/webview_flutter_wkwebview.build/Objects-normal/arm64/SecTrustProxyAPIDelegate.swiftconstvalues"
+  diagnostics: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/webview_flutter_wkwebview.build/Objects-normal/arm64/SecTrustProxyAPIDelegate.dia"
+  dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/webview_flutter_wkwebview.build/Objects-normal/arm64/SecTrustProxyAPIDelegate.d"
+  swift-dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/webview_flutter_wkwebview.build/Objects-normal/arm64/SecTrustProxyAPIDelegate.swiftdeps"
+  object: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/webview_flutter_wkwebview.build/Objects-normal/arm64/SecTrustProxyAPIDelegate.o"
+"/Users/isaac/.pub-cache/hosted/pub.dev/webview_flutter_wkwebview-3.22.0/darwin/webview_flutter_wkwebview/Sources/webview_flutter_wkwebview/SecurityOriginProxyAPIDelegate.swift":
+  diagnostics: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/webview_flutter_wkwebview.build/Objects-normal/arm64/SecurityOriginProxyAPIDelegate.dia"
+  object: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/webview_flutter_wkwebview.build/Objects-normal/arm64/SecurityOriginProxyAPIDelegate.o"
+  dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/webview_flutter_wkwebview.build/Objects-normal/arm64/SecurityOriginProxyAPIDelegate.d"
+  const-values: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/webview_flutter_wkwebview.build/Objects-normal/arm64/SecurityOriginProxyAPIDelegate.swiftconstvalues"
+  swift-dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/webview_flutter_wkwebview.build/Objects-normal/arm64/SecurityOriginProxyAPIDelegate.swiftdeps"
+"/Users/isaac/.pub-cache/hosted/pub.dev/webview_flutter_wkwebview-3.22.0/darwin/webview_flutter_wkwebview/Sources/webview_flutter_wkwebview/StructWrappers.swift":
+  diagnostics: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/webview_flutter_wkwebview.build/Objects-normal/arm64/StructWrappers.dia"
+  object: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/webview_flutter_wkwebview.build/Objects-normal/arm64/StructWrappers.o"
+  dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/webview_flutter_wkwebview.build/Objects-normal/arm64/StructWrappers.d"
+  const-values: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/webview_flutter_wkwebview.build/Objects-normal/arm64/StructWrappers.swiftconstvalues"
+  swift-dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/webview_flutter_wkwebview.build/Objects-normal/arm64/StructWrappers.swiftdeps"
+"/Users/isaac/.pub-cache/hosted/pub.dev/webview_flutter_wkwebview-3.22.0/darwin/webview_flutter_wkwebview/Sources/webview_flutter_wkwebview/UIDelegateProxyAPIDelegate.swift":
+  swift-dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/webview_flutter_wkwebview.build/Objects-normal/arm64/UIDelegateProxyAPIDelegate.swiftdeps"
+  object: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/webview_flutter_wkwebview.build/Objects-normal/arm64/UIDelegateProxyAPIDelegate.o"
+  diagnostics: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/webview_flutter_wkwebview.build/Objects-normal/arm64/UIDelegateProxyAPIDelegate.dia"
+  const-values: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/webview_flutter_wkwebview.build/Objects-normal/arm64/UIDelegateProxyAPIDelegate.swiftconstvalues"
+  dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/webview_flutter_wkwebview.build/Objects-normal/arm64/UIDelegateProxyAPIDelegate.d"

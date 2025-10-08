@@ -1,0 +1,27 @@
+dependencies: \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/FirebaseCrashlytics.build/module.modulemap \
+  /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/include/Darwin.modulemap \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Controllers/FIRCLSExistingReportManager.m \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Controllers/FIRCLSExistingReportManager.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks/Foundation.framework/Modules/module.modulemap \
+  /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/include/TargetConditionals.modulemap \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Controllers/FIRCLSManagerData.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Controllers/FIRCLSReportUploader.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/DataCollection/FIRCLSDataCollectionArbiter.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/DataCollection/FIRCLSDataCollectionToken.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Helpers/FIRCLSLogger.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Models/FIRCLSFileManager.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Models/FIRCLSInternalReport.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Helpers/FIRCLSFeatures.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Helpers/FIRCLSDefines.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Models/FIRCLSSettings.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/PromisesObjC.build/module.modulemap \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/PromisesObjC/Sources/FBLPromises/include/FBLPromises.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Private/FIRCLSOnDemandModel_Private.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Models/FIRCLSOnDemandModel.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Private/FIRCLSExistingReportManager_Private.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Private/FIRExceptionModel_Private.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Public/FirebaseCrashlytics/FIRExceptionModel.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Public/FirebaseCrashlytics/FIRStackFrame.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Private/FIRCrashlyticsReport_Private.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/FirebaseCrashlytics/Crashlytics/Crashlytics/Public/FirebaseCrashlytics/FIRCrashlyticsReport.h

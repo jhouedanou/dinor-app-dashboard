@@ -1,7 +1,7 @@
 name: dinor_app
 description: Dinor App - Votre chef de poche - Application culinaire mobile
 publish_to: 'none'
-version: 3.2.0+32
+version: 3.2.3+103
 
 environment:
   sdk: '>=3.2.0 <4.0.0'
@@ -16,6 +16,9 @@ dependencies:
   provider: ^6.1.5
   riverpod: ^2.6.1
   flutter_riverpod: ^2.6.1
+  google_fonts:
+  sign_in_button:
+  flutter_facebook_auth:
 
   # Navigation (remplace Vue Router) - Navigator classique avec GlobalKey
   # go_router supprimé pour éviter les erreurs de contexte modal
@@ -31,7 +34,7 @@ dependencies:
 
   # Icons (remplace Lucide Vue - 80+ icônes identiques)
   lucide_icons: ^0.257.0
-  font_awesome_flutter: ^10.6.0
+  font_awesome_flutter:
 
   # Animations (remplace transitions CSS)
   animations: ^2.0.8

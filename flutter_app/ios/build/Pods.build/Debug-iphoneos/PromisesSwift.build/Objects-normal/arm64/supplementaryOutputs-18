@@ -1,0 +1,18 @@
+"/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/PromisesSwift/Sources/Promises/Promise+Any.swift":
+  object: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/PromisesSwift.build/Objects-normal/arm64/Promise+Any.o"
+  dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/PromisesSwift.build/Objects-normal/arm64/Promise+Any.d"
+  const-values: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/PromisesSwift.build/Objects-normal/arm64/Promise+Any.swiftconstvalues"
+  swift-dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/PromisesSwift.build/Objects-normal/arm64/Promise+Any.swiftdeps"
+  diagnostics: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/PromisesSwift.build/Objects-normal/arm64/Promise+Any.dia"
+"/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/PromisesSwift/Sources/Promises/Promise+Async.swift":
+  const-values: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/PromisesSwift.build/Objects-normal/arm64/Promise+Async.swiftconstvalues"
+  object: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/PromisesSwift.build/Objects-normal/arm64/Promise+Async.o"
+  diagnostics: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/PromisesSwift.build/Objects-normal/arm64/Promise+Async.dia"
+  dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/PromisesSwift.build/Objects-normal/arm64/Promise+Async.d"
+  swift-dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/PromisesSwift.build/Objects-normal/arm64/Promise+Async.swiftdeps"
+"/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/PromisesSwift/Sources/Promises/Promise+Await.swift":
+  dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/PromisesSwift.build/Objects-normal/arm64/Promise+Await.d"
+  object: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/PromisesSwift.build/Objects-normal/arm64/Promise+Await.o"
+  const-values: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/PromisesSwift.build/Objects-normal/arm64/Promise+Await.swiftconstvalues"
+  diagnostics: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/PromisesSwift.build/Objects-normal/arm64/Promise+Await.dia"
+  swift-dependencies: "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/PromisesSwift.build/Objects-normal/arm64/Promise+Await.swiftdeps"

@@ -1,0 +1,19 @@
+moduledependenciestarget: \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/build/ios/Debug-iphoneos/onesignal_flutter/onesignal_flutter.framework/Modules/module.modulemap \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/build/ios/Debug-iphoneos/XCFrameworkIntermediates/OneSignalXCFramework/OneSignal/OneSignalFramework.framework/Modules/module.modulemap \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/build/ios/Debug-iphoneos/XCFrameworkIntermediates/OneSignalXCFramework/OneSignalUser/OneSignalUser.framework/Modules/module.modulemap \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/build/ios/Debug-iphoneos/onesignal_flutter/onesignal_flutter.framework/Headers/onesignal_flutter-umbrella.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.2.sdk/System/Library/Frameworks/UIKit.framework/Modules/module.modulemap \
+  /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.2.sdk/System/Library/Frameworks/Foundation.framework/Modules/module.modulemap \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/build/ios/Debug-iphoneos/onesignal_flutter/onesignal_flutter.framework/Headers/OneSignalPlugin.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/build/ios/Debug-iphoneos/Flutter.framework/Modules/module.modulemap \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/build/ios/Debug-iphoneos/XCFrameworkIntermediates/OneSignalXCFramework/OneSignalNotifications/OneSignalNotifications.framework/Modules/module.modulemap \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/build/ios/Debug-iphoneos/onesignal_flutter/onesignal_flutter.framework/Headers/OSFlutterCategories.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/build/ios/Debug-iphoneos/onesignal_flutter/onesignal_flutter.framework/Headers/OSFlutterDebug.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/build/ios/Debug-iphoneos/onesignal_flutter/onesignal_flutter.framework/Headers/OSFlutterInAppMessages.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/build/ios/Debug-iphoneos/onesignal_flutter/onesignal_flutter.framework/Headers/OSFlutterLiveActivities.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/build/ios/Debug-iphoneos/onesignal_flutter/onesignal_flutter.framework/Headers/OSFlutterLocation.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/build/ios/Debug-iphoneos/onesignal_flutter/onesignal_flutter.framework/Headers/OSFlutterNotifications.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/build/ios/Debug-iphoneos/onesignal_flutter/onesignal_flutter.framework/Headers/OSFlutterPushSubscription.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/build/ios/Debug-iphoneos/onesignal_flutter/onesignal_flutter.framework/Headers/OSFlutterSession.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/build/ios/Debug-iphoneos/onesignal_flutter/onesignal_flutter.framework/Headers/OSFlutterUser.h

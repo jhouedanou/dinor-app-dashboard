@@ -1,0 +1,18 @@
+{
+  "" : {
+    "diagnostics" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Runner.build/Debug-iphoneos/OneSignalNotificationServiceExtension.build/Objects-normal/arm64/OneSignalNotificationServiceExtension-master.dia",
+    "emit-module-dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Runner.build/Debug-iphoneos/OneSignalNotificationServiceExtension.build/Objects-normal/arm64/OneSignalNotificationServiceExtension-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Runner.build/Debug-iphoneos/OneSignalNotificationServiceExtension.build/Objects-normal/arm64/OneSignalNotificationServiceExtension-master-emit-module.dia",
+    "swift-dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Runner.build/Debug-iphoneos/OneSignalNotificationServiceExtension.build/Objects-normal/arm64/OneSignalNotificationServiceExtension-master.swiftdeps"
+  },
+  "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/OneSignalNotificationServiceExtension/NotificationService.swift" : {
+    "const-values" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Runner.build/Debug-iphoneos/OneSignalNotificationServiceExtension.build/Objects-normal/arm64/NotificationService.swiftconstvalues",
+    "dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Runner.build/Debug-iphoneos/OneSignalNotificationServiceExtension.build/Objects-normal/arm64/NotificationService.d",
+    "diagnostics" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Runner.build/Debug-iphoneos/OneSignalNotificationServiceExtension.build/Objects-normal/arm64/NotificationService.dia",
+    "index-unit-output-path" : "/Runner.build/Debug-iphoneos/OneSignalNotificationServiceExtension.build/Objects-normal/arm64/NotificationService.o",
+    "llvm-bc" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Runner.build/Debug-iphoneos/OneSignalNotificationServiceExtension.build/Objects-normal/arm64/NotificationService.bc",
+    "object" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Runner.build/Debug-iphoneos/OneSignalNotificationServiceExtension.build/Objects-normal/arm64/NotificationService.o",
+    "swift-dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Runner.build/Debug-iphoneos/OneSignalNotificationServiceExtension.build/Objects-normal/arm64/NotificationService.swiftdeps",
+    "swiftmodule" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Runner.build/Debug-iphoneos/OneSignalNotificationServiceExtension.build/Objects-normal/arm64/NotificationService~partial.swiftmodule"
+  }
+}

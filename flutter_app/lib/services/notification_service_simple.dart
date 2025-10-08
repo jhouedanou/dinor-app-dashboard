@@ -13,7 +13,8 @@ class NotificationServiceSimple {
       OneSignal.initialize(_appId);
       
       // Demande de permission
-      await requestPermission();
+      //await requestPermission();
+      OneSignal.Notifications.requestPermission(false);
       
       // Configuration des événements de base
       _setupBasicEventListeners();

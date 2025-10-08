@@ -1,0 +1,18 @@
+{
+  "" : {
+    "diagnostics" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/OrderedSet.build/Objects-normal/arm64/OrderedSet-master.dia",
+    "emit-module-dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/OrderedSet.build/Objects-normal/arm64/OrderedSet-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/OrderedSet.build/Objects-normal/arm64/OrderedSet-master-emit-module.dia",
+    "swift-dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/OrderedSet.build/Objects-normal/arm64/OrderedSet-master.swiftdeps"
+  },
+  "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/OrderedSet/Sources/OrderedSet.swift" : {
+    "const-values" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/OrderedSet.build/Objects-normal/arm64/OrderedSet.swiftconstvalues",
+    "dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/OrderedSet.build/Objects-normal/arm64/OrderedSet.d",
+    "diagnostics" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/OrderedSet.build/Objects-normal/arm64/OrderedSet.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphoneos/OrderedSet.build/Objects-normal/arm64/OrderedSet.o",
+    "llvm-bc" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/OrderedSet.build/Objects-normal/arm64/OrderedSet.bc",
+    "object" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/OrderedSet.build/Objects-normal/arm64/OrderedSet.o",
+    "swift-dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/OrderedSet.build/Objects-normal/arm64/OrderedSet.swiftdeps",
+    "swiftmodule" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/OrderedSet.build/Objects-normal/arm64/OrderedSet~partial.swiftmodule"
+  }
+}

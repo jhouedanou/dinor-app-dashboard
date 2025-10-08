@@ -1,0 +1,28 @@
+{
+  "" : {
+    "diagnostics" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_facebook_auth.build/Objects-normal/arm64/flutter_facebook_auth-master.dia",
+    "emit-module-dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_facebook_auth.build/Objects-normal/arm64/flutter_facebook_auth-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_facebook_auth.build/Objects-normal/arm64/flutter_facebook_auth-master-emit-module.dia",
+    "swift-dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_facebook_auth.build/Objects-normal/arm64/flutter_facebook_auth-master.swiftdeps"
+  },
+  "/Users/isaac/.pub-cache/hosted/pub.dev/flutter_facebook_auth-7.1.2/ios/Classes/FacebookAuth.swift" : {
+    "const-values" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_facebook_auth.build/Objects-normal/arm64/FacebookAuth.swiftconstvalues",
+    "dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_facebook_auth.build/Objects-normal/arm64/FacebookAuth.d",
+    "diagnostics" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_facebook_auth.build/Objects-normal/arm64/FacebookAuth.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphoneos/flutter_facebook_auth.build/Objects-normal/arm64/FacebookAuth.o",
+    "llvm-bc" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_facebook_auth.build/Objects-normal/arm64/FacebookAuth.bc",
+    "object" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_facebook_auth.build/Objects-normal/arm64/FacebookAuth.o",
+    "swift-dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_facebook_auth.build/Objects-normal/arm64/FacebookAuth.swiftdeps",
+    "swiftmodule" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_facebook_auth.build/Objects-normal/arm64/FacebookAuth~partial.swiftmodule"
+  },
+  "/Users/isaac/.pub-cache/hosted/pub.dev/flutter_facebook_auth-7.1.2/ios/Classes/SwiftFlutterFacebookAuthPlugin.swift" : {
+    "const-values" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_facebook_auth.build/Objects-normal/arm64/SwiftFlutterFacebookAuthPlugin.swiftconstvalues",
+    "dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_facebook_auth.build/Objects-normal/arm64/SwiftFlutterFacebookAuthPlugin.d",
+    "diagnostics" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_facebook_auth.build/Objects-normal/arm64/SwiftFlutterFacebookAuthPlugin.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphoneos/flutter_facebook_auth.build/Objects-normal/arm64/SwiftFlutterFacebookAuthPlugin.o",
+    "llvm-bc" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_facebook_auth.build/Objects-normal/arm64/SwiftFlutterFacebookAuthPlugin.bc",
+    "object" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_facebook_auth.build/Objects-normal/arm64/SwiftFlutterFacebookAuthPlugin.o",
+    "swift-dependencies" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_facebook_auth.build/Objects-normal/arm64/SwiftFlutterFacebookAuthPlugin.swiftdeps",
+    "swiftmodule" : "/Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/flutter_facebook_auth.build/Objects-normal/arm64/SwiftFlutterFacebookAuthPlugin~partial.swiftmodule"
+  }
+}

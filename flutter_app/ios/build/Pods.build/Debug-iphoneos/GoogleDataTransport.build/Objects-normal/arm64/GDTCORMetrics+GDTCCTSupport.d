@@ -1,0 +1,26 @@
+dependencies: \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/GoogleDataTransport.build/module.modulemap \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/GoogleDataTransport/GoogleDataTransport/GDTCCTLibrary/GDTCORMetrics+GDTCCTSupport.m \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/GoogleDataTransport/GoogleDataTransport/GDTCCTLibrary/Private/GDTCORMetrics+GDTCCTSupport.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/GoogleDataTransport/GoogleDataTransport/GDTCORLibrary/Private/GDTCORMetrics.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks/Foundation.framework/Modules/module.modulemap \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/GoogleDataTransport/GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCOREventDataObject.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/GoogleDataTransport/GoogleDataTransport/GDTCORLibrary/Internal/GDTCORStorageSizeBytes.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/build/Pods.build/Debug-iphoneos/nanopb.build/module.modulemap \
+  /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks/UIKit.framework/Modules/module.modulemap \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/GoogleDataTransport/GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCORConsoleLogger.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/GoogleDataTransport/GoogleDataTransport/GDTCORLibrary/Internal/GDTCOREventDropReason.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/GoogleDataTransport/GoogleDataTransport/GDTCCTLibrary/Private/GDTCCTNanopbHelpers.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/GoogleDataTransport/GoogleDataTransport/GDTCORLibrary/Internal/GDTCORReachability.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/GoogleDataTransport/GoogleDataTransport/GDTCORLibrary/Internal/GDTCORPlatform.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks/SystemConfiguration.framework/Modules/module.modulemap \
+  /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks/CoreTelephony.framework/Modules/module.modulemap \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/GoogleDataTransport/GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCOREvent.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/GoogleDataTransport/GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCORTargets.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/GoogleDataTransport/GoogleDataTransport/GDTCORLibrary/Public/GoogleDataTransport/GDTCORProductData.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/GoogleDataTransport/GoogleDataTransport/GDTCCTLibrary/Protogen/nanopb/cct.nanopb.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/GoogleDataTransport/GoogleDataTransport/GDTCCTLibrary/Protogen/nanopb/compliance.nanopb.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/GoogleDataTransport/GoogleDataTransport/GDTCCTLibrary/Protogen/nanopb/external_privacy_context.nanopb.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/GoogleDataTransport/GoogleDataTransport/GDTCCTLibrary/Protogen/nanopb/external_prequest_context.nanopb.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/GoogleDataTransport/GoogleDataTransport/GDTCORLibrary/Private/GDTCORLogSourceMetrics.h \
+  /Users/isaac/Documents/dinor-app-dashboard/flutter_app/ios/Pods/GoogleDataTransport/GoogleDataTransport/GDTCCTLibrary/Protogen/nanopb/client_metrics.nanopb.h

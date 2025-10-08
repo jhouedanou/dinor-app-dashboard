@@ -12,8 +12,10 @@
 /// - API calls identiques via AuthStore
 library;
 
+import 'package:dinor_app/services/auth_service/social_login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sign_in_button/sign_in_button.dart';
 import '../../composables/use_auth_handler.dart';
 
 class AuthModal extends ConsumerStatefulWidget {
@@ -178,229 +180,270 @@ class _AuthModalState extends ConsumerState<AuthModal> {
     
     print('🔐 [AuthModal] Rendu de la modal d\'authentification');
 
+    const hr = SizedBox(height: 5);
+
+    final facebookConnectBtn = SignInButton(
+      Buttons.facebook,
+      text: "Se connecter avec facebook",
+      onPressed: () async{
+        await SocialLogin().loginWithFacebook();
+      }, 
+    );
+
+    const orText = Row(
+      children:[
+        Expanded(child: Divider(thickness: 1)),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 10),
+            child: Text('OU', style: TextStyle(color: Colors.grey)),
+          ),
+        Expanded(child: Divider(thickness: 1)),
+      ],
+    );
+
+    final googleConnectBtn = SignInButton(
+      Buttons.email,
+      text: "Se connecter avec google",
+      onPressed: () {}, 
+    );
+
+    final appleConnectBtn = SignInButton(
+      Buttons.apple,
+      text: "Se connecter avec Apple",
+      onPressed: () {}, 
+    );
+
     return Dialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    _isLogin ? 'Connexion' : 'Inscription',
-                    style: const TextStyle(
-                      fontFamily: 'OpenSans',
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF2D3748),
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.only(top: 10, left: 15, right: 15),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Header
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      _isLogin ? 'Connexion' : 'Inscription',
+                      style: const TextStyle(
+                        fontFamily: 'OpenSans',
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF2D3748),
+                      ),
                     ),
-                  ),
-                  IconButton(
-                    onPressed: widget.onClose,
-                    icon: const Icon(Icons.close),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-
-              // Error Message
-              if (_error != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.red[50],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.red[200]!),
-                  ),
-                  child: Text(
-                    _error!,
-                    style: const TextStyle(
-                      color: Colors.red,
-                      fontSize: 14,
+                    IconButton(
+                      onPressed: widget.onClose,
+                      icon: const Icon(Icons.close),
                     ),
-                  ),
+                  ],
                 ),
-                const SizedBox(height: 16),
-              ],
-
-              // Form Fields
-              if (!_isLogin) ...[
+                const SizedBox(height: 24),
+          
+                // Error Message
+                if (_error != null) ...[
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.red[50],
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.red[200]!),
+                    ),
+                    child: Text(
+                      _error!,
+                      style: const TextStyle(
+                        color: Colors.red,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+          
+                // Form Fields
+                if (!_isLogin) ...[
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Nom complet',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Le nom est requis';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                ],
+          
                 TextFormField(
-                  controller: _nameController,
+                  controller: _emailController,
                   decoration: const InputDecoration(
-                    labelText: 'Nom complet',
+                    labelText: 'Email',
                     border: OutlineInputBorder(),
                   ),
+                  keyboardType: TextInputType.emailAddress,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Le nom est requis';
+                      return 'L\'email est requis';
+                    }
+                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                      return 'Email invalide';
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 16),
-              ],
-
-              TextFormField(
-                controller: _emailController,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'L\'email est requis';
-                  }
-                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                    return 'Email invalide';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              TextFormField(
-                controller: _passwordController,
-                decoration: const InputDecoration(
-                  labelText: 'Mot de passe',
-                  border: OutlineInputBorder(),
-                ),
-                obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Le mot de passe est requis';
-                  }
-                  if (!_isLogin && value.length < 8) {
-                    return 'Le mot de passe doit contenir au moins 8 caractères';
-                  }
-                  return null;
-                },
-              ),
-
-              if (!_isLogin) ...[
-                const SizedBox(height: 16),
+          
                 TextFormField(
-                  controller: _passwordConfirmationController,
+                  controller: _passwordController,
                   decoration: const InputDecoration(
-                    labelText: 'Confirmer le mot de passe',
+                    labelText: 'Mot de passe',
                     border: OutlineInputBorder(),
                   ),
                   obscureText: true,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'La confirmation est requise';
+                      return 'Le mot de passe est requis';
                     }
-                    if (value != _passwordController.text) {
-                      return 'Les mots de passe ne correspondent pas';
+                    if (!_isLogin && value.length < 8) {
+                      return 'Le mot de passe doit contenir au moins 8 caractères';
                     }
                     return null;
                   },
                 ),
-              ],
-
-              // Remember Me checkbox (only for login)
-              if (_isLogin) ...[
-                const SizedBox(height: 16),
-                CheckboxListTile(
-                  title: const Text(
-                    'Se souvenir de moi',
-                    style: TextStyle(
-                      fontFamily: 'OpenSans',
-                      fontSize: 14,
-                      color: Color(0xFF4A5568),
+          
+                if (!_isLogin) ...[
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _passwordConfirmationController,
+                    decoration: const InputDecoration(
+                      labelText: 'Confirmer le mot de passe',
+                      border: OutlineInputBorder(),
                     ),
+                    obscureText: true,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'La confirmation est requise';
+                      }
+                      if (value != _passwordController.text) {
+                        return 'Les mots de passe ne correspondent pas';
+                      }
+                      return null;
+                    },
                   ),
-                  value: _rememberMe,
-                  onChanged: (bool? value) {
-                    setState(() {
-                      _rememberMe = value ?? true;
-                    });
-                  },
-                  controlAffinity: ListTileControlAffinity.leading,
-                  contentPadding: EdgeInsets.zero,
-                  activeColor: const Color(0xFFE53E3E),
-                ),
-              ],
-
-              const SizedBox(height: 24),
-
-              // Submit Button
-              ElevatedButton(
-                onPressed: _isLoading ? null : _submitForm,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE53E3E),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: _isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : Text(
-                        _isLogin ? 'Se connecter' : 'S\'inscrire',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
+                ],
+          
+                // Remember Me checkbox (only for login)
+                if (_isLogin) ...[
+                  const SizedBox(height: 10),
+                  CheckboxListTile(
+                    title: const Text(
+                      'Se souvenir de moi',
+                      style: TextStyle(
+                        fontFamily: 'OpenSans',
+                        fontSize: 14,
+                        color: Color(0xFF4A5568),
                       ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // Toggle Mode
-              TextButton(
-                onPressed: _toggleMode,
-                child: Text(
-                  _isLogin 
-                    ? 'Pas encore de compte ? S\'inscrire'
-                    : 'Déjà un compte ? Se connecter',
-                  style: const TextStyle(
-                    color: Color(0xFFE53E3E),
-                    fontSize: 14,
+                    ),
+                    value: _rememberMe,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        _rememberMe = value ?? true;
+                      });
+                    },
+                    controlAffinity: ListTileControlAffinity.leading,
+                    contentPadding: EdgeInsets.zero,
+                    activeColor: const Color(0xFFE53E3E),
                   ),
-                ),
-              ),
-
-              const SizedBox(height: 8),
-
-              // Guest Login
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: _isLoading ? null : () {
-                    print('👤 [AuthModal] Bouton "Continuer en tant qu\'invité" appuyé');
-                    _continueAsGuest();
-                  },
-                  icon: const Icon(Icons.person_outline),
-                  label: const Text('Continuer en tant qu\'invité'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF4A5568),
-                    side: const BorderSide(color: Color(0xFFE2E8F0)),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                ],
+          
+                const SizedBox(height: 10),
+          
+                // Submit Button
+                ElevatedButton(
+                  onPressed: _isLoading ? null : _submitForm,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFE53E3E),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(
+                          _isLogin ? 'Se connecter' : 'S\'inscrire',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                 ),
-              ),
-            ],
+          
+                const SizedBox(height: 16),
+          
+                // Toggle Mode
+                TextButton(
+                  onPressed: _toggleMode,
+                  child: Text(
+                    _isLogin 
+                      ? 'Pas encore de compte ? S\'inscrire'
+                      : 'Déjà un compte ? Se connecter',
+                    style: const TextStyle(
+                      color: Color(0xFFE53E3E),
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+          
+                const SizedBox(height: 8),
+
+                facebookConnectBtn,
+                hr,
+                googleConnectBtn,
+                hr,
+                appleConnectBtn,
+          
+                // Guest Login
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: _isLoading ? null : () {
+                      print('👤 [AuthModal] Bouton "Continuer en tant qu\'invité" appuyé');
+                      _continueAsGuest();
+                    },
+                    icon: const Icon(Icons.person_outline),
+                    label: const Text('Continuer en tant qu\'invité'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF4A5568),
+                      side: const BorderSide(color: Color(0xFFE2E8F0)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
