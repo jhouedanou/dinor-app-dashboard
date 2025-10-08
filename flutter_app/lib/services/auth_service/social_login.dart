@@ -6,7 +6,6 @@ class SocialLogin{
     final LoginResult result = await FacebookAuth.instance.login(
         permissions: ['public_profile', 'email'],
     );
-    print('Affichage du resultat: ${result.status}');
     if (result.status == LoginStatus.success) {
       // you are logged
       final AccessToken accessToken = result.accessToken!;
