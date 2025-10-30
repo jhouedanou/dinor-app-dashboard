@@ -43,8 +43,8 @@ const initializeAnalytics = async () => {
 export { app, analytics, initializeAnalytics }
 
 // Configuration par défaut pour le développement
-export const isDevelopment = process.env.NODE_ENV === 'development'
-export const isProduction = process.env.NODE_ENV === 'production'
+export const isDevelopment = import.meta.env.DEV
+export const isProduction = import.meta.env.PROD
 
 // Désactiver Analytics en développement si souhaité
-export const analyticsEnabled = isProduction || process.env.VITE_FIREBASE_ANALYTICS_ENABLED === 'true'
+export const analyticsEnabled = isProduction || import.meta.env.VITE_FIREBASE_ANALYTICS_ENABLED === 'true'

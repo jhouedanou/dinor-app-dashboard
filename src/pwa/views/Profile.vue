@@ -588,6 +588,15 @@
         <div v-if="activeSection === 'settings'" class="section-content">
           <h2 class="section-title">Paramètres</h2>
           
+          <!-- Language Settings -->
+          <div class="form-section">
+            <h3 class="form-title">Langue de l'application</h3>
+            <p class="form-description">
+              Sélectionnez la langue de votre choix pour l'interface de l'application.
+            </p>
+            <LanguageSwitcher />
+          </div>
+          
           <!-- Notifications Settings -->
           <div class="form-section">
             <h3 class="form-title">Notifications push</h3>
@@ -793,6 +802,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useApiStore } from '@/stores/api'
 import AuthModal from '@/components/common/AuthModal.vue'
 import NotificationButton from '@/components/common/NotificationButton.vue'
+import LanguageSwitcher from '@/components/common/LanguageSwitcher.vue'
 import DinorIcon from '@/components/DinorIcon.vue'
 
 export default {
@@ -800,6 +810,7 @@ export default {
   components: {
     AuthModal,
     NotificationButton,
+    LanguageSwitcher,
     DinorIcon
   },
   setup() {
