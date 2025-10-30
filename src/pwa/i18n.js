@@ -4,9 +4,13 @@ import en from './locales/en.json'
 
 // Get initial locale from localStorage or default to 'fr'
 const getInitialLocale = () => {
-  const savedLocale = localStorage.getItem('app-locale')
-  if (savedLocale && ['fr', 'en'].includes(savedLocale)) {
-    return savedLocale
+  try {
+    const savedLocale = localStorage.getItem('app-locale')
+    if (savedLocale && ['fr', 'en'].includes(savedLocale)) {
+      return savedLocale
+    }
+  } catch (error) {
+    console.warn('Failed to access localStorage:', error)
   }
   return 'fr'
 }

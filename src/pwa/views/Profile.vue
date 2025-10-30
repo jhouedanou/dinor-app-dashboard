@@ -586,22 +586,22 @@
 
         <!-- Settings Section -->
         <div v-if="activeSection === 'settings'" class="section-content">
-          <h2 class="section-title">Paramètres</h2>
+          <h2 class="section-title">{{ $t('profile.settings') }}</h2>
           
           <!-- Language Settings -->
           <div class="form-section">
-            <h3 class="form-title">Langue de l'application</h3>
+            <h3 class="form-title">{{ $t('profile.language') }}</h3>
             <p class="form-description">
-              Sélectionnez la langue de votre choix pour l'interface de l'application.
+              {{ $t('profile.languageDescription') }}
             </p>
             <LanguageSwitcher />
           </div>
           
           <!-- Notifications Settings -->
           <div class="form-section">
-            <h3 class="form-title">Notifications push</h3>
+            <h3 class="form-title">{{ $t('profile.notifications') }}</h3>
             <p class="form-description">
-              Activez les notifications pour recevoir les dernières actualités, événements et astuces culinaires.
+              {{ $t('profile.notificationsDescription') }}
             </p>
             <NotificationButton />
           </div>

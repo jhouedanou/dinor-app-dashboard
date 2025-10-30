@@ -1,9 +1,19 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 
+// Safe localStorage access with fallback
+const getStoredLocale = () => {
+  try {
+    return localStorage.getItem('app-locale') || 'fr'
+  } catch (error) {
+    console.warn('Failed to access localStorage:', error)
+    return 'fr'
+  }
+}
+
 export const useLocaleStore = defineStore('locale', () => {
   // State
-  const currentLocale = ref(localStorage.getItem('app-locale') || 'fr')
+  const currentLocale = ref(getStoredLocale())
   const availableLocales = ref([
     { code: 'fr', name: 'Français', flag: '🇫🇷' },
     { code: 'en', name: 'English', flag: '🇬🇧' }
@@ -11,7 +21,11 @@ export const useLocaleStore = defineStore('locale', () => {
 
   // Watch for locale changes and persist to localStorage
   watch(currentLocale, (newLocale) => {
-    localStorage.setItem('app-locale', newLocale)
+    try {
+      localStorage.setItem('app-locale', newLocale)
+    } catch (error) {
+      console.warn('Failed to save locale to localStorage:', error)
+    }
     // Update HTML lang attribute
     if (typeof document !== 'undefined') {
       document.documentElement.lang = newLocale

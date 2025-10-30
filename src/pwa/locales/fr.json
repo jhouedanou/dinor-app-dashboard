@@ -51,8 +51,11 @@
     "myFavorites": "Mes favoris",
     "settings": "Paramètres",
     "language": "Langue",
+    "languageDescription": "Sélectionnez la langue de votre choix pour l'interface de l'application.",
     "selectLanguage": "Sélectionner la langue",
     "memberSince": "Membre depuis",
+    "notifications": "Notifications push",
+    "notificationsDescription": "Activez les notifications pour recevoir les dernières actualités, événements et astuces culinaires.",
     "favorites": {
       "all": "Tous",
       "recipes": "Recettes",
