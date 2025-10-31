@@ -2,7 +2,6 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import router from './router'
 import App from './App.vue'
-import i18n from './i18n'
 
 // Import Lucide icons - seulement les icônes nécessaires
 import { 
@@ -136,7 +135,6 @@ const pinia = createPinia()
 
 app.use(pinia)
 app.use(router)
-app.use(i18n)
 
 // Register Lucide icons globally
 app.component('LucideHome', Home)

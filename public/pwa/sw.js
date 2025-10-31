@@ -78,43 +78,43 @@ define(['./workbox-fb107ff4'], (function (workbox) { 'use strict';
    * See https://goo.gl/S9QRab
    */
   workbox.precacheAndRoute([{
+    "url": "assets/Badge.BsQ0bPFx.js",
+    "revision": null
+  }, {
     "url": "assets/Badge.CyRVNslW.css",
     "revision": null
   }, {
-    "url": "assets/Badge.DB1KovvI.js",
+    "url": "assets/BannerSection.D9Kspb_2.js",
     "revision": null
   }, {
     "url": "assets/BannerSection.DHGVKDjO.css",
     "revision": null
   }, {
-    "url": "assets/BannerSection.Du4zFNSC.js",
-    "revision": null
-  }, {
     "url": "assets/CookiePolicy.CBPAEsFF.css",
     "revision": null
   }, {
-    "url": "assets/CookiePolicy.DDqeyKVC.js",
+    "url": "assets/CookiePolicy.Cq1miZF9.js",
     "revision": null
   }, {
-    "url": "assets/DinorTV.D2L69HyY.js",
+    "url": "assets/DinorTV.C2lSnDHA.js",
     "revision": null
   }, {
     "url": "assets/DinorTV.Dg3lzYbb.css",
     "revision": null
   }, {
-    "url": "assets/EventDetail.CjrIZB2e.js",
+    "url": "assets/EventDetail.BsaB-VPd.js",
     "revision": null
   }, {
     "url": "assets/EventDetail.D3519ub4.css",
     "revision": null
   }, {
-    "url": "assets/EventsList.DBSdbUhK.js",
+    "url": "assets/EventsList.CVbNp2pr.js",
     "revision": null
   }, {
     "url": "assets/EventsList.DKdPWiZo.css",
     "revision": null
   }, {
-    "url": "assets/FavoriteButton.g9tLs4j-.js",
+    "url": "assets/FavoriteButton.B6R0MnGr.js",
     "revision": null
   }, {
     "url": "assets/FavoriteButton.HOKXQ-I5.css",
@@ -123,16 +123,16 @@ define(['./workbox-fb107ff4'], (function (workbox) { 'use strict';
     "url": "assets/Home.4R0HFCAY.css",
     "revision": null
   }, {
-    "url": "assets/Home.CurrI1jK.js",
+    "url": "assets/Home.CgzCM-2M.js",
     "revision": null
   }, {
-    "url": "assets/index.Bb9qWlR8.js",
+    "url": "assets/index.Bp0EUSzT.css",
     "revision": null
   }, {
-    "url": "assets/index.CRICreGQ.css",
+    "url": "assets/index.vT-nA4v5.js",
     "revision": null
   }, {
-    "url": "assets/LikeButton.C2MzmyhG.js",
+    "url": "assets/LikeButton.BzCWUUwx.js",
     "revision": null
   }, {
     "url": "assets/LikeButton.DCsx9HV7.css",
@@ -141,107 +141,107 @@ define(['./workbox-fb107ff4'], (function (workbox) { 'use strict';
     "url": "assets/PagesList.BDjeEwhH.css",
     "revision": null
   }, {
-    "url": "assets/PagesList.DUQtwg99.js",
+    "url": "assets/PagesList.CJEfHXdE.js",
     "revision": null
   }, {
-    "url": "assets/Predictions.D041TQAo.js",
+    "url": "assets/Predictions.CTIgIPg2.js",
     "revision": null
   }, {
     "url": "assets/Predictions.DSa3Y-AN.css",
     "revision": null
   }, {
+    "url": "assets/PredictionsLeaderboard.BeQcZ1l0.js",
+    "revision": null
+  }, {
     "url": "assets/PredictionsLeaderboard.D8Fsuwim.css",
     "revision": null
   }, {
-    "url": "assets/PredictionsLeaderboard.Dkl2aRiD.js",
+    "url": "assets/PredictionsTeams.3KY_LuDC.js",
     "revision": null
   }, {
     "url": "assets/PredictionsTeams.B2N2jqx8.css",
     "revision": null
   }, {
-    "url": "assets/PredictionsTeams.D7KFUTQs.js",
-    "revision": null
-  }, {
-    "url": "assets/PrivacyPolicy.DAEi6uMH.js",
+    "url": "assets/PrivacyPolicy.CyGysGCr.js",
     "revision": null
   }, {
     "url": "assets/PrivacyPolicy.DeflSHSI.css",
     "revision": null
   }, {
-    "url": "assets/Profile.DzyJ5Vua.js",
+    "url": "assets/Profile.BtcN_gh2.css",
     "revision": null
   }, {
-    "url": "assets/Profile.peRWeH9O.css",
+    "url": "assets/Profile.DxCeMJRs.js",
+    "revision": null
+  }, {
+    "url": "assets/RecipeDetail.C08GhWCP.js",
     "revision": null
   }, {
     "url": "assets/RecipeDetail.CikpOQcH.css",
     "revision": null
   }, {
-    "url": "assets/RecipeDetail.D3LZOffj.js",
-    "revision": null
-  }, {
-    "url": "assets/RecipesList.B4m64LBs.js",
-    "revision": null
-  }, {
     "url": "assets/RecipesList.CEsnQzT2.css",
     "revision": null
   }, {
-    "url": "assets/SearchAndFilters.Clj4CFnL.js",
+    "url": "assets/RecipesList.v7GLVo_K.js",
     "revision": null
   }, {
     "url": "assets/SearchAndFilters.DhpLTWqq.css",
     "revision": null
   }, {
-    "url": "assets/TermsOfService.BMyOkq4f.js",
+    "url": "assets/SearchAndFilters.DwBiJSrH.js",
+    "revision": null
+  }, {
+    "url": "assets/TermsOfService.BbXVeQoi.js",
     "revision": null
   }, {
     "url": "assets/TermsOfService.DiEZV5Dq.css",
     "revision": null
   }, {
-    "url": "assets/TipDetail.D6kw8lRb.css",
+    "url": "assets/TipDetail.C_9KYxcR.js",
     "revision": null
   }, {
-    "url": "assets/TipDetail.DKAF4z9c.js",
+    "url": "assets/TipDetail.D6kw8lRb.css",
     "revision": null
   }, {
     "url": "assets/TipsList.BFkvQqZq.css",
     "revision": null
   }, {
-    "url": "assets/TipsList.CCkB4Spb.js",
+    "url": "assets/TipsList.CMKT-xAx.js",
     "revision": null
   }, {
     "url": "assets/TournamentBetting.BnIiBiUJ.css",
     "revision": null
   }, {
-    "url": "assets/TournamentBetting.C0-zTwAR.js",
+    "url": "assets/TournamentBetting.CwiTpOox.js",
     "revision": null
   }, {
     "url": "assets/Tournaments.B5MFIoVu.css",
     "revision": null
   }, {
-    "url": "assets/Tournaments.EpcYGdKw.js",
+    "url": "assets/Tournaments.WiCddS3Q.js",
     "revision": null
   }, {
-    "url": "assets/useApi.BhO68YKh.js",
+    "url": "assets/useApi.qJjyiVZi.js",
     "revision": null
   }, {
-    "url": "assets/useComments.CA3t3T95.js",
+    "url": "assets/useComments.CXkR6RoH.js",
     "revision": null
   }, {
     "url": "assets/utils.l0sNRNKZ.js",
     "revision": null
   }, {
-    "url": "assets/vendor.hA9YLfwd.js",
+    "url": "assets/vendor.Bvrl98ec.js",
     "revision": null
   }, {
     "url": "assets/WebEmbed.7JmI38mu.css",
     "revision": null
   }, {
-    "url": "assets/WebEmbed.DIBGuE1H.js",
+    "url": "assets/WebEmbed.BQYQ7ULb.js",
     "revision": null
   }, {
     "url": "index.html",
-    "revision": "f7f3bb5cad32a9032460f4ba97e9072f"
+    "revision": "a6524de5b876ae935f56a797ebcf61c7"
   }, {
     "url": "registerSW.js",
     "revision": "36a8c3eb862bdcf4382e8845651d1c5f"

@@ -41,9 +41,6 @@
       <div class="md3-app-bar-actions">
         
         <slot name="actions">
-          <!-- Language Switcher (Compact) -->
-          <LanguageSwitcher compact />
-          
           <button 
             v-if="showFavorite" 
             @click="handleFavoriteToggle" 
@@ -78,13 +75,11 @@ import { computed, ref, watch, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import apiService from '@/services/api'
 import DinorIcon from '@/components/DinorIcon.vue'
-import LanguageSwitcher from '@/components/common/LanguageSwitcher.vue'
 
 export default {
   name: 'AppHeader',
   components: {
-    DinorIcon,
-    LanguageSwitcher
+    DinorIcon
   },
   props: {
     title: {
