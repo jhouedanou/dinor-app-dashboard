@@ -47,6 +47,10 @@ chown -R forge:forge public/pwa/ 2>/dev/null || true
 chmod -R 755 public/pwa/ 2>/dev/null || true
 rm -rf public/pwa/dist/* 2>/dev/null || true
 
+# Corriger les permissions Git (évite "Permission denied" sur .git/logs/)
+log_info "🔐 Correction des permissions Git..."
+chown -R forge:forge .git/ 2>/dev/null || true
+
 # Stash les changements locaux s'il y en a (sécurité)
 if ! git diff-index --quiet HEAD -- 2>/dev/null; then
     log_warning "Changements locaux détectés, sauvegarde temporaire..."

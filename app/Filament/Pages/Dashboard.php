@@ -23,9 +23,10 @@ class Dashboard extends BaseDashboard
     public function getWidgets(): array
     {
         return [
-            \App\Filament\Widgets\FirebaseStatsOverview::class,
+            \App\Filament\Widgets\LikesStatsWidget::class,
             \App\Filament\Widgets\PopularContentWidget::class,
-            \App\Filament\Widgets\FirebaseAnalyticsWidget::class,
+            \App\Filament\Widgets\CommentsStatsWidget::class,
+            \App\Filament\Widgets\RecentActivityWidget::class,
         ];
     }
 } 
