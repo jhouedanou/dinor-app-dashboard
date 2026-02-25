@@ -586,7 +586,7 @@ fi
 # 14. Configuration de l'utilisateur admin (via seeder, mot de passe lu depuis .env)
 log_info "👤 Configuration de l'utilisateur admin..."
 
-# Essayer d'abord le seeder spécialisé pour la production
+# Seul le seeder admin tourne à chaque déploiement (updateOrCreate, pas de données métier)
 if $FORGE_PHP artisan db:seed --class=ProductionAdminSeeder --force 2>/dev/null; then
     log_success "✅ Admin configuré avec le seeder spécialisé"
 else
@@ -595,52 +595,29 @@ else
     log_success "✅ Admin configuré avec le seeder standard"
 fi
 
-# Exécuter les seeders manquants pour les panels Filament
-log_info "📋 Exécution des seeders manquants pour les panels Filament..."
+# Les seeders de données (recettes, catégories, ingrédients, etc.) ne tournent
+# que lors du PREMIER déploiement. Ils restaurent du contenu supprimé par l'admin
+# et dupliquent les ingrédients si exécutés à répétition.
+# Pour les relancer manuellement : php artisan db:seed --class=NomDuSeeder --force
+log_info "📋 Vérification des données de base..."
 
-# CategorySeeder - crucial pour toutes les ressources qui dépendent des catégories
-if $FORGE_PHP artisan db:seed --class=CategorySeeder --force 2>/dev/null; then
-    log_success "✅ CategorySeeder exécuté (catégories dans Filament)"
+# Ne seeder que si les tables sont vides (premier déploiement uniquement)
+NEEDS_SEED=$($FORGE_PHP artisan tinker --execute="
+\$cats = \App\Models\Category::count();
+echo 'SEED_CHECK:' . (\$cats == 0 ? 'EMPTY' : 'HAS_DATA');
+" 2>/dev/null | grep "SEED_CHECK")
+
+if [[ $NEEDS_SEED == *"EMPTY"* ]]; then
+    log_warning "Base de données vide — exécution des seeders de données initiales..."
+    $FORGE_PHP artisan db:seed --class=CategorySeeder --force 2>/dev/null || true
+    $FORGE_PHP artisan db:seed --class=EventCategoriesSeeder --force 2>/dev/null || true
+    $FORGE_PHP artisan db:seed --class=IngredientsSeeder --force 2>/dev/null || true
+    $FORGE_PHP artisan db:seed --class=PwaMenuItemSeeder --force 2>/dev/null || true
+    $FORGE_PHP artisan db:seed --class=ProductionDataSeeder --force 2>/dev/null || true
+    log_success "✅ Données initiales créées"
 else
-    log_warning "CategorySeeder non trouvé ou erreur"
+    log_success "✅ Données existantes préservées (seeders de contenu ignorés)"
 fi
-
-# EventCategoriesSeeder - crucial pour les panels d'événements
-if $FORGE_PHP artisan db:seed --class=EventCategoriesSeeder --force 2>/dev/null; then
-    log_success "✅ EventCategoriesSeeder exécuté"
-else
-    log_warning "EventCategoriesSeeder non trouvé ou erreur"
-fi
-
-# IngredientsSeeder - pour les ingrédients
-if $FORGE_PHP artisan db:seed --class=IngredientsSeeder --force 2>/dev/null; then
-    log_success "✅ IngredientsSeeder exécuté"
-else
-    log_warning "IngredientsSeeder non trouvé ou erreur"
-fi
-
-# PwaMenuItemSeeder - pour le panel Menu PWA
-if $FORGE_PHP artisan db:seed --class=PwaMenuItemSeeder --force 2>/dev/null; then
-    log_success "✅ PwaMenuItemSeeder exécuté (Menu PWA dans Filament)"
-else
-    log_warning "PwaMenuItemSeeder non trouvé ou erreur"
-fi
-
-# UserSeeder - pour créer des utilisateurs test (panel Utilisateurs)
-if $FORGE_PHP artisan db:seed --class=UserSeeder --force 2>/dev/null; then
-    log_success "✅ UserSeeder exécuté (Utilisateurs dans Filament)"
-else
-    log_warning "UserSeeder non trouvé ou erreur"
-fi
-
-# ProductionDataSeeder - pour créer du contenu Dinor TV, etc.
-if $FORGE_PHP artisan db:seed --class=ProductionDataSeeder --force 2>/dev/null; then
-    log_success "✅ ProductionDataSeeder exécuté (contenu Dinor TV, etc.)"
-else
-    log_warning "ProductionDataSeeder non trouvé ou erreur"
-fi
-
-log_success "✅ Tous les seeders Filament exécutés"
 
 # Vérification que l'admin est bien créé
 ADMIN_CHECK=$($FORGE_PHP artisan tinker --execute="
