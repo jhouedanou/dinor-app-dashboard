@@ -75,7 +75,9 @@ class EventCategoryResource extends Resource
                             ->image()
                             ->disk('public')
                             ->directory('event-categories')
-                            ->visibility('public'),
+                            ->visibility('public')
+                            ->maxSize(2048)
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp']),
                     ])->columns(2),
 
                 Forms\Components\Section::make('Paramètres')

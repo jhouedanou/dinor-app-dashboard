@@ -106,7 +106,8 @@ class EventResource extends Resource
                             ->disk('public')
                             ->directory('events/featured')
                             ->visibility('public')
-                            ->maxSize(5120)
+                            ->maxSize(2048)
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
                             ->imageEditor()
                             ->imageEditorAspectRatios([
                                 '16:9',
@@ -121,7 +122,8 @@ class EventResource extends Resource
                             ->disk('public')
                             ->directory('events/gallery')
                             ->visibility('public')
-                            ->maxSize(3072)
+                            ->maxSize(2048)
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
                             ->maxFiles(20)
                             ->imageEditor()
                             ->reorderable(),
@@ -134,12 +136,7 @@ class EventResource extends Resource
                             ->label('URL Stream Live')
                             ->url(),
 
-                        Forms\Components\FileUpload::make('promotional_video')
-                            ->label('Vidéo promotionnelle')
-                            ->acceptedFileTypes(['video/mp4', 'video/webm'])
-                            ->disk('public')
-                            ->directory('events/videos')
-                            ->visibility('public'),
+
                     ])->columns(2),
 
                 Forms\Components\Section::make('Date et heure')

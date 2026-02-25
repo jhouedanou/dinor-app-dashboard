@@ -69,7 +69,8 @@ class RecipeResource extends Resource
                             ->disk('public')
                             ->directory('recipes/featured')
                             ->visibility('public')
-                            ->maxSize(5120)
+                            ->maxSize(2048)
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
                             ->imageEditor()
                             ->imageEditorAspectRatios([
                                 '16:9',
@@ -84,7 +85,8 @@ class RecipeResource extends Resource
                             ->disk('public')
                             ->directory('recipes/gallery')
                             ->visibility('public')
-                            ->maxSize(3072)
+                            ->maxSize(2048)
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
                             ->maxFiles(10)
                             ->imageEditor()
                             ->reorderable(),
@@ -95,7 +97,8 @@ class RecipeResource extends Resource
                             ->disk('public')
                             ->directory('recipes/video-thumbnails')
                             ->visibility('public')
-                            ->maxSize(2048),
+                            ->maxSize(2048)
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp']),
                             
                         Forms\Components\TextInput::make('video_url')
                             ->label('URL Vidéo principale')

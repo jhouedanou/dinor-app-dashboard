@@ -59,7 +59,9 @@ class ProfessionalContentResource extends Resource
                     ->label('Images')
                     ->multiple()
                     ->image()
-                    ->directory('professional-content'),
+                    ->directory('professional-content')
+                    ->maxSize(2048)
+                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp']),
                 
                 Forms\Components\TextInput::make('video_url')
                     ->label('URL Vidéo')

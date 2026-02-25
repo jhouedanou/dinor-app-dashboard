@@ -27,22 +27,17 @@ class MediaFileResource extends Resource
                 Forms\Components\Section::make('Informations du fichier')
                     ->schema([
                         Forms\Components\FileUpload::make('path')
-                            ->label('Fichier')
+                            ->label('Image')
                             ->required()
+                            ->image()
                             ->directory('media')
                             ->preserveFilenames()
-                            ->maxSize(10240) // 10MB
+                            ->maxSize(2048) // 2MB
                             ->acceptedFileTypes([
                                 'image/jpeg',
                                 'image/png',
                                 'image/gif',
                                 'image/webp',
-                                'video/mp4',
-                                'video/webm',
-                                'video/ogg',
-                                'application/pdf',
-                                'application/msword',
-                                'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
                             ])
                             ->live()
                             ->afterStateUpdated(function ($state, callable $set) {

@@ -66,6 +66,7 @@ class CategoryResource extends Resource
                             ->directory('categories')
                             ->visibility('public')
                             ->maxSize(2048)
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
                             ->imageEditor(),
 
                         Forms\Components\ColorPicker::make('color')

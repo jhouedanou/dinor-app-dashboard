@@ -72,6 +72,8 @@ class SplashScreenResource extends Resource
                             ->label('Logo personnalisé')
                             ->collection('logo')
                             ->image()
+                            ->maxSize(2048)
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
                             ->imageEditor()
                             ->visible(fn ($get) => $get('logo_type') === 'custom'),
                             
@@ -122,6 +124,8 @@ class SplashScreenResource extends Resource
                             ->label('Image d\'arrière-plan')
                             ->collection('background_image')
                             ->image()
+                            ->maxSize(2048)
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
                             ->imageEditor()
                             ->visible(fn ($get) => $get('background_type') === 'image'),
                     ]),

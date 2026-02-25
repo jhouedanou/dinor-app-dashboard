@@ -82,7 +82,8 @@ class TipResource extends Resource
                             ->disk('public')
                             ->directory('tips/featured')
                             ->visibility('public')
-                            ->maxSize(5120)
+                            ->maxSize(2048)
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
                             ->imageEditor()
                             ->imageEditorAspectRatios([
                                 '16:9',
@@ -97,7 +98,8 @@ class TipResource extends Resource
                             ->disk('public')
                             ->directory('tips/gallery')
                             ->visibility('public')
-                            ->maxSize(3072)
+                            ->maxSize(2048)
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
                             ->maxFiles(10)
                             ->imageEditor()
                             ->reorderable(),

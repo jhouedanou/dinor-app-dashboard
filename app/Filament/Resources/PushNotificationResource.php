@@ -85,7 +85,9 @@ class PushNotificationResource extends Resource
                             ->image()
                             ->disk('public')
                             ->directory('notifications')
-                            ->helperText('Optionnel - Une icône par défaut sera utilisée si non spécifiée'),
+                            ->maxSize(2048)
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
+                            ->helperText('Optionnel - Une icône par défaut sera utilisée si non spécifiée (max 2MB)'),
                     ])->columns(2),
 
                 Forms\Components\Section::make('Ciblage')

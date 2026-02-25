@@ -73,12 +73,12 @@ RUN sed -i 's/CACHE_DRIVER=redis/CACHE_DRIVER=file/' .env || echo "CACHE_DRIVER=
 # Add git safe directory configuration
 RUN git config --global --add safe.directory /var/www/html || true
 
-# Create necessary directories and set permissions
+# Create necessary directories and set permissions (ciblé, pas de chown -R global)
 RUN mkdir -p /var/www/html/storage/framework/{cache/data,sessions,views} \
     && mkdir -p /var/www/html/bootstrap/cache \
     && mkdir -p /var/log/supervisor \
-    && chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html \
+    && chown -R www-data:www-data /var/www/html/storage \
+    && chown -R www-data:www-data /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage \
     && chmod -R 775 /var/www/html/bootstrap/cache
 
@@ -87,8 +87,8 @@ ENV CACHE_DRIVER=file \
     SESSION_DRIVER=file \
     APP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
 
-# Build assets without cache mount to avoid blocking issues
-RUN npm ci && npm run build && npm run pwa:build && npm prune --production
+# Build assets (npm ci déjà fait dans l'étape dependencies)
+RUN npm run build && npm run pwa:build && npm prune --production
 
 # Create entrypoint script
 RUN echo '#!/bin/bash\n\

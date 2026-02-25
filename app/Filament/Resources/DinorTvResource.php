@@ -60,49 +60,53 @@ class DinorTvResource extends Resource
                             ->label('Miniature (legacy)')
                             ->image()
                             ->directory('dinor-tv-thumbnails')
-                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
                             ->maxSize(2048)
-                            ->helperText('Image d\'aperçu legacy (utiliser Image principale de préférence)'),
+                            ->helperText('Image d\'aperçu legacy (utiliser Image principale de préférence - max 2MB)'),
 
                         Forms\Components\FileUpload::make('featured_image')
                             ->label('Image principale')
                             ->image()
                             ->directory('dinor-tv-featured')
-                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-                            ->maxSize(5120)
-                            ->helperText('Image principale du contenu (JPEG, PNG, WebP - max 5MB)'),
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
+                            ->maxSize(2048)
+                            ->helperText('Image principale du contenu (JPEG, PNG, GIF, WebP - max 2MB)'),
 
                         Forms\Components\SpatieMediaLibraryFileUpload::make('featured_media')
                             ->label('Images mises en avant (Spatie)')
                             ->collection('featured_images')
                             ->multiple()
                             ->image()
+                            ->maxSize(2048)
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
                             ->reorderable()
-                            ->helperText('Images uploadées via Spatie Media Library'),
+                            ->helperText('Images uploadées via Spatie Media Library (max 2MB)'),
 
                         Forms\Components\FileUpload::make('poster_image')
                             ->label('Image poster')
                             ->image()
                             ->directory('dinor-tv-posters')
-                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-                            ->maxSize(5120)
-                            ->helperText('Image de type poster/affiche (format portrait recommandé)'),
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
+                            ->maxSize(2048)
+                            ->helperText('Image de type poster/affiche (format portrait recommandé - max 2MB)'),
 
                         Forms\Components\FileUpload::make('banner_image')
                             ->label('Image bannière')
                             ->image()
                             ->directory('dinor-tv-banners')
-                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-                            ->maxSize(5120)
-                            ->helperText('Image bannière (format paysage 16:9 recommandé)'),
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
+                            ->maxSize(2048)
+                            ->helperText('Image bannière (format paysage 16:9 recommandé - max 2MB)'),
 
                         Forms\Components\SpatieMediaLibraryFileUpload::make('gallery_media')
                             ->label('Galerie d\'images (Spatie)')
                             ->collection('gallery')
                             ->multiple()
                             ->image()
+                            ->maxSize(2048)
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
                             ->reorderable()
-                            ->helperText('Galerie d\'images pour ce contenu'),
+                            ->helperText('Galerie d\'images pour ce contenu (max 2MB)'),
 
                         Forms\Components\Repeater::make('gallery')
                             ->label('Galerie d\'images (URLs)')
