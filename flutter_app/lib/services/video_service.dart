@@ -4,14 +4,17 @@
 /// - Récupération des vidéos depuis l'API Dinor TV
 /// - Conversion en modèle VideoData
 /// - Cache intelligent des vidéos
+/// - Préchargement des thumbnails YouTube pour affichage instantané
 /// - Gestion des interactions (likes, vues, partages)
 /// - Optimisation pour performance et préchargement
 library;
 
 import 'dart:convert';
+import 'package:flutter/painting.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 // Models
 import '../models/video_data.dart';
@@ -97,6 +100,9 @@ class VideoService extends StateNotifier<VideoState> {
 
         // Sauvegarder en cache
         await _saveToCache(validVideos);
+        
+        // Précharger les thumbnails YouTube pour un affichage instantané
+        _precacheYouTubeThumbnails(validVideos);
 
         print('✅ [VideoService] ${validVideos.length} vidéos chargées et mises en cache');
       } else {
@@ -195,6 +201,21 @@ class VideoService extends StateNotifier<VideoState> {
     }
 
     return url;
+  }
+
+  // Précharger les thumbnails YouTube pour un affichage instantané dans les listes
+  void _precacheYouTubeThumbnails(List<VideoData> videos) {
+    for (final video in videos) {
+      final videoId = YoutubePlayer.convertUrlToId(video.videoUrl);
+      if (videoId != null) {
+        final thumbnailUrl = 'https://img.youtube.com/vi/$videoId/hqdefault.jpg';
+        // Précharger l'image dans le cache Flutter (NetworkImage)
+        // Cela permet un affichage instantané quand le widget s'affiche
+        final imageProvider = NetworkImage(thumbnailUrl);
+        imageProvider.resolve(const ImageConfiguration());
+      }
+    }
+    print('🖼️ [VideoService] Thumbnails YouTube préchargées pour ${videos.length} vidéos');
   }
 
   // Vérifier si l'URL vidéo est valide

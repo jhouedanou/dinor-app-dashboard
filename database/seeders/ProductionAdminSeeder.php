@@ -13,11 +13,20 @@ class ProductionAdminSeeder extends Seeder
      */
     public function run(): void
     {
+        $email = env('ADMIN_DEFAULT_EMAIL', 'admin@dinor.app');
+        $name = env('ADMIN_DEFAULT_NAME', 'AdministrateurDinor');
+        $password = env('ADMIN_DEFAULT_PASSWORD');
+
+        if (!$password) {
+            $this->command?->error('ADMIN_DEFAULT_PASSWORD non défini dans .env — admin non créé.');
+            return;
+        }
+
         AdminUser::updateOrCreate(
-            ['email' => 'admin@dinor.app'],
+            ['email' => $email],
             [
-                'name' => 'AdministrateurDinor',
-                'password' => Hash::make('Dinor2024!Admin'),
+                'name' => $name,
+                'password' => Hash::make($password),
                 'email_verified_at' => now(),
                 'is_active' => true
             ]

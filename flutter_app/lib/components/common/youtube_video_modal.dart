@@ -230,6 +230,7 @@ class _YouTubeVideoModalState extends State<YouTubeVideoModal>
   Widget _buildVideoPlayer() {
     final screenSize = MediaQuery.of(context).size;
     final maxHeight = screenSize.height * 0.7;
+    final thumbnailUrl = YouTubeVideoPlayer.getThumbnailUrl(widget.videoUrl, quality: 'hqdefault');
     
     return Container(
       constraints: BoxConstraints(
@@ -242,24 +243,39 @@ class _YouTubeVideoModalState extends State<YouTubeVideoModal>
           Flexible(
             child: Center(
               child: AspectRatio(
-                aspectRatio: 16 / 9, // Ratio standard YouTube
+                aspectRatio: 16 / 9,
                 child: ClipRRect(
                   borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(16),
                     bottomRight: Radius.circular(16),
                   ),
-                  child: YouTubeVideoPlayer(
-                    key: _playerKey,
-                    videoUrl: widget.videoUrl,
-                    title: '', // Pas besoin du titre ici, il est dans le header
-                    autoPlay: true,
-                    showControls: true,
-                    onReady: () {
-                      print('✅ [YouTubeVideoModal] Player ready dans la modal');
-                    },
-                    onPause: () {
-                      print('⏸️ [YouTubeVideoModal] Vidéo mise en pause par le player');
-                    },
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      // Thumbnail en arrière-plan (visible instantanément pendant le chargement)
+                      if (thumbnailUrl != null)
+                        Image.network(
+                          thumbnailUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(color: Colors.black);
+                          },
+                        ),
+                      // Player YouTube par-dessus
+                      YouTubeVideoPlayer(
+                        key: _playerKey,
+                        videoUrl: widget.videoUrl,
+                        title: '',
+                        autoPlay: true,
+                        showControls: true,
+                        onReady: () {
+                          print('✅ [YouTubeVideoModal] Player ready dans la modal');
+                        },
+                        onPause: () {
+                          print('⏸️ [YouTubeVideoModal] Vidéo mise en pause par le player');
+                        },
+                      ),
+                    ],
                   ),
                 ),
               ),

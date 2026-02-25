@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'youtube_video_modal.dart';
+import 'youtube_video_player.dart';
 
 class UnifiedVideoPlayer extends StatelessWidget {
   final String videoUrl;
@@ -19,66 +20,116 @@ class UnifiedVideoPlayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final thumbnailUrl = YouTubeVideoPlayer.getThumbnailUrl(videoUrl, quality: 'hqdefault');
+    
     return GestureDetector(
       onTap: onTap ?? () => _openVideo(context),
       child: Container(
         height: height,
         decoration: BoxDecoration(
-          color: const Color(0xFFF7FAFC),
+          color: Colors.black,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: const Color(0xFFE2E8F0)),
         ),
         child: Stack(
+          fit: StackFit.expand,
           children: [
-            // Arrière-plan avec dégradé
+            // Thumbnail YouTube réel (chargement rapide depuis CDN Google)
+            if (thumbnailUrl != null)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  thumbnailUrl,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        gradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [Color(0xFF1A202C), Color(0xFF2D3748)],
+                        ),
+                      ),
+                    );
+                  },
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        gradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [Color(0xFF1A202C), Color(0xFF2D3748)],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              )
+            else
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFF1A202C), Color(0xFF2D3748)],
+                  ),
+                ),
+              ),
+            // Overlay sombre pour lisibilité
             Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFF1A202C),
-                    Color(0xFF2D3748),
-                  ],
-                ),
+                color: Colors.black.withOpacity(0.3),
               ),
             ),
-            // Contenu centré
+            // Bouton play et texte centrés
             Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    width: 80,
-                    height: 80,
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
+                    width: 64,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE53E3E).withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: const Icon(
                       Icons.play_arrow,
                       color: Colors.white,
-                      size: 40,
+                      size: 32,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   Text(
                     title,
                     style: const TextStyle(
                       fontFamily: 'OpenSans',
-                      fontSize: 16,
+                      fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
+                      shadows: [Shadow(blurRadius: 4, color: Colors.black54)],
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Text(
                     subtitle,
                     style: const TextStyle(
                       fontFamily: 'Roboto',
                       fontSize: 12,
                       color: Colors.white70,
+                      shadows: [Shadow(blurRadius: 4, color: Colors.black54)],
                     ),
                   ),
                 ],

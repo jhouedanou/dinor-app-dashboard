@@ -257,6 +257,14 @@ class _VideoModalState extends State<VideoModal> {
       );
     }
 
+    // Générer le thumbnail YouTube pour l'affichage pendant le chargement
+    String? thumbnailUrl;
+    final videoIdRegex = RegExp(r'(?:youtube\.com\/(?:embed\/|watch\?v=)|youtu\.be\/)([a-zA-Z0-9_-]+)');
+    final match = videoIdRegex.firstMatch(widget.videoUrl);
+    if (match != null) {
+      thumbnailUrl = 'https://img.youtube.com/vi/${match.group(1)}/hqdefault.jpg';
+    }
+
     return Stack(
       children: [
         // WebView centrée avec aspect ratio
@@ -266,7 +274,7 @@ class _VideoModalState extends State<VideoModal> {
             children: [
               Flexible(
                 child: AspectRatio(
-                  aspectRatio: 16 / 9, // Ratio standard YouTube
+                  aspectRatio: 16 / 9,
                   child: WebViewWidget(controller: _controller),
                 ),
               ),
@@ -274,28 +282,57 @@ class _VideoModalState extends State<VideoModal> {
           ),
         ),
         
-        // Indicateur de chargement
+        // Thumbnail + indicateur de chargement (visible pendant que la WebView charge)
         if (_isLoading)
-          Container(
-            color: Colors.black,
-            child: const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFE53E3E)),
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    'Chargement de la vidéo...',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontFamily: 'Roboto',
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Flexible(
+                  child: AspectRatio(
+                    aspectRatio: 16 / 9,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        // Thumbnail YouTube en arrière-plan
+                        if (thumbnailUrl != null)
+                          Image.network(
+                            thumbnailUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(color: Colors.black);
+                            },
+                          )
+                        else
+                          Container(color: Colors.black),
+                        // Overlay avec spinner
+                        Container(
+                          color: Colors.black.withOpacity(0.5),
+                          child: const Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFE53E3E)),
+                                ),
+                                SizedBox(height: 16),
+                                Text(
+                                  'Chargement de la vidéo...',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontFamily: 'Roboto',
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
       ],
