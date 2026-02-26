@@ -194,3 +194,13 @@ deploy.sh
 /recettes_*.csv
 /txets.php
 /*.php.backup
+
+# === Fichiers de test Flutter ===
+flutter_app/test_*.dart
+flutter_app/lib/test_*.dart
+flutter_app/test_*.md
+
+# === Binaires de distribution (APK, IPA) ===
+distribution/*.apk
+distribution/*.aab
+distribution/*.ipa
