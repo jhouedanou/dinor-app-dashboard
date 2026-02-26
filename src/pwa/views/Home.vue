@@ -253,44 +253,48 @@ export default {
     })
     
     // Composables optimisés pour récupérer les 4 derniers items de chaque type
-    const { 
-      recipes: recipesData, 
+    const {
+      recipes: recipesData,
       error: errorRecipes,
-      loading: loadingRecipes 
-    } = useRecipes({ 
-      limit: 4, 
-      sort_by: 'created_at', 
-      sort_order: 'desc' 
+      loading: loadingRecipes,
+      refresh: refreshRecipes
+    } = useRecipes({
+      limit: 4,
+      sort_by: 'created_at',
+      sort_order: 'desc'
     })
-    
-    const { 
-      tips: tipsData, 
+
+    const {
+      tips: tipsData,
       error: errorTips,
-      loading: loadingTips 
-    } = useTips({ 
-      limit: 4, 
-      sort_by: 'created_at', 
-      sort_order: 'desc' 
+      loading: loadingTips,
+      refresh: refreshTips
+    } = useTips({
+      limit: 4,
+      sort_by: 'created_at',
+      sort_order: 'desc'
     })
-    
-    const { 
-      events: eventsData, 
+
+    const {
+      events: eventsData,
       error: errorEvents,
-      loading: loadingEvents 
-    } = useEvents({ 
-      limit: 4, 
-      sort_by: 'created_at', 
-      sort_order: 'desc' 
+      loading: loadingEvents,
+      refresh: refreshEvents
+    } = useEvents({
+      limit: 4,
+      sort_by: 'created_at',
+      sort_order: 'desc'
     })
-    
-    const { 
-      videos: videosData, 
+
+    const {
+      videos: videosData,
       error: errorVideos,
-      loading: loadingVideos 
-    } = useDinorTV({ 
-      limit: 4, 
-      sort_by: 'created_at', 
-      sort_order: 'desc' 
+      loading: loadingVideos,
+      refresh: refreshVideos
+    } = useDinorTV({
+      limit: 4,
+      sort_by: 'created_at',
+      sort_order: 'desc'
     })
     
     // Computed pour les derniers items
@@ -362,11 +366,19 @@ export default {
     
     let cleanupRefresh = null
     
-    onMounted(() => {
+    onMounted(async () => {
       window.addEventListener('like-updated', handleLikeUpdate)
-      
+
       // Écouter les événements de rafraîchissement
       cleanupRefresh = onRefresh(handleContentRefresh, { global: true })
+
+      // Retry si les données sont vides après le premier chargement
+      // (le SW peut ne pas être prêt au tout premier accès)
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      if (!recipesData.value?.data?.length) refreshRecipes()
+      if (!tipsData.value?.data?.length) refreshTips()
+      if (!eventsData.value?.data?.length) refreshEvents()
+      if (!videosData.value?.data?.length) refreshVideos()
     })
     
     onUnmounted(() => {

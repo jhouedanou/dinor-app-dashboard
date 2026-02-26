@@ -78,61 +78,61 @@ define(['./workbox-fb107ff4'], (function (workbox) { 'use strict';
    * See https://goo.gl/S9QRab
    */
   workbox.precacheAndRoute([{
-    "url": "assets/Badge.CdKG500o.js",
-    "revision": null
-  }, {
     "url": "assets/Badge.CyRVNslW.css",
     "revision": null
   }, {
-    "url": "assets/BannerSection.BIM1sVFf.js",
+    "url": "assets/Badge.Dtyd2jy4.js",
     "revision": null
   }, {
-    "url": "assets/BannerSection.CMVqwP19.css",
+    "url": "assets/BannerSection.BFUczTMl.js",
     "revision": null
   }, {
-    "url": "assets/CookiePolicy.BYWDrLb4.js",
+    "url": "assets/BannerSection.DHGVKDjO.css",
     "revision": null
   }, {
     "url": "assets/CookiePolicy.CBPAEsFF.css",
     "revision": null
   }, {
-    "url": "assets/DinorTV.BShmoHS7.js",
+    "url": "assets/CookiePolicy.CssidXuP.js",
     "revision": null
   }, {
     "url": "assets/DinorTV.Dg3lzYbb.css",
     "revision": null
   }, {
+    "url": "assets/DinorTV.DqdP7VkI.js",
+    "revision": null
+  }, {
     "url": "assets/EventDetail.D3519ub4.css",
     "revision": null
   }, {
-    "url": "assets/EventDetail.DCBubhMo.js",
-    "revision": null
-  }, {
-    "url": "assets/EventsList.BWmITWSl.js",
+    "url": "assets/EventDetail.Du1gayNy.js",
     "revision": null
   }, {
     "url": "assets/EventsList.DKdPWiZo.css",
     "revision": null
   }, {
-    "url": "assets/FavoriteButton.BvxifCY-.js",
+    "url": "assets/EventsList.GPiZnkM9.js",
+    "revision": null
+  }, {
+    "url": "assets/FavoriteButton.DGohETbu.js",
     "revision": null
   }, {
     "url": "assets/FavoriteButton.HOKXQ-I5.css",
     "revision": null
   }, {
-    "url": "assets/Home.4R0HFCAY.css",
+    "url": "assets/Home.CqhinK6W.css",
     "revision": null
   }, {
-    "url": "assets/Home.Co3Ih_yv.js",
+    "url": "assets/Home.jHUYPu_t.js",
     "revision": null
   }, {
     "url": "assets/index.Bp0EUSzT.css",
     "revision": null
   }, {
-    "url": "assets/index.CsDJUcBR.js",
+    "url": "assets/index.rhAE6Ehn.js",
     "revision": null
   }, {
-    "url": "assets/LikeButton.CFABpba2.js",
+    "url": "assets/LikeButton.BkuLNhLJ.js",
     "revision": null
   }, {
     "url": "assets/LikeButton.DCsx9HV7.css",
@@ -141,91 +141,91 @@ define(['./workbox-fb107ff4'], (function (workbox) { 'use strict';
     "url": "assets/PagesList.BDjeEwhH.css",
     "revision": null
   }, {
-    "url": "assets/PagesList.NKIiaR3O.js",
+    "url": "assets/PagesList.CTJlslmN.js",
     "revision": null
   }, {
-    "url": "assets/Predictions.DPS6AWnk.js",
+    "url": "assets/Predictions.DK8vMTY-.js",
     "revision": null
   }, {
     "url": "assets/Predictions.DSa3Y-AN.css",
     "revision": null
   }, {
+    "url": "assets/PredictionsLeaderboard.C36Eka5i.js",
+    "revision": null
+  }, {
     "url": "assets/PredictionsLeaderboard.D8Fsuwim.css",
-    "revision": null
-  }, {
-    "url": "assets/PredictionsLeaderboard.HhnwqTmt.js",
-    "revision": null
-  }, {
-    "url": "assets/PredictionsTeams.B2e4RiBP.js",
     "revision": null
   }, {
     "url": "assets/PredictionsTeams.B2N2jqx8.css",
     "revision": null
   }, {
-    "url": "assets/PrivacyPolicy.BTT3IGcZ.js",
+    "url": "assets/PredictionsTeams.D-uYNhF-.js",
+    "revision": null
+  }, {
+    "url": "assets/PrivacyPolicy.BmIV_odW.js",
     "revision": null
   }, {
     "url": "assets/PrivacyPolicy.DeflSHSI.css",
     "revision": null
   }, {
-    "url": "assets/Profile.Bl8EyzKY.js",
+    "url": "assets/Profile.BtcN_gh2.css",
     "revision": null
   }, {
-    "url": "assets/Profile.BtcN_gh2.css",
+    "url": "assets/Profile.Dc18Ui0c.js",
     "revision": null
   }, {
     "url": "assets/RecipeDetail.CikpOQcH.css",
     "revision": null
   }, {
-    "url": "assets/RecipeDetail.D0vh68zy.js",
+    "url": "assets/RecipeDetail.DqxexZlt.js",
     "revision": null
   }, {
     "url": "assets/RecipesList.CEsnQzT2.css",
     "revision": null
   }, {
-    "url": "assets/RecipesList.guZI0kWc.js",
+    "url": "assets/RecipesList.XVSheSyc.js",
+    "revision": null
+  }, {
+    "url": "assets/SearchAndFilters.CaeRO1-I.js",
     "revision": null
   }, {
     "url": "assets/SearchAndFilters.DhpLTWqq.css",
     "revision": null
   }, {
-    "url": "assets/SearchAndFilters.W3J7mw0t.js",
-    "revision": null
-  }, {
-    "url": "assets/TermsOfService.DECMJgph.js",
+    "url": "assets/TermsOfService.BvIp9pgU.js",
     "revision": null
   }, {
     "url": "assets/TermsOfService.DiEZV5Dq.css",
     "revision": null
   }, {
-    "url": "assets/TipDetail.Cc5_gJNa.js",
-    "revision": null
-  }, {
     "url": "assets/TipDetail.D6kw8lRb.css",
     "revision": null
   }, {
-    "url": "assets/TipsList.2dCFkIAv.js",
+    "url": "assets/TipDetail.DNhlKQ5A.js",
     "revision": null
   }, {
     "url": "assets/TipsList.BFkvQqZq.css",
     "revision": null
   }, {
+    "url": "assets/TipsList.ByqFKNxW.js",
+    "revision": null
+  }, {
     "url": "assets/TournamentBetting.BnIiBiUJ.css",
     "revision": null
   }, {
-    "url": "assets/TournamentBetting.CuF2c02s.js",
+    "url": "assets/TournamentBetting.DoReRLz6.js",
     "revision": null
   }, {
     "url": "assets/Tournaments.B5MFIoVu.css",
     "revision": null
   }, {
-    "url": "assets/Tournaments.qER3TaLS.js",
+    "url": "assets/Tournaments.hIbMhODP.js",
     "revision": null
   }, {
-    "url": "assets/useApi.Cm5RO5Cj.js",
+    "url": "assets/useApi.iywkp8tM.js",
     "revision": null
   }, {
-    "url": "assets/useComments.BHb34im3.js",
+    "url": "assets/useComments.Cgzx0zWI.js",
     "revision": null
   }, {
     "url": "assets/utils.l0sNRNKZ.js",
@@ -234,14 +234,14 @@ define(['./workbox-fb107ff4'], (function (workbox) { 'use strict';
     "url": "assets/vendor.Bvrl98ec.js",
     "revision": null
   }, {
+    "url": "assets/WebEmbed.-vzakbQE.js",
+    "revision": null
+  }, {
     "url": "assets/WebEmbed.7JmI38mu.css",
     "revision": null
   }, {
-    "url": "assets/WebEmbed.B7OVzc3d.js",
-    "revision": null
-  }, {
     "url": "index.html",
-    "revision": "fef7dde79ed5e26dda42597ba358ca75"
+    "revision": "a624fc3db826f737635ba0a197ecb45f"
   }, {
     "url": "registerSW.js",
     "revision": "36a8c3eb862bdcf4382e8845651d1c5f"
