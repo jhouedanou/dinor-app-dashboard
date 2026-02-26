@@ -26,6 +26,7 @@ storage/logs/laravel.log
 /storage/framework/sessions/*
 /storage/framework/views/*.php
 /storage/app/public/*
+/storage/app/examples/*
 /storage/debugbar/*
 
 # === Fichiers temporaires ===
