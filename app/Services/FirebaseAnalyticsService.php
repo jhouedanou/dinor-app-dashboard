@@ -139,7 +139,7 @@ class FirebaseAnalyticsService
                 ->get()
                 ->toArray();
                 
-            $topVideos = \App\Models\DinorTV::selectRaw("title, views_count as views, 'video' as type")
+            $topVideos = \App\Models\DinorTv::selectRaw("title, views_count as views, 'video' as type")
                 ->orderBy('views_count', 'desc')
                 ->limit(1)
                 ->get()
@@ -175,7 +175,7 @@ class FirebaseAnalyticsService
                     ['page' => 'Recettes', 'views' => \App\Models\Recipe::sum('views_count'), 'unique_views' => rand(1500, 1900)],
                     ['page' => 'Astuces', 'views' => \App\Models\Tip::sum('views_count'), 'unique_views' => rand(1200, 1600)],
                     ['page' => 'Événements', 'views' => \App\Models\Event::sum('views_count'), 'unique_views' => rand(800, 1200)],
-                    ['page' => 'Dinor TV', 'views' => \App\Models\DinorTV::sum('views_count'), 'unique_views' => rand(600, 1000)]
+                    ['page' => 'Dinor TV', 'views' => \App\Models\DinorTv::sum('views_count'), 'unique_views' => rand(600, 1000)]
                 ],
                 'most_viewed_content' => array_slice($mostViewedContent, 0, 8),
                 'content_engagement' => [
