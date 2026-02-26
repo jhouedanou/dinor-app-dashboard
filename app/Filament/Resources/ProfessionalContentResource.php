@@ -58,6 +58,7 @@ class ProfessionalContentResource extends Resource
                 Forms\Components\FileUpload::make('images')
                     ->label('Images')
                     ->multiple()
+                    ->maxFiles(20)
                     ->image()
                     ->disk('public')
                     ->directory('professional-content')

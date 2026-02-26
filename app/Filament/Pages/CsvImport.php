@@ -66,7 +66,8 @@ class CsvImport extends Page
                             ->maxSize(10240) // 10MB
                             ->disk('local')
                             ->directory('csv-imports')
-                            ->visibility('private'),
+                            ->visibility('private')
+                            ->rules([new \App\Rules\SafeCsv()]),
 
                         Forms\Components\Checkbox::make('has_header')
                             ->label('Le fichier contient une ligne d\'en-tête')

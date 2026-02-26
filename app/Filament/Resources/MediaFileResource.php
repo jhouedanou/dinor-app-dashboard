@@ -32,7 +32,6 @@ class MediaFileResource extends Resource
                             ->image()
                             ->disk('public')
                             ->directory('media')
-                            ->preserveFilenames()
                             ->maxSize(2048) // 2MB
                             ->acceptedFileTypes([
                                 'image/jpeg',
@@ -41,6 +40,14 @@ class MediaFileResource extends Resource
                                 'image/webp',
                             ])
                             ->rules([new \App\Rules\SafeFile()])
+                            ->getUploadedFileNameForStorageUsing(function ($file): string {
+                                // Sanitize le nom original : retirer caractères dangereux, garder un nom lisible
+                                $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                                $safeName = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $originalName);
+                                $safeName = substr($safeName, 0, 100); // Limiter la longueur
+                                $extension = strtolower(pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION));
+                                return $safeName . '_' . uniqid() . '.' . $extension;
+                            })
                             ->live()
                             ->afterStateUpdated(function ($state, callable $set) {
                                 if ($state) {

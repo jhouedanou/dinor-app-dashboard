@@ -82,10 +82,13 @@ class ImportCsv extends Page implements HasForms
 
                         FileUpload::make('csv_file')
                             ->label('Fichier CSV')
-                            ->acceptedFileTypes(['text/csv', 'application/csv', '.csv'])
+                            ->acceptedFileTypes(['text/csv', 'application/csv', 'text/plain'])
                             ->required()
+                            ->maxSize(10240) // 10MB max
                             ->disk('local')
                             ->directory('imports')
+                            ->visibility('private')
+                            ->rules([new \App\Rules\SafeCsv()])
                             ->helperText(function (callable $get) {
                                 $type = $get('content_type');
                                 if ($type) {

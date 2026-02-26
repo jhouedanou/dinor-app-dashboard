@@ -17,6 +17,7 @@ class SafeFile implements ValidationRule
         'exe', 'bat', 'cmd', 'com', 'msi', 'dll', 'scr',
         'htaccess', 'htpasswd', 'ini', 'env',
         'svg', // SVG peut contenir du JavaScript
+        'js', 'html', 'htm', 'shtml', 'xhtml',
     ];
 
     /**
@@ -27,6 +28,16 @@ class SafeFile implements ValidationRule
         'image/png',
         'image/gif',
         'image/webp',
+    ];
+
+    /**
+     * Magic bytes (signatures) pour les formats image autorisés.
+     */
+    private const IMAGE_MAGIC_BYTES = [
+        'image/jpeg' => ["\xFF\xD8\xFF"],
+        'image/png'  => ["\x89\x50\x4E\x47\x0D\x0A\x1A\x0A"],
+        'image/gif'  => ["GIF87a", "GIF89a"],
+        'image/webp' => ["RIFF"],
     ];
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
@@ -48,6 +59,12 @@ class SafeFile implements ValidationRule
             }
         }
 
+        // Bloquer les noms de fichiers avec des caractères de traversée de chemin
+        if (preg_match('/[\/\\\\]|\.\./', $originalName)) {
+            $fail("Le nom du fichier contient des caractères non autorisés.");
+            return;
+        }
+
         // Vérifier le MIME type réel du fichier (pas celui déclaré par le client)
         $realMimeType = $value->getMimeType();
 
@@ -56,18 +73,53 @@ class SafeFile implements ValidationRule
             return;
         }
 
-        // Vérifier que le contenu ne commence pas par des signatures PHP
+        // Vérifier les magic bytes (signature binaire) du fichier
         $content = file_get_contents($value->getRealPath(), false, null, 0, 100);
-        if ($content !== false) {
-            $contentLower = strtolower($content);
-            if (
-                str_contains($contentLower, '<?php') ||
-                str_contains($contentLower, '<?=') ||
-                str_contains($contentLower, '<script') ||
-                str_contains($content, '#!') // shebang
-            ) {
+        if ($content === false || strlen($content) < 4) {
+            $fail("Le fichier est vide ou illisible.");
+            return;
+        }
+
+        $validMagicBytes = false;
+        if (isset(self::IMAGE_MAGIC_BYTES[$realMimeType])) {
+            foreach (self::IMAGE_MAGIC_BYTES[$realMimeType] as $signature) {
+                if (str_starts_with($content, $signature)) {
+                    $validMagicBytes = true;
+                    break;
+                }
+            }
+        }
+
+        if (!$validMagicBytes) {
+            $fail("Le fichier ne correspond pas à un format image valide (signature invalide).");
+            return;
+        }
+
+        // Vérifier que le contenu ne contient pas de code exécutable injecté
+        $contentLower = strtolower($content);
+        $dangerousPatterns = [
+            '<?php', '<?=', '<script', '#!/',
+            '<% ', '<%=',  // ASP
+        ];
+
+        foreach ($dangerousPatterns as $pattern) {
+            if (str_contains($contentLower, $pattern)) {
                 $fail("Le fichier contient du code exécutable et a été rejeté.");
                 return;
+            }
+        }
+
+        // Vérification supplémentaire : scanner plus profondément pour les fichiers > 1KB
+        if ($value->getSize() > 1024) {
+            $deepContent = file_get_contents($value->getRealPath(), false, null, 0, 8192);
+            if ($deepContent !== false) {
+                $deepContentLower = strtolower($deepContent);
+                foreach ($dangerousPatterns as $pattern) {
+                    if (str_contains($deepContentLower, $pattern)) {
+                        $fail("Le fichier contient du code exécutable injecté et a été rejeté.");
+                        return;
+                    }
+                }
             }
         }
     }
