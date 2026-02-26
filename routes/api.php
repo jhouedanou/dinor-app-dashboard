@@ -310,9 +310,10 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     Route::put('/profile/password', [App\Http\Controllers\Api\ProfileController::class, 'updatePassword']);
     Route::post('/profile/request-deletion', [App\Http\Controllers\Api\ProfileController::class, 'requestDataDeletion']);
     
-    // Professional Content - Routes protégées
-    Route::apiResource('professional-content', ProfessionalContentController::class);
+    // Professional Content - Lecture seule (la création/modification se fait uniquement via Filament admin)
+    Route::get('/professional-content', [ProfessionalContentController::class, 'index']);
     Route::get('/professional-content/types', [ProfessionalContentController::class, 'getContentTypes']);
+    Route::get('/professional-content/{professionalContent}', [ProfessionalContentController::class, 'show']);
     
     // Routes de suppression pour l'administration
     Route::delete('/recipes/{recipe}', [RecipeController::class, 'destroy']);
