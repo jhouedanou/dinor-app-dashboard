@@ -31,7 +31,7 @@ class AdminPanelProvider extends PanelProvider
             ->brandName('Dinor Dashboard')
             ->brandLogo('/images/dinor-logo.png')
             ->brandLogoHeight('2rem')
-            ->favicon('/pwa/icons/icon-32x32.png')
+            ->favicon('/favicon.png')
             ->colors([
                 'primary' => [
                     50 => '#fefbf3',

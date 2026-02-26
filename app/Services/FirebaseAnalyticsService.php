@@ -121,27 +121,31 @@ class FirebaseAnalyticsService
     {
         try {
             // Récupérer les vraies données des tables
-            $topRecipes = \App\Models\Recipe::selectRaw("title, views_count as views, 'recipe' as type")
-                ->orderBy('views_count', 'desc')
+            $topRecipes = \App\Models\Recipe::where('is_published', true)
+                ->selectRaw("title, views_count as views, likes_count, 'recipe' as type")
+                ->orderByDesc('views_count')
                 ->limit(3)
                 ->get()
                 ->toArray();
-                
-            $topTips = \App\Models\Tip::selectRaw("title, views_count as views, 'tip' as type")
-                ->orderBy('views_count', 'desc') 
+
+            $topTips = \App\Models\Tip::where('is_published', true)
+                ->selectRaw("title, views_count as views, likes_count, 'tip' as type")
+                ->orderByDesc('views_count')
                 ->limit(2)
                 ->get()
                 ->toArray();
-                
-            $topEvents = \App\Models\Event::selectRaw("title, views_count as views, 'event' as type")
-                ->orderBy('views_count', 'desc')
+
+            $topEvents = \App\Models\Event::where('is_published', true)
+                ->selectRaw("title, views_count as views, likes_count, 'event' as type")
+                ->orderByDesc('views_count')
                 ->limit(2)
                 ->get()
                 ->toArray();
-                
-            $topVideos = \App\Models\DinorTv::selectRaw("title, views_count as views, 'video' as type")
-                ->orderBy('views_count', 'desc')
-                ->limit(1)
+
+            $topVideos = \App\Models\DinorTv::where('is_published', true)
+                ->selectRaw("title, view_count as views, 0 as likes_count, 'video' as type")
+                ->orderByDesc('view_count')
+                ->limit(2)
                 ->get()
                 ->toArray();
 
@@ -153,11 +157,10 @@ class FirebaseAnalyticsService
                 return ($b['views'] ?? 0) <=> ($a['views'] ?? 0);
             });
             
-            // Si nous n'avons pas de données, ne pas utiliser les données simulées
-            if (empty($mostViewedContent)) {
-                $mostViewedContent = [
-                    ['title' => 'Aucun contenu trouvé', 'type' => 'system', 'views' => 0]
-                ];
+            // Filtrer les entrées sans vues si on a du contenu avec vues
+            $withViews = array_filter($mostViewedContent, fn($item) => ($item['views'] ?? 0) > 0);
+            if (!empty($withViews)) {
+                $mostViewedContent = $withViews;
             }
 
             // Calculer les vrais totaux d'engagement
@@ -172,17 +175,17 @@ class FirebaseAnalyticsService
             return [
                 'most_viewed_pages' => [
                     ['page' => 'Accueil', 'views' => rand(2800, 3500), 'unique_views' => rand(1800, 2300)],
-                    ['page' => 'Recettes', 'views' => \App\Models\Recipe::sum('views_count'), 'unique_views' => rand(1500, 1900)],
-                    ['page' => 'Astuces', 'views' => \App\Models\Tip::sum('views_count'), 'unique_views' => rand(1200, 1600)],
-                    ['page' => 'Événements', 'views' => \App\Models\Event::sum('views_count'), 'unique_views' => rand(800, 1200)],
-                    ['page' => 'Dinor TV', 'views' => \App\Models\DinorTv::sum('views_count'), 'unique_views' => rand(600, 1000)]
+                    ['page' => 'Recettes', 'views' => (int) \App\Models\Recipe::sum('views_count'), 'unique_views' => rand(1500, 1900)],
+                    ['page' => 'Astuces', 'views' => (int) \App\Models\Tip::sum('views_count'), 'unique_views' => rand(1200, 1600)],
+                    ['page' => 'Événements', 'views' => (int) \App\Models\Event::sum('views_count'), 'unique_views' => rand(800, 1200)],
+                    ['page' => 'Dinor TV', 'views' => (int) \App\Models\DinorTv::sum('view_count'), 'unique_views' => rand(600, 1000)]
                 ],
                 'most_viewed_content' => array_slice($mostViewedContent, 0, 8),
                 'content_engagement' => [
                     'total_likes' => $totalLikes ?: rand(2800, 3500),
-                    'total_shares' => rand(650, 950), // Pas encore de table de partages
-                    'total_comments' => $totalComments ?: rand(1200, 1800),
-                    'total_favorites' => rand(1800, 2400), // Pas encore de table de favoris
+                    'total_shares' => 0,
+                    'total_comments' => $totalComments,
+                    'total_favorites' => \App\Models\UserFavorite::count()
                     'avg_time_on_content' => rand(2.8, 4.2)
                 ],
                 'popular_search_terms' => [
@@ -205,9 +208,7 @@ class FirebaseAnalyticsService
                     ['page' => 'Événements', 'views' => rand(1200, 1800), 'unique_views' => rand(800, 1200)],
                     ['page' => 'Dinor TV', 'views' => rand(900, 1400), 'unique_views' => rand(600, 1000)]
                 ],
-                'most_viewed_content' => [
-                    ['title' => 'Erreur de chargement', 'type' => 'system', 'views' => 0]
-                ],
+                'most_viewed_content' => [],
                 'content_engagement' => [
                     'total_likes' => 0,
                     'total_shares' => 0,

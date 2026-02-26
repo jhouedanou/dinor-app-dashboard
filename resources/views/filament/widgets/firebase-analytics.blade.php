@@ -186,11 +186,11 @@
 
             {{-- Colonne centrale: Contenu populaire --}}
             <div class="lg:col-span-1">
-                @if(!empty($contentStats['top_content']))
                 <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                        🔥 Contenu Populaire
+                        🔥 Top Contenu
                     </h3>
+                    @if(!empty($contentStats['top_content']))
                     <div class="space-y-4">
                         @foreach(array_slice($contentStats['top_content'], 0, 5) as $content)
                         <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
@@ -232,8 +232,13 @@
                         </div>
                         @endforeach
                     </div>
+                    @else
+                    <div class="text-center py-6 text-gray-500 dark:text-gray-400">
+                        <p class="text-sm">Aucune donnée de consultation disponible</p>
+                        <p class="text-xs mt-1">Les vues seront comptabilisées automatiquement</p>
+                    </div>
+                    @endif
                 </div>
-                @endif
 
                 {{-- Pages les plus visitées --}}
                 @if(!empty($contentStats['top_pages']))
