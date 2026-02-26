@@ -185,7 +185,7 @@ class FirebaseAnalyticsService
                     'total_likes' => $totalLikes ?: rand(2800, 3500),
                     'total_shares' => 0,
                     'total_comments' => $totalComments,
-                    'total_favorites' => \App\Models\UserFavorite::count()
+                    'total_favorites' => \App\Models\UserFavorite::count(),
                     'avg_time_on_content' => rand(2.8, 4.2)
                 ],
                 'popular_search_terms' => [
