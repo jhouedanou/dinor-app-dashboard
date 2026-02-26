@@ -125,11 +125,48 @@ test-*.sh
 local.conf
 *.local.conf
 
-# === Projets Mobile (Flutter / React Native) ===
-# Ces projets ne doivent PAS être déployés sur le serveur Laravel
-flutter_app/
+# === Projets Mobile ===
+# React Native et DinorMobileBuild : entièrement ignorés
 react-native-dinor/
 DinorMobileBuild/
+
+# Flutter : sources dans Git, mais builds/artefacts exclus
+flutter_app/.dart_tool/
+flutter_app/.flutter-plugins
+flutter_app/.flutter-plugins-dependencies
+flutter_app/.pub-cache/
+flutter_app/.pub/
+flutter_app/build/
+flutter_app/.build/
+flutter_app/.buildlog/
+flutter_app/dist/
+flutter_app/android/.gradle/
+flutter_app/android/build/
+flutter_app/android/app/build/
+flutter_app/android/app/debug/
+flutter_app/android/app/profile/
+flutter_app/android/app/release/
+flutter_app/android/local.properties
+flutter_app/android/.kotlin/
+flutter_app/ios/Pods/
+flutter_app/ios/build/
+flutter_app/ios/.symlinks/
+flutter_app/ios/Flutter/Flutter.framework
+flutter_app/ios/Flutter/Flutter.podspec
+flutter_app/macos/Flutter/ephemeral/
+flutter_app/linux/flutter/ephemeral/
+flutter_app/windows/flutter/ephemeral/
+flutter_app/.idea/
+flutter_app/.vscode/
+flutter_app/*.apk
+flutter_app/*.aab
+flutter_app/*.ipa
+flutter_app/*.tar.gz
+flutter_app/*.zip
+flutter_app/.env
+flutter_app/.env.*
+!flutter_app/.env.example
+!flutter_app/.env.example
 
 flutter_app/android/.kotlin/sessions/kotlin-compiler-13534580720286506156.salive
 flutter_app/dinor-app-v3.1.0-debug.apk
@@ -137,8 +174,6 @@ flutter_app/dinor-app-v3.1.0-release.apk
 flutter_app/install-v3.1.0.sh
 NUL
 .claude/settings.local.json
-script-forge-deploiement.txt
-script-forge-deploiement.txt
 script-forge-deploiement.txt
 SECURITE-SERVEUR.md
 deploy.sh

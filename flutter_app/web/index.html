@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base href="/">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Dinor App - Votre chef de poche">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Dinor">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>Dinor - Votre chef de poche</title>
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* Loading styles */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Roboto', sans-serif;
+      background-color: #F5F5F5;
+      overflow-x: hidden;
+    }
+
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #F5F5F5;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 9999;
+    }
+
+    .loading-content {
+      text-align: center;
+      color: #333;
+    }
+
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #007AFF;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 10px;
+    }
+
+    .loading-subtitle {
+      font-size: 14px;
+      color: #666;
+    }
+
+    /* Hide loading when Flutter is ready */
+    .loading.hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading screen -->
+  <div id="loading" class="loading">
+    <div class="loading-content">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Dinor</div>
+      <div class="loading-subtitle">Votre chef de poche</div>
+    </div>
+  </div>
+
+  <script src="flutter_bootstrap.js" async></script>
+  
+  <script>
+    // Hide loading when Flutter is ready
+    window.addEventListener('flutter-first-frame', function() {
+      const loading = document.getElementById('loading');
+      if (loading) {
+        loading.classList.add('hidden');
+      }
+    });
+
+    // Error handling
+    window.addEventListener('flutter-error', function(e) {
+      console.error('Flutter error:', e.detail);
+      const loading = document.getElementById('loading');
+      if (loading) {
+        loading.innerHTML = `
+          <div class="loading-content">
+            <div class="loading-text">Erreur de chargement</div>
+            <div class="loading-subtitle">Veuillez rafraîchir la page</div>
+          </div>
+        `;
+      }
+    });
+
+    // Fallback: hide loading after 10 seconds
+    setTimeout(function() {
+      const loading = document.getElementById('loading');
+      if (loading && !loading.classList.contains('hidden')) {
+        loading.classList.add('hidden');
+      }
+    }, 10000);
+  </script>
+</body>
+</html>

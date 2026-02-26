@@ -1,0 +1,132 @@
+name: dinor_app
+description: Dinor App - Votre chef de poche - Application culinaire mobile
+publish_to: 'none'
+version: 3.2.3+103
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # État global (remplace Pinia)
+  provider: ^6.1.5
+  riverpod: ^2.6.1
+  flutter_riverpod: ^2.6.1
+  google_fonts:
+  sign_in_button:
+  flutter_facebook_auth:
+
+  # Navigation (remplace Vue Router) - Navigator classique avec GlobalKey
+  # go_router supprimé pour éviter les erreurs de contexte modal
+
+
+  # HTTP et API (remplace axios)
+  http: ^1.1.2
+  dio: ^5.4.0
+
+  # Authentification et storage (remplace localStorage)
+  shared_preferences: ^2.2.2
+  flutter_secure_storage: ^9.2.4
+
+  # Icons (remplace Lucide Vue - 80+ icônes identiques)
+  lucide_icons: ^0.257.0
+  font_awesome_flutter:
+
+  # Animations (remplace transitions CSS)
+  animations: ^2.0.8
+  lottie: ^2.7.0
+
+  # Images et cache
+  cached_network_image: ^3.3.0
+  flutter_svg: ^2.0.9
+
+  # Vidéo (pour le lecteur TikTok)
+  video_player:
+  chewie:
+
+  # PWA features simulation
+  package_info_plus: ^8.3.0
+  connectivity_plus: ^6.1.4
+
+  # Push notifications (OneSignal)
+  onesignal_flutter: ^5.2.5
+  
+  # Firebase Analytics et Core
+  firebase_core: ^3.6.0
+  firebase_analytics: ^11.3.3
+  firebase_crashlytics: ^4.1.3
+  
+  # Permissions
+  permission_handler: ^11.0.1
+
+  # Utils
+  intl:
+  json_annotation: ^4.8.1
+  equatable: ^2.0.5
+
+  # UI Components
+  flutter_staggered_grid_view: ^0.7.0
+  shimmer: ^3.0.0
+
+  # Web support
+  url_launcher: ^6.2.2
+  share_plus: ^7.2.1
+  webview_flutter: ^4.4.2
+
+  # HTML rendering for recipe instructions
+  flutter_widget_from_html: ^0.15.3
+  flutter_widget_from_html_core: ^0.15.0
+  
+  # YouTube video player
+  youtube_player_flutter: ^9.0.4
+
+  # Time formatting for comments
+  timeago: ^3.6.1
+
+  # Material 3 design
+  cupertino_icons: ^1.0.6
+  flutter_html:
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+  json_serializable: ^6.7.1
+  build_runner: ^2.4.7
+  flutter_launcher_icons: ^0.13.1
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/fonts/
+
+  # Utilisation de la police Roboto système - pas besoin d'assets
+  # Flutter utilise Roboto par défaut sur Android et nous la forçons via le code
+
+# Configuration des icônes (identiques PWA)
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icons/app_icon.png"
+  background_color: "#ffffff"
+  remove_alpha_ios: true
+  min_sdk_android: 21
+  web:
+    generate: true
+    image_path: "assets/icons/app_icon.png"
+    background_color: "#ffffff"
+    theme_color: "#E1251B"
+  windows:
+    generate: true
+    image_path: "assets/icons/app_icon.png"
+    icon_size: 48
+  macos:
+    generate: true
+    image_path: "assets/icons/app_icon.png"
