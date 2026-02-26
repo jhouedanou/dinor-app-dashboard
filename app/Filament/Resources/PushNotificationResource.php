@@ -87,6 +87,7 @@ class PushNotificationResource extends Resource
                             ->directory('notifications')
                             ->maxSize(2048)
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
+                            ->rules([new \App\Rules\SafeFile()])
                             ->helperText('Optionnel - Une icône par défaut sera utilisée si non spécifiée (max 2MB)'),
                     ])->columns(2),
 

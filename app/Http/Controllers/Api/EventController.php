@@ -32,8 +32,8 @@ class EventController extends Controller
             $query->where('is_featured', true);
         }
 
-        // Option pour inclure le contenu non publié (pour debug admin)
-        if ($request->has('include_unpublished')) {
+        // Inclure le contenu non publié uniquement pour les admins authentifiés
+        if ($request->has('include_unpublished') && \Illuminate\Support\Facades\Auth::check()) {
             $query = Event::with(['category', 'eventCategory'])->orderBy('start_date', 'asc');
         }
 
@@ -61,11 +61,6 @@ class EventController extends Controller
                 'per_page' => $events->perPage(),
                 'total' => $events->total(),
             ],
-            'debug_info' => [
-                'total_events_in_db' => Event::count(),
-                'published_events' => Event::where('is_published', true)->count(),
-                'active_events' => Event::where('status', 'active')->count(),
-            ]
         ]);
     }
 

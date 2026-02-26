@@ -1,10 +1,13 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    
+
+    # Bloquer l'exécution PHP dans /storage/ (protection contre les backdoors)
+    RewriteRule ^storage/.*\.php$ - [F,L]
+
     # Redirect /pwa to the PWA app
     RewriteRule ^pwa/?$ /pwa/dist/index.html [L]
     RewriteRule ^pwa/(.*)$ /pwa/dist/$1 [L]
-    
+
     # Handle Laravel routes
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f

@@ -99,8 +99,10 @@ class BannerResource extends Resource
                         Forms\Components\FileUpload::make('image_url')
                             ->label('Image de fond')
                             ->image()
+                            ->disk('public')
                             ->directory('banners')
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                            ->rules([new \App\Rules\SafeFile()])
                             ->maxSize(2048)
                             ->helperText('Image de fond de la bannière (optionnel)')
                             ->columnSpanFull(),

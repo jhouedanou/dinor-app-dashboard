@@ -108,6 +108,7 @@ class EventResource extends Resource
                             ->visibility('public')
                             ->maxSize(2048)
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
+                            ->rules([new \App\Rules\SafeFile()])
                             ->imageEditor()
                             ->imageEditorAspectRatios([
                                 '16:9',
@@ -124,6 +125,7 @@ class EventResource extends Resource
                             ->visibility('public')
                             ->maxSize(2048)
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
+                            ->rules([new \App\Rules\SafeFile()])
                             ->maxFiles(20)
                             ->imageEditor()
                             ->reorderable(),

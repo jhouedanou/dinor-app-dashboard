@@ -54,7 +54,7 @@ class BannerController extends Controller
                 'count' => 0,
                 'type' => $type,
                 'note' => 'Version temporaire - aucune bannière trouvée',
-                'debug_error' => $e->getMessage()
+                'debug_error' => config('app.debug') ? $e->getMessage() : 'Erreur interne'
             ]);
         }
     }

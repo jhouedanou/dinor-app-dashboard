@@ -90,11 +90,9 @@ ENV CACHE_DRIVER=file \
 # Build assets (npm ci déjà fait dans l'étape dependencies)
 RUN npm run build && npm run pwa:build && npm prune --production
 
-# Create entrypoint script
-RUN echo '#!/bin/bash\n\
-# Start supervisor with all services (nginx, php-fpm, and vite)\n\
-exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf' > /usr/local/bin/entrypoint.sh \
-    && chmod +x /usr/local/bin/entrypoint.sh
+# Create entrypoint script with migrations
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Expose port 80
 EXPOSE 80

@@ -59,16 +59,20 @@ class DinorTvResource extends Resource
                         Forms\Components\FileUpload::make('thumbnail')
                             ->label('Miniature (legacy)')
                             ->image()
+                            ->disk('public')
                             ->directory('dinor-tv-thumbnails')
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
+                            ->rules([new \App\Rules\SafeFile()])
                             ->maxSize(2048)
                             ->helperText('Image d\'aperçu legacy (utiliser Image principale de préférence - max 2MB)'),
 
                         Forms\Components\FileUpload::make('featured_image')
                             ->label('Image principale')
                             ->image()
+                            ->disk('public')
                             ->directory('dinor-tv-featured')
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
+                            ->rules([new \App\Rules\SafeFile()])
                             ->maxSize(2048)
                             ->helperText('Image principale du contenu (JPEG, PNG, GIF, WebP - max 2MB)'),
 
@@ -79,22 +83,27 @@ class DinorTvResource extends Resource
                             ->image()
                             ->maxSize(2048)
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
+                            ->rules([new \App\Rules\SafeFile()])
                             ->reorderable()
                             ->helperText('Images uploadées via Spatie Media Library (max 2MB)'),
 
                         Forms\Components\FileUpload::make('poster_image')
                             ->label('Image poster')
                             ->image()
+                            ->disk('public')
                             ->directory('dinor-tv-posters')
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
+                            ->rules([new \App\Rules\SafeFile()])
                             ->maxSize(2048)
                             ->helperText('Image de type poster/affiche (format portrait recommandé - max 2MB)'),
 
                         Forms\Components\FileUpload::make('banner_image')
                             ->label('Image bannière')
                             ->image()
+                            ->disk('public')
                             ->directory('dinor-tv-banners')
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
+                            ->rules([new \App\Rules\SafeFile()])
                             ->maxSize(2048)
                             ->helperText('Image bannière (format paysage 16:9 recommandé - max 2MB)'),
 
@@ -105,6 +114,7 @@ class DinorTvResource extends Resource
                             ->image()
                             ->maxSize(2048)
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
+                            ->rules([new \App\Rules\SafeFile()])
                             ->reorderable()
                             ->helperText('Galerie d\'images pour ce contenu (max 2MB)'),
 

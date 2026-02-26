@@ -81,6 +81,7 @@ class IngredientResource extends Resource
                             ->visibility('public')
                             ->maxSize(2048)
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
+                            ->rules([new \App\Rules\SafeFile()])
                             ->imageEditor(),
                             
                         Forms\Components\Toggle::make('is_active')

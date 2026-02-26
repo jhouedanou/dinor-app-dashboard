@@ -160,9 +160,8 @@ class OneSignalService
             $payload['data']['deep_link'] = $deepLinkUrl ?: "dinor://{$notification->content_type}/{$notification->content_id}";
             $payload['data']['action'] = 'navigate_to_content';
             
-            // Configuration pour ouvrir l'app automatiquement
-            $payload['android_background_data'] = true;
-            $payload['content_available'] = true; // Pour iOS
+            // Configuration pour iOS background fetch
+            $payload['content_available'] = true;
             
         } else {
             // Pour les URLs externes ou custom, utiliser la logique normale

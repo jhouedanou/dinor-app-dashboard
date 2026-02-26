@@ -30,6 +30,7 @@ class MediaFileResource extends Resource
                             ->label('Image')
                             ->required()
                             ->image()
+                            ->disk('public')
                             ->directory('media')
                             ->preserveFilenames()
                             ->maxSize(2048) // 2MB
@@ -39,6 +40,7 @@ class MediaFileResource extends Resource
                                 'image/gif',
                                 'image/webp',
                             ])
+                            ->rules([new \App\Rules\SafeFile()])
                             ->live()
                             ->afterStateUpdated(function ($state, callable $set) {
                                 if ($state) {

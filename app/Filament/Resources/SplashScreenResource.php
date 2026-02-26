@@ -74,6 +74,7 @@ class SplashScreenResource extends Resource
                             ->image()
                             ->maxSize(2048)
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
+                            ->rules([new \App\Rules\SafeFile()])
                             ->imageEditor()
                             ->visible(fn ($get) => $get('logo_type') === 'custom'),
                             
@@ -126,6 +127,7 @@ class SplashScreenResource extends Resource
                             ->image()
                             ->maxSize(2048)
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
+                            ->rules([new \App\Rules\SafeFile()])
                             ->imageEditor()
                             ->visible(fn ($get) => $get('background_type') === 'image'),
                     ]),

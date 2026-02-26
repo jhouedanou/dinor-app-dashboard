@@ -12,7 +12,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement("ALTER TABLE `categories` MODIFY `type` ENUM('general', 'recipe', 'event', 'tip') NOT NULL DEFAULT 'general'");
+        $driver = Schema::getConnection()->getDriverName();
+        
+        if ($driver === 'pgsql') {
+            DB::statement("ALTER TABLE categories DROP CONSTRAINT IF EXISTS categories_type_check");
+            DB::statement("ALTER TABLE categories ADD CONSTRAINT categories_type_check CHECK (type IN ('general', 'recipe', 'event', 'tip'))");
+        } else {
+            DB::statement("ALTER TABLE `categories` MODIFY `type` ENUM('general', 'recipe', 'event', 'tip') NOT NULL DEFAULT 'general'");
+        }
     }
 
     /**
@@ -20,6 +27,13 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement("ALTER TABLE `categories` MODIFY `type` ENUM('general', 'recipe', 'event') NOT NULL DEFAULT 'general'");
+        $driver = Schema::getConnection()->getDriverName();
+        
+        if ($driver === 'pgsql') {
+            DB::statement("ALTER TABLE categories DROP CONSTRAINT IF EXISTS categories_type_check");
+            DB::statement("ALTER TABLE categories ADD CONSTRAINT categories_type_check CHECK (type IN ('general', 'recipe', 'event'))");
+        } else {
+            DB::statement("ALTER TABLE `categories` MODIFY `type` ENUM('general', 'recipe', 'event') NOT NULL DEFAULT 'general'");
+        }
     }
 };

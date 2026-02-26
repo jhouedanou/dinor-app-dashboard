@@ -20,8 +20,8 @@ class RecipeController extends Controller
             ->where('is_published', true)
             ->orderBy('created_at', 'desc');
 
-        // Permettre d'inclure les non publiées pour l'admin
-        if ($request->has('include_unpublished') && $request->boolean('include_unpublished')) {
+        // Permettre d'inclure les non publiées uniquement pour les admins authentifiés
+        if ($request->has('include_unpublished') && $request->boolean('include_unpublished') && Auth::check()) {
             $query = Recipe::with('category')->orderBy('created_at', 'desc');
         }
 
@@ -79,11 +79,6 @@ class RecipeController extends Controller
                 'per_page' => $recipes->perPage(),
                 'total' => $recipes->total(),
             ],
-            'debug_info' => [
-                'total_recipes_in_db' => Recipe::count(),
-                'published_recipes' => Recipe::where('is_published', true)->count(),
-                'featured_recipes' => Recipe::where('is_featured', true)->count(),
-            ]
         ])->header('Cache-Control', 'no-cache, no-store, must-revalidate')
           ->header('Pragma', 'no-cache')
           ->header('Expires', '0');

@@ -28,6 +28,12 @@ class NotificationService {
       final initialPermission = OneSignal.Notifications.permission;
       debugPrint('📱 [NotificationService] État permission initial: $initialPermission');
 
+      // Demander la permission si pas encore accordée (obligatoire sur Android 13+)
+      if (!initialPermission) {
+        debugPrint('📱 [NotificationService] Demande de permission notifications...');
+        await OneSignal.Notifications.requestPermission(true);
+      }
+
       // Attendre un peu pour que l'inscription se fasse
       await Future.delayed(const Duration(seconds: 2));
       

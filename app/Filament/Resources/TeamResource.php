@@ -243,7 +243,8 @@ class TeamResource extends Resource
                     ->directory('teams/logos')
                     ->disk('public')
                     ->maxSize(2048)
-                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp']),
+                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
+                    ->rules([new \App\Rules\SafeFile()]),
                 
                 Forms\Components\ColorPicker::make('color_primary')
                     ->label('Couleur principale'),
