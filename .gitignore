@@ -6,10 +6,13 @@
 /public/storage
 /storage/*.key
 .env
+.env.*
 .env.backup
 .env.production
 .env.local
 .env.*.local
+.env.backup.comments
+.env.firebase
 
 # === Logs ===
 /storage/logs/*.log

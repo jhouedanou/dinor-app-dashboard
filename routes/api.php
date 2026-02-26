@@ -66,62 +66,6 @@ Route::prefix('v1/shares')->group(function () {
     Route::post('/track', [ShareController::class, 'trackShare']);
 });
 
-// Route de test avec vrais favoris (sans authentification)
-Route::get('/test-favorites', function() {
-    try {
-        $favorites = \App\Models\UserFavorite::with('favoritable')
-            ->orderBy('favorited_at', 'desc')
-            ->get();
-        
-        $favoritesData = $favorites->map(function ($favorite) {
-            $favoritable = $favorite->favoritable;
-            if (!$favoritable) return null;
-
-            // Déterminer le type
-            $type = match(get_class($favoritable)) {
-                \App\Models\Recipe::class => 'recipe',
-                \App\Models\Event::class => 'event',
-                \App\Models\Tip::class => 'tip',
-                \App\Models\DinorTv::class => 'dinor_tv',
-                default => 'unknown'
-            };
-
-            return [
-                'id' => $favorite->id,
-                'favorited_at' => $favorite->favorited_at,
-                'type' => $type,
-                'content' => [
-                    'id' => $favoritable->id,
-                    'title' => $favoritable->title,
-                    'description' => $favoritable->description ?? $favoritable->content ?? null,
-                    'image' => $favoritable->image ?? null,
-                    'created_at' => $favoritable->created_at,
-                    'likes_count' => $favoritable->likes_count ?? 0,
-                    'comments_count' => $favoritable->comments_count ?? 0,
-                    'favorites_count' => $favoritable->favorites_count ?? 0,
-                ]
-            ];
-        })->filter()->values();
-
-        return response()->json([
-            'success' => true,
-            'data' => $favoritesData,
-            'pagination' => [
-                'current_page' => 1,
-                'last_page' => 1,
-                'per_page' => 20,
-                'total' => $favoritesData->count()
-            ]
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Erreur lors du chargement des favoris: ' . $e->getMessage(),
-            'data' => []
-        ]);
-    }
-});
-
 // Routes d'authentification
 Route::prefix('v1/auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
@@ -208,7 +152,7 @@ Route::post('/event-categories/check-exists', [App\Http\Controllers\Api\EventCat
     
     // Comments - Routes publiques (lecture et création pour support anonyme)
     Route::get('/comments', [CommentController::class, 'index']);
-    Route::post('/comments', [CommentController::class, 'store']);
+    Route::post('/comments', [CommentController::class, 'store'])->middleware('throttle:comments');
     Route::get('/comments/{comment}/replies', [CommentController::class, 'replies']);
     Route::get('/comments/captcha/generate', [CommentController::class, 'generateCaptcha']);
     
@@ -234,77 +178,6 @@ Route::post('/event-categories/check-exists', [App\Http\Controllers\Api\EventCat
     // Leaderboard - Routes publiques
     Route::get('/leaderboard', [App\Http\Controllers\Api\LeaderboardController::class, 'index']);
     Route::get('/leaderboard/top', [App\Http\Controllers\Api\LeaderboardController::class, 'top']);
-    
-    // Route de test avec vrais favoris de la base de données
-    Route::get('/favorites-real', function() {
-        try {
-            $favorites = \App\Models\UserFavorite::with('favoritable')
-                ->orderBy('favorited_at', 'desc')
-                ->get();
-            
-            $favoritesData = $favorites->map(function ($favorite) {
-                $favoritable = $favorite->favoritable;
-                if (!$favoritable) return null;
-
-                // Déterminer le type
-                $type = match(get_class($favoritable)) {
-                    \App\Models\Recipe::class => 'recipe',
-                    \App\Models\Event::class => 'event',
-                    \App\Models\Tip::class => 'tip',
-                    \App\Models\DinorTv::class => 'dinor_tv',
-                    default => 'unknown'
-                };
-
-                return [
-                    'id' => $favorite->id,
-                    'favorited_at' => $favorite->favorited_at,
-                    'type' => $type,
-                    'content' => [
-                        'id' => $favoritable->id,
-                        'title' => $favoritable->title,
-                        'description' => $favoritable->description ?? $favoritable->content ?? null,
-                        'image' => $favoritable->image ?? null,
-                        'created_at' => $favoritable->created_at,
-                        'likes_count' => $favoritable->likes_count ?? 0,
-                        'comments_count' => $favoritable->comments_count ?? 0,
-                        'favorites_count' => $favoritable->favorites_count ?? 0,
-                    ]
-                ];
-            })->filter()->values();
-
-            return response()->json([
-                'success' => true,
-                'data' => $favoritesData,
-                'pagination' => [
-                    'current_page' => 1,
-                    'last_page' => 1,
-                    'per_page' => 20,
-                    'total' => $favoritesData->count()
-                ]
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors du chargement des favoris: ' . $e->getMessage(),
-                'data' => []
-            ]);
-        }
-    });
-    
-    // Test route pour debug des commentaires
-    Route::get('/test/comments/{id}', function($id) {
-        $recipe = \App\Models\Recipe::with(['approvedComments.user:id,name', 'approvedComments.replies.user:id,name'])->find($id);
-        if (!$recipe) {
-            return response()->json(['error' => 'Recipe not found'], 404);
-        }
-        return response()->json([
-            'recipe_id' => $id,
-            'recipe_title' => $recipe->title,
-            'comments_from_relation' => $recipe->approvedComments,
-            'comments_from_db' => \App\Models\Comment::where('commentable_type', 'App\\Models\\Recipe')->where('commentable_id', $id)->where('is_approved', true)->get(),
-            'all_comments_for_recipe' => \App\Models\Comment::where('commentable_type', 'App\\Models\\Recipe')->where('commentable_id', $id)->get()
-        ]);
-    });
     
     // Shares - Tracking des partages
     Route::post('/shares/track', [ShareController::class, 'track']);
@@ -430,62 +303,6 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     Route::post('/tournaments/{tournament}/register', [App\Http\Controllers\Api\TournamentController::class, 'register']);
     Route::delete('/tournaments/{tournament}/register', [App\Http\Controllers\Api\TournamentController::class, 'unregister']);
     
-    // Route de test avec vrais favoris de la base de données
-    Route::get('/favorites-real', function() {
-        try {
-            $favorites = \App\Models\UserFavorite::with('favoritable')
-                ->orderBy('favorited_at', 'desc')
-                ->get();
-            
-            $favoritesData = $favorites->map(function ($favorite) {
-                $favoritable = $favorite->favoritable;
-                if (!$favoritable) return null;
-
-                // Déterminer le type
-                $type = match(get_class($favoritable)) {
-                    \App\Models\Recipe::class => 'recipe',
-                    \App\Models\Event::class => 'event',
-                    \App\Models\Tip::class => 'tip',
-                    \App\Models\DinorTv::class => 'dinor_tv',
-                    default => 'unknown'
-                };
-
-                return [
-                    'id' => $favorite->id,
-                    'favorited_at' => $favorite->favorited_at,
-                    'type' => $type,
-                    'content' => [
-                        'id' => $favoritable->id,
-                        'title' => $favoritable->title,
-                        'description' => $favoritable->description ?? $favoritable->content ?? null,
-                        'image' => $favoritable->image ?? null,
-                        'created_at' => $favoritable->created_at,
-                        'likes_count' => $favoritable->likes_count ?? 0,
-                        'comments_count' => $favoritable->comments_count ?? 0,
-                        'favorites_count' => $favoritable->favorites_count ?? 0,
-                    ]
-                ];
-            })->filter()->values();
-
-            return response()->json([
-                'success' => true,
-                'data' => $favoritesData,
-                'pagination' => [
-                    'current_page' => 1,
-                    'last_page' => 1,
-                    'per_page' => 20,
-                    'total' => $favoritesData->count()
-                ]
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors du chargement des favoris: ' . $e->getMessage(),
-                'data' => []
-            ]);
-        }
-    });
-    
     // Profile - Routes protégées
     Route::get('/profile', [App\Http\Controllers\Api\ProfileController::class, 'show']);
     Route::get('/profile/stats', [App\Http\Controllers\Api\ProfileController::class, 'getStats']);
@@ -502,53 +319,6 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     Route::delete('/tips/{tip}', [TipController::class, 'destroy']);
 });
 
-// Routes de test pour diagnostiquer le problème des données vides
-Route::prefix('test')->group(function () {
-    // Test sans filtres
-    Route::get('/recipes-all', function() {
-        $recipes = \App\Models\Recipe::all();
-        return response()->json([
-            'total_recipes' => $recipes->count(),
-            'published_recipes' => \App\Models\Recipe::where('is_published', true)->count(),
-            'featured_recipes' => \App\Models\Recipe::where('is_featured', true)->count(),
-            'sample_recipe' => $recipes->first(),
-        ]);
-    });
-    
-    Route::get('/events-all', function() {
-        $events = \App\Models\Event::all();
-        return response()->json([
-            'total_events' => $events->count(),
-            'published_events' => \App\Models\Event::where('is_published', true)->count(),
-            'active_events' => \App\Models\Event::where('status', 'active')->count(),
-            'sample_event' => $events->first(),
-        ]);
-    });
-    
-    Route::get('/categories-all', function() {
-        $categories = \App\Models\Category::all();
-        return response()->json([
-            'total_categories' => $categories->count(),
-            'sample_category' => $categories->first(),
-        ]);
-    });
-    
-    Route::get('/database-check', function() {
-        return response()->json([
-            'database_connected' => true,
-            'recipes_count' => \App\Models\Recipe::count(),
-            'events_count' => \App\Models\Event::count(),
-            'categories_count' => \App\Models\Category::count(),
-            'tips_count' => \App\Models\Tip::count(),
-            'users_count' => \App\Models\User::count(),
-            'tournaments_count' => \App\Models\Tournament::count(),
-            'tournament_participants_count' => \App\Models\TournamentParticipant::count(),
-            'predictions_count' => \App\Models\Prediction::count(),
-            'football_matches_count' => \App\Models\FootballMatch::count(),
-        ]);
-    });
-});
-
 // Routes pour la gestion du cache PWA
 Route::prefix('pwa/cache')->group(function () {
     Route::post('set', [CacheController::class, 'set']);
@@ -561,45 +331,6 @@ Route::prefix('pwa/cache')->group(function () {
     // Nouvel endpoint pour vérifier l'état du cache et les invalidations
     Route::get('status', [CacheController::class, 'getStatus']);
     Route::post('invalidate-content', [CacheController::class, 'invalidateContent']);
-});
-
-// Route de test spécifique pour les tournois
-Route::get('/test/tournaments-debug', function() {
-    try {
-        $tournamentsCount = \App\Models\Tournament::count();
-        $participantsCount = \App\Models\TournamentParticipant::count();
-        $predictionsCount = \App\Models\Prediction::count();
-        
-        // Vérifier si l'utilisateur 4 (Fatima) a des participations
-        $userParticipations = \App\Models\TournamentParticipant::where('user_id', 4)->get();
-        
-        // Récupérer tous les tournois
-        $allTournaments = \App\Models\Tournament::with('participants')->get();
-        
-        // Test des scopes individuellement
-        $publicTournaments = \App\Models\Tournament::public()->count();
-        $notExpiredTournaments = \App\Models\Tournament::notExpired()->count();
-        $publicAndNotExpired = \App\Models\Tournament::public()->notExpired()->count();
-        
-        return response()->json([
-            'tournaments_count' => $tournamentsCount,
-            'participants_count' => $participantsCount,
-            'predictions_count' => $predictionsCount,
-            'user_4_participations' => $userParticipations,
-            'all_tournaments' => $allTournaments,
-            'scope_tests' => [
-                'public_tournaments' => $publicTournaments,
-                'not_expired_tournaments' => $notExpiredTournaments,
-                'public_and_not_expired' => $publicAndNotExpired
-            ],
-            'message' => 'Debug des tournois avec scopes'
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
-        ]);
-    }
 });
 
 // Routes pour Firebase Analytics

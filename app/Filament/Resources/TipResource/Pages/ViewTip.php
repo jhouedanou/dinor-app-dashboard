@@ -51,6 +51,7 @@ class ViewTip extends ViewRecord
                         Infolists\Components\TextEntry::make('content')
                             ->label('Contenu')
                             ->html()
+                            ->formatStateUsing(fn ($state) => strip_tags($state, '<p><br><strong><em><ul><ol><li><h1><h2><h3><h4><h5><h6><a><img><blockquote><span><div>'))
                             ->columnSpanFull(),
                     ]),
 

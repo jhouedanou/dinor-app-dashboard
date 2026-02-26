@@ -115,17 +115,9 @@ trait HasPwaRebuild
      */
     private static function triggerProductionRebuild(): void
     {
-        // Créer un job en arrière-plan pour rebuilder la PWA
-        $command = 'cd ' . base_path() . ' && ./rebuild-pwa.sh > /dev/null 2>&1 &';
-        
-        if (function_exists('exec')) {
-            exec($command);
-        } else {
-            // Fallback: utiliser Process Laravel
-            Process::path(base_path())
-                ->timeout(300) // 5 minutes timeout
-                ->run('./rebuild-pwa.sh');
-        }
+        Process::path(base_path())
+            ->timeout(300)
+            ->start('./rebuild-pwa.sh');
     }
     
     /**
@@ -133,10 +125,9 @@ trait HasPwaRebuild
      */
     private static function clearDevCaches(): void
     {
-        // En développement, juste vider les caches
-        if (function_exists('exec')) {
-            exec('cd ' . base_path() . ' && npm run pwa:clear-cache 2>/dev/null &');
-        }
+        Process::path(base_path())
+            ->timeout(60)
+            ->start('npm run pwa:clear-cache');
     }
     
     /**

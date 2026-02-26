@@ -23,28 +23,19 @@ return [
         'pwa/*',
     ],
 
-    'allowed_methods' => ['*'],
+    'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 
     'allowed_origins' => [
-        'http://localhost:3000',  // BrowserSync
-        'http://localhost:3001',  // BrowserSync proxy
-        'http://localhost:8000',  // Laravel dev
-        'http://localhost:5173',  // Vite dev server
-        'https://localhost:3000',
-        'https://localhost:3001',
-        'https://localhost:8000',
-        'https://localhost:5173',
+        'https://new.dinorapp.com',
+        'https://dinorapp.com',
+        'http://localhost:3000',
+        'http://localhost:8000',
+        'http://localhost:5173',
     ],
 
-    'allowed_origins_patterns' => [
-        '/^https?:\/\/.*\.local$/',
-        '/^https?:\/\/.*\.test$/',
-        '/^https?:\/\/.*\.dev$/',
-        '/^https?:\/\/localhost(:\d+)?$/',
-        '/^https?:\/\/127\.0\.0\.1(:\d+)?$/',
-    ],
+    'allowed_origins_patterns' => [],
 
-    'allowed_headers' => ['*'],
+    'allowed_headers' => ['Content-Type', 'X-Requested-With', 'Authorization', 'Accept', 'Origin'],
 
     'exposed_headers' => [
         'X-Pagination-Current-Page',
