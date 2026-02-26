@@ -20,12 +20,12 @@ class ProductionDataSeeder extends Seeder
      */
     public function run(): void
     {
-        // Créer des utilisateurs de test
+        // Créer des utilisateurs de démonstration (mots de passe aléatoires)
         $users = [
             [
                 'name' => 'Marie Kouassi',
                 'email' => 'marie.kouassi@example.com',
-                'password' => bcrypt('password'),
+                'password' => bcrypt(\Illuminate\Support\Str::random(24)),
                 'role' => 'user',
                 'is_active' => true,
                 'email_verified_at' => now(),
@@ -33,7 +33,7 @@ class ProductionDataSeeder extends Seeder
             [
                 'name' => 'Jean-Baptiste Traoré',
                 'email' => 'jean.traore@example.com',
-                'password' => bcrypt('password'),
+                'password' => bcrypt(\Illuminate\Support\Str::random(24)),
                 'role' => 'user',
                 'is_active' => true,
                 'email_verified_at' => now(),
@@ -41,7 +41,7 @@ class ProductionDataSeeder extends Seeder
             [
                 'name' => 'Fatou Diallo',
                 'email' => 'fatou.diallo@example.com',
-                'password' => bcrypt('password'),
+                'password' => bcrypt(\Illuminate\Support\Str::random(24)),
                 'role' => 'user',
                 'is_active' => true,
                 'email_verified_at' => now(),

@@ -71,14 +71,11 @@ class SetupProduction extends Command
         $this->info('');
         $this->info('✅ Configuration terminée avec succès!');
         $this->info('');
-        $this->info('🔑 Comptes de test créés:');
-        $this->info('   Admin: admin@dinor.app / admin123');
-        $this->info('   Chef: chef.aya@dinor.app / password');
-        $this->info('   Utilisateur: marie.adjoua@example.com / password');
+        $this->info('🔑 Comptes créés:');
+        $this->info('   Admin: admin@dinor.app / [mot de passe configuré dans .env ADMIN_DEFAULT_PASSWORD]');
         $this->info('');
         $this->info('🌐 L\'application est maintenant prête pour la production!');
         $this->info('   Dashboard admin: /admin');
-        $this->info('   Pages publiques: /dashboard.html, /recipe.html, /tip.html');
 
         return 0;
     }

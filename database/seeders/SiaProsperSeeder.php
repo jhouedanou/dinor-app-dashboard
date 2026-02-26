@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Tournament;
 use App\Models\TournamentParticipant;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class SiaProsperSeeder extends Seeder
 {
@@ -22,7 +23,7 @@ class SiaProsperSeeder extends Seeder
             ['email' => 'admin@dinor.app'],
             [
                 'name' => 'Sia Popo Prosper',
-                'password' => Hash::make('admin123'),
+                'password' => Hash::make(env('ADMIN_DEFAULT_PASSWORD', 'changeme-' . Str::random(16))),
                 'email_verified_at' => now(),
                 'role' => 'moderator',
                 'is_active' => true,
@@ -131,7 +132,7 @@ class SiaProsperSeeder extends Seeder
         $this->command->info('');
         $this->command->info('🔗 Connexion:');
         $this->command->info("   Email: {$user->email}");
-        $this->command->info('   Mot de passe: admin123');
+        $this->command->info('   Mot de passe: [configuré dans .env ADMIN_DEFAULT_PASSWORD]');
         $this->command->info('');
     }
 } 

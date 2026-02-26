@@ -125,7 +125,7 @@
                                     <span>📂 {{ $content['category'] }}</span>
                                     @endif
                                     @if($content['created_at'])
-                                    <span>📅 {{ $content['created_at']->format('d/m/Y') }}</span>
+                                    <span>📅 {{ \Carbon\Carbon::parse($content['created_at'])->format('d/m/Y') }}</span>
                                     @endif
                                 </div>
                             </div>
@@ -160,24 +160,15 @@
             @else
             <div class="text-center py-8 text-gray-500 dark:text-gray-400">
                 <div class="text-4xl mb-2">📭</div>
-                <p>Aucun favori trouvé pour cette période</p>
-                <p class="text-sm mt-1">Les contenus ajoutés aux favoris apparaîtront ici</p>
+                <p>Aucun contenu populaire trouvé</p>
+                <p class="text-sm mt-1">Les contenus ajoutés aux favoris ou les plus likés apparaîtront ici</p>
             </div>
             @endif
 
-            {{-- Lien vers l'API --}}
+            {{-- Footer --}}
             <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
-                <div class="flex items-center justify-between text-sm">
-                    <span class="text-gray-500 dark:text-gray-400">
-                        Données mises à jour automatiquement via Google Analytics
-                    </span>
-                    <a 
-                        href="{{ route('api.v1.analytics.popular-content') }}?period={{ request('period', '30d') }}" 
-                        target="_blank"
-                        class="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-200"
-                    >
-                        🔗 API JSON
-                    </a>
+                <div class="text-sm text-gray-500 dark:text-gray-400">
+                    Basé sur les favoris utilisateurs • {{ $periodLabel }}
                 </div>
             </div>
         </div>

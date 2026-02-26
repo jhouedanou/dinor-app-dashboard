@@ -4,6 +4,10 @@ namespace App\Filament\Widgets;
 
 use Filament\Widgets\Widget;
 use App\Models\UserFavorite;
+use App\Models\Recipe;
+use App\Models\Tip;
+use App\Models\Event;
+use App\Models\DinorTv;
 use Illuminate\Support\Collection;
 use Carbon\Carbon;
 
@@ -36,6 +40,7 @@ class PopularContentWidget extends Widget
 
     /**
      * Récupérer les contenus les plus populaires
+     * Utilise les favoris en priorité, fallback sur likes_count si pas de favoris
      */
     protected function getPopularContent(string $period = '30d', int $limit = 8): Collection
     {
@@ -54,7 +59,7 @@ class PopularContentWidget extends Widget
             $query->where('created_at', '>=', $startDate);
         }
 
-        return $query->get()->map(function ($favorite) {
+        $results = $query->get()->map(function ($favorite) {
             $content = $favorite->favoritable;
             if (!$content) return null;
 
@@ -64,13 +69,106 @@ class PopularContentWidget extends Widget
                 'type_slug' => $this->getContentTypeSlug($favorite->favoritable_type),
                 'title' => $content->title ?? $content->name ?? 'Sans titre',
                 'favorites_count' => $favorite->favorites_count,
-                'image' => $content->image ?? $content->thumbnail ?? null,
+                'image' => $content->featured_image ?? $content->image ?? $content->thumbnail ?? null,
                 'created_at' => $content->created_at ?? null,
                 'category' => $content->category->name ?? null,
                 'model_type' => $favorite->favoritable_type,
                 'url' => $this->getContentAdminUrl($favorite->favoritable_type, $favorite->favoritable_id),
             ];
         })->filter()->values();
+
+        // Fallback : si pas de favoris, utiliser les contenus les plus likés/consultés
+        if ($results->isEmpty()) {
+            $results = $this->getFallbackPopularContent($limit);
+        }
+
+        return $results;
+    }
+
+    /**
+     * Fallback : contenus populaires basés sur likes_count et view_count
+     */
+    protected function getFallbackPopularContent(int $limit = 8): Collection
+    {
+        $items = collect();
+
+        // Récupérer les recettes les plus likées
+        $recipes = Recipe::where('is_published', true)
+            ->orderByDesc('likes_count')
+            ->limit($limit)
+            ->get()
+            ->map(fn ($r) => [
+                'id' => $r->id,
+                'type' => 'Recette',
+                'type_slug' => 'recipe',
+                'title' => $r->title,
+                'favorites_count' => $r->likes_count ?? 0,
+                'image' => $r->featured_image,
+                'created_at' => $r->created_at,
+                'category' => $r->category->name ?? null,
+                'model_type' => 'App\\Models\\Recipe',
+                'url' => $this->getContentAdminUrl('App\\Models\\Recipe', $r->id),
+            ]);
+        $items = $items->merge($recipes);
+
+        // Récupérer les tips les plus likés
+        $tips = Tip::where('is_published', true)
+            ->orderByDesc('likes_count')
+            ->limit($limit)
+            ->get()
+            ->map(fn ($t) => [
+                'id' => $t->id,
+                'type' => 'Conseil',
+                'type_slug' => 'tip',
+                'title' => $t->title,
+                'favorites_count' => $t->likes_count ?? 0,
+                'image' => $t->image,
+                'created_at' => $t->created_at,
+                'category' => $t->category->name ?? null,
+                'model_type' => 'App\\Models\\Tip',
+                'url' => $this->getContentAdminUrl('App\\Models\\Tip', $t->id),
+            ]);
+        $items = $items->merge($tips);
+
+        // Récupérer les événements les plus likés
+        $events = Event::where('is_published', true)
+            ->orderByDesc('likes_count')
+            ->limit($limit)
+            ->get()
+            ->map(fn ($e) => [
+                'id' => $e->id,
+                'type' => 'Événement',
+                'type_slug' => 'event',
+                'title' => $e->title,
+                'favorites_count' => $e->likes_count ?? 0,
+                'image' => $e->featured_image,
+                'created_at' => $e->created_at,
+                'category' => $e->category->name ?? null,
+                'model_type' => 'App\\Models\\Event',
+                'url' => $this->getContentAdminUrl('App\\Models\\Event', $e->id),
+            ]);
+        $items = $items->merge($events);
+
+        // Récupérer les vidéos les plus vues
+        $videos = DinorTv::where('is_published', true)
+            ->orderByDesc('view_count')
+            ->limit($limit)
+            ->get()
+            ->map(fn ($v) => [
+                'id' => $v->id,
+                'type' => 'Vidéo DinorTV',
+                'type_slug' => 'dinor_tv',
+                'title' => $v->title,
+                'favorites_count' => $v->view_count ?? 0,
+                'image' => $v->featured_image ?? $v->thumbnail,
+                'created_at' => $v->created_at,
+                'category' => null,
+                'model_type' => 'App\\Models\\DinorTv',
+                'url' => $this->getContentAdminUrl('App\\Models\\DinorTv', $v->id),
+            ]);
+        $items = $items->merge($videos);
+
+        return $items->sortByDesc('favorites_count')->take($limit)->values();
     }
 
     /**

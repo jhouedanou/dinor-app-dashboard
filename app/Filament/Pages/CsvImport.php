@@ -497,7 +497,7 @@ class CsvImport extends Page
         $data = $headers ? array_combine($headers, $row) : [
             'name' => $row[0] ?? '',
             'email' => $row[1] ?? '',
-            'password' => $row[2] ?? 'password',
+            'password' => $row[2] ?? \Illuminate\Support\Str::random(24),
             'role' => $row[3] ?? 'user',
             'is_active' => $row[4] ?? true,
         ];

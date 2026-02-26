@@ -580,7 +580,7 @@ class ImportCsv extends Page implements HasForms
         User::create([
             'name' => $record['name'],
             'email' => $record['email'],
-            'password' => Hash::make($record['password'] ?? 'password'),
+            'password' => Hash::make($record['password'] ?? \Illuminate\Support\Str::random(24)),
             'role' => $record['role'] ?? 'user',
             'is_active' => (bool)($record['is_active'] ?? true),
         ]);
@@ -896,7 +896,7 @@ class ImportCsv extends Page implements HasForms
             ],
             'users' => [
                 ['name', 'email', 'password', 'role', 'is_active'],
-                ['Chef Marie', 'chef.marie@dinor.app', 'password123', 'chef', 'true']
+                ['Chef Marie', 'chef.marie@dinor.app', 'ChangeM3!Now_' . date('Y'), 'chef', 'true']
             ]
         ];
     }

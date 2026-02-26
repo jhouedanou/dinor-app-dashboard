@@ -26,10 +26,9 @@ class ProductionSetupSeeder extends Seeder
 
         $this->command->info('Setup de production terminé avec succès!');
         $this->command->info('');
-        $this->command->info('=== COMPTES DE TEST CRÉÉS ===');
-        $this->command->info('Admin: admin@dinor.app / admin123');
-        $this->command->info('Chef: chef.aya@dinor.app / password');
-        $this->command->info('Utilisateur: marie.adjoua@example.com / password');
+        $this->command->info('=== COMPTES CRÉÉS ===');
+        $this->command->info('Admin: admin@dinor.app / [mot de passe configuré dans .env]');
+        $this->command->info('Utilisateurs: mots de passe générés aléatoirement');
         $this->command->info('');
         $this->command->info('=== DONNÉES CRÉÉES ===');
         $this->command->info('- ' . \App\Models\Category::count() . ' catégories');
