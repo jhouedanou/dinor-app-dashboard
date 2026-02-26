@@ -12,11 +12,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Supprimer l'ancienne contrainte
-        DB::statement('ALTER TABLE categories DROP CONSTRAINT IF EXISTS categories_type_check');
-        
-        // Ajouter la nouvelle contrainte avec le type 'tip'
-        DB::statement("ALTER TABLE categories ADD CONSTRAINT categories_type_check CHECK (type IN ('general', 'recipe', 'event', 'tip'))");
+        DB::statement("ALTER TABLE `categories` MODIFY `type` ENUM('general', 'recipe', 'event', 'tip') NOT NULL DEFAULT 'general'");
     }
 
     /**
@@ -24,8 +20,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Rétablir l'ancienne contrainte sans 'tip'
-        DB::statement('ALTER TABLE categories DROP CONSTRAINT IF EXISTS categories_type_check');
-        DB::statement("ALTER TABLE categories ADD CONSTRAINT categories_type_check CHECK (type IN ('general', 'recipe', 'event'))");
+        DB::statement("ALTER TABLE `categories` MODIFY `type` ENUM('general', 'recipe', 'event') NOT NULL DEFAULT 'general'");
     }
 };
