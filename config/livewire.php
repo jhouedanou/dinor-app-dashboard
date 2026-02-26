@@ -14,7 +14,7 @@ return [
 
     'temporary_file_upload' => [
         'disk' => null,
-        'rules' => ['required', 'file', 'max:10240', new \App\Rules\SafeFile()], // 10MB max + validation sécurité
+        'rules' => ['required', 'file', 'max:10240'], // 10MB max
         'directory' => null,
         'middleware' => ['auth:admin'],
         'preview_mimes' => [
