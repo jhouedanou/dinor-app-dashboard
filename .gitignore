@@ -177,3 +177,20 @@ NUL
 script-forge-deploiement.txt
 SECURITE-SERVEUR.md
 deploy.sh
+
+# === Scripts de diagnostic/test/fix (ne doivent JAMAIS être en production) ===
+/check-*.php
+/create_*.php
+/diagnose-*.php
+/diagnostic-*.php
+/fix-*.php
+/link_*.php
+/test-*.php
+/test_*.php
+/validate-*.php
+/test-*.html
+/test_*.csv
+/add-test-*.sql
+/recettes_*.csv
+/txets.php
+/*.php.backup
