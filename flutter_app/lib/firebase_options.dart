@@ -17,19 +17,13 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       case TargetPlatform.macOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for macos - '
@@ -52,10 +46,28 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'YOUR_FIREBASE_API_KEY_HERE',
-    appId: '1:225643560458:android:184dbda2374aa43e5e29f3',
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyCq37nk-Cjt0r3n-QDqZ6R2rB0JOSJQtfM',
+    appId: '1:225643560458:web:184dbda2374aa43e5e29f3',
     messagingSenderId: '225643560458',
+    projectId: 'dinor-app-2',
+    storageBucket: 'dinor-app-2.firebasestorage.app',
+    measurementId: 'G-496PJF6F0C',
+  );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyCq37nk-Cjt0r3n-QDqZ6R2rB0JOSJQtfM',
+    appId: '1:536609291757:ios:e0565a512a89d8fd6cbbe4',
+    messagingSenderId: '536609291757',
+    projectId: 'dinor-app-2',
+    storageBucket: 'dinor-app-2.firebasestorage.app',
+    iosBundleId: 'com.bfedition.dinorapp',
+  );
+
+  static const FirebaseOptions android = FirebaseOptions(
+    apiKey: 'AIzaSyCq37nk-Cjt0r3n-QDqZ6R2rB0JOSJQtfM',
+    appId: '1:536609291757:android:626619f82aef56516cbbe4',
+    messagingSenderId: '536609291757',
     projectId: 'dinor-app-2',
     storageBucket: 'dinor-app-2.firebasestorage.app',
   );

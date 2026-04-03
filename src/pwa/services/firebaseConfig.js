@@ -13,7 +13,7 @@ const firebaseConfig = {
   storageBucket: "dinor-app-2.firebasestorage.app",
   messagingSenderId: "225643560458",
   appId: "1:225643560458:web:184dbda2374aa43e5e29f3",
-  measurementId: "G-XXXXXXXXXX" // À remplacer par votre vraie Measurement ID si Analytics web est configuré
+  measurementId: "G-496PJF6F0C"
 }
 
 // Initialiser Firebase
