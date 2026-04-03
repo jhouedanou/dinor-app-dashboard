@@ -9,6 +9,7 @@ use App\Filament\Components\CategorySelect;
 use App\Filament\Components\DinorIngredientsRepeater;
 use App\Models\Recipe;
 use App\Models\Category;
+use App\Models\Unit;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -31,241 +32,272 @@ class RecipeResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Informations générales')
-                    ->schema([
-                        Forms\Components\TextInput::make('title')
-                            ->label('Titre')
-                            ->required()
-                            ->maxLength(255)
-                            ->live(onBlur: true)
-                            ->afterStateUpdated(function ($context, $state, $set, $get) {
-                                if ($context === 'create' && empty($get('slug'))) {
-                                    $set('slug', \Str::slug($state));
-                                }
-                            }),
-                        
-                        Forms\Components\TextInput::make('slug')
-                            ->label('Slug URL')
-                            ->required()
-                            ->maxLength(255)
-                            ->unique(Recipe::class, 'slug', ignoreRecord: true)
-                            ->helperText('Se génère automatiquement à partir du titre. Modifiable manuellement.'),
-                        
-                        CategorySelect::make('category_id'),
-                            
-                        Forms\Components\TextInput::make('subcategory')
-                            ->label('Sous-catégorie')
-                            ->placeholder('Exemple: Plat principal, Entrée froide...')
-                            ->maxLength(255),
-                            
-                        Forms\Components\Textarea::make('description')
-                            ->label('Description')
-                            ->required()
-                            ->rows(3),
-                            
-                        Forms\Components\FileUpload::make('featured_image')
-                            ->label('Image principale')
-                            ->image()
-                            ->disk('public')
-                            ->directory('recipes/featured')
-                            ->visibility('public')
-                            ->maxSize(2048)
-                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
-                            ->rules([new \App\Rules\SafeFile()])
-                            ->imageEditor()
-                            ->imageEditorAspectRatios([
-                                '16:9',
-                                '4:3',
-                                '1:1',
+                Forms\Components\Wizard::make([
+                    // Etape 1 : Informations generales
+                    Forms\Components\Wizard\Step::make('Informations generales')
+                        ->icon('heroicon-o-information-circle')
+                        ->schema([
+                            Forms\Components\TextInput::make('title')
+                                ->label('Titre')
+                                ->required()
+                                ->maxLength(255)
+                                ->live(onBlur: true)
+                                ->afterStateUpdated(function ($context, $state, $set, $get) {
+                                    if ($context === 'create' && empty($get('slug'))) {
+                                        $set('slug', \Str::slug($state));
+                                    }
+                                }),
+
+                            Forms\Components\TextInput::make('slug')
+                                ->label('Slug URL')
+                                ->required()
+                                ->maxLength(255)
+                                ->unique(Recipe::class, 'slug', ignoreRecord: true)
+                                ->disabled()
+                                ->dehydrated()
+                                ->helperText('Genere automatiquement a partir du titre.'),
+
+                            CategorySelect::make('category_id'),
+
+                            Forms\Components\TextInput::make('subcategory')
+                                ->label('Sous-categorie')
+                                ->placeholder('Exemple: Plat principal, Entree froide...')
+                                ->maxLength(255),
+
+                            Forms\Components\Textarea::make('description')
+                                ->label('Description')
+                                ->required()
+                                ->rows(3),
+
+                            Forms\Components\Grid::make(2)->schema([
+                                Forms\Components\Select::make('difficulty')
+                                    ->label('Difficulte')
+                                    ->options([
+                                        'beginner' => 'Debutant',
+                                        'easy' => 'Facile',
+                                        'medium' => 'Intermediaire',
+                                        'hard' => 'Difficile',
+                                        'expert' => 'Expert',
+                                    ])
+                                    ->default('beginner'),
+
+                                Forms\Components\Select::make('meal_type')
+                                    ->label('Type de repas')
+                                    ->options([
+                                        'breakfast' => 'Petit dejeuner',
+                                        'lunch' => 'Dejeuner',
+                                        'dinner' => 'Diner',
+                                        'snack' => 'Collation',
+                                        'dessert' => 'Dessert',
+                                        'aperitif' => 'Aperitif',
+                                    ]),
+
+                                Forms\Components\Select::make('diet_type')
+                                    ->label('Regime alimentaire')
+                                    ->options([
+                                        'none' => 'Aucun regime special',
+                                        'vegetarian' => 'Vegetarien',
+                                        'vegan' => 'Vegetalien',
+                                        'gluten_free' => 'Sans gluten',
+                                        'dairy_free' => 'Sans lactose',
+                                        'keto' => 'Keto',
+                                        'paleo' => 'Paleo',
+                                    ])
+                                    ->default('none'),
+
+                                Forms\Components\Select::make('cost_level')
+                                    ->label('Niveau de cout')
+                                    ->options([
+                                        'low' => 'Economique',
+                                        'medium' => 'Moyen',
+                                        'high' => 'Eleve',
+                                    ])
+                                    ->default('medium'),
+                            ]),
+                        ])->columns(2),
+
+                    // Etape 2 : Medias
+                    Forms\Components\Wizard\Step::make('Medias')
+                        ->icon('heroicon-o-photo')
+                        ->schema([
+                            Forms\Components\FileUpload::make('featured_image')
+                                ->label('Image principale')
+                                ->image()
+                                ->disk('public')
+                                ->directory('recipes/featured')
+                                ->visibility('public')
+                                ->maxSize(2048)
+                                ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
+                                ->rules([new \App\Rules\SafeFile()])
+                                ->imageEditor()
+                                ->imageEditorAspectRatios(['16:9', '4:3', '1:1']),
+
+                            Forms\Components\FileUpload::make('gallery')
+                                ->label('Galerie d\'images')
+                                ->image()
+                                ->multiple()
+                                ->disk('public')
+                                ->directory('recipes/gallery')
+                                ->visibility('public')
+                                ->maxSize(2048)
+                                ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
+                                ->rules([new \App\Rules\SafeFile()])
+                                ->maxFiles(10)
+                                ->imageEditor()
+                                ->reorderable(),
+
+                            Forms\Components\FileUpload::make('video_thumbnail')
+                                ->label('Miniature de la video')
+                                ->image()
+                                ->disk('public')
+                                ->directory('recipes/video-thumbnails')
+                                ->visibility('public')
+                                ->maxSize(2048)
+                                ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
+                                ->rules([new \App\Rules\SafeFile()]),
+
+                            Forms\Components\TextInput::make('video_url')
+                                ->label('URL Video principale')
+                                ->url()
+                                ->helperText('URL de la video de la recette (YouTube, Vimeo, etc.)'),
+
+                            Forms\Components\TextInput::make('summary_video_url')
+                                ->label('URL Video resume')
+                                ->url()
+                                ->helperText('URL de la video resume (YouTube, Vimeo, etc.)'),
+
+                            Forms\Components\FileUpload::make('audio_guide')
+                                ->label('Guide audio general')
+                                ->disk('public')
+                                ->directory('recipes/audio-guides')
+                                ->visibility('public')
+                                ->acceptedFileTypes(['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/mp4', 'audio/x-m4a'])
+                                ->maxSize(10240)
+                                ->helperText('Audio general de la recette (max 10 Mo). Vous pouvez aussi ajouter un audio par etape dans les instructions.'),
+                        ])->columns(2),
+
+                    // Etape 3 : Ingredients
+                    Forms\Components\Wizard\Step::make('Ingredients')
+                        ->icon('heroicon-o-beaker')
+                        ->schema([
+                            DinorIngredientsRepeater::make('dinor_ingredients'),
+                            IngredientsRepeater::make('ingredients'),
+                        ]),
+
+                    // Etape 4 : Instructions
+                    Forms\Components\Wizard\Step::make('Instructions')
+                        ->icon('heroicon-o-list-bullet')
+                        ->schema([
+                            InstructionsField::make('instructions'),
+                        ]),
+
+                    // Etape 5 : Temps et portions
+                    Forms\Components\Wizard\Step::make('Temps et portions')
+                        ->icon('heroicon-o-clock')
+                        ->schema([
+                            Forms\Components\Grid::make(4)->schema([
+                                Forms\Components\TextInput::make('preparation_time')
+                                    ->label('Temps de preparation (min)')
+                                    ->numeric()
+                                    ->default(0),
+
+                                Forms\Components\TextInput::make('cooking_time')
+                                    ->label('Temps de cuisson (min)')
+                                    ->numeric()
+                                    ->default(0),
+
+                                Forms\Components\TextInput::make('resting_time')
+                                    ->label('Temps de repos (min)')
+                                    ->numeric()
+                                    ->default(0),
+
+                                Forms\Components\TextInput::make('servings')
+                                    ->label('Nombre de portions')
+                                    ->numeric()
+                                    ->default(1),
                             ]),
 
-                        Forms\Components\FileUpload::make('gallery')
-                            ->label('Galerie d\'images')
-                            ->image()
-                            ->multiple()
-                            ->disk('public')
-                            ->directory('recipes/gallery')
-                            ->visibility('public')
-                            ->maxSize(2048)
-                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
-                            ->rules([new \App\Rules\SafeFile()])
-                            ->maxFiles(10)
-                            ->imageEditor()
-                            ->reorderable(),
+                            Forms\Components\Section::make('Informations nutritionnelles')
+                                ->schema([
+                                    Forms\Components\TextInput::make('calories_per_serving')
+                                        ->label('Calories par portion')
+                                        ->numeric(),
 
-                        Forms\Components\FileUpload::make('video_thumbnail')
-                            ->label('Miniature de la vidéo')
-                            ->image()
-                            ->disk('public')
-                            ->directory('recipes/video-thumbnails')
-                            ->visibility('public')
-                            ->maxSize(2048)
-                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
-                            ->rules([new \App\Rules\SafeFile()]),
-                            
-                        Forms\Components\TextInput::make('video_url')
-                            ->label('URL Vidéo principale')
-                            ->url()
-                            ->helperText('URL de la vidéo de la recette (YouTube, Vimeo, etc.)'),
-                            
-                        Forms\Components\TextInput::make('summary_video_url')
-                            ->label('URL Vidéo résumé')
-                            ->url()
-                            ->helperText('URL de la vidéo résumé (YouTube, Vimeo, etc.)'),
-                    ])->columns(2),
+                                    Forms\Components\TextInput::make('protein_grams')
+                                        ->label('Proteines (g)')
+                                        ->numeric()
+                                        ->step(0.1),
 
-                Forms\Components\Section::make('Détails de la recette')
-                    ->schema([
-                        DinorIngredientsRepeater::make('dinor_ingredients'),
-                        IngredientsRepeater::make('ingredients'),
-                        InstructionsField::make('instructions'),
-                    ]),
+                                    Forms\Components\TextInput::make('carbs_grams')
+                                        ->label('Glucides (g)')
+                                        ->numeric()
+                                        ->step(0.1),
 
-                Forms\Components\Section::make('Temps et portions')
-                    ->schema([
-                        Forms\Components\TextInput::make('preparation_time')
-                            ->label('Temps de préparation (min)')
-                            ->numeric()
-                            ->default(0),
-                            
-                        Forms\Components\TextInput::make('cooking_time')
-                            ->label('Temps de cuisson (min)')
-                            ->numeric()
-                            ->default(0),
+                                    Forms\Components\TextInput::make('fat_grams')
+                                        ->label('Lipides (g)')
+                                        ->numeric()
+                                        ->step(0.1),
 
-                        Forms\Components\TextInput::make('resting_time')
-                            ->label('Temps de repos (min)')
-                            ->numeric()
-                            ->default(0),
-                            
-                        Forms\Components\TextInput::make('servings')
-                            ->label('Nombre de portions')
-                            ->numeric()
-                            ->default(1),
-                    ])->columns(4),
+                                    Forms\Components\TextInput::make('fiber_grams')
+                                        ->label('Fibres (g)')
+                                        ->numeric()
+                                        ->step(0.1),
+                                ])->columns(5),
+                        ]),
 
-                Forms\Components\Section::make('Caractéristiques')
-                    ->schema([
-                        Forms\Components\Select::make('difficulty')
-                            ->label('Difficulté')
-                            ->options([
-                                'beginner' => 'Débutant',
-                                'easy' => 'Facile',
-                                'medium' => 'Intermédiaire',
-                                'hard' => 'Difficile',
-                                'expert' => 'Expert',
-                            ])
-                            ->default('beginner'),
+                    // Etape 6 : Details et publication
+                    Forms\Components\Wizard\Step::make('Details et publication')
+                        ->icon('heroicon-o-cog-6-tooth')
+                        ->schema([
+                            Forms\Components\Grid::make(3)->schema([
+                                Forms\Components\Select::make('season')
+                                    ->label('Saison')
+                                    ->options([
+                                        'all' => 'Toute l\'annee',
+                                        'spring' => 'Printemps',
+                                        'summer' => 'Ete',
+                                        'autumn' => 'Automne',
+                                        'winter' => 'Hiver',
+                                    ])
+                                    ->default('all'),
 
-                        Forms\Components\Select::make('meal_type')
-                            ->label('Type de repas')
-                            ->options([
-                                'breakfast' => 'Petit déjeuner',
-                                'lunch' => 'Déjeuner', 
-                                'dinner' => 'Dîner',
-                                'snack' => 'Collation',
-                                'dessert' => 'Dessert',
-                                'aperitif' => 'Apéritif',
+                                Forms\Components\TextInput::make('origin_country')
+                                    ->label('Pays d\'origine'),
+
+                                Forms\Components\TextInput::make('chef_name')
+                                    ->label('Nom du chef'),
                             ]),
 
-                        Forms\Components\Select::make('diet_type')
-                            ->label('Régime alimentaire')
-                            ->options([
-                                'none' => 'Aucun régime spécial',
-                                'vegetarian' => 'Végétarien',
-                                'vegan' => 'Végétalien',
-                                'gluten_free' => 'Sans gluten',
-                                'dairy_free' => 'Sans lactose',
-                                'keto' => 'Keto',
-                                'paleo' => 'Paléo',
-                            ])
-                            ->default('none'),
+                            Forms\Components\Textarea::make('chef_notes')
+                                ->label('Notes du chef')
+                                ->rows(3),
 
-                        Forms\Components\Select::make('cost_level')
-                            ->label('Niveau de coût')
-                            ->options([
-                                'low' => 'Économique',
-                                'medium' => 'Moyen',
-                                'high' => 'Élevé',
-                            ])
-                            ->default('medium'),
+                            Forms\Components\Grid::make(2)->schema([
+                                Forms\Components\TagsInput::make('required_equipment')
+                                    ->label('Equipement necessaire')
+                                    ->placeholder('Four, mixeur, poele...'),
 
-                        Forms\Components\Select::make('season')
-                            ->label('Saison')
-                            ->options([
-                                'all' => 'Toute l\'année',
-                                'spring' => 'Printemps',
-                                'summer' => 'Été',
-                                'autumn' => 'Automne',
-                                'winter' => 'Hiver',
-                            ])
-                            ->default('all'),
+                                Forms\Components\TagsInput::make('cooking_methods')
+                                    ->label('Methodes de cuisson')
+                                    ->placeholder('Cuisson au four, a la poele, a la vapeur...'),
+                            ]),
 
-                        Forms\Components\TextInput::make('origin_country')
-                            ->label('Pays d\'origine'),
-                    ])->columns(3),
+                            Forms\Components\TagsInput::make('tags')
+                                ->label('Tags')
+                                ->placeholder('Ajoutez des tags...'),
 
-                Forms\Components\Section::make('Informations nutritionnelles')
-                    ->schema([
-                        Forms\Components\TextInput::make('calories_per_serving')
-                            ->label('Calories par portion')
-                            ->numeric(),
+                            Forms\Components\Grid::make(2)->schema([
+                                Forms\Components\Toggle::make('is_featured')
+                                    ->label('Recette vedette'),
 
-                        Forms\Components\TextInput::make('protein_grams')
-                            ->label('Protéines (g)')
-                            ->numeric()
-                            ->step(0.1),
-
-                        Forms\Components\TextInput::make('carbs_grams')
-                            ->label('Glucides (g)')
-                            ->numeric()
-                            ->step(0.1),
-
-                        Forms\Components\TextInput::make('fat_grams')
-                            ->label('Lipides (g)')
-                            ->numeric()
-                            ->step(0.1),
-
-                        Forms\Components\TextInput::make('fiber_grams')
-                            ->label('Fibres (g)')
-                            ->numeric()
-                            ->step(0.1),
-                    ])->columns(5),
-
-                Forms\Components\Section::make('Équipement')
-                    ->schema([
-                        Forms\Components\TagsInput::make('required_equipment')
-                            ->label('Équipement nécessaire')
-                            ->placeholder('Four, mixeur, poêle...'),
-
-                        Forms\Components\TagsInput::make('cooking_methods')
-                            ->label('Méthodes de cuisson')
-                            ->placeholder('Cuisson au four, à la poêle, à la vapeur...'),
-                    ])->columns(2),
-
-                Forms\Components\Section::make('Chef et notes')
-                    ->schema([
-                        Forms\Components\TextInput::make('chef_name')
-                            ->label('Nom du chef'),
-
-                        Forms\Components\Textarea::make('chef_notes')
-                            ->label('Notes du chef')
-                            ->rows(3),
-                    ])->columns(2),
-
-                Forms\Components\Section::make('Paramètres')
-                    ->schema([
-                        Forms\Components\TagsInput::make('tags')
-                            ->label('Tags')
-                            ->placeholder('Ajoutez des tags...'),
-                            
-                        Forms\Components\Toggle::make('is_featured')
-                            ->label('Recette vedette'),
-                            
-                        Forms\Components\Toggle::make('is_published')
-                            ->label('Publié')
-                            ->default(false),
-                    ])->columns(3),
+                                Forms\Components\Toggle::make('is_published')
+                                    ->label('Publie')
+                                    ->default(false),
+                            ]),
+                        ]),
+                ])
+                ->skippable()
+                ->columnSpanFull(),
             ]);
     }
 
@@ -277,52 +309,46 @@ class RecipeResource extends Resource
                     ->label('Image')
                     ->disk('public')
                     ->circular(),
-                    
+
                 Tables\Columns\TextColumn::make('title')
                     ->label('Titre')
                     ->searchable()
                     ->sortable(),
-                    
+
                 Tables\Columns\TextColumn::make('category.name')
-                    ->label('Catégorie')
+                    ->label('Categorie')
                     ->badge()
                     ->sortable(),
-                    
+
                 Tables\Columns\TextColumn::make('difficulty')
-                    ->label('Difficulté')
+                    ->label('Difficulte')
                     ->badge()
                     ->color(function ($state) {
-                        switch ($state) {
-                            case 'beginner':
-                                return 'info';
-                            case 'easy':
-                                return 'success';
-                            case 'medium':
-                                return 'warning';
-                            case 'hard':
-                                return 'danger';
-                            case 'expert':
-                                return 'gray';
-                            default:
-                                return 'gray';
-                        }
+                        return match ($state) {
+                            'beginner' => 'info',
+                            'easy' => 'success',
+                            'medium' => 'warning',
+                            'hard' => 'danger',
+                            'expert' => 'gray',
+                            default => 'gray',
+                        };
                     }),
-                    
+
                 Tables\Columns\TextColumn::make('total_time')
                     ->label('Temps total')
                     ->suffix(' min')
                     ->sortable(),
-                    
+
                 Tables\Columns\IconColumn::make('is_featured')
                     ->label('Vedette')
                     ->boolean(),
-                    
+
                 Tables\Columns\IconColumn::make('is_published')
-                    ->label('Publié')
+                    ->label('Publie')
                     ->boolean(),
-                    
+
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Créé le')
+                    ->label('Cree le')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(true),
@@ -347,11 +373,10 @@ class RecipeResource extends Resource
                     ->url(fn (Recipe $record): string => static::getUrl('edit', ['record' => $record])),
                 Tables\Actions\DeleteAction::make()
                     ->before(function ($record) {
-                        // Supprimer les relations polymorphes avant la suppression principale
                         $record->likes()->delete();
                         $record->comments()->delete();
                     })
-                    ->successNotificationTitle('Recette supprimée avec succès')
+                    ->successNotificationTitle('Recette supprimee avec succes')
                     ->after(function () {
                         static::triggerPwaRebuild();
                     }),
@@ -359,15 +384,14 @@ class RecipeResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
-                        ->label('Supprimer sélectionnées')
+                        ->label('Supprimer selectionnees')
                         ->before(function ($records) {
-                            // Supprimer les relations polymorphes pour chaque enregistrement
                             foreach ($records as $record) {
                                 $record->likes()->delete();
                                 $record->comments()->delete();
                             }
                         })
-                        ->successNotificationTitle('Recettes supprimées avec succès'),
+                        ->successNotificationTitle('Recettes supprimees avec succes'),
                 ]),
             ])
             ->headerActions([
@@ -380,16 +404,14 @@ class RecipeResource extends Resource
                     })
                     ->requiresConfirmation()
                     ->modalHeading('Vider le cache PWA')
-                    ->modalDescription('Cette action va forcer la mise à jour du contenu dans l\'application mobile. Continuer ?')
+                    ->modalDescription('Cette action va forcer la mise a jour du contenu dans l\'application mobile. Continuer ?')
                     ->modalSubmitActionLabel('Vider le cache'),
             ]);
     }
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
@@ -401,10 +423,9 @@ class RecipeResource extends Resource
             'edit' => Pages\EditRecipe::route('/{record}/edit'),
         ];
     }
-    
+
     public static function getEloquentQuery(): Builder
     {
-        // Suppression directe, pas de soft delete
         return parent::getEloquentQuery();
     }
-} 
+}

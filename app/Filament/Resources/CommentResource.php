@@ -9,6 +9,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
@@ -53,6 +54,27 @@ class CommentResource extends Resource
                             ->label('Approuvé')
                             ->default(false),
                     ])->columns(2),
+
+                Forms\Components\Section::make('Réponse de l\'administrateur')
+                    ->schema([
+                        Forms\Components\Textarea::make('admin_reply')
+                            ->label('Réponse admin')
+                            ->rows(3)
+                            ->maxLength(2000)
+                            ->placeholder('Écrire une réponse au commentaire...')
+                            ->helperText('Cette réponse sera visible publiquement dans la PWA et l\'app mobile.'),
+                        
+                        Forms\Components\Placeholder::make('admin_reply_info')
+                            ->label('Répondu par')
+                            ->content(function ($record) {
+                                if (!$record || !$record->admin_replied_at) {
+                                    return 'Aucune réponse admin pour le moment';
+                                }
+                                $adminName = $record->adminUser?->name ?? 'Admin';
+                                return "{$adminName} le {$record->admin_replied_at->format('d/m/Y à H:i')}";
+                            })
+                            ->visible(fn ($record) => $record && $record->admin_replied_at),
+                    ])->columns(1),
 
                 Forms\Components\Section::make('Contenu associé')
                     ->schema([
@@ -156,6 +178,15 @@ class CommentResource extends Resource
                     ->label('Réponses')
                     ->counts('replies')
                     ->sortable(),
+
+                Tables\Columns\IconColumn::make('has_admin_reply')
+                    ->label('Rép. Admin')
+                    ->state(fn (Comment $record): bool => !empty($record->admin_reply))
+                    ->boolean()
+                    ->trueIcon('heroicon-o-chat-bubble-bottom-center-text')
+                    ->falseIcon('heroicon-o-minus')
+                    ->trueColor('success')
+                    ->falseColor('gray'),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('is_approved')
@@ -174,9 +205,43 @@ class CommentResource extends Resource
                         'App\Models\Tip' => 'Astuces',
                     ]),
 
+                Tables\Filters\Filter::make('sans_reponse_admin')
+                    ->label('Sans réponse admin')
+                    ->query(fn (Builder $query): Builder => $query->whereNull('admin_reply')),
+
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
+                Tables\Actions\Action::make('reply')
+                    ->label('Répondre')
+                    ->icon('heroicon-o-chat-bubble-bottom-center-text')
+                    ->color('primary')
+                    ->modalHeading(fn (Comment $record) => "Répondre au commentaire de {$record->author_name}")
+                    ->modalDescription(fn (Comment $record) => "\"{$record->content}\"")
+                    ->form([
+                        Forms\Components\Textarea::make('admin_reply')
+                            ->label('Votre réponse')
+                            ->required()
+                            ->rows(4)
+                            ->maxLength(2000)
+                            ->placeholder('Écrire votre réponse...')
+                            ->default(fn (Comment $record) => $record->admin_reply),
+                    ])
+                    ->action(function (Comment $record, array $data) {
+                        $record->update([
+                            'admin_reply' => $data['admin_reply'],
+                            'admin_reply_by' => auth()->id(),
+                            'admin_replied_at' => now(),
+                            'is_approved' => true, // Auto-approuver quand on répond
+                        ]);
+
+                        Notification::make()
+                            ->title('Réponse enregistrée')
+                            ->body("Votre réponse au commentaire de {$record->author_name} a été publiée.")
+                            ->success()
+                            ->send();
+                    }),
+
                 Tables\Actions\Action::make('approve')
                     ->label('Approuver')
                     ->icon('heroicon-o-check')

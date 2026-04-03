@@ -216,6 +216,48 @@
   font-family: 'Roboto', sans-serif;
 }
 
+/* Réponse Admin */
+.admin-reply {
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, #FFF5F5 0%, #FED7D7 100%);
+  border-left: 3px solid #E53E3E;
+  border-radius: 0 8px 8px 0;
+  position: relative;
+}
+
+.admin-reply-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.admin-reply-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #E53E3E;
+  background: rgba(229, 62, 62, 0.1);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.admin-reply-date {
+  font-size: 0.7rem;
+  color: #718096;
+  font-family: 'Roboto', sans-serif;
+}
+
+.admin-reply-content {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #2D3748;
+  line-height: 1.5;
+  font-family: 'Roboto', sans-serif;
+  font-style: italic;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .authenticated-user {

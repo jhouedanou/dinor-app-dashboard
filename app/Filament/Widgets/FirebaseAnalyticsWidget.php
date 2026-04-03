@@ -118,15 +118,64 @@ class FirebaseAnalyticsWidget extends Widget
 
     private function getTrends(): array
     {
-        // Calculer les tendances basées sur les données historiques
         $appStats = $this->analyticsService->getAppStatistics();
-        
+        $engagementMetrics = $this->analyticsService->getEngagementMetrics();
+
+        // Calculer les tendances réelles basées sur les données
+        $userActions = $engagementMetrics['user_actions'] ?? [];
+        $contentInteractions = $engagementMetrics['content_interactions'] ?? [];
+
+        // Tendance sessions: comparer les sessions des 7 derniers jours vs 7 jours précédents
+        $sessionsGrowth = $this->calculateRealGrowth('sessions');
+        $engagementGrowth = $this->calculateRealGrowth('engagement');
+        $contentGrowth = $this->calculateRealGrowth('content');
+
         return [
             'users_trend' => $this->calculateTrend('users', $appStats['growth_rate']),
-            'sessions_trend' => $this->calculateTrend('sessions', rand(5, 12) / 100),
-            'engagement_trend' => $this->calculateTrend('engagement', rand(3, 8) / 100),
-            'content_trend' => $this->calculateTrend('content', rand(2, 6) / 100)
+            'sessions_trend' => $this->calculateTrend('sessions', $sessionsGrowth),
+            'engagement_trend' => $this->calculateTrend('engagement', $engagementGrowth),
+            'content_trend' => $this->calculateTrend('content', $contentGrowth)
         ];
+    }
+
+    private function calculateRealGrowth(string $metric): float
+    {
+        try {
+            $now = now();
+            $currentPeriod = $now->copy()->subDays(7);
+            $previousPeriod = $now->copy()->subDays(14);
+
+            switch ($metric) {
+                case 'sessions':
+                    $current = \App\Models\AnalyticsEvent::where('timestamp', '>=', $currentPeriod)
+                        ->distinct('session_id')->count('session_id');
+                    $previous = \App\Models\AnalyticsEvent::whereBetween('timestamp', [$previousPeriod, $currentPeriod])
+                        ->distinct('session_id')->count('session_id');
+                    break;
+                case 'engagement':
+                    $current = \App\Models\Like::where('created_at', '>=', $currentPeriod)->count()
+                        + \App\Models\Comment::where('created_at', '>=', $currentPeriod)->count();
+                    $previous = \App\Models\Like::whereBetween('created_at', [$previousPeriod, $currentPeriod])->count()
+                        + \App\Models\Comment::whereBetween('created_at', [$previousPeriod, $currentPeriod])->count();
+                    break;
+                case 'content':
+                    $current = \App\Models\AnalyticsEvent::where('timestamp', '>=', $currentPeriod)
+                        ->where('event_type', 'page_view')->count();
+                    $previous = \App\Models\AnalyticsEvent::whereBetween('timestamp', [$previousPeriod, $currentPeriod])
+                        ->where('event_type', 'page_view')->count();
+                    break;
+                default:
+                    return 0;
+            }
+
+            if ($previous === 0) {
+                return $current > 0 ? 1.0 : 0;
+            }
+
+            return round(($current - $previous) / $previous, 2);
+        } catch (\Exception $e) {
+            return 0;
+        }
     }
 
     private function getTopContent(): array

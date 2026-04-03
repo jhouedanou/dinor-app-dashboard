@@ -19,6 +19,9 @@ class Comment extends Model
         'author_name',
         'author_email',
         'content',
+        'admin_reply',
+        'admin_reply_by',
+        'admin_replied_at',
         'is_approved',
         'ip_address',
         'user_agent',
@@ -30,6 +33,7 @@ class Comment extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
+        'admin_replied_at' => 'datetime',
     ];
 
     protected $dates = ['deleted_at'];
@@ -48,6 +52,22 @@ class Comment extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the admin who replied to this comment
+     */
+    public function adminUser()
+    {
+        return $this->belongsTo(User::class, 'admin_reply_by');
+    }
+
+    /**
+     * Check if the comment has an admin reply
+     */
+    public function hasAdminReply(): bool
+    {
+        return !empty($this->admin_reply);
     }
 
     /**

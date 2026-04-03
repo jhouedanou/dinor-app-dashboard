@@ -35,6 +35,7 @@ class Recipe extends Model
         'video_url',
         'summary_video_url',
         'video_thumbnail',
+        'audio_guide',
         'calories_per_serving',
         'protein_grams',
         'carbs_grams',
@@ -92,6 +93,7 @@ class Recipe extends Model
         'featured_image_url',
         'gallery_urls',
         'video_thumbnail_url',
+        'audio_guide_url',
         'current_likes_count',
         'approved_comments_count'
     ];
@@ -152,6 +154,11 @@ class Recipe extends Model
     public function getVideoThumbnailUrlAttribute()
     {
         return $this->video_thumbnail ? asset('storage/' . $this->video_thumbnail) : null;
+    }
+
+    public function getAudioGuideUrlAttribute()
+    {
+        return $this->audio_guide ? asset('storage/' . $this->audio_guide) : null;
     }
 
     public function scopePublished($query)

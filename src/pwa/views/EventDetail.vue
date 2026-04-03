@@ -170,6 +170,15 @@
                   </div>
                 </div>
                 <p class="comment-content md3-body-medium">{{ comment.content }}</p>
+                
+                <!-- Réponse admin -->
+                <div v-if="comment.admin_reply" class="admin-reply">
+                  <div class="admin-reply-header">
+                    <span class="admin-reply-badge">🛡️ {{ comment.admin_reply_by_name || 'Admin Dinor' }}</span>
+                    <span class="admin-reply-date md3-body-small">{{ formatDate(comment.admin_replied_at) }}</span>
+                  </div>
+                  <p class="admin-reply-content md3-body-medium">{{ comment.admin_reply }}</p>
+                </div>
               </div>
             </div>
             <div v-else class="empty-comments">
