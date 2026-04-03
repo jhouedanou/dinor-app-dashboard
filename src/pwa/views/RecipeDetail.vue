@@ -92,6 +92,24 @@
             </div>
           </div>
 
+          <!-- Guide Audio Général -->
+          <div v-if="recipe.audio_guide_url" class="recipe-audio-guide">
+            <h2 class="md3-title-medium dinor-text-primary">
+              <DinorIcon name="headphones" :size="22" class="audio-title-icon" />
+              Guide audio
+            </h2>
+            <div class="audio-player-card">
+              <div class="audio-player-info">
+                <DinorIcon name="graphic_eq" :size="28" class="audio-wave-icon" />
+                <span class="md3-body-medium">Écoutez les instructions de la recette</span>
+              </div>
+              <audio controls preload="metadata" class="audio-player">
+                <source :src="recipe.audio_guide_url" />
+                Votre navigateur ne supporte pas la lecture audio.
+              </audio>
+            </div>
+          </div>
+
           <!-- Recipe Sections in Accordions -->
           <div class="recipe-sections">
             <!-- Ingredients Accordion -->
@@ -157,7 +175,36 @@
               :initial-open="true"
               id="instructions-accordion"
             >
-              <div class="md3-body-large dinor-text-gray" v-html="formatInstructions(recipe.instructions)"></div>
+              <!-- Instructions structurées (tableau d'objets) -->
+              <div v-if="Array.isArray(recipe.instructions)" class="instructions-steps">
+                <div 
+                  v-for="(instruction, index) in recipe.instructions" 
+                  :key="index" 
+                  class="instruction-step-card"
+                >
+                  <div class="step-header">
+                    <span class="step-number">{{ instruction.step_number || index + 1 }}</span>
+                    <h4 class="step-title md3-title-small" v-if="instruction.title">{{ instruction.title }}</h4>
+                  </div>
+                  <div class="step-content">
+                    <p class="md3-body-large dinor-text-gray" v-if="instruction.step" v-html="instruction.step"></p>
+                    <p class="md3-body-large dinor-text-gray" v-else-if="typeof instruction === 'string'" v-html="instruction"></p>
+                  </div>
+                  <!-- Lecteur audio de l'étape -->
+                  <div v-if="instruction.audio_guide_url" class="step-audio-player">
+                    <div class="step-audio-label">
+                      <DinorIcon name="headphones" :size="16" class="step-audio-icon" />
+                      <span class="md3-body-small">Écouter l'étape {{ instruction.step_number || index + 1 }}</span>
+                    </div>
+                    <audio controls preload="metadata" class="audio-player audio-player-sm">
+                      <source :src="instruction.audio_guide_url" />
+                      Votre navigateur ne supporte pas la lecture audio.
+                    </audio>
+                  </div>
+                </div>
+              </div>
+              <!-- Instructions texte simple (HTML string) -->
+              <div v-else class="md3-body-large dinor-text-gray" v-html="recipe.instructions"></div>
             </Accordion>
 
             <!-- Gallery Accordion -->
@@ -1235,5 +1282,150 @@ p, span, div {
 
 .recipe-sections .comments-list {
   margin-top: 1rem;
+}
+
+/* ===== Guide Audio Général ===== */
+.recipe-audio-guide {
+  margin: 2rem 0;
+}
+
+.recipe-audio-guide h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.audio-title-icon {
+  color: #E1251B;
+}
+
+.audio-player-card {
+  background: linear-gradient(135deg, #FFF8E1 0%, #FFF3E0 100%);
+  border-radius: 12px;
+  padding: 1.25rem;
+  border: 1px solid #FFE0B2;
+  margin-top: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.audio-player-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.audio-wave-icon {
+  color: #E1251B;
+  animation: pulse-wave 2s ease-in-out infinite;
+}
+
+@keyframes pulse-wave {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+.audio-player {
+  width: 100%;
+  height: 44px;
+  border-radius: 8px;
+  outline: none;
+}
+
+.audio-player::-webkit-media-controls-panel {
+  background: #FFFFFF;
+  border-radius: 8px;
+}
+
+/* ===== Instructions par étape ===== */
+.instructions-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.instruction-step-card {
+  background: #FFFFFF;
+  border-radius: 12px;
+  padding: 1.25rem;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.2s ease;
+}
+
+.instruction-step-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #E1251B 0%, #C53030 100%);
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 0.9rem;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.step-title {
+  color: #2D3748;
+  font-weight: 600;
+}
+
+.step-content p {
+  margin: 0;
+  line-height: 1.7;
+}
+
+/* Lecteur audio par étape */
+.step-audio-player {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed #E2E8F0;
+}
+
+.step-audio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+  color: #718096;
+}
+
+.step-audio-icon {
+  color: #E1251B;
+}
+
+.audio-player-sm {
+  height: 36px;
+}
+
+@media (max-width: 480px) {
+  .audio-player-card {
+    padding: 1rem;
+  }
+
+  .instruction-step-card {
+    padding: 1rem;
+  }
+
+  .step-number {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    font-size: 0.8rem;
+  }
 }
 </style> 
