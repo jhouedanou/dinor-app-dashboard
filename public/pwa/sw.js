@@ -81,70 +81,70 @@ define(['./workbox-fb107ff4'], (function (workbox) { 'use strict';
     "url": "assets/Badge.CyRVNslW.css",
     "revision": null
   }, {
-    "url": "assets/Badge.DdR-g1HC.js",
+    "url": "assets/Badge.Dfhj3z1t.js",
     "revision": null
   }, {
-    "url": "assets/BannerSection.Bg9X0m7V.js",
+    "url": "assets/BannerSection.BH5jdwpd.js",
     "revision": null
   }, {
     "url": "assets/BannerSection.DHGVKDjO.css",
     "revision": null
   }, {
-    "url": "assets/CookiePolicy.BFeMKi6c.js",
-    "revision": null
-  }, {
     "url": "assets/CookiePolicy.CBPAEsFF.css",
     "revision": null
   }, {
-    "url": "assets/DinorTV.CMxujxEA.js",
+    "url": "assets/CookiePolicy.CkcouQcj.js",
+    "revision": null
+  }, {
+    "url": "assets/DinorTV.Bw5D0qAv.js",
     "revision": null
   }, {
     "url": "assets/DinorTV.Dg3lzYbb.css",
     "revision": null
   }, {
-    "url": "assets/EventDetail.BHqxzPZi.css",
+    "url": "assets/EventDetail.BHHn-pym.css",
     "revision": null
   }, {
-    "url": "assets/EventDetail.BTyY6Otl.js",
-    "revision": null
-  }, {
-    "url": "assets/EventsList.BKxHayoK.js",
+    "url": "assets/EventDetail.DbXcs1Jf.js",
     "revision": null
   }, {
     "url": "assets/EventsList.DKdPWiZo.css",
     "revision": null
   }, {
-    "url": "assets/FavoriteButton.D1jOOxpG.js",
+    "url": "assets/EventsList.ISUvqwyh.js",
+    "revision": null
+  }, {
+    "url": "assets/FavoriteButton.BCJiUO_O.js",
     "revision": null
   }, {
     "url": "assets/FavoriteButton.HOKXQ-I5.css",
     "revision": null
   }, {
-    "url": "assets/Home.BbTv2nwx.js",
-    "revision": null
-  }, {
     "url": "assets/Home.CqhinK6W.css",
     "revision": null
   }, {
-    "url": "assets/index.DFDZAx0u.css",
+    "url": "assets/Home.D9fOXa3h.js",
     "revision": null
   }, {
-    "url": "assets/index.NK2XBnZ9.js",
+    "url": "assets/index.DCeesHda.js",
     "revision": null
   }, {
-    "url": "assets/LikeButton.Cpko3AkH.js",
+    "url": "assets/index.j7cB_n8v.css",
+    "revision": null
+  }, {
+    "url": "assets/LikeButton._v33FdE0.js",
     "revision": null
   }, {
     "url": "assets/LikeButton.DCsx9HV7.css",
     "revision": null
   }, {
-    "url": "assets/PagesList.0DppunCa.js",
-    "revision": null
-  }, {
     "url": "assets/PagesList.BDjeEwhH.css",
     "revision": null
   }, {
-    "url": "assets/Predictions.Bi3hgHGb.js",
+    "url": "assets/PagesList.DOAS3Jqf.js",
+    "revision": null
+  }, {
+    "url": "assets/Predictions._3xMMR3K.js",
     "revision": null
   }, {
     "url": "assets/Predictions.DSa3Y-AN.css",
@@ -153,16 +153,16 @@ define(['./workbox-fb107ff4'], (function (workbox) { 'use strict';
     "url": "assets/PredictionsLeaderboard.D8Fsuwim.css",
     "revision": null
   }, {
-    "url": "assets/PredictionsLeaderboard.DmBQTsVp.js",
+    "url": "assets/PredictionsLeaderboard.DyuXdPJN.js",
     "revision": null
   }, {
     "url": "assets/PredictionsTeams.B2N2jqx8.css",
     "revision": null
   }, {
-    "url": "assets/PredictionsTeams.DtMqArKq.js",
+    "url": "assets/PredictionsTeams.DKdXCz2j.js",
     "revision": null
   }, {
-    "url": "assets/PrivacyPolicy.D3Xll7pW.js",
+    "url": "assets/PrivacyPolicy.CjL9WNuK.js",
     "revision": null
   }, {
     "url": "assets/PrivacyPolicy.DeflSHSI.css",
@@ -171,61 +171,61 @@ define(['./workbox-fb107ff4'], (function (workbox) { 'use strict';
     "url": "assets/Profile.BtcN_gh2.css",
     "revision": null
   }, {
-    "url": "assets/Profile.itFujovM.js",
+    "url": "assets/Profile.CJT05ZYb.js",
     "revision": null
   }, {
-    "url": "assets/RecipeDetail.B7wdwxpV.js",
+    "url": "assets/RecipeDetail.CpjsbvMy.js",
     "revision": null
   }, {
-    "url": "assets/RecipeDetail.BJWkPvQR.css",
+    "url": "assets/RecipeDetail.DLCH5W1u.css",
     "revision": null
   }, {
     "url": "assets/RecipesList.CEsnQzT2.css",
     "revision": null
   }, {
-    "url": "assets/RecipesList.jK9aoZ1t.js",
-    "revision": null
-  }, {
-    "url": "assets/SearchAndFilters.BNa4SpNl.js",
+    "url": "assets/RecipesList.DCWaP1HI.js",
     "revision": null
   }, {
     "url": "assets/SearchAndFilters.DhpLTWqq.css",
     "revision": null
   }, {
-    "url": "assets/TermsOfService.CL4IGnSJ.js",
+    "url": "assets/SearchAndFilters.DoU8y563.js",
     "revision": null
   }, {
     "url": "assets/TermsOfService.DiEZV5Dq.css",
     "revision": null
   }, {
-    "url": "assets/TipDetail.BGMXZ1oo.css",
+    "url": "assets/TermsOfService.Th5jj4i4.js",
     "revision": null
   }, {
-    "url": "assets/TipDetail.CE7Ar78U.js",
+    "url": "assets/TipDetail.DXZYXGnL.js",
     "revision": null
   }, {
-    "url": "assets/TipsList.B1uh8_K6.js",
+    "url": "assets/TipDetail.K6hsKNSE.css",
     "revision": null
   }, {
     "url": "assets/TipsList.BFkvQqZq.css",
     "revision": null
   }, {
-    "url": "assets/TournamentBetting.BnIiBiUJ.css",
+    "url": "assets/TipsList.CVRa7lO2.js",
     "revision": null
   }, {
-    "url": "assets/TournamentBetting.Emyu8c4a.js",
+    "url": "assets/TournamentBetting.BlgZ3Z50.js",
+    "revision": null
+  }, {
+    "url": "assets/TournamentBetting.BnIiBiUJ.css",
     "revision": null
   }, {
     "url": "assets/Tournaments.B5MFIoVu.css",
     "revision": null
   }, {
-    "url": "assets/Tournaments.C_11EuAG.js",
+    "url": "assets/Tournaments.CaArczZG.js",
     "revision": null
   }, {
-    "url": "assets/useApi.B2Z6wT3r.js",
+    "url": "assets/useApi.BZks_rVl.js",
     "revision": null
   }, {
-    "url": "assets/useComments.hfOiCOZy.js",
+    "url": "assets/useComments.BoqqDhI-.js",
     "revision": null
   }, {
     "url": "assets/utils.l0sNRNKZ.js",
@@ -237,11 +237,11 @@ define(['./workbox-fb107ff4'], (function (workbox) { 'use strict';
     "url": "assets/WebEmbed.7JmI38mu.css",
     "revision": null
   }, {
-    "url": "assets/WebEmbed.DBRJciFK.js",
+    "url": "assets/WebEmbed.oOCaaGZ3.js",
     "revision": null
   }, {
     "url": "index.html",
-    "revision": "46a961061a03cf069a739422355c56ca"
+    "revision": "fd8a829d14fec7631a94273f041a909d"
   }, {
     "url": "registerSW.js",
     "revision": "36a8c3eb862bdcf4382e8845651d1c5f"

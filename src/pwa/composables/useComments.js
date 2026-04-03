@@ -162,6 +162,46 @@ export function useComments() {
   }
 
   /**
+   * Répondre en tant qu'admin à un commentaire
+   */
+  const replyAsAdmin = async (commentId, replyContent) => {
+    if (!replyContent?.trim()) {
+      throw new Error('La réponse ne peut pas être vide')
+    }
+
+    if (!authStore.isAuthenticated) {
+      throw new Error('Vous devez être connecté')
+    }
+
+    try {
+      console.log(`🛡️ [Comments] Réponse admin au commentaire ${commentId}`)
+      
+      const data = await apiStore.post(`/comments/${commentId}/admin-reply`, {
+        admin_reply: replyContent.trim()
+      })
+      
+      if (data.success) {
+        console.log('✅ [Comments] Réponse admin enregistrée')
+        
+        // Mettre à jour le commentaire localement
+        const comment = comments.value.find(c => c.id === commentId)
+        if (comment) {
+          comment.admin_reply = replyContent.trim()
+          comment.admin_reply_by_name = data.data?.admin_reply_by_name || authStore.userName
+          comment.admin_replied_at = data.data?.admin_replied_at || new Date().toISOString()
+        }
+        
+        return data.data
+      } else {
+        throw new Error(data.message || 'Erreur lors de l\'envoi de la réponse')
+      }
+    } catch (err) {
+      console.error('❌ [Comments] Erreur réponse admin:', err)
+      throw err
+    }
+  }
+
+  /**
    * Supprimer un commentaire (si autorisé)
    */
   const deleteComment = async (commentId) => {
@@ -257,6 +297,7 @@ export function useComments() {
     loadCommentsFresh,
     addComment,
     deleteComment,
+    replyAsAdmin,
     
     // Utilitaires
     formatCommentDate,

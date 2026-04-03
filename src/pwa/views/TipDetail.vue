@@ -135,6 +135,40 @@
                   </div>
                   <p class="admin-reply-content md3-body-medium">{{ comment.admin_reply }}</p>
                 </div>
+
+                <!-- Formulaire réponse admin (visible uniquement pour les admins) -->
+                <div v-if="authStore.isAdmin && !comment.admin_reply" class="admin-reply-form">
+                  <button 
+                    v-if="replyingTo !== comment.id" 
+                    @click="replyingTo = comment.id; adminReplyText = ''" 
+                    class="btn-admin-reply-trigger"
+                  >
+                    🛡️ Répondre en tant qu'admin
+                  </button>
+                  <div v-else class="admin-reply-input">
+                    <textarea 
+                      v-model="adminReplyText" 
+                      placeholder="Votre réponse officielle en tant qu'admin..." 
+                      class="md3-textarea admin-textarea"
+                      rows="3"
+                    ></textarea>
+                    <div class="admin-reply-actions">
+                      <button 
+                        @click="handleAdminReply(comment.id)" 
+                        :disabled="adminReplyLoading || !adminReplyText.trim()" 
+                        class="btn-primary btn-sm"
+                      >
+                        {{ adminReplyLoading ? 'Publication...' : 'Publier la réponse' }}
+                      </button>
+                      <button 
+                        @click="replyingTo = null; adminReplyText = ''" 
+                        class="btn-secondary btn-sm"
+                      >
+                        Annuler
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             <div v-else class="empty-comments">
@@ -202,7 +236,7 @@ export default {
     const apiStore = useApiStore()
     const authStore = useAuthStore()
     const { share, showShareModal, updateOpenGraphTags } = useSocialShare()
-    const { comments, loadComments, loadCommentsFresh, canDeleteComment, deleteComment, setContext, addComment: addCommentFromComposable } = useComments()
+    const { comments, loadComments, loadCommentsFresh, canDeleteComment, deleteComment, setContext, addComment: addCommentFromComposable, replyAsAdmin } = useComments()
     
     const tip = ref(null)
     const loading = ref(true)
@@ -210,6 +244,9 @@ export default {
     const userFavorited = ref(false)
     const newComment = ref('')
     const showAuthModal = ref(false)
+    const replyingTo = ref(null)
+    const adminReplyText = ref('')
+    const adminReplyLoading = ref(false)
 
     const shareData = computed(() => {
       if (!tip.value) return {}
@@ -420,6 +457,23 @@ export default {
       return cleanUrl
     }
 
+    const handleAdminReply = async (commentId) => {
+      if (!adminReplyText.value.trim() || adminReplyLoading.value) return
+      
+      adminReplyLoading.value = true
+      try {
+        await replyAsAdmin(commentId, adminReplyText.value)
+        adminReplyText.value = ''
+        replyingTo.value = null
+        console.log('✅ [Admin] Réponse admin publiée avec succès')
+      } catch (error) {
+        console.error('❌ [Admin] Erreur lors de la réponse admin:', error)
+        alert('Erreur lors de la publication de la réponse admin. Veuillez réessayer.')
+      } finally {
+        adminReplyLoading.value = false
+      }
+    }
+
     onMounted(() => {
       loadTip()
     })
@@ -446,7 +500,11 @@ export default {
       showShareModal,
       shareData,
       authStore,
-      showAuthModal
+      showAuthModal,
+      handleAdminReply,
+      replyingTo,
+      adminReplyText,
+      adminReplyLoading
     }
   }
 }

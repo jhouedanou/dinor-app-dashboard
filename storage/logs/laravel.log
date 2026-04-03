@@ -19455,3 +19455,15 @@ DETAIL:  Failing row contains (1, tee, 1, null, pg, null, null, null, null, t, 2
 [2026-04-03 14:01:17] local.ERROR: Erreur lors de l'invalidation du cache pour recipes: cURL error 7: Failed to connect to localhost port 8000 after 0 ms: Could not connect to server (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for http://localhost:8000/api/v1/cache/invalidate-content  
 [2026-04-03 14:01:17] local.WARNING: Impossible de vider les caches avec tags: This cache store does not support tagging.  
 [2026-04-03 14:01:17] local.INFO: Cache PWA invalidation triggered {"timestamp":1775217677,"version":1775217677,"message":"Cache invalidation triggered"} 
+[2026-04-03 14:45:07] local.INFO: Analytics Event Tracked {"id":2,"type":"session_start","session":"mniwc2z9o63zk7sczv","user":null} 
+[2026-04-03 14:45:07] local.INFO: Analytics Event Tracked {"id":1,"type":"page_view","session":"mniwc2z9o63zk7sczv","user":null} 
+[2026-04-03 14:45:55] local.INFO: PWA Content Change: updated Recipe {"model":"Recipe","action":"updated","content_type":"recipes","id":1} 
+[2026-04-03 14:45:55] local.INFO: Triggering PWA cache invalidation for Recipe updated  
+[2026-04-03 14:45:55] local.ERROR: Erreur lors de l'invalidation du cache pour recipes: cURL error 7: Failed to connect to localhost port 8000 after 3 ms: Could not connect to server (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for http://localhost:8000/api/v1/cache/invalidate-content  
+[2026-04-03 14:45:55] local.WARNING: Impossible de vider les caches avec tags: This cache store does not support tagging.  
+[2026-04-03 14:45:55] local.INFO: Cache PWA invalidation triggered {"timestamp":1775220355,"version":1775220355,"message":"Cache invalidation triggered"} 
+[2026-04-03 14:45:59] local.INFO: Analytics Event Tracked {"id":3,"type":"page_view","session":"mniwd7gyyvsa4q7rkwf","user":null} 
+[2026-04-03 14:45:59] local.INFO: Analytics Event Tracked {"id":4,"type":"session_start","session":"mniwd7gyyvsa4q7rkwf","user":null} 
+[2026-04-03 14:45:59] local.INFO: Analytics Event Tracked {"id":5,"type":"session_end","session":"mniwc2z9o63zk7sczv","user":null} 
+[2026-04-03 14:46:03] local.INFO: 📋 [Comments] Commentaires trouvés: {"count":0,"comments":[]} 
+[2026-04-03 14:48:00] local.INFO: Analytics Event Tracked {"id":6,"type":"user_inactive","session":"mniwd7gyyvsa4q7rkwf","user":null} 

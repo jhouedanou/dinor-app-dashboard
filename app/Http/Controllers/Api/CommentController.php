@@ -388,7 +388,7 @@ class CommentController extends Controller
     {
         // Vérifier que l'utilisateur est admin
         $user = Auth::user();
-        if (!$user || !$user->is_admin) {
+        if (!$user || !$user->isAdmin()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Seuls les administrateurs peuvent répondre aux commentaires'
