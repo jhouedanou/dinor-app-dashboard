@@ -79,13 +79,14 @@ class UnitResource extends Resource
                 Tables\Columns\TextColumn::make('type')
                     ->label('Type')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn (?string $state): string => match ($state) {
                         'poids' => 'warning',
                         'volume' => 'info',
                         'quantite' => 'success',
+                        null => 'gray',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn (string $state): string => Unit::getTypes()[$state] ?? $state)
+                    ->formatStateUsing(fn (?string $state): string => $state ? (Unit::getTypes()[$state] ?? $state) : 'Inconnu')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('sort_order')

@@ -110,13 +110,15 @@ class CategoryResource extends Resource
                 Tables\Columns\TextColumn::make('type')
                     ->label('Type')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn (?string $state): string => match ($state) {
                         'general' => 'gray',
                         'recipe' => 'success',
                         'event' => 'warning',
+                        null => 'gray',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                        null => 'Inconnu',
                         'general' => 'Générale',
                         'recipe' => 'Recette',
                         'event' => 'Événement',

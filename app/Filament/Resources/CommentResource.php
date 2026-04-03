@@ -80,7 +80,8 @@ class CommentResource extends Resource
                     ->schema([
                         Forms\Components\TextInput::make('commentable_type')
                             ->label('Type de contenu')
-                            ->formatStateUsing(fn (string $state): string => match($state) {
+                            ->formatStateUsing(fn (?string $state): string => match($state) {
+                                null => 'Inconnu',
                                 'App\Models\Recipe' => 'Recette',
                                 'App\Models\Event' => 'Événement',
                                 'App\Models\DinorTv' => 'Dinor TV',
@@ -130,7 +131,8 @@ class CommentResource extends Resource
 
                 Tables\Columns\TextColumn::make('commentable_type')
                     ->label('Type')
-                    ->formatStateUsing(fn (string $state): string => match($state) {
+                    ->formatStateUsing(fn (?string $state): string => match($state) {
+                        null => 'Inconnu',
                         'App\Models\Recipe' => 'Recette',
                         'App\Models\Event' => 'Événement',
                         'App\Models\DinorTv' => 'Dinor TV',
@@ -138,11 +140,12 @@ class CommentResource extends Resource
                         default => $state
                     })
                     ->badge()
-                    ->color(fn (string $state): string => match($state) {
+                    ->color(fn (?string $state): string => match($state) {
                         'App\Models\Recipe' => 'success',
                         'App\Models\Event' => 'warning',
                         'App\Models\DinorTv' => 'info',
                         'App\Models\Tip' => 'primary',
+                        null => 'gray',
                         default => 'gray'
                     }),
 

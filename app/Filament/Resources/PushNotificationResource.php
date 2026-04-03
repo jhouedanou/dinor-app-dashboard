@@ -207,7 +207,8 @@ class PushNotificationResource extends Resource
 
                 Tables\Columns\TextColumn::make('target_audience')
                     ->label('Audience')
-                    ->formatStateUsing(fn (string $state) => match($state) {
+                    ->formatStateUsing(fn (?string $state) => match($state) {
+                        null => 'Inconnu',
                         'all' => 'Tous',
                         'segments' => 'Segments',
                         'specific_users' => 'Utilisateurs spécifiques',

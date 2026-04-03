@@ -185,15 +185,17 @@ class BannerResource extends Resource
                 Tables\Columns\TextColumn::make('type_contenu')
                     ->label('Type')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn (?string $state): string => match ($state) {
                         'recipes' => 'success',
                         'tips' => 'info',
                         'events' => 'warning',
                         'dinor_tv' => 'danger',
                         'pages' => 'gray',
+                        null => 'gray',
                         default => 'primary',
                     })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                        null => 'Inconnu',
                         'recipes' => 'Recettes',
                         'tips' => 'Astuces',
                         'events' => 'Événements',
@@ -220,7 +222,8 @@ class BannerResource extends Resource
                     ->label('Section')
                     ->badge()
                     ->color('gray')
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                        null => 'Inconnu',
                         'header' => 'En-tête',
                         'hero' => 'Hero',
                         'featured' => 'Mis en avant',
