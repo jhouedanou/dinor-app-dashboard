@@ -171,7 +171,7 @@ class RecipeResource extends Resource
                                 ->disk('public')
                                 ->directory('recipes/audio-guides')
                                 ->visibility('public')
-                                ->acceptedFileTypes(['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/mp4', 'audio/x-m4a'])
+                                ->acceptedFileTypes(['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/wave', 'audio/x-wav', 'audio/vnd.wave', 'audio/ogg', 'audio/mp4', 'audio/x-m4a', 'audio/aac', 'audio/webm'])
                                 ->maxSize(10240)
                                 ->helperText('Audio general de la recette (max 10 Mo). Vous pouvez aussi ajouter un audio par etape dans les instructions.'),
                         ])->columns(2),

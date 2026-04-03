@@ -38,7 +38,7 @@ class InstructionsField extends Component
                     ->disk('public')
                     ->directory('recipes/audio-guides')
                     ->visibility('public')
-                    ->acceptedFileTypes(['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/mp4', 'audio/x-m4a'])
+                    ->acceptedFileTypes(['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/wave', 'audio/x-wav', 'audio/vnd.wave', 'audio/ogg', 'audio/mp4', 'audio/x-m4a', 'audio/aac', 'audio/webm'])
                     ->maxSize(10240) // 10 MB
                     ->helperText('Audio MP3/WAV/OGG pour guider cette etape (max 10 Mo)')
                     ->columnSpanFull(),
