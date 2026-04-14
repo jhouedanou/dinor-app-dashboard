@@ -65,7 +65,8 @@ class LikeResource extends Resource
 
                 Tables\Columns\TextColumn::make('likeable_type')
                     ->label('Type de contenu')
-                    ->formatStateUsing(fn (string $state): string => match($state) {
+                    ->formatStateUsing(fn (?string $state): string => match($state) {
+                        null => 'Inconnu',
                         'App\Models\Recipe' => 'Recette',
                         'App\Models\Event' => 'Événement',
                         'App\Models\DinorTv' => 'Dinor TV',
@@ -73,11 +74,12 @@ class LikeResource extends Resource
                         default => $state
                     })
                     ->badge()
-                    ->color(fn (string $state): string => match($state) {
+                    ->color(fn (?string $state): string => match($state) {
                         'App\Models\Recipe' => 'success',
                         'App\Models\Event' => 'warning',
                         'App\Models\DinorTv' => 'info',
                         'App\Models\Tip' => 'primary',
+                        null => 'gray',
                         default => 'gray'
                     }),
 

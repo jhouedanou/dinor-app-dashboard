@@ -98,7 +98,8 @@ class TournamentResource extends Resource
                     ->sortable(),
                 Tables\Columns\BadgeColumn::make('status')
                     ->label('Statut')
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                        null => 'Inconnu',
                         'upcoming' => 'À venir',
                         'registration_open' => 'Inscriptions ouvertes',
                         'registration_closed' => 'Inscriptions fermées',

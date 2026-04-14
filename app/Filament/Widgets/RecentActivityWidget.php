@@ -34,7 +34,8 @@ class RecentActivityWidget extends BaseWidget
 
                 Tables\Columns\TextColumn::make('content_type')
                     ->label('Contenu')
-                    ->formatStateUsing(fn (string $state): string => match($state) {
+                    ->formatStateUsing(fn (?string $state): string => match($state) {
+                        null => 'Inconnu',
                         'App\Models\Recipe' => 'Recette',
                         'App\Models\Event' => 'Événement',
                         'App\Models\Tip' => 'Astuce',
@@ -42,11 +43,12 @@ class RecentActivityWidget extends BaseWidget
                         default => $state
                     })
                     ->badge()
-                    ->color(fn (string $state): string => match($state) {
+                    ->color(fn (?string $state): string => match($state) {
                         'App\Models\Recipe' => 'success',
                         'App\Models\Event' => 'warning',
                         'App\Models\Tip' => 'primary',
                         'App\Models\DinorTv' => 'info',
+                        null => 'gray',
                         default => 'gray'
                     }),
 

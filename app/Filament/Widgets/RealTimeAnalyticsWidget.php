@@ -35,7 +35,7 @@ class RealTimeAnalyticsWidget extends ChartWidget
             \Log::warning('Analytics Widget Error: ' . $e->getMessage());
             $data = collect();
             for ($i = 0; $i < 24; $i++) {
-                $data->put($i, rand(0, 50));
+                $data->put($i, 0);
             }
         }
 
@@ -127,10 +127,10 @@ class RealTimeAnalyticsWidget extends ChartWidget
         } catch (\Exception $e) {
             // Fallback avec données simulées
             return [
-                'current_users' => rand(20, 80),
-                'events_last_hour' => rand(50, 200),
-                'page_views_today' => rand(500, 1500),
-                'active_sessions' => rand(30, 100),
+                'current_users' => 0,
+                'events_last_hour' => 0,
+                'page_views_today' => 0,
+                'active_sessions' => 0,
             ];
         }
     }

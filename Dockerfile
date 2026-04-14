@@ -1,5 +1,5 @@
 # Multi-stage build pour optimiser le cache BuildKit
-FROM php:8.2-fpm as base
+FROM php:8.4-fpm as base
 
 # Set working directory
 WORKDIR /var/www/html

@@ -4,6 +4,7 @@ namespace App\Filament\Components;
 
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Component;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Textarea;
@@ -19,9 +20,9 @@ class InstructionsField extends Component
             ->label('Instructions')
             ->schema([
                 RichEditor::make('step')
-                    ->label('Étape')
+                    ->label('Etape')
                     ->required()
-                    ->placeholder('Décrivez cette étape de la recette...')
+                    ->placeholder('Decrivez cette etape de la recette...')
                     ->toolbarButtons([
                         'bold',
                         'italic',
@@ -31,27 +32,38 @@ class InstructionsField extends Component
                         'link',
                     ])
                     ->columnSpanFull(),
+
+                FileUpload::make('audio_guide')
+                    ->label('Guide audio')
+                    ->disk('public')
+                    ->directory('recipes/audio-guides')
+                    ->visibility('public')
+                    ->acceptedFileTypes(['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/wave', 'audio/x-wav', 'audio/vnd.wave', 'audio/ogg', 'audio/mp4', 'audio/x-m4a', 'audio/aac', 'audio/webm'])
+                    ->maxSize(10240) // 10 MB
+                    ->helperText('Audio MP3/WAV/OGG pour guider cette etape (max 10 Mo)')
+                    ->columnSpanFull(),
             ])
             ->itemLabel(function ($state) {
                 if (!is_array($state) || !isset($state['step'])) {
-                    return 'Nouvelle étape';
+                    return 'Nouvelle etape';
                 }
-                
+
                 $content = strip_tags($state['step'] ?? '');
                 $preview = strlen($content) > 50 ? substr($content, 0, 50) . '...' : $content;
-                
-                return $preview ?: 'Étape vide';
+                $hasAudio = !empty($state['audio_guide']) ? ' [audio]' : '';
+
+                return ($preview ?: 'Etape vide') . $hasAudio;
             })
             ->defaultItems(1)
             ->reorderable()
             ->collapsible()
             ->cloneable()
-            ->addActionLabel('Ajouter une étape')
+            ->addActionLabel('Ajouter une etape')
             ->deleteAction(function (Action $action) {
                 return $action
                     ->requiresConfirmation()
-                    ->modalHeading('Supprimer cette étape ?')
-                    ->modalDescription('Êtes-vous sûr de vouloir supprimer cette étape ? Les numéros des étapes suivantes seront automatiquement ajustés.');
+                    ->modalHeading('Supprimer cette etape ?')
+                    ->modalDescription('Etes-vous sur de vouloir supprimer cette etape ? Les numeros des etapes suivantes seront automatiquement ajustes.');
             });
     }
-} 
+}

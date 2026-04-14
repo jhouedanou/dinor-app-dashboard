@@ -54,8 +54,30 @@ class CommentController extends Controller
 
         // Temporairement sans pagination pour debug
         $comments = $model->approvedComments()
-                         ->with(['user:id,name', 'replies.user:id,name'])
-                         ->get();
+                         ->with(['user:id,name', 'replies.user:id,name', 'adminUser:id,name'])
+                         ->get()
+                         ->map(function ($comment) {
+                             $data = $comment->toArray();
+                             // Ajouter les infos de réponse admin formatées
+                             if ($comment->admin_reply) {
+                                 $data['admin_reply'] = $comment->admin_reply;
+                                 $data['admin_reply_by_name'] = $comment->adminUser?->name ?? 'Admin Dinor';
+                                 $data['admin_replied_at'] = $comment->admin_replied_at?->toISOString();
+                             }
+                             // Formater aussi les réponses imbriquées
+                             if (isset($data['replies'])) {
+                                 $data['replies'] = collect($data['replies'])->map(function ($reply) {
+                                     $replyModel = Comment::with('adminUser:id,name')->find($reply['id']);
+                                     if ($replyModel && $replyModel->admin_reply) {
+                                         $reply['admin_reply'] = $replyModel->admin_reply;
+                                         $reply['admin_reply_by_name'] = $replyModel->adminUser?->name ?? 'Admin Dinor';
+                                         $reply['admin_replied_at'] = $replyModel->admin_replied_at?->toISOString();
+                                     }
+                                     return $reply;
+                                 })->toArray();
+                             }
+                             return $data;
+                         });
 
         \Log::info('📋 [Comments] Commentaires trouvés:', ['count' => $comments->count(), 'comments' => $comments->toArray()]);
 
@@ -357,6 +379,45 @@ class CommentController extends Controller
             'App\\Models\\Tip', 'App\Models\Tip' => 'tip',
             default => null
         };
+    }
+
+    /**
+     * Admin reply to a comment
+     */
+    public function adminReply(Request $request, Comment $comment): JsonResponse
+    {
+        // Vérifier que l'utilisateur est admin
+        $user = Auth::user();
+        if (!$user || !$user->isAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Seuls les administrateurs peuvent répondre aux commentaires'
+            ], 403);
+        }
+
+        $request->validate([
+            'admin_reply' => 'required|string|min:3|max:2000'
+        ]);
+
+        $comment->update([
+            'admin_reply' => $request->admin_reply,
+            'admin_reply_by' => $user->id,
+            'admin_replied_at' => now(),
+            'is_approved' => true,
+        ]);
+
+        $comment->load(['user:id,name', 'adminUser:id,name']);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $comment->id,
+                'admin_reply' => $comment->admin_reply,
+                'admin_reply_by_name' => $comment->adminUser?->name ?? 'Admin Dinor',
+                'admin_replied_at' => $comment->admin_replied_at->toISOString(),
+            ],
+            'message' => 'Réponse admin enregistrée avec succès'
+        ]);
     }
 
     /**

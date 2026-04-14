@@ -92,6 +92,24 @@
             </div>
           </div>
 
+          <!-- Guide Audio Général -->
+          <div v-if="recipe.audio_guide_url" class="recipe-audio-guide">
+            <h2 class="md3-title-medium dinor-text-primary">
+              <DinorIcon name="headphones" :size="22" class="audio-title-icon" />
+              Guide audio
+            </h2>
+            <div class="audio-player-card">
+              <div class="audio-player-info">
+                <DinorIcon name="graphic_eq" :size="28" class="audio-wave-icon" />
+                <span class="md3-body-medium">Écoutez les instructions de la recette</span>
+              </div>
+              <audio controls preload="metadata" class="audio-player">
+                <source :src="recipe.audio_guide_url" />
+                Votre navigateur ne supporte pas la lecture audio.
+              </audio>
+            </div>
+          </div>
+
           <!-- Recipe Sections in Accordions -->
           <div class="recipe-sections">
             <!-- Ingredients Accordion -->
@@ -157,7 +175,36 @@
               :initial-open="true"
               id="instructions-accordion"
             >
-              <div class="md3-body-large dinor-text-gray" v-html="formatInstructions(recipe.instructions)"></div>
+              <!-- Instructions structurées (tableau d'objets) -->
+              <div v-if="Array.isArray(recipe.instructions)" class="instructions-steps">
+                <div 
+                  v-for="(instruction, index) in recipe.instructions" 
+                  :key="index" 
+                  class="instruction-step-card"
+                >
+                  <div class="step-header">
+                    <span class="step-number">{{ instruction.step_number || index + 1 }}</span>
+                    <h4 class="step-title md3-title-small" v-if="instruction.title">{{ instruction.title }}</h4>
+                  </div>
+                  <div class="step-content">
+                    <p class="md3-body-large dinor-text-gray" v-if="instruction.step" v-html="instruction.step"></p>
+                    <p class="md3-body-large dinor-text-gray" v-else-if="typeof instruction === 'string'" v-html="instruction"></p>
+                  </div>
+                  <!-- Lecteur audio de l'étape -->
+                  <div v-if="instruction.audio_guide_url" class="step-audio-player">
+                    <div class="step-audio-label">
+                      <DinorIcon name="headphones" :size="16" class="step-audio-icon" />
+                      <span class="md3-body-small">Écouter l'étape {{ instruction.step_number || index + 1 }}</span>
+                    </div>
+                    <audio controls preload="metadata" class="audio-player audio-player-sm">
+                      <source :src="instruction.audio_guide_url" />
+                      Votre navigateur ne supporte pas la lecture audio.
+                    </audio>
+                  </div>
+                </div>
+              </div>
+              <!-- Instructions texte simple (HTML string) -->
+              <div v-else class="md3-body-large dinor-text-gray" v-html="recipe.instructions"></div>
             </Accordion>
 
             <!-- Gallery Accordion -->
@@ -226,6 +273,49 @@
                     </div>
                   </div>
                   <p class="comment-content md3-body-medium">{{ comment.content }}</p>
+                  
+                  <!-- Réponse admin -->
+                  <div v-if="comment.admin_reply" class="admin-reply">
+                    <div class="admin-reply-header">
+                      <span class="admin-reply-badge">🛡️ {{ comment.admin_reply_by_name || 'Admin Dinor' }}</span>
+                      <span class="admin-reply-date md3-body-small">{{ formatDate(comment.admin_replied_at) }}</span>
+                    </div>
+                    <p class="admin-reply-content md3-body-medium">{{ comment.admin_reply }}</p>
+                  </div>
+
+                  <!-- Formulaire réponse admin (visible uniquement pour les admins) -->
+                  <div v-if="authStore.isAdmin && !comment.admin_reply" class="admin-reply-form">
+                    <button 
+                      v-if="replyingTo !== comment.id" 
+                      @click="replyingTo = comment.id; adminReplyText = ''" 
+                      class="btn-admin-reply-trigger"
+                    >
+                      🛡️ Répondre en tant qu'admin
+                    </button>
+                    <div v-else class="admin-reply-input">
+                      <textarea 
+                        v-model="adminReplyText" 
+                        placeholder="Votre réponse officielle en tant qu'admin..." 
+                        class="md3-textarea admin-textarea"
+                        rows="3"
+                      ></textarea>
+                      <div class="admin-reply-actions">
+                        <button 
+                          @click="handleAdminReply(comment.id)" 
+                          :disabled="adminReplyLoading || !adminReplyText.trim()" 
+                          class="btn-primary btn-sm"
+                        >
+                          {{ adminReplyLoading ? 'Publication...' : 'Publier la réponse' }}
+                        </button>
+                        <button 
+                          @click="replyingTo = null; adminReplyText = ''" 
+                          class="btn-secondary btn-sm"
+                        >
+                          Annuler
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div v-else class="empty-comments">
@@ -348,7 +438,7 @@ export default {
     const authStore = useAuthStore()
     const { share, showShareModal, updateOpenGraphTags } = useSocialShare()
     const { share: shareSocial } = useShare()
-    const { comments, loadComments, loadCommentsFresh, canDeleteComment, deleteComment, setContext, addComment: addCommentFromComposable } = useComments()
+    const { comments, loadComments, loadCommentsFresh, canDeleteComment, deleteComment, setContext, addComment: addCommentFromComposable, replyAsAdmin } = useComments()
     
     const recipe = ref(null)
     const loading = ref(true)
@@ -358,6 +448,9 @@ export default {
     const showAuthModal = ref(false)
     const showLightbox = ref(false)
     const lightboxIndex = ref(0)
+    const replyingTo = ref(null)
+    const adminReplyText = ref('')
+    const adminReplyLoading = ref(false)
 
     const shareData = computed(() => {
       if (!recipe.value) return {}
@@ -506,6 +599,23 @@ export default {
       showAuthModal.value = false
       if (newComment.value.trim()) {
         addComment()
+      }
+    }
+
+    const handleAdminReply = async (commentId) => {
+      if (!adminReplyText.value.trim() || adminReplyLoading.value) return
+      
+      adminReplyLoading.value = true
+      try {
+        await replyAsAdmin(commentId, adminReplyText.value)
+        adminReplyText.value = ''
+        replyingTo.value = null
+        console.log('✅ [Admin] Réponse admin publiée avec succès')
+      } catch (error) {
+        console.error('❌ [Admin] Erreur lors de la réponse admin:', error)
+        alert('Erreur lors de la publication de la réponse admin. Veuillez réessayer.')
+      } finally {
+        adminReplyLoading.value = false
       }
     }
 
@@ -778,6 +888,10 @@ export default {
       getEmbedUrl,
       showShareModal,
       handleAuthenticated,
+      handleAdminReply,
+      replyingTo,
+      adminReplyText,
+      adminReplyLoading,
       openGalleryModal,
       formatIngredientDisplay,
       formatDinorIngredientDisplay,
@@ -1168,5 +1282,150 @@ p, span, div {
 
 .recipe-sections .comments-list {
   margin-top: 1rem;
+}
+
+/* ===== Guide Audio Général ===== */
+.recipe-audio-guide {
+  margin: 2rem 0;
+}
+
+.recipe-audio-guide h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.audio-title-icon {
+  color: #E1251B;
+}
+
+.audio-player-card {
+  background: linear-gradient(135deg, #FFF8E1 0%, #FFF3E0 100%);
+  border-radius: 12px;
+  padding: 1.25rem;
+  border: 1px solid #FFE0B2;
+  margin-top: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.audio-player-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.audio-wave-icon {
+  color: #E1251B;
+  animation: pulse-wave 2s ease-in-out infinite;
+}
+
+@keyframes pulse-wave {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+.audio-player {
+  width: 100%;
+  height: 44px;
+  border-radius: 8px;
+  outline: none;
+}
+
+.audio-player::-webkit-media-controls-panel {
+  background: #FFFFFF;
+  border-radius: 8px;
+}
+
+/* ===== Instructions par étape ===== */
+.instructions-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.instruction-step-card {
+  background: #FFFFFF;
+  border-radius: 12px;
+  padding: 1.25rem;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.2s ease;
+}
+
+.instruction-step-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #E1251B 0%, #C53030 100%);
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 0.9rem;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.step-title {
+  color: #2D3748;
+  font-weight: 600;
+}
+
+.step-content p {
+  margin: 0;
+  line-height: 1.7;
+}
+
+/* Lecteur audio par étape */
+.step-audio-player {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed #E2E8F0;
+}
+
+.step-audio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+  color: #718096;
+}
+
+.step-audio-icon {
+  color: #E1251B;
+}
+
+.audio-player-sm {
+  height: 36px;
+}
+
+@media (max-width: 480px) {
+  .audio-player-card {
+    padding: 1rem;
+  }
+
+  .instruction-step-card {
+    padding: 1rem;
+  }
+
+  .step-number {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    font-size: 0.8rem;
+  }
 }
 </style> 

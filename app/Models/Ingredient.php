@@ -48,6 +48,15 @@ class Ingredient extends Model
 
     public static function getUnits()
     {
+        try {
+            $units = Unit::getOptions();
+            if (!empty($units)) {
+                return $units;
+            }
+        } catch (\Exception $e) {
+            // Fallback si la table n'existe pas encore
+        }
+
         return [
             'kg' => 'Kilogramme (kg)',
             'g' => 'Gramme (g)',

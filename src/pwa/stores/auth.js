@@ -18,6 +18,8 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = computed(() => !!token.value && !!user.value)
   const userName = computed(() => user.value?.name || '')
   const userEmail = computed(() => user.value?.email || '')
+  const isAdmin = computed(() => user.value?.role === 'admin')
+  const isModerator = computed(() => ['admin', 'moderator'].includes(user.value?.role))
 
   // Actions
   const setToken = (newToken) => {
@@ -182,6 +184,8 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     userName,
     userEmail,
+    isAdmin,
+    isModerator,
     
     // Actions
     register,

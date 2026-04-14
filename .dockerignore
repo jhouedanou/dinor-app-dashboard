@@ -29,6 +29,12 @@ yarn-error.log*
 *.swo
 *~
 
+# Mobile apps and distribution (not needed for dashboard build)
+flutter_app/
+react-native-dinor/
+distribution/
+DinorMobileBuild/
+
 # OS
 .DS_Store
 Thumbs.db

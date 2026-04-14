@@ -104,6 +104,20 @@ class RecipeController extends Controller
             });
             $recipe->ingredients = $ingredients->toArray();
         }
+
+        // Enrichir les instructions avec les URLs audio complètes
+        if ($recipe->instructions) {
+            $instructions = collect($recipe->instructions)->map(function ($instruction, $index) {
+                $instruction['step_number'] = $index + 1;
+                if (!empty($instruction['audio_guide'])) {
+                    $instruction['audio_guide_url'] = asset('storage/' . $instruction['audio_guide']);
+                } else {
+                    $instruction['audio_guide_url'] = null;
+                }
+                return $instruction;
+            });
+            $recipe->instructions = $instructions->toArray();
+        }
         
         // Ajouter les informations de like/favori pour l'utilisateur connecté
         $userId = Auth::id();

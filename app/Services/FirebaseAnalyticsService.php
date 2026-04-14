@@ -2,7 +2,15 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Http;
+use App\Models\AnalyticsEvent;
+use App\Models\User;
+use App\Models\Like;
+use App\Models\Comment;
+use App\Models\Recipe;
+use App\Models\Tip;
+use App\Models\Event;
+use App\Models\DinorTv;
+use App\Models\UserFavorite;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
@@ -18,15 +26,12 @@ class FirebaseAnalyticsService
     public function getAppStatistics(): array
     {
         return Cache::remember(self::CACHE_PREFIX . 'app_stats', self::CACHE_DURATION, function () {
-            // Essayer de récupérer les vraies données Firebase
-            $realData = $this->fetchRealFirebaseData();
-            
-            if ($realData) {
-                return $realData;
+            try {
+                return $this->getRealAppStatistics();
+            } catch (\Exception $e) {
+                Log::warning('Erreur récupération stats app: ' . $e->getMessage());
+                return $this->getEmptyAppStatistics();
             }
-            
-            // Sinon générer des données simulées réalistes
-            return $this->generateMockAppStatistics();
         });
     }
 
@@ -46,70 +51,162 @@ class FirebaseAnalyticsService
     public function getEngagementMetrics(): array
     {
         return Cache::remember(self::CACHE_PREFIX . 'engagement', self::CACHE_DURATION, function () {
-            return [
-                'daily_active_users' => $this->generateDailyActiveUsers(),
-                'session_duration' => $this->generateSessionDurations(),
-                'user_actions' => $this->generateUserActions(),
-                'content_interactions' => $this->generateContentInteractions()
-            ];
+            try {
+                return [
+                    'daily_active_users' => $this->getRealDailyActiveUsers(),
+                    'session_duration' => $this->getRealSessionDurations(),
+                    'user_actions' => $this->getRealUserActions(),
+                    'content_interactions' => $this->getRealContentInteractions(),
+                    'daily_users_chart' => $this->getDailyUsersChart(),
+                ];
+            } catch (\Exception $e) {
+                Log::warning('Erreur récupération engagement: ' . $e->getMessage());
+                return [
+                    'daily_active_users' => [],
+                    'session_duration' => [],
+                    'user_actions' => $this->getEmptyUserActions(),
+                    'content_interactions' => $this->getEmptyContentInteractions(),
+                    'daily_users_chart' => ['labels' => [], 'users' => [], 'sessions' => []],
+                ];
+            }
         });
     }
 
     /**
-     * Récupérer les données temps réel (dernières 24h)
+     * Récupérer les données temps réel depuis la table analytics_events
      */
     public function getRealTimeMetrics(): array
     {
-        return [
-            'current_users' => rand(45, 85),
-            'sessions_today' => rand(280, 420),
-            'new_users_today' => rand(15, 35),
-            'page_views_today' => rand(1200, 1800),
-            'avg_session_duration_today' => rand(4.2, 6.8),
-            'bounce_rate_today' => rand(35, 55),
-            'top_events_today' => $this->getTopEventsToday()
-        ];
-    }
-
-    /**
-     * Essayer de récupérer les vraies données Firebase
-     */
-    private function fetchRealFirebaseData(): ?array
-    {
         try {
-            // Ici on pourrait appeler l'API Firebase Analytics
-            // Pour l'instant, on simule
-            return null;
+            $now = now();
+            $today = $now->copy()->startOfDay();
+
+            $currentUsers = AnalyticsEvent::where('timestamp', '>=', $now->copy()->subMinutes(5))
+                ->distinct('session_id')
+                ->count('session_id');
+
+            $sessionsToday = AnalyticsEvent::where('timestamp', '>=', $today)
+                ->distinct('session_id')
+                ->count('session_id');
+
+            $newUsersToday = User::whereDate('created_at', today())->count();
+
+            $pageViewsToday = AnalyticsEvent::where('timestamp', '>=', $today)
+                ->where('event_type', 'page_view')
+                ->count();
+
+            // Durée moyenne de session aujourd'hui (en minutes)
+            $avgSessionDuration = $this->calculateAvgSessionDuration($today);
+
+            // Taux de rebond (sessions avec un seul événement / total sessions)
+            $bounceRate = $this->calculateBounceRate($today);
+
+            return [
+                'current_users' => $currentUsers,
+                'sessions_today' => $sessionsToday,
+                'new_users_today' => $newUsersToday,
+                'page_views_today' => $pageViewsToday,
+                'avg_session_duration_today' => round($avgSessionDuration, 1),
+                'bounce_rate_today' => round($bounceRate, 1),
+                'top_events_today' => $this->getTopEventsToday()
+            ];
         } catch (\Exception $e) {
-            Log::warning('Firebase Analytics API error: ' . $e->getMessage());
-            return null;
+            Log::warning('Erreur métriques temps réel: ' . $e->getMessage());
+            return [
+                'current_users' => 0,
+                'sessions_today' => 0,
+                'new_users_today' => User::whereDate('created_at', today())->count(),
+                'page_views_today' => 0,
+                'avg_session_duration_today' => 0,
+                'bounce_rate_today' => 0,
+                'top_events_today' => []
+            ];
         }
     }
 
     /**
-     * Générer des statistiques d'application simulées
+     * Statistiques réelles de l'application depuis la DB
      */
-    private function generateMockAppStatistics(): array
+    private function getRealAppStatistics(): array
     {
-        $baseUsers = 3200;
-        $growth = rand(8, 15) / 100; // 8-15% growth
-        
+        $now = now();
+        $totalUsers = User::count();
+
+        $activeUsers30d = AnalyticsEvent::where('timestamp', '>=', $now->copy()->subDays(30))
+            ->distinct('session_id')->count('session_id');
+        $activeUsers7d = AnalyticsEvent::where('timestamp', '>=', $now->copy()->subDays(7))
+            ->distinct('session_id')->count('session_id');
+        $activeUsers1d = AnalyticsEvent::where('timestamp', '>=', $now->copy()->subDay())
+            ->distinct('session_id')->count('session_id');
+
+        $newUsers30d = User::where('created_at', '>=', $now->copy()->subDays(30))->count();
+        $newUsers7d = User::where('created_at', '>=', $now->copy()->subDays(7))->count();
+        $newUsers1d = User::whereDate('created_at', today())->count();
+
+        $totalSessions30d = AnalyticsEvent::where('timestamp', '>=', $now->copy()->subDays(30))
+            ->distinct('session_id')->count('session_id');
+
+        $avgSessionDuration = $this->calculateAvgSessionDuration($now->copy()->subDays(30));
+        $bounceRate = $this->calculateBounceRate($now->copy()->subDays(30));
+
+        // Pages par session
+        $totalPageViews30d = AnalyticsEvent::where('timestamp', '>=', $now->copy()->subDays(30))
+            ->where('event_type', 'page_view')->count();
+        $pagesPerSession = $totalSessions30d > 0 ? round($totalPageViews30d / $totalSessions30d, 1) : 0;
+
+        // Taux de croissance (nouveaux utilisateurs ce mois vs mois précédent)
+        $previousMonthUsers = User::whereBetween('created_at', [$now->copy()->subDays(60), $now->copy()->subDays(30)])->count();
+        $growthRate = $previousMonthUsers > 0 ? round(($newUsers30d - $previousMonthUsers) / $previousMonthUsers, 2) : 0;
+
+        // Rétention approximative basée sur les sessions récurrentes
+        $retention1d = $this->calculateRetention(1);
+        $retention7d = $this->calculateRetention(7);
+        $retention30d = $this->calculateRetention(30);
+
         return [
-            'total_users' => $baseUsers + rand(200, 500),
-            'active_users_30d' => rand(680, 920),
-            'active_users_7d' => rand(320, 450),
-            'active_users_1d' => rand(85, 145),
-            'new_users_30d' => rand(180, 280),
-            'new_users_7d' => rand(45, 85),
-            'new_users_1d' => rand(8, 18),
-            'total_sessions_30d' => rand(8500, 12000),
-            'avg_session_duration' => rand(4.2, 6.8),
-            'bounce_rate' => rand(35, 55),
-            'pages_per_session' => rand(3.2, 4.8),
-            'user_retention_1d' => rand(65, 80),
-            'user_retention_7d' => rand(35, 50),
-            'user_retention_30d' => rand(15, 25),
-            'growth_rate' => $growth,
+            'total_users' => $totalUsers,
+            'active_users_30d' => $activeUsers30d,
+            'active_users_7d' => $activeUsers7d,
+            'active_users_1d' => $activeUsers1d,
+            'new_users_30d' => $newUsers30d,
+            'new_users_7d' => $newUsers7d,
+            'new_users_1d' => $newUsers1d,
+            'total_sessions_30d' => $totalSessions30d,
+            'avg_session_duration' => round($avgSessionDuration, 1),
+            'bounce_rate' => round($bounceRate, 1),
+            'pages_per_session' => $pagesPerSession,
+            'user_retention_1d' => $retention1d,
+            'user_retention_7d' => $retention7d,
+            'user_retention_30d' => $retention30d,
+            'growth_rate' => $growthRate,
+            'last_updated' => Carbon::now()->toISOString()
+        ];
+    }
+
+    /**
+     * Statistiques app vides (fallback)
+     */
+    private function getEmptyAppStatistics(): array
+    {
+        $totalUsers = User::count();
+        $newUsers30d = User::where('created_at', '>=', now()->subDays(30))->count();
+
+        return [
+            'total_users' => $totalUsers,
+            'active_users_30d' => 0,
+            'active_users_7d' => 0,
+            'active_users_1d' => 0,
+            'new_users_30d' => $newUsers30d,
+            'new_users_7d' => User::where('created_at', '>=', now()->subDays(7))->count(),
+            'new_users_1d' => User::whereDate('created_at', today())->count(),
+            'total_sessions_30d' => 0,
+            'avg_session_duration' => 0,
+            'bounce_rate' => 0,
+            'pages_per_session' => 0,
+            'user_retention_1d' => 0,
+            'user_retention_7d' => 0,
+            'user_retention_30d' => 0,
+            'growth_rate' => 0,
             'last_updated' => Carbon::now()->toISOString()
         ];
     }
@@ -120,94 +217,89 @@ class FirebaseAnalyticsService
     private function getRealContentStatistics(): array
     {
         try {
-            // Récupérer les vraies données des tables
-            $topRecipes = \App\Models\Recipe::where('is_published', true)
+            $topRecipes = Recipe::where('is_published', true)
                 ->selectRaw("title, views_count as views, likes_count, 'recipe' as type")
                 ->orderByDesc('views_count')
                 ->limit(3)
                 ->get()
                 ->toArray();
 
-            $topTips = \App\Models\Tip::where('is_published', true)
+            $topTips = Tip::where('is_published', true)
                 ->selectRaw("title, views_count as views, likes_count, 'tip' as type")
                 ->orderByDesc('views_count')
                 ->limit(2)
                 ->get()
                 ->toArray();
 
-            $topEvents = \App\Models\Event::where('is_published', true)
+            $topEvents = Event::where('is_published', true)
                 ->selectRaw("title, views_count as views, likes_count, 'event' as type")
                 ->orderByDesc('views_count')
                 ->limit(2)
                 ->get()
                 ->toArray();
 
-            $topVideos = \App\Models\DinorTv::where('is_published', true)
+            $topVideos = DinorTv::where('is_published', true)
                 ->selectRaw("title, view_count as views, 0 as likes_count, 'video' as type")
                 ->orderByDesc('view_count')
                 ->limit(2)
                 ->get()
                 ->toArray();
 
-            // Combiner tous les contenus
             $mostViewedContent = array_merge($topRecipes, $topTips, $topEvents, $topVideos);
-            
-            // Trier par nombre de vues (même si 0)
-            usort($mostViewedContent, function($a, $b) {
+
+            usort($mostViewedContent, function ($a, $b) {
                 return ($b['views'] ?? 0) <=> ($a['views'] ?? 0);
             });
-            
-            // Filtrer les entrées sans vues si on a du contenu avec vues
+
             $withViews = array_filter($mostViewedContent, fn($item) => ($item['views'] ?? 0) > 0);
             if (!empty($withViews)) {
-                $mostViewedContent = $withViews;
+                $mostViewedContent = array_values($withViews);
             }
 
-            // Calculer les vrais totaux d'engagement
-            $totalLikes = \App\Models\Recipe::sum('likes_count') + 
-                         \App\Models\Tip::sum('likes_count') + 
-                         \App\Models\Event::sum('likes_count');
-                         
-            $totalComments = \App\Models\Recipe::sum('comments_count') + 
-                           \App\Models\Tip::sum('comments_count') + 
-                           \App\Models\Event::sum('comments_count');
+            // Vrais totaux d'engagement
+            $totalLikes = Recipe::sum('likes_count') +
+                         Tip::sum('likes_count') +
+                         Event::sum('likes_count');
+
+            $totalComments = Recipe::sum('comments_count') +
+                           Tip::sum('comments_count') +
+                           Event::sum('comments_count');
+
+            // Vues réelles des pages depuis analytics_events
+            $recipeViews = (int) Recipe::sum('views_count');
+            $tipViews = (int) Tip::sum('views_count');
+            $eventViews = (int) Event::sum('views_count');
+            $videoViews = (int) DinorTv::sum('view_count');
+
+            // Page views depuis analytics_events si disponibles
+            $pageViewsFromAnalytics = $this->getPageViewsFromAnalytics();
+
+            // Termes de recherche depuis analytics_events
+            $searchTerms = $this->getSearchTermsFromAnalytics();
 
             return [
                 'most_viewed_pages' => [
-                    ['page' => 'Accueil', 'views' => rand(2800, 3500), 'unique_views' => rand(1800, 2300)],
-                    ['page' => 'Recettes', 'views' => (int) \App\Models\Recipe::sum('views_count'), 'unique_views' => rand(1500, 1900)],
-                    ['page' => 'Astuces', 'views' => (int) \App\Models\Tip::sum('views_count'), 'unique_views' => rand(1200, 1600)],
-                    ['page' => 'Événements', 'views' => (int) \App\Models\Event::sum('views_count'), 'unique_views' => rand(800, 1200)],
-                    ['page' => 'Dinor TV', 'views' => (int) \App\Models\DinorTv::sum('view_count'), 'unique_views' => rand(600, 1000)]
+                    ['page' => 'Accueil', 'views' => $pageViewsFromAnalytics['home'] ?? 0, 'unique_views' => $pageViewsFromAnalytics['home_unique'] ?? 0],
+                    ['page' => 'Recettes', 'views' => $recipeViews, 'unique_views' => $pageViewsFromAnalytics['recipes_unique'] ?? 0],
+                    ['page' => 'Astuces', 'views' => $tipViews, 'unique_views' => $pageViewsFromAnalytics['tips_unique'] ?? 0],
+                    ['page' => 'Événements', 'views' => $eventViews, 'unique_views' => $pageViewsFromAnalytics['events_unique'] ?? 0],
+                    ['page' => 'Dinor TV', 'views' => $videoViews, 'unique_views' => $pageViewsFromAnalytics['videos_unique'] ?? 0]
                 ],
                 'most_viewed_content' => array_slice($mostViewedContent, 0, 8),
                 'content_engagement' => [
-                    'total_likes' => $totalLikes ?: rand(2800, 3500),
+                    'total_likes' => $totalLikes,
                     'total_shares' => 0,
                     'total_comments' => $totalComments,
-                    'total_favorites' => \App\Models\UserFavorite::count(),
-                    'avg_time_on_content' => rand(2.8, 4.2)
+                    'total_favorites' => UserFavorite::count(),
+                    'avg_time_on_content' => 0
                 ],
-                'popular_search_terms' => [
-                    'carbonara' => rand(180, 250),
-                    'dessert facile' => rand(150, 200),
-                    'plat principal' => rand(120, 180),
-                    'cuisine italienne' => rand(100, 150),
-                    'recette rapide' => rand(90, 130)
-                ]
+                'popular_search_terms' => $searchTerms
             ];
         } catch (\Exception $e) {
-            \Log::error('Erreur récupération statistiques contenu: ' . $e->getMessage());
-            
-            // Fallback vers données simulées si erreur
+            Log::error('Erreur récupération statistiques contenu: ' . $e->getMessage());
+
             return [
-                'most_viewed_pages' => [
-                    ['page' => 'Accueil', 'views' => rand(2800, 3500), 'unique_views' => rand(1800, 2300)],
-                    ['page' => 'Recettes', 'views' => rand(2200, 2800), 'unique_views' => rand(1500, 1900)],
-                    ['page' => 'Astuces', 'views' => rand(1800, 2400), 'unique_views' => rand(1200, 1600)],
-                    ['page' => 'Événements', 'views' => rand(1200, 1800), 'unique_views' => rand(800, 1200)],
-                    ['page' => 'Dinor TV', 'views' => rand(900, 1400), 'unique_views' => rand(600, 1000)]
-                ],
+                'most_viewed_pages' => [],
                 'most_viewed_content' => [],
                 'content_engagement' => [
                     'total_likes' => 0,
@@ -222,72 +314,221 @@ class FirebaseAnalyticsService
     }
 
     /**
-     * Générer les utilisateurs actifs quotidiens (30 derniers jours)
+     * Récupérer les page views depuis analytics_events
      */
-    private function generateDailyActiveUsers(): array
+    private function getPageViewsFromAnalytics(): array
+    {
+        try {
+            $pageViews = AnalyticsEvent::where('event_type', 'page_view')
+                ->where('timestamp', '>=', now()->subDays(30))
+                ->selectRaw("page_path, COUNT(*) as views, COUNT(DISTINCT session_id) as unique_views")
+                ->groupBy('page_path')
+                ->get()
+                ->keyBy('page_path');
+
+            return [
+                'home' => $pageViews->filter(fn($v, $k) => $k === '/' || $k === '/home' || $k === 'home')->sum('views'),
+                'home_unique' => $pageViews->filter(fn($v, $k) => $k === '/' || $k === '/home' || $k === 'home')->sum('unique_views'),
+                'recipes_unique' => $pageViews->filter(fn($v, $k) => str_contains($k ?? '', 'recette') || str_contains($k ?? '', 'recipe'))->sum('unique_views'),
+                'tips_unique' => $pageViews->filter(fn($v, $k) => str_contains($k ?? '', 'astuce') || str_contains($k ?? '', 'tip'))->sum('unique_views'),
+                'events_unique' => $pageViews->filter(fn($v, $k) => str_contains($k ?? '', 'evenement') || str_contains($k ?? '', 'event'))->sum('unique_views'),
+                'videos_unique' => $pageViews->filter(fn($v, $k) => str_contains($k ?? '', 'video') || str_contains($k ?? '', 'dinor-tv'))->sum('unique_views'),
+            ];
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
+    /**
+     * Récupérer les termes de recherche depuis analytics_events
+     */
+    private function getSearchTermsFromAnalytics(): array
+    {
+        try {
+            $searches = AnalyticsEvent::where('event_type', 'search')
+                ->where('timestamp', '>=', now()->subDays(30))
+                ->selectRaw("event_data->>'query' as term, COUNT(*) as count")
+                ->groupByRaw("event_data->>'query'")
+                ->orderByDesc('count')
+                ->limit(10)
+                ->get();
+
+            $terms = [];
+            foreach ($searches as $search) {
+                if ($search->term) {
+                    $terms[$search->term] = $search->count;
+                }
+            }
+
+            return $terms;
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
+    /**
+     * Utilisateurs actifs quotidiens réels (30 derniers jours)
+     */
+    private function getRealDailyActiveUsers(): array
     {
         $data = [];
-        $baseUsers = rand(80, 120);
-        
+
         for ($i = 29; $i >= 0; $i--) {
             $date = Carbon::now()->subDays($i);
-            $variation = rand(-20, 25);
-            $users = max(40, $baseUsers + $variation);
-            
+            $startOfDay = $date->copy()->startOfDay();
+            $endOfDay = $date->copy()->endOfDay();
+
+            $users = AnalyticsEvent::whereBetween('timestamp', [$startOfDay, $endOfDay])
+                ->distinct('session_id')
+                ->count('session_id');
+
+            $sessions = AnalyticsEvent::whereBetween('timestamp', [$startOfDay, $endOfDay])
+                ->distinct('session_id')
+                ->count('session_id');
+
             $data[] = [
                 'date' => $date->format('Y-m-d'),
                 'users' => $users,
-                'sessions' => $users + rand(20, 60)
+                'sessions' => $sessions
             ];
         }
-        
+
         return $data;
     }
 
     /**
-     * Générer les durées de session
+     * Chart données pour les 30 derniers jours (users + sessions)
      */
-    private function generateSessionDurations(): array
+    private function getDailyUsersChart(): array
     {
+        $labels = [];
+        $users = [];
+        $sessions = [];
+
+        for ($i = 29; $i >= 0; $i--) {
+            $date = Carbon::now()->subDays($i);
+            $startOfDay = $date->copy()->startOfDay();
+            $endOfDay = $date->copy()->endOfDay();
+
+            $labels[] = $date->format('d/m');
+
+            $dayUsers = AnalyticsEvent::whereBetween('timestamp', [$startOfDay, $endOfDay])
+                ->distinct('session_id')
+                ->count('session_id');
+
+            $daySessions = AnalyticsEvent::whereBetween('timestamp', [$startOfDay, $endOfDay])
+                ->count();
+
+            $users[] = $dayUsers;
+            $sessions[] = $daySessions;
+        }
+
         return [
-            '0-30s' => rand(15, 25),
-            '30s-1m' => rand(20, 30),
-            '1-3m' => rand(25, 35),
-            '3-10m' => rand(20, 30),
-            '10m+' => rand(15, 25)
+            'labels' => $labels,
+            'users' => $users,
+            'sessions' => $sessions
         ];
     }
 
     /**
-     * Générer les actions utilisateur
+     * Durées de session réelles
      */
-    private function generateUserActions(): array
+    private function getRealSessionDurations(): array
+    {
+        try {
+            // Calculer la durée de chaque session (diff entre premier et dernier event)
+            $sessions = AnalyticsEvent::where('timestamp', '>=', now()->subDays(30))
+                ->selectRaw("session_id, MIN(timestamp) as first_event, MAX(timestamp) as last_event")
+                ->groupBy('session_id')
+                ->get();
+
+            $durations = ['0-30s' => 0, '30s-1m' => 0, '1-3m' => 0, '3-10m' => 0, '10m+' => 0];
+
+            foreach ($sessions as $session) {
+                $durationSeconds = Carbon::parse($session->first_event)->diffInSeconds(Carbon::parse($session->last_event));
+
+                if ($durationSeconds <= 30) $durations['0-30s']++;
+                elseif ($durationSeconds <= 60) $durations['30s-1m']++;
+                elseif ($durationSeconds <= 180) $durations['1-3m']++;
+                elseif ($durationSeconds <= 600) $durations['3-10m']++;
+                else $durations['10m+']++;
+            }
+
+            return $durations;
+        } catch (\Exception $e) {
+            return ['0-30s' => 0, '30s-1m' => 0, '1-3m' => 0, '3-10m' => 0, '10m+' => 0];
+        }
+    }
+
+    /**
+     * Actions utilisateur réelles
+     */
+    private function getRealUserActions(): array
+    {
+        try {
+            $since = now()->subDays(30);
+
+            return [
+                'page_views' => AnalyticsEvent::where('timestamp', '>=', $since)->where('event_type', 'page_view')->count(),
+                'button_clicks' => AnalyticsEvent::where('timestamp', '>=', $since)->where('event_type', 'button_click')->count(),
+                'form_submissions' => AnalyticsEvent::where('timestamp', '>=', $since)->where('event_type', 'form_submit')->count(),
+                'downloads' => AnalyticsEvent::where('timestamp', '>=', $since)->where('event_type', 'download')->count(),
+                'searches' => AnalyticsEvent::where('timestamp', '>=', $since)->where('event_type', 'search')->count(),
+                'social_shares' => AnalyticsEvent::where('timestamp', '>=', $since)->where('event_type', 'share')->count(),
+                'favorites_added' => UserFavorite::where('created_at', '>=', $since)->count(),
+                'comments_posted' => Comment::where('created_at', '>=', $since)->count()
+            ];
+        } catch (\Exception $e) {
+            return $this->getEmptyUserActions();
+        }
+    }
+
+    private function getEmptyUserActions(): array
     {
         return [
-            'page_views' => rand(8500, 12000),
-            'button_clicks' => rand(3200, 4800),
-            'form_submissions' => rand(180, 280),
-            'downloads' => rand(120, 200),
-            'searches' => rand(1500, 2200),
-            'social_shares' => rand(320, 480),
-            'favorites_added' => rand(850, 1200),
-            'comments_posted' => rand(280, 420)
+            'page_views' => 0,
+            'button_clicks' => 0,
+            'form_submissions' => 0,
+            'downloads' => 0,
+            'searches' => 0,
+            'social_shares' => 0,
+            'favorites_added' => UserFavorite::count(),
+            'comments_posted' => Comment::count()
         ];
     }
 
     /**
-     * Générer les interactions de contenu
+     * Interactions de contenu réelles
      */
-    private function generateContentInteractions(): array
+    private function getRealContentInteractions(): array
+    {
+        try {
+            $since = now()->subDays(30);
+
+            return [
+                'recipes_viewed' => (int) Recipe::sum('views_count'),
+                'tips_viewed' => (int) Tip::sum('views_count'),
+                'events_viewed' => (int) Event::sum('views_count'),
+                'videos_watched' => (int) DinorTv::sum('view_count'),
+                'content_shared' => AnalyticsEvent::where('timestamp', '>=', $since)->where('event_type', 'share')->count(),
+                'content_liked' => Like::where('created_at', '>=', $since)->count(),
+                'content_favorited' => UserFavorite::where('created_at', '>=', $since)->count()
+            ];
+        } catch (\Exception $e) {
+            return $this->getEmptyContentInteractions();
+        }
+    }
+
+    private function getEmptyContentInteractions(): array
     {
         return [
-            'recipes_viewed' => rand(3200, 4200),
-            'tips_viewed' => rand(2100, 2800),
-            'events_viewed' => rand(900, 1400),
-            'videos_watched' => rand(1600, 2200),
-            'content_shared' => rand(650, 950),
-            'content_liked' => rand(2800, 3500),
-            'content_favorited' => rand(1800, 2400)
+            'recipes_viewed' => 0,
+            'tips_viewed' => 0,
+            'events_viewed' => 0,
+            'videos_watched' => 0,
+            'content_shared' => 0,
+            'content_liked' => 0,
+            'content_favorited' => 0
         ];
     }
 
@@ -296,60 +537,193 @@ class FirebaseAnalyticsService
      */
     private function getTopEventsToday(): array
     {
-        return [
-            ['event' => 'page_view', 'count' => rand(800, 1200)],
-            ['event' => 'recipe_view', 'count' => rand(280, 420)],
-            ['event' => 'tip_view', 'count' => rand(180, 280)],
-            ['event' => 'video_play', 'count' => rand(120, 200)],
-            ['event' => 'content_share', 'count' => rand(45, 85)]
-        ];
+        try {
+            return AnalyticsEvent::where('timestamp', '>=', now()->startOfDay())
+                ->selectRaw('event_type as event, COUNT(*) as count')
+                ->groupBy('event_type')
+                ->orderByDesc('count')
+                ->limit(5)
+                ->get()
+                ->toArray();
+        } catch (\Exception $e) {
+            return [];
+        }
     }
 
     /**
-     * Récupérer les statistiques par plateforme
+     * Récupérer les statistiques par plateforme depuis analytics_events
      */
     public function getPlatformStatistics(): array
     {
-        return [
-            'mobile' => [
-                'users' => rand(1800, 2400),
-                'sessions' => rand(4500, 6000),
-                'percentage' => rand(58, 68)
-            ],
-            'desktop' => [
-                'users' => rand(800, 1200),
-                'sessions' => rand(2200, 3000),
-                'percentage' => rand(22, 32)
-            ],
-            'tablet' => [
-                'users' => rand(200, 400),
-                'sessions' => rand(600, 1000),
-                'percentage' => rand(8, 15)
-            ]
-        ];
+        try {
+            $since = now()->subDays(30);
+
+            $mobileEvents = AnalyticsEvent::where('timestamp', '>=', $since)
+                ->whereNotNull('device_info')
+                ->whereRaw("device_info->>'isMobile' = 'true'");
+
+            $desktopEvents = AnalyticsEvent::where('timestamp', '>=', $since)
+                ->whereNotNull('device_info')
+                ->whereRaw("(device_info->>'isMobile' = 'false' OR device_info->>'isMobile' IS NULL)");
+
+            $mobileUsers = (clone $mobileEvents)->distinct('session_id')->count('session_id');
+            $mobileSessions = (clone $mobileEvents)->count();
+            $desktopUsers = (clone $desktopEvents)->distinct('session_id')->count('session_id');
+            $desktopSessions = (clone $desktopEvents)->count();
+
+            $total = $mobileUsers + $desktopUsers;
+
+            return [
+                'mobile' => [
+                    'users' => $mobileUsers,
+                    'sessions' => $mobileSessions,
+                    'percentage' => $total > 0 ? round(($mobileUsers / $total) * 100) : 0
+                ],
+                'desktop' => [
+                    'users' => $desktopUsers,
+                    'sessions' => $desktopSessions,
+                    'percentage' => $total > 0 ? round(($desktopUsers / $total) * 100) : 0
+                ],
+                'tablet' => [
+                    'users' => 0,
+                    'sessions' => 0,
+                    'percentage' => 0
+                ]
+            ];
+        } catch (\Exception $e) {
+            Log::warning('Erreur stats plateforme: ' . $e->getMessage());
+            return [
+                'mobile' => ['users' => 0, 'sessions' => 0, 'percentage' => 0],
+                'desktop' => ['users' => 0, 'sessions' => 0, 'percentage' => 0],
+                'tablet' => ['users' => 0, 'sessions' => 0, 'percentage' => 0]
+            ];
+        }
     }
 
     /**
-     * Récupérer les statistiques géographiques
+     * Récupérer les statistiques géographiques depuis analytics_events (basé sur IP/locale)
      */
     public function getGeographicStatistics(): array
     {
-        return [
-            'countries' => [
-                ['country' => 'France', 'users' => rand(2200, 2800), 'sessions' => rand(5500, 7000)],
-                ['country' => 'Belgique', 'users' => rand(280, 420), 'sessions' => rand(700, 1000)],
-                ['country' => 'Suisse', 'users' => rand(180, 280), 'sessions' => rand(450, 700)],
-                ['country' => 'Canada', 'users' => rand(120, 200), 'sessions' => rand(300, 500)],
-                ['country' => 'Maroc', 'users' => rand(100, 180), 'sessions' => rand(250, 450)]
-            ],
-            'cities' => [
-                ['city' => 'Paris', 'users' => rand(450, 650)],
-                ['city' => 'Lyon', 'users' => rand(180, 280)],
-                ['city' => 'Marseille', 'users' => rand(150, 230)],
-                ['city' => 'Bruxelles', 'users' => rand(120, 200)],
-                ['city' => 'Toulouse', 'users' => rand(100, 170)]
-            ]
-        ];
+        try {
+            $since = now()->subDays(30);
+
+            // Essayer de récupérer les infos géographiques depuis event_data ou device_info
+            $countries = AnalyticsEvent::where('timestamp', '>=', $since)
+                ->whereNotNull('device_info')
+                ->selectRaw("device_info->>'country' as country, COUNT(DISTINCT session_id) as users, COUNT(*) as sessions")
+                ->groupByRaw("device_info->>'country'")
+                ->havingRaw("device_info->>'country' IS NOT NULL")
+                ->orderByDesc('users')
+                ->limit(5)
+                ->get()
+                ->toArray();
+
+            $cities = AnalyticsEvent::where('timestamp', '>=', $since)
+                ->whereNotNull('device_info')
+                ->selectRaw("device_info->>'city' as city, COUNT(DISTINCT session_id) as users")
+                ->groupByRaw("device_info->>'city'")
+                ->havingRaw("device_info->>'city' IS NOT NULL")
+                ->orderByDesc('users')
+                ->limit(5)
+                ->get()
+                ->toArray();
+
+            return [
+                'countries' => $countries,
+                'cities' => $cities
+            ];
+        } catch (\Exception $e) {
+            Log::warning('Erreur stats géographiques: ' . $e->getMessage());
+            return [
+                'countries' => [],
+                'cities' => []
+            ];
+        }
+    }
+
+    /**
+     * Calculer la durée moyenne de session en minutes
+     */
+    private function calculateAvgSessionDuration(Carbon $since): float
+    {
+        try {
+            $sessions = AnalyticsEvent::where('timestamp', '>=', $since)
+                ->selectRaw("session_id, MIN(timestamp) as first_event, MAX(timestamp) as last_event")
+                ->groupBy('session_id')
+                ->havingRaw('COUNT(*) > 1')
+                ->get();
+
+            if ($sessions->isEmpty()) {
+                return 0;
+            }
+
+            $totalDuration = 0;
+            foreach ($sessions as $session) {
+                $totalDuration += Carbon::parse($session->first_event)->diffInSeconds(Carbon::parse($session->last_event));
+            }
+
+            return ($totalDuration / $sessions->count()) / 60; // en minutes
+        } catch (\Exception $e) {
+            return 0;
+        }
+    }
+
+    /**
+     * Calculer le taux de rebond (sessions avec 1 seul événement)
+     */
+    private function calculateBounceRate(Carbon $since): float
+    {
+        try {
+            $totalSessions = AnalyticsEvent::where('timestamp', '>=', $since)
+                ->distinct('session_id')
+                ->count('session_id');
+
+            if ($totalSessions === 0) {
+                return 0;
+            }
+
+            $bouncedSessions = AnalyticsEvent::where('timestamp', '>=', $since)
+                ->selectRaw('session_id, COUNT(*) as event_count')
+                ->groupBy('session_id')
+                ->havingRaw('COUNT(*) = 1')
+                ->get()
+                ->count();
+
+            return ($bouncedSessions / $totalSessions) * 100;
+        } catch (\Exception $e) {
+            return 0;
+        }
+    }
+
+    /**
+     * Calculer la rétention (% de sessions qui reviennent après X jours)
+     */
+    private function calculateRetention(int $days): int
+    {
+        try {
+            $periodStart = now()->subDays($days * 2);
+            $periodMid = now()->subDays($days);
+
+            // Sessions de la première période
+            $firstPeriodSessions = AnalyticsEvent::whereBetween('timestamp', [$periodStart, $periodMid])
+                ->distinct('session_id')
+                ->pluck('session_id');
+
+            if ($firstPeriodSessions->isEmpty()) {
+                return 0;
+            }
+
+            // Combien sont revenues dans la seconde période
+            $returnedSessions = AnalyticsEvent::where('timestamp', '>=', $periodMid)
+                ->whereIn('session_id', $firstPeriodSessions)
+                ->distinct('session_id')
+                ->count('session_id');
+
+            return (int) round(($returnedSessions / $firstPeriodSessions->count()) * 100);
+        } catch (\Exception $e) {
+            return 0;
+        }
     }
 
     /**

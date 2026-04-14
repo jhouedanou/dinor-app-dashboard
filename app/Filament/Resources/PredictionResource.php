@@ -121,15 +121,19 @@ class PredictionResource extends Resource
                 Tables\Columns\TextColumn::make('predicted_winner')
                     ->label('Gagnant prédit')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn (?string $state): string => match ($state) {
                         'home' => 'success',
                         'away' => 'danger',
                         'draw' => 'warning',
+                        null => 'gray',
+                        default => 'gray',
                     })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
                         'home' => 'Domicile',
                         'away' => 'Extérieur',
                         'draw' => 'Match nul',
+                        null => 'Inconnu',
+                        default => $state ?? 'Inconnu',
                     }),
                 
                 Tables\Columns\TextColumn::make('points_earned')

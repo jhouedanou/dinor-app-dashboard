@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guide Admin — Création de Recette | Dinor App</title>
+    <style>
+        :root {
+            --dinor-red: #E1251B;
+            --dinor-red-dark: #C53030;
+            --dinor-gold: #F4D03F;
+            --dinor-gold-light: #FFF8E1;
+            --text-dark: #2D3748;
+            --text-gray: #4A5568;
+            --text-light: #718096;
+            --bg-light: #F7FAFC;
+            --border: #E2E8F0;
+            --success: #38A169;
+            --info: #3182CE;
+            --warning: #DD6B20;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: var(--text-dark);
+            line-height: 1.7;
+            background: var(--bg-light);
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--dinor-red) 0%, var(--dinor-red-dark) 100%);
+            color: white;
+            padding: 2.5rem 2rem;
+            text-align: center;
+        }
+        .header h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .header p { font-size: 1.1rem; opacity: 0.9; }
+        .header .url {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            margin-top: 0.75rem;
+            font-family: monospace;
+            font-size: 0.95rem;
+        }
+
+        /* Navigation */
+        .toc {
+            max-width: 900px;
+            margin: -1.5rem auto 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            padding: 1.5rem 2rem;
+        }
+        .toc h2 { font-size: 1.1rem; color: var(--dinor-red); margin-bottom: 1rem; }
+        .toc ol { padding-left: 1.5rem; }
+        .toc li { margin-bottom: 0.4rem; }
+        .toc a {
+            color: var(--info);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .toc a:hover { text-decoration: underline; }
+
+        /* Main content */
+        .container {
+            max-width: 900px;
+            margin: 0 auto 3rem;
+            padding: 0 1rem;
+        }
+
+        /* Step cards */
+        .step-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+        .step-card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 2px solid var(--border);
+        }
+        .step-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--dinor-red), var(--dinor-red-dark));
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        .step-card-header h2 { font-size: 1.25rem; color: var(--text-dark); }
+        .step-card-body { padding: 1.5rem; }
+
+        /* Fields table */
+        .fields-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.92rem;
+        }
+        .fields-table th {
+            background: var(--bg-light);
+            text-align: left;
+            padding: 0.65rem 1rem;
+            border-bottom: 2px solid var(--border);
+            color: var(--text-gray);
+            font-weight: 600;
+        }
+        .fields-table td {
+            padding: 0.6rem 1rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+        .fields-table tr:last-child td { border-bottom: none; }
+        .fields-table .required {
+            color: var(--dinor-red);
+            font-weight: 700;
+        }
+        .fields-table .optional { color: var(--text-light); }
+        .fields-table code {
+            background: #EDF2F7;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: var(--dinor-red-dark);
+        }
+
+        /* Tips */
+        .tip {
+            display: flex;
+            gap: 0.75rem;
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            font-size: 0.92rem;
+            line-height: 1.6;
+        }
+        .tip-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 0.1rem; }
+        .tip-info { background: #EBF8FF; border-left: 4px solid var(--info); }
+        .tip-warning { background: #FFFAF0; border-left: 4px solid var(--warning); }
+        .tip-success { background: #F0FFF4; border-left: 4px solid var(--success); }
+        .tip-dinor { background: var(--dinor-gold-light); border-left: 4px solid var(--dinor-gold); }
+
+        /* Screenshots */
+        .screenshot {
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+        .screenshot-placeholder {
+            background: linear-gradient(135deg, #EDF2F7, #E2E8F0);
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 2.5rem 1.5rem;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        /* Inline highlight */
+        .highlight {
+            background: var(--dinor-gold-light);
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        /* Audio box */
+        .audio-box {
+            background: linear-gradient(135deg, #FFF8E1, #FFF3E0);
+            border: 1px solid #FFE0B2;
+            border-radius: 10px;
+            padding: 1.25rem;
+            margin: 1rem 0;
+        }
+        .audio-box h4 {
+            color: var(--dinor-red);
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+        .audio-formats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.5rem;
+        }
+        .audio-formats span {
+            background: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border: 1px solid #FFE0B2;
+        }
+
+        /* Steps list visual */
+        .wizard-steps {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+        .wizard-step-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+        }
+        .wizard-step-item .num {
+            background: var(--dinor-red);
+            color: white;
+            border-radius: 50%;
+            width: 22px; height: 22px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .wizard-step-item.active {
+            border-color: var(--dinor-red);
+            background: #FFF5F5;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-light);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border);
+            margin-top: 2rem;
+        }
+        .footer a { color: var(--dinor-red); text-decoration: none; }
+
+        /* Images */
+        .img-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .img-card {
+            background: var(--bg-light);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+        .img-card .emoji { font-size: 2rem; margin-bottom: 0.5rem; }
+        .img-card p { font-size: 0.85rem; color: var(--text-gray); }
+        .img-card strong { display: block; margin-bottom: 0.25rem; }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .header h1 { font-size: 1.5rem; }
+            .step-card-body { padding: 1rem; }
+            .fields-table { font-size: 0.82rem; }
+            .fields-table th, .fields-table td { padding: 0.4rem 0.6rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ============== HEADER ============== -->
+<header class="header">
+    <h1>📖 Guide Admin — Création de Recette</h1>
+    <p>Comment créer et publier une recette complète sur Dinor App</p>
+    <div class="url">🔗 https://new.dinorapp.com/admin/recipes/create</div>
+</header>
+
+<!-- ============== TABLE DES MATIÈRES ============== -->
+<nav class="toc">
+    <h2>📑 Table des matières</h2>
+    <ol>
+        <li><a href="#access">Accéder au formulaire de création</a></li>
+        <li><a href="#step1">Étape 1 — Informations générales</a></li>
+        <li><a href="#step2">Étape 2 — Médias (images, vidéos, audio)</a></li>
+        <li><a href="#step3">Étape 3 — Ingrédients</a></li>
+        <li><a href="#step4">Étape 4 — Instructions (avec guide audio par étape)</a></li>
+        <li><a href="#step5">Étape 5 — Temps et portions</a></li>
+        <li><a href="#step6">Étape 6 — Détails et publication</a></li>
+        <li><a href="#comments">Gérer les commentaires et répondre</a></li>
+        <li><a href="#tips">Bonnes pratiques et conseils</a></li>
+    </ol>
+</nav>
+
+<div class="container">
+
+<!-- ============== ACCÈS ============== -->
+<section class="step-card" id="access">
+    <div class="step-card-header">
+        <div class="step-badge">🔗</div>
+        <h2>Accéder au formulaire de création</h2>
+    </div>
+    <div class="step-card-body">
+        <p>Pour créer une nouvelle recette :</p>
+        <ol style="margin: 1rem 0 1rem 1.5rem;">
+            <li>Connectez-vous à l'administration : <strong><a href="https://new.dinorapp.com/admin" target="_blank">https://new.dinorapp.com/admin</a></strong></li>
+            <li>Dans le menu latéral, cliquez sur <span class="highlight">Contenu → Recettes</span></li>
+            <li>Cliquez sur le bouton <span class="highlight">Nouvelle recette</span> en haut à droite</li>
+            <li>Vous arrivez sur un formulaire en <strong>6 étapes</strong> (wizard) :</li>
+        </ol>
+
+        <div class="wizard-steps">
+            <div class="wizard-step-item active"><span class="num">1</span> Infos générales</div>
+            <div class="wizard-step-item"><span class="num">2</span> Médias</div>
+            <div class="wizard-step-item"><span class="num">3</span> Ingrédients</div>
+            <div class="wizard-step-item"><span class="num">4</span> Instructions</div>
+            <div class="wizard-step-item"><span class="num">5</span> Temps &amp; portions</div>
+            <div class="wizard-step-item"><span class="num">6</span> Détails &amp; publication</div>
+        </div>
+
+        <div class="tip tip-info">
+            <span class="tip-icon">ℹ️</span>
+            <div>Vous pouvez <strong>sauter des étapes</strong> et y revenir plus tard. Les étapes ne sont pas bloquantes, sauf les champs obligatoires marqués d'un astérisque <span class="required">*</span>.</div>
+        </div>
+    </div>
+</section>
+
+<!-- ============== ÉTAPE 1 ============== -->
+<section class="step-card" id="step1">
+    <div class="step-card-header">
+        <div class="step-badge">1</div>
+        <h2>Informations générales</h2>
+    </div>
+    <div class="step-card-body">
+        <table class="fields-table">
+            <thead>
+                <tr>
+                    <th>Champ</th>
+                    <th>Obligatoire</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Titre</strong></td>
+                    <td class="required">Oui *</td>
+                    <td>Nom de la recette (max 255 caractères). Le <code>slug</code> URL est généré automatiquement.</td>
+                </tr>
+                <tr>
+                    <td><strong>Catégorie</strong></td>
+                    <td class="required">Oui *</td>
+                    <td>Sélectionnez une catégorie existante (Plats principaux, Desserts, etc.)</td>
+                </tr>
+                <tr>
+                    <td><strong>Sous-catégorie</strong></td>
+                    <td class="optional">Non</td>
+                    <td>Texte libre : "Entrée froide", "Plat principal", etc.</td>
+                </tr>
+                <tr>
+                    <td><strong>Description</strong></td>
+                    <td class="required">Oui *</td>
+                    <td>Description courte de la recette (affichée dans la liste et le détail).</td>
+                </tr>
+                <tr>
+                    <td><strong>Difficulté</strong></td>
+                    <td class="optional">Non</td>
+                    <td>Débutant · Facile · Intermédiaire · Difficile · Expert (défaut : Débutant)</td>
+                </tr>
+                <tr>
+                    <td><strong>Type de repas</strong></td>
+                    <td class="optional">Non</td>
+                    <td>Petit déjeuner · Déjeuner · Dîner · Collation · Dessert · Apéritif</td>
+                </tr>
+                <tr>
+                    <td><strong>Régime alimentaire</strong></td>
+                    <td class="optional">Non</td>
+                    <td>Aucun · Végétarien · Végétalien · Sans gluten · Sans lactose · Keto · Paleo</td>
+                </tr>
+                <tr>
+                    <td><strong>Niveau de coût</strong></td>
+                    <td class="optional">Non</td>
+                    <td>Économique · Moyen · Élevé (défaut : Moyen)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="tip tip-success">
+            <span class="tip-icon">✅</span>
+            <div><strong>Conseil :</strong> Un bon titre est court, descriptif et contient le nom du plat. Exemple : <em>"Attiéké poisson braisé à l'huile Dinor"</em> plutôt que <em>"Recette de poisson"</em>.</div>
+        </div>
+    </div>
+</section>
+
+<!-- ============== ÉTAPE 2 ============== -->
+<section class="step-card" id="step2">
+    <div class="step-card-header">
+        <div class="step-badge">2</div>
+        <h2>Médias (images, vidéos, audio)</h2>
+    </div>
+    <div class="step-card-body">
+
+        <h3 style="margin-bottom: 0.75rem;">📷 Images</h3>
+
+        <div class="img-grid">
+            <div class="img-card">
+                <div class="emoji">🖼️</div>
+                <strong>Image principale</strong>
+                <p>Photo de couverture de la recette. Formats : JPEG, PNG, GIF, WebP. Max 2 Mo.</p>
+            </div>
+            <div class="img-card">
+                <div class="emoji">🎨</div>
+                <strong>Galerie (max 10)</strong>
+                <p>Photos supplémentaires : étapes de préparation, ingrédients, etc. Réordonnables par glisser-déposer.</p>
+            </div>
+            <div class="img-card">
+                <div class="emoji">🎬</div>
+                <strong>Miniature vidéo</strong>
+                <p>Miniature affichée avant la lecture de la vidéo. Optionnel.</p>
+            </div>
+        </div>
+
+        <div class="tip tip-info">
+            <span class="tip-icon">📐</span>
+            <div><strong>Éditeur d'images intégré :</strong> Vous pouvez recadrer les images directement dans le formulaire. Ratios disponibles : <code>16:9</code>, <code>4:3</code>, <code>1:1</code>.</div>
+        </div>
+
+        <h3 style="margin: 1.5rem 0 0.75rem;">🎥 Vidéos</h3>
+
+        <table class="fields-table">
+            <thead><tr><th>Champ</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>URL Vidéo principale</strong></td>
+                    <td>URL YouTube ou Vimeo de la vidéo complète de la recette.</td>
+                </tr>
+                <tr>
+                    <td><strong>URL Vidéo résumé</strong></td>
+                    <td>URL d'une vidéo courte résumant la recette (story, reel, etc.).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="margin: 1.5rem 0 0.75rem;">🎧 Guide Audio Général</h3>
+
+        <div class="audio-box">
+            <h4>🎵 Guide audio de la recette</h4>
+            <p>Uploadez un fichier audio qui guide l'utilisateur tout au long de la recette. Ce guide audio est affiché en haut de la page recette dans la PWA et l'app mobile.</p>
+            <p style="margin-top: 0.5rem;"><strong>Taille max :</strong> 10 Mo</p>
+            <div class="audio-formats">
+                <span>MP3</span>
+                <span>WAV</span>
+                <span>OGG</span>
+                <span>M4A</span>
+                <span>AAC</span>
+                <span>WebM</span>
+                <span>MP4 audio</span>
+            </div>
+        </div>
+
+        <div class="tip tip-dinor">
+            <span class="tip-icon">🌟</span>
+            <div><strong>Astuce Dinor :</strong> Le guide audio est un atout majeur ! Il permet aux utilisateurs de cuisiner en écoutant les instructions sans regarder leur téléphone. Vous pouvez aussi ajouter un audio <strong>par étape</strong> à l'étape 4.</div>
+        </div>
+    </div>
+</section>
+
+<!-- ============== ÉTAPE 3 ============== -->
+<section class="step-card" id="step3">
+    <div class="step-card-header">
+        <div class="step-badge">3</div>
+        <h2>Ingrédients</h2>
+    </div>
+    <div class="step-card-body">
+
+        <h3 style="color: var(--dinor-red); margin-bottom: 0.75rem;">🏷️ Ingrédients Dinor (en premier)</h3>
+        <p style="margin-bottom: 1rem;">Ajoutez les <strong>produits Dinor</strong> utilisés dans la recette. Ces ingrédients sont mis en valeur avec le branding Dinor et un lien d'achat.</p>
+
+        <table class="fields-table">
+            <thead><tr><th>Champ</th><th>Obligatoire</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>Nom du produit Dinor</strong></td>
+                    <td class="required">Oui *</td>
+                    <td>Ex : "Huile Dinor", "Riz Dinor vietnamien jasmine"</td>
+                </tr>
+                <tr>
+                    <td><strong>Quantité</strong></td>
+                    <td class="optional">Non</td>
+                    <td>Ex : "2 cuillères à soupe", "1 tasse"</td>
+                </tr>
+                <tr>
+                    <td><strong>Lien d'achat</strong></td>
+                    <td class="optional">Non</td>
+                    <td>URL vers la page de vente du produit Dinor (bouton "Acheter" affiché dans la PWA)</td>
+                </tr>
+                <tr>
+                    <td><strong>Description</strong></td>
+                    <td class="optional">Non</td>
+                    <td>Expliquer pourquoi utiliser ce produit spécifiquement (max 500 car.)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="margin: 1.5rem 0 0.75rem;">🥕 Ingrédients classiques</h3>
+        <p style="margin-bottom: 1rem;">Ajoutez les autres ingrédients de la recette. Vous pouvez les rechercher dans la base de données ou en créer de nouveaux.</p>
+
+        <table class="fields-table">
+            <thead><tr><th>Champ</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>Ingrédient</strong></td>
+                    <td>Recherchez dans la base existante. Si l'ingrédient n'existe pas, cliquez sur le bouton <strong>+</strong> pour le créer.</td>
+                </tr>
+                <tr>
+                    <td><strong>Quantité</strong></td>
+                    <td>Nombre (ex : 500)</td>
+                </tr>
+                <tr>
+                    <td><strong>Unité</strong></td>
+                    <td>Auto-remplie depuis la base (g, ml, pièce, etc.). Modifiable.</td>
+                </tr>
+                <tr>
+                    <td><strong>Notes</strong></td>
+                    <td>"bien séché", "coupé en dés", etc.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="tip tip-info">
+            <span class="tip-icon">🔀</span>
+            <div><strong>Réorganiser :</strong> Glissez-déposez les ingrédients pour changer leur ordre. Vous pouvez aussi <strong>dupliquer</strong> une ligne en cliquant sur l'icône de copie.</div>
+        </div>
+    </div>
+</section>
+
+<!-- ============== ÉTAPE 4 ============== -->
+<section class="step-card" id="step4">
+    <div class="step-card-header">
+        <div class="step-badge">4</div>
+        <h2>Instructions (avec guide audio par étape)</h2>
+    </div>
+    <div class="step-card-body">
+        <p style="margin-bottom: 1rem;">Chaque étape de la recette est une entrée séparée avec un éditeur de texte riche et un champ audio optionnel.</p>
+
+        <table class="fields-table">
+            <thead><tr><th>Champ</th><th>Obligatoire</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>Étape (texte)</strong></td>
+                    <td class="required">Oui *</td>
+                    <td>
+                        Description de l'étape. Éditeur riche avec : <strong>gras</strong>, <em>italique</em>, souligné, listes, liens.<br>
+                        <em>Astuce : chaque étape = une action simple et claire.</em>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>🎧 Guide audio</strong></td>
+                    <td class="optional">Non</td>
+                    <td>
+                        Fichier audio pour guider l'utilisateur sur cette étape spécifique.<br>
+                        Formats : MP3, WAV, OGG, M4A, AAC, WebM. Max 10 Mo par fichier.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="audio-box">
+            <h4>🎧 Guide audio par étape — Comment ça marche ?</h4>
+            <p>Quand vous ajoutez un audio à une étape, l'utilisateur verra un <strong>mini lecteur audio</strong> sous le texte de l'étape dans la PWA et l'app mobile.</p>
+            <p style="margin-top: 0.5rem;"><strong>Exemple d'affichage dans la PWA :</strong></p>
+            <div style="background: white; border: 1px solid #E2E8F0; border-radius: 10px; padding: 1rem; margin-top: 0.75rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <span style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: var(--dinor-red); color: white; font-weight: 700; font-size: 0.8rem;">1</span>
+                    <strong>Préparer les ingrédients</strong>
+                </div>
+                <p style="color: var(--text-gray); font-size: 0.9rem; margin-bottom: 0.75rem;">Laver le poisson et le découper en morceaux. Préparer la marinade...</p>
+                <div style="background: #F7FAFC; border: 1px dashed #CBD5E0; border-radius: 6px; padding: 0.5rem 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <span>🎧</span>
+                    <span style="font-size: 0.8rem; color: var(--text-light);">Écouter l'étape 1</span>
+                    <span style="margin-left: auto; font-size: 0.75rem; color: #A0AEC0;">▶ 0:00 / 0:45</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="tip tip-success">
+            <span class="tip-icon">💡</span>
+            <div>
+                <strong>Bonnes pratiques pour les instructions :</strong>
+                <ul style="margin-top: 0.25rem; padding-left: 1.25rem;">
+                    <li>1 étape = 1 action (ne pas mélanger plusieurs actions)</li>
+                    <li>Commencer par un verbe : "Coupez", "Faites chauffer", "Mélangez"</li>
+                    <li>Les étapes sont réordonnables par glisser-déposer</li>
+                    <li>Les étapes avec audio affichent le badge <code>[audio]</code> dans le label</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============== ÉTAPE 5 ============== -->
+<section class="step-card" id="step5">
+    <div class="step-card-header">
+        <div class="step-badge">5</div>
+        <h2>Temps et portions</h2>
+    </div>
+    <div class="step-card-body">
+
+        <h3 style="margin-bottom: 0.75rem;">⏱️ Temps de préparation</h3>
+        <table class="fields-table">
+            <thead><tr><th>Champ</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Temps de préparation</strong></td><td>En minutes (ex : 20). Temps avant la cuisson.</td></tr>
+                <tr><td><strong>Temps de cuisson</strong></td><td>En minutes (ex : 45). Durée de cuisson.</td></tr>
+                <tr><td><strong>Temps de repos</strong></td><td>En minutes (ex : 30). Temps de repos/marinade.</td></tr>
+                <tr><td><strong>Nombre de portions</strong></td><td>Nombre de personnes servies (défaut : 1).</td></tr>
+            </tbody>
+        </table>
+
+        <h3 style="margin: 1.5rem 0 0.75rem;">🥗 Informations nutritionnelles (optionnel)</h3>
+        <table class="fields-table">
+            <thead><tr><th>Champ</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Calories par portion</strong></td><td>Nombre de calories (kcal)</td></tr>
+                <tr><td><strong>Protéines</strong></td><td>En grammes</td></tr>
+                <tr><td><strong>Glucides</strong></td><td>En grammes</td></tr>
+                <tr><td><strong>Lipides</strong></td><td>En grammes</td></tr>
+                <tr><td><strong>Fibres</strong></td><td>En grammes</td></tr>
+            </tbody>
+        </table>
+
+        <div class="tip tip-info">
+            <span class="tip-icon">📊</span>
+            <div><strong>Astuce :</strong> Les informations nutritionnelles sont optionnelles mais très appréciées par les utilisateurs soucieux de leur alimentation. Si vous ne les connaissez pas, vous pouvez les laisser vides.</div>
+        </div>
+    </div>
+</section>
+
+<!-- ============== ÉTAPE 6 ============== -->
+<section class="step-card" id="step6">
+    <div class="step-card-header">
+        <div class="step-badge">6</div>
+        <h2>Détails et publication</h2>
+    </div>
+    <div class="step-card-body">
+
+        <table class="fields-table">
+            <thead><tr><th>Champ</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Saison</strong></td><td>Toute l'année · Printemps · Été · Automne · Hiver (défaut : Toute l'année)</td></tr>
+                <tr><td><strong>Pays d'origine</strong></td><td>Ex : "Côte d'Ivoire", "Sénégal", "Cameroun"</td></tr>
+                <tr><td><strong>Nom du chef</strong></td><td>Nom du chef ou créateur de la recette (optionnel)</td></tr>
+                <tr><td><strong>Notes du chef</strong></td><td>Commentaires personnels du chef sur la recette</td></tr>
+                <tr><td><strong>Équipement nécessaire</strong></td><td>Tags : "Four", "Mixeur", "Poêle", etc.</td></tr>
+                <tr><td><strong>Méthodes de cuisson</strong></td><td>Tags : "Au four", "À la poêle", "À la vapeur", etc.</td></tr>
+                <tr><td><strong>Tags</strong></td><td>Mots-clés libres pour faciliter la recherche</td></tr>
+            </tbody>
+        </table>
+
+        <h3 style="margin: 1.5rem 0 0.75rem;">🚀 Publication</h3>
+
+        <table class="fields-table">
+            <thead><tr><th>Toggle</th><th>Effet</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>⭐ Recette vedette</strong></td>
+                    <td>Si activé, la recette apparaît dans la section "Recettes vedettes" en haut de la PWA et de l'app mobile.</td>
+                </tr>
+                <tr>
+                    <td><strong>✅ Publié</strong></td>
+                    <td>Si activé, la recette est visible par tous les utilisateurs. Si désactivé, elle reste en brouillon (visible uniquement dans l'admin).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="tip tip-warning">
+            <span class="tip-icon">⚠️</span>
+            <div><strong>Important :</strong> Par défaut, une nouvelle recette n'est <strong>PAS publiée</strong>. Pensez à activer le toggle <span class="highlight">Publié</span> quand votre recette est prête. Vous pouvez sauvegarder en brouillon et publier plus tard.</div>
+        </div>
+    </div>
+</section>
+
+<!-- ============== COMMENTAIRES ============== -->
+<section class="step-card" id="comments">
+    <div class="step-card-header">
+        <div class="step-badge">💬</div>
+        <h2>Gérer les commentaires et répondre</h2>
+    </div>
+    <div class="step-card-body">
+        <p>Les utilisateurs peuvent commenter les recettes depuis la PWA et l'app mobile. En tant qu'admin, vous pouvez <strong>modérer</strong> et <strong>répondre officiellement</strong> aux commentaires.</p>
+
+        <h3 style="margin: 1.25rem 0 0.75rem;">📋 Accéder aux commentaires</h3>
+        <ol style="margin-left: 1.5rem; margin-bottom: 1rem;">
+            <li>Menu latéral → <span class="highlight">Interactions → Commentaires</span></li>
+            <li>Ou directement : <a href="https://new.dinorapp.com/admin/comments" target="_blank"><strong>https://new.dinorapp.com/admin/comments</strong></a></li>
+        </ol>
+
+        <h3 style="margin: 1.25rem 0 0.75rem;">🛡️ Répondre en tant qu'admin</h3>
+        <p>Dans la liste des commentaires, cliquez sur le bouton <span class="highlight">Répondre</span> (icône bulle) à droite du commentaire.</p>
+
+        <div style="background: white; border: 1px solid #E2E8F0; border-radius: 10px; padding: 1.25rem; margin: 1rem 0;">
+            <p style="font-size: 0.9rem; margin-bottom: 0.5rem;"><strong>Aperçu dans la PWA :</strong></p>
+            <div style="background: #F7FAFC; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                    <strong style="font-size: 0.9rem;">Aminata Koné</strong>
+                    <span style="font-size: 0.75rem; color: var(--text-light);">03/04/2026</span>
+                </div>
+                <p style="font-size: 0.9rem; color: var(--text-gray);">J'adore cette recette ! 🍲👏</p>
+            </div>
+            <div style="background: var(--dinor-gold-light); border-left: 3px solid var(--dinor-red); border-radius: 0 8px 8px 0; padding: 0.75rem 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                    <span style="font-size: 0.85rem; background: var(--dinor-red); color: white; padding: 0.1rem 0.5rem; border-radius: 4px; font-weight: 600;">🛡️ Admin Dinor</span>
+                    <span style="font-size: 0.75rem; color: var(--text-light);">03/04/2026</span>
+                </div>
+                <p style="font-size: 0.9rem; color: var(--text-gray);">Merci Aminata ! N'hésitez pas à partager vos photos de réalisation 📸</p>
+            </div>
+        </div>
+
+        <h3 style="margin: 1.25rem 0 0.75rem;">🔍 Filtres utiles</h3>
+        <table class="fields-table">
+            <thead><tr><th>Filtre</th><th>Utilité</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Sans réponse admin</strong></td><td>Affiche uniquement les commentaires qui n'ont pas encore reçu de réponse officielle.</td></tr>
+                <tr><td><strong>Type de contenu</strong></td><td>Filtrer par Recettes, Événements, Dinor TV ou Astuces.</td></tr>
+                <tr><td><strong>Statut</strong></td><td>Approuvé ou En attente de modération.</td></tr>
+            </tbody>
+        </table>
+
+        <div class="tip tip-dinor">
+            <span class="tip-icon">💡</span>
+            <div><strong>Conseil :</strong> Répondre aux commentaires renforce l'engagement utilisateur. Filtrez par <em>"Sans réponse admin"</em> chaque jour pour ne manquer aucun commentaire important.</div>
+        </div>
+    </div>
+</section>
+
+<!-- ============== BONNES PRATIQUES ============== -->
+<section class="step-card" id="tips">
+    <div class="step-card-header">
+        <div class="step-badge">✨</div>
+        <h2>Bonnes pratiques et conseils</h2>
+    </div>
+    <div class="step-card-body">
+
+        <h3 style="margin-bottom: 1rem;">📸 Images</h3>
+        <ul style="margin-left: 1.5rem; margin-bottom: 1.5rem;">
+            <li>Utilisez des photos <strong>lumineuses et appétissantes</strong></li>
+            <li>Format recommandé : <strong>16:9</strong> pour l'image principale</li>
+            <li>Poids max : <strong>2 Mo</strong> par image (JPEG/PNG/WebP)</li>
+            <li>Ajoutez des photos de la galerie montrant les étapes clés</li>
+        </ul>
+
+        <h3 style="margin-bottom: 1rem;">🎧 Audio</h3>
+        <ul style="margin-left: 1.5rem; margin-bottom: 1.5rem;">
+            <li>Le guide audio général résume <strong>toute la recette</strong> (1-3 minutes idéalement)</li>
+            <li>Les audios par étape sont <strong>courts et précis</strong> (15-45 secondes)</li>
+            <li>Parlez clairement et à un rythme modéré</li>
+            <li>Format MP3 recommandé pour la meilleure compatibilité</li>
+            <li>Poids max : <strong>10 Mo</strong> par fichier audio</li>
+        </ul>
+
+        <h3 style="margin-bottom: 1rem;">✍️ Rédaction</h3>
+        <ul style="margin-left: 1.5rem; margin-bottom: 1.5rem;">
+            <li>Titre : <strong>court et descriptif</strong>, mentionnez les ingrédients Dinor si pertinent</li>
+            <li>Description : <strong>2-3 phrases</strong> qui donnent envie</li>
+            <li>Instructions : <strong>1 action par étape</strong>, commencez par un verbe</li>
+            <li>N'oubliez pas les <strong>ingrédients Dinor en premier</strong> pour la visibilité marque</li>
+        </ul>
+
+        <h3 style="margin-bottom: 1rem;">🚀 Publication</h3>
+        <ul style="margin-left: 1.5rem; margin-bottom: 1rem;">
+            <li>Sauvegardez <strong>en brouillon</strong> d'abord, vérifiez le rendu, puis publiez</li>
+            <li>Activez <strong>Recette vedette</strong> pour les recettes spéciales ou les campagnes</li>
+            <li>Utilisez le bouton <span class="highlight">Vider le cache PWA</span> dans la liste des recettes si les changements ne s'affichent pas immédiatement dans l'app</li>
+        </ul>
+    </div>
+</section>
+
+</div>
+
+<!-- ============== FOOTER ============== -->
+<footer class="footer">
+    <p><strong>Dinor App — Guide Administration</strong></p>
+    <p>Dashboard : <a href="https://new.dinorapp.com/admin" target="_blank">https://new.dinorapp.com/admin</a></p>
+    <p>Créer une recette : <a href="https://new.dinorapp.com/admin/recipes/create" target="_blank">https://new.dinorapp.com/admin/recipes/create</a></p>
+    <p>Gérer les commentaires : <a href="https://new.dinorapp.com/admin/comments" target="_blank">https://new.dinorapp.com/admin/comments</a></p>
+    <p style="margin-top: 1rem;">Dernière mise à jour : 3 avril 2026 · Version 1.0</p>
+</footer>
+
+</body>
+</html>

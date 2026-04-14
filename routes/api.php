@@ -98,6 +98,12 @@ Route::prefix('v1')->group(function () {
     Route::get('/recipes/featured/list', [RecipeController::class, 'featured']);
     Route::get('/recipes/categories/list', [RecipeController::class, 'categories']);
 
+    // Unités de mesure
+    Route::get('/units', function () {
+        $units = \App\Models\Unit::active()->ordered()->get(['id', 'name', 'abbreviation', 'type']);
+        return response()->json(['success' => true, 'data' => $units]);
+    });
+
     // Bannières (lecture publique)
     Route::get('/banners', [BannerController::class, 'index']);
     Route::get('/banners/{id}', [BannerController::class, 'show']);
@@ -260,6 +266,9 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     // Comments - Routes protégées (modification et suppression seulement)
     Route::put('/comments/{comment}', [CommentController::class, 'update']);
     Route::delete('/comments/{id}', [CommentController::class, 'destroy']);
+    
+    // Comments - Réponse admin (nécessite authentification)
+    Route::post('/comments/{comment}/admin-reply', [CommentController::class, 'adminReply']);
 
     // Favorites - Routes protégées
     Route::get('/favorites', [App\Http\Controllers\Api\FavoriteController::class, 'index']);
