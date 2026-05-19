@@ -102,20 +102,36 @@
               
               <div class="form-group">
                 <label for="password-confirmation">Confirmer le mot de passe</label>
-                <input 
+                <input
                   id="password-confirmation"
-                  v-model="registerForm.password_confirmation" 
-                  type="password" 
+                  v-model="registerForm.password_confirmation"
+                  type="password"
                   required
                   :disabled="authStore.loading"
                   class="form-input"
                   placeholder="Confirmez votre mot de passe"
                 >
               </div>
-              
-              <button 
-                type="submit" 
-                :disabled="authStore.loading"
+
+              <div class="form-group consent-group">
+                <label class="consent-label">
+                  <input
+                    id="data-consent"
+                    v-model="registerForm.data_consent"
+                    type="checkbox"
+                    required
+                    :disabled="authStore.loading"
+                    class="consent-checkbox"
+                  >
+                  <span class="consent-text">
+                    J'autorise l'utilisation de mes données personnelles (prénom, nom et adresse e-mail) aux fins de notification lors de la publication de nouveaux contenus sur l'application.
+                  </span>
+                </label>
+              </div>
+
+              <button
+                type="submit"
+                :disabled="authStore.loading || !registerForm.data_consent"
                 class="submit-btn"
               >
                 {{ authStore.loading ? 'Inscription...' : 'S\'inscrire' }}
@@ -171,7 +187,8 @@ const registerForm = reactive({
   name: '',
   email: '',
   password: '',
-  password_confirmation: ''
+  password_confirmation: '',
+  data_consent: false
 })
 
 // Message d'erreur intelligent avec suggestion de création de compte
@@ -219,6 +236,7 @@ const resetForms = () => {
   registerForm.email = ''
   registerForm.password = ''
   registerForm.password_confirmation = ''
+  registerForm.data_consent = false
   authStore.error = null
   showCreateAccountSuggestion.value = false
   userNotFoundEmail.value = ''
@@ -447,6 +465,33 @@ const handleRegister = async () => {
 
 .toggle-btn:hover {
   color: #c53030;
+}
+
+.consent-group {
+  margin-top: 0.25rem;
+}
+
+.consent-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  cursor: pointer;
+  font-weight: normal;
+}
+
+.consent-checkbox {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  margin-top: 2px;
+  accent-color: #E53E3E;
+  cursor: pointer;
+}
+
+.consent-text {
+  font-size: 0.8125rem;
+  color: #555;
+  line-height: 1.5;
 }
 
 /* Animations */
